@@ -12,12 +12,14 @@ import {
   BarChart3,
   Filter,
   Pencil,
+  Sparkles,
 } from 'lucide-react';
 import { useBimStore } from '@/stores/bimStore';
 import { PropertyGroup } from '@/types/bim';
 import { BimAnalysisPanel } from './BimAnalysisPanel';
 import { AdvancedFilterPanel } from './AdvancedFilterPanel';
 import { EditInspectorPanel } from './EditInspectorPanel';
+import { AiAssistantPanel } from './AiAssistantPanel';
 
 export const PropertiesPanel: React.FC = () => {
   const isPropsOpen = useBimStore((s) => s.isPropsOpen);
@@ -103,10 +105,26 @@ export const PropertiesPanel: React.FC = () => {
           <Pencil className="w-3.5 h-3.5" />
           <span>Editor</span>
         </button>
+
+        <button
+          onClick={() => setRightPanelTab('ai')}
+          data-testid="tab-ai"
+          className={`flex-1 h-full flex items-center justify-center space-x-1 border-b-2 transition ${
+            rightPanelTab === 'ai'
+              ? 'border-purple-500 text-purple-300 bg-[#151722]'
+              : 'border-transparent hover:text-slate-200 hover:bg-[#12141a]'
+          }`}
+          title="BIM AI Assistant"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          <span>AI</span>
+        </button>
       </div>
 
       {/* Tab Content */}
-      {rightPanelTab === 'analysis' ? (
+      {rightPanelTab === 'ai' ? (
+        <AiAssistantPanel />
+      ) : rightPanelTab === 'analysis' ? (
         <BimAnalysisPanel />
       ) : rightPanelTab === 'filter' ? (
         <AdvancedFilterPanel />

@@ -10,7 +10,7 @@ export type StandardViewDirection = 'top' | 'bottom' | 'front' | 'back' | 'left'
 
 export type LeftPanelTab = 'tree' | 'storeys' | 'viewpoints' | 'changes';
 
-export type RightPanelTab = 'properties' | 'analysis' | 'filter' | 'edit';
+export type RightPanelTab = 'properties' | 'analysis' | 'filter' | 'edit' | 'ai';
 
 export interface LoadingStage {
   isBusy: boolean;
@@ -196,3 +196,59 @@ export interface PersistenceResult {
   newFilename?: string;
   error?: string;
 }
+
+// --- PHASE 5: AI BIM ASSISTANT TYPES ---
+
+export type ToolCategory = 'READ' | 'WRITE';
+
+export interface ToolParameter {
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  description: string;
+  required?: boolean;
+  default?: any;
+}
+
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  category: ToolCategory;
+  parameters: Record<string, ToolParameter>;
+}
+
+export interface PendingWriteProposal {
+  proposalId: string;
+  toolName: string;
+  args: Record<string, any>;
+  summary: string;
+  description: string;
+  elementId?: number;
+  elementName?: string;
+  status: 'pending' | 'confirmed' | 'rejected' | 'executed';
+  createdAt: string;
+}
+
+export interface AIMessageToolCall {
+  toolName: string;
+  category: ToolCategory;
+  args: Record<string, any>;
+  result?: any;
+}
+
+export interface AIMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system' | 'tool';
+  content: string;
+  timestamp: string;
+  toolCalls?: AIMessageToolCall[];
+  proposal?: PendingWriteProposal;
+}
+
+export interface ConversationContext {
+  modelLoaded: boolean;
+  modelName?: string;
+  selectedElementId?: number;
+  selectedElementName?: string;
+  totalElements?: number;
+  changeSetCount: number;
+}
+

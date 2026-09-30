@@ -11,6 +11,7 @@ import {
   Pencil,
   Undo2,
   Redo2,
+  Sparkles,
 } from 'lucide-react';
 import { useBimStore } from '@/stores/bimStore';
 import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
@@ -41,6 +42,7 @@ export const HeaderBar: React.FC = () => {
   const canUndo = useBimStore((s) => s.canUndo);
   const canRedo = useBimStore((s) => s.canRedo);
   const setLeftPanelTab = useBimStore((s) => s.setLeftPanelTab);
+  const rightPanelTab = useBimStore((s) => s.rightPanelTab);
   const setRightPanelTab = useBimStore((s) => s.setRightPanelTab);
 
   // Global Undo / Redo keyboard shortcuts
@@ -335,6 +337,22 @@ export const HeaderBar: React.FC = () => {
             title="Toggle Properties Panel"
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => {
+              if (!isPropsOpen) togglePropsOpen();
+              setRightPanelTab('ai');
+            }}
+            data-testid="header-btn-ai"
+            className={`p-1.5 rounded transition ${
+              isPropsOpen && rightPanelTab === 'ai'
+                ? 'bg-purple-950 text-purple-300 border border-purple-800'
+                : 'text-purple-400 hover:text-purple-200 hover:bg-[#1d1627]'
+            }`}
+            title="Open AI BIM Assistant"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
           </button>
         </div>
 
