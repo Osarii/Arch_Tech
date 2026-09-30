@@ -395,6 +395,16 @@ export class BimEngine {
       this.clipper.deleteAll();
     }
 
+    this.deleteMeasurements();
+
+    if (this.hider) {
+      try {
+        await this.hider.set(true);
+      } catch (err) {
+        console.warn('Error resetting hider:', err);
+      }
+    }
+
     if (this.currentModel) {
       try {
         if (this.world?.scene?.three && this.currentModel.object) {

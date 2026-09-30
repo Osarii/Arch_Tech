@@ -56,6 +56,7 @@ export const BottomToolbar: React.FC = () => {
   const handleHideSelection = async () => {
     if (selectedElement) {
       await bimEngine.hideElements([selectedElement.expressID]);
+      useBimStore.getState().setHiddenExpressIds(new Set([...useBimStore.getState().hiddenExpressIds, selectedElement.expressID]));
       await bimEngine.clearSelection();
     }
   };
@@ -63,11 +64,14 @@ export const BottomToolbar: React.FC = () => {
   const handleIsolateSelection = async () => {
     if (selectedElement) {
       await bimEngine.isolateElements([selectedElement.expressID]);
+      useBimStore.getState().setIsIsolated(true);
     }
   };
 
   const handleShowAll = async () => {
     await bimEngine.showAll();
+    useBimStore.getState().setHiddenExpressIds(new Set());
+    useBimStore.getState().setIsIsolated(false);
   };
 
   const handleFitModel = () => {
@@ -174,6 +178,7 @@ export const BottomToolbar: React.FC = () => {
         <button
           onClick={handleHideSelection}
           disabled={!selectedElement}
+          data-testid="action-hide"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
           title="Hide Selected Element"
         >
@@ -184,6 +189,7 @@ export const BottomToolbar: React.FC = () => {
         <button
           onClick={handleIsolateSelection}
           disabled={!selectedElement}
+          data-testid="action-isolate"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
           title="Isolate Selected Element"
         >
@@ -193,6 +199,7 @@ export const BottomToolbar: React.FC = () => {
 
         <button
           onClick={handleShowAll}
+          data-testid="action-show-all"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition"
           title="Show All Elements"
         >
@@ -207,6 +214,7 @@ export const BottomToolbar: React.FC = () => {
       <div className="flex items-center space-x-1">
         <button
           onClick={handleFitModel}
+          data-testid="action-fit"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition"
           title="Fit Entire Model to Screen"
         >
@@ -217,6 +225,7 @@ export const BottomToolbar: React.FC = () => {
         <button
           onClick={handleFocusSelection}
           disabled={!selectedElement}
+          data-testid="action-focus"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
           title="Focus Selected Element"
         >

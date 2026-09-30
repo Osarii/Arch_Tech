@@ -47,7 +47,10 @@ export const PropertiesPanel: React.FC = () => {
           <span>Properties & Data</span>
         </div>
         {selectedElement && (
-          <span className="font-mono text-[10px] text-sky-400 bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-800">
+          <span
+            data-testid="selected-element-express-id"
+            className="font-mono text-[10px] text-sky-400 bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-800"
+          >
             #{selectedElement.expressID}
           </span>
         )}
@@ -60,7 +63,10 @@ export const PropertiesPanel: React.FC = () => {
             {/* Element Header Card */}
             <div className="bg-[#171a22] border border-[#272c38] rounded-lg p-3">
               <div className="flex items-start justify-between mb-2">
-                <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-sky-900/40 text-sky-300 border border-sky-700/50 uppercase tracking-wide">
+                <span
+                  data-testid="selected-element-type"
+                  className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-sky-900/40 text-sky-300 border border-sky-700/50 uppercase tracking-wide"
+                >
                   {selectedElement.type}
                 </span>
                 <button
@@ -73,11 +79,14 @@ export const PropertiesPanel: React.FC = () => {
                   ) : (
                     <Copy className="w-3 h-3" />
                   )}
-                  <span>{selectedElement.globalId.slice(0, 8)}...</span>
+                  <span data-testid="selected-element-guid">{selectedElement.globalId.slice(0, 8)}...</span>
                 </button>
               </div>
 
-              <h3 className="font-semibold text-slate-100 text-sm leading-snug break-words">
+              <h3
+                data-testid="selected-element-name"
+                className="font-semibold text-slate-100 text-sm leading-snug break-words"
+              >
                 {selectedElement.name}
               </h3>
 

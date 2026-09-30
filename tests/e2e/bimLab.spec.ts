@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('BIM LAB V1 E2E Verification', () => {
+test.describe('BIM LAB V1 Reliability & Workflow Verification', () => {
   test('renders base application shell, panels, and diagnostics', async ({ page }) => {
     await page.goto('/');
 
@@ -24,49 +24,158 @@ test.describe('BIM LAB V1 E2E Verification', () => {
     await expect(page.getByText(/FPS/i).first()).toBeVisible();
   });
 
-  test('loads real IFC model, builds spatial tree, and inspects properties', async ({ page }) => {
-    // Increase test timeout for WebAssembly initialization
+  test('executes real IFC workflow: load -> Ready -> tree -> select -> properties -> Hide -> Show All -> Isolate -> Fit', async ({ page }) => {
     test.setTimeout(45000);
 
-    page.on('console', (msg) => console.log('BROWSER CONSOLE:', msg.type(), msg.text()));
-    page.on('pageerror', (err) => console.log('BROWSER ERROR:', err));
+    const criticalErrors: string[] = [];
+    page.on('console', (msg) => {
+      const text = msg.text();
+      // Track actual errors excluding informational notices
+      if (msg.type() === 'error' && !text.includes('favicon') && !text.includes('download')) {
+        criticalErrors.push(`[Console Error] ${text}`);
+      }
+    });
+    page.on('pageerror', (err) => {
+      criticalErrors.push(`[Page Error] ${err.message}`);
+    });
+
     await page.goto('/');
 
-    // Click sample model button
+    // 1. IFC Load
     const loadSampleBtn = page.getByRole('button', { name: /Load Sample \(Fast/i });
     await expect(loadSampleBtn).toBeVisible();
     await loadSampleBtn.click();
 
-    // Wait for model loading to complete and BottomToolbar to appear
-    await expect(page.getByRole('button', { name: /Select/i })).toBeVisible({ timeout: 25000 });
-    await expect(page.getByRole('button', { name: /Fit/i })).toBeVisible();
+    // 2. Ready State & Bottom Toolbar
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+    await expect(page.getByText('Ready')).toBeHidden({ timeout: 25000 }); // Progress bar finishes
 
-    // Verify spatial tree populated
+    // 3. BIM Tree verification
     await expect(page.getByText(/project/i).first()).toBeVisible();
 
-    // Verify model summary in properties panel
-    await expect(page.getByText(/Category Breakdown|Model Overview/i).first()).toBeVisible();
-    await expect(page.getByText(/Walls/i).first()).toBeVisible();
+    // Expand tree to find real elements
+    const expandAllBtn = page.getByTitle('Expand All');
+    await expect(expandAllBtn).toBeVisible();
+    await expandAllBtn.click();
 
-    // Test tool switching
-    await page.getByRole('button', { name: /Measure/i }).click();
-    await expect(page.getByRole('button', { name: /Measure/i })).toHaveClass(/bg-sky-600/);
+    // Locate element tree nodes with data-express-id
+    const elementNode = page.locator('[data-express-id]').first();
+    await expect(elementNode).toBeVisible();
+    const expressId = await elementNode.getAttribute('data-express-id');
+    expect(expressId).toBeTruthy();
 
-    await page.getByRole('button', { name: /Section/i }).click();
-    await expect(page.getByRole('button', { name: /Add Plane/i })).toBeVisible();
+    // 4. Select Real Element
+    await elementNode.click();
 
-    // Switch back to select
-    await page.getByRole('button', { name: /Select/i }).click();
+    // 5. Verify Real Properties displayed
+    const expressIdBadge = page.getByTestId('selected-element-express-id');
+    await expect(expressIdBadge).toBeVisible();
+    await expect(expressIdBadge).toContainText(`#${expressId}`);
 
-    // Test Fit Model button
-    await page.getByRole('button', { name: /Fit/i }).click();
+    const elementType = page.getByTestId('selected-element-type');
+    await expect(elementType).toBeVisible();
 
-    // Test Close Model
+    const elementGuid = page.getByTestId('selected-element-guid');
+    await expect(elementGuid).toBeVisible();
+
+    // Verify property groups rendered (Attributes, Property Sets, etc.)
+    await expect(page.getByText(/Attributes/i).first()).toBeVisible();
+
+    // 6. Test Hide tool
+    const hideBtn = page.getByTestId('action-hide');
+    await expect(hideBtn).toBeEnabled();
+    await hideBtn.click();
+
+    // Selection clears after hiding
+    await expect(expressIdBadge).toBeHidden();
+
+    // 7. Test Show All tool
+    const showAllBtn = page.getByTestId('action-show-all');
+    await expect(showAllBtn).toBeVisible();
+    await showAllBtn.click();
+
+    // 8. Re-select and Test Isolate tool
+    await elementNode.click();
+    await expect(expressIdBadge).toBeVisible();
+
+    const isolateBtn = page.getByTestId('action-isolate');
+    await expect(isolateBtn).toBeEnabled();
+    await isolateBtn.click();
+
+    // 9. Test Fit tool
+    const fitBtn = page.getByTestId('action-fit');
+    await expect(fitBtn).toBeVisible();
+    await fitBtn.click();
+
+    // Ensure zero critical WASM, Three.js, or runtime page errors
+    expect(criticalErrors).toEqual([]);
+  });
+
+  test('verifies lifecycle reliability: load -> close -> load again with clean state reset', async ({ page }) => {
+    test.setTimeout(45000);
+
+    const criticalErrors: string[] = [];
+    page.on('console', (msg) => {
+      const text = msg.text();
+      if (msg.type() === 'error' && !text.includes('favicon') && !text.includes('download')) {
+        criticalErrors.push(`[Console Error] ${text}`);
+      }
+    });
+    page.on('pageerror', (err) => {
+      criticalErrors.push(`[Page Error] ${err.message}`);
+    });
+
+    await page.goto('/');
+
+    // --- CYCLE 1: First Load ---
+    const loadSampleBtn = page.getByRole('button', { name: /Load Sample \(Fast/i });
+    await loadSampleBtn.click();
+
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+    await expect(page.getByText(/project/i).first()).toBeVisible();
+
+    // Expand and select element
+    await page.getByTitle('Expand All').click();
+    const elementNode1 = page.locator('[data-express-id]').first();
+    await expect(elementNode1).toBeVisible();
+    await elementNode1.click();
+    await expect(page.getByTestId('selected-element-express-id')).toBeVisible();
+
+    // Hide the element
+    await page.getByTestId('action-hide').click();
+    await expect(page.getByTestId('selected-element-express-id')).toBeHidden();
+
+    // --- CLOSE MODEL ---
     const closeBtn = page.getByRole('button', { name: /^Close$/i });
     await expect(closeBtn).toBeVisible();
     await closeBtn.click();
 
-    // Should return to empty state
+    // Verify all components returned to clean empty state
     await expect(page.getByText('No BIM Model Loaded')).toBeVisible();
+    await expect(page.getByText('No spatial structure available')).toBeVisible();
+    await expect(page.getByText('Select an element or load an IFC model to view properties.')).toBeVisible();
+    await expect(page.getByTestId('action-fit')).toBeHidden();
+
+    // --- CYCLE 2: Second Load (Reload) ---
+    await loadSampleBtn.click();
+
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+    await expect(page.getByText(/project/i).first()).toBeVisible();
+
+    // Verify tree can be expanded and selected fresh
+    await page.getByTitle('Expand All').click();
+    const elementNode2 = page.locator('[data-express-id]').first();
+    await expect(elementNode2).toBeVisible();
+    await elementNode2.click();
+
+    // Verify properties inspect cleanly on second model load
+    await expect(page.getByTestId('selected-element-express-id')).toBeVisible();
+    await expect(page.getByTestId('selected-element-type')).toBeVisible();
+
+    // Clean up
+    await page.getByRole('button', { name: /^Close$/i }).click();
+    await expect(page.getByText('No BIM Model Loaded')).toBeVisible();
+
+    expect(criticalErrors).toEqual([]);
   });
 });

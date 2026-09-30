@@ -194,6 +194,8 @@ export const useBimStore = create<BimState>((set) => ({
       hiddenStoreys: new Set<string>(),
       hiddenExpressIds: new Set<number>(),
       isIsolated: false,
+      treeSearchQuery: '',
+      activeTool: 'select',
       loading: initialLoading,
     }),
 }));
