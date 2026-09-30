@@ -1,5 +1,6 @@
 import {
   AIMessage,
+  BimAnalysisData,
   ConversationContext,
   PendingWriteProposal,
 } from '@/types/bim';
@@ -81,17 +82,24 @@ export class AIAgent {
     switch (toolName) {
       case 'calculate_quantities': {
         if (!data) return 'No quantities available.';
-        const breakdown = data.categoryBreakdown
-          ? Object.entries(data.categoryBreakdown)
+        const a: BimAnalysisData = data.analysis || data;
+        const q = a.quantities || ({} as any);
+        const breakdown = a.categoryCounts
+          ? Object.entries(a.categoryCounts)
               .map(([k, v]) => `${k}: ${v}`)
               .join(', ')
           : '';
         const lines = [
           `📊 Model Breakdown:`,
-          `• Total Elements: ${data.elementCount ?? 'N/A'}`,
-          data.grossFloorAreaM2 !== undefined ? `• Gross Floor Area: ${data.grossFloorAreaM2.toFixed(1)} m²` : null,
-          data.grossVolumeM3 !== undefined ? `• Gross Volume: ${data.grossVolumeM3.toFixed(1)} m³` : null,
-          data.storeyCount !== undefined ? `• Storeys: ${data.storeyCount}` : null,
+          a.totalElements !== undefined ? `• Total Elements: ${a.totalElements}` : null,
+          a.totalStoreys !== undefined ? `• Storeys: ${a.totalStoreys}` : null,
+          q.totalVolume !== undefined ? `• Total Volume: ${Number(q.totalVolume).toFixed(2)} m³` : null,
+          q.totalWallGrossArea !== undefined ? `• Wall Gross Area: ${Number(q.totalWallGrossArea).toFixed(2)} m²` : null,
+          q.totalWallNetArea !== undefined ? `• Wall Net Area: ${Number(q.totalWallNetArea).toFixed(2)} m²` : null,
+          q.totalSlabArea !== undefined ? `• Slab Area: ${Number(q.totalSlabArea).toFixed(2)} m²` : null,
+          q.totalDoorsCount !== undefined || q.totalWindowsCount !== undefined || q.totalSpacesCount !== undefined
+            ? `• Doors: ${q.totalDoorsCount ?? 0} | Windows: ${q.totalWindowsCount ?? 0} | Spaces: ${q.totalSpacesCount ?? 0}`
+            : null,
           breakdown ? `• Categories: ${breakdown}` : null,
         ].filter(Boolean);
         return lines.join('\n');

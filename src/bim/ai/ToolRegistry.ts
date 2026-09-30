@@ -24,8 +24,23 @@ interface SpatialElementItem {
   storey?: string;
 }
 
+const SPATIAL_CONTAINER_TYPES = new Set([
+  'IFCPROJECT',
+  'IFCSITE',
+  'IFCBUILDING',
+  'IFCBUILDINGSTOREY',
+  'IFCSPACE',
+  'PROJECT',
+  'SITE',
+  'BUILDING',
+  'STOREY',
+  'CATEGORY',
+  'SPATIAL',
+]);
+
 /**
- * Robustly flattens the spatial tree array by traversing root nodes and their children.
+ * Robustly flattens the spatial tree array by traversing root nodes and their children,
+ * excluding spatial hierarchy containers (sites, storeys, projects, expressID <= 0).
  */
 function extractAllTreeElements(tree: BimTreeNode[]): SpatialElementItem[] {
   const elements: SpatialElementItem[] = [];
@@ -36,7 +51,8 @@ function extractAllTreeElements(tree: BimTreeNode[]): SpatialElementItem[] {
     const storey = node.type === 'IFCBUILDINGSTOREY' ? node.name : currentStorey;
     const category = node.category || currentCategory;
 
-    if (node.expressID !== undefined) {
+    const isSpatialContainer = SPATIAL_CONTAINER_TYPES.has((node.type || '').toUpperCase());
+    if (node.expressID !== undefined && node.expressID > 0 && !isSpatialContainer) {
       elements.push({
         expressID: node.expressID,
         name: node.name || `Element #${node.expressID}`,
@@ -399,7 +415,9 @@ export class ToolRegistry {
           }
 
           const allElements = extractAllTreeElements(spatialTree);
-          let filtered = allElements;
+          let filtered = allElements.filter(
+            (e) => e.expressID && e.expressID > 0 && !SPATIAL_CONTAINER_TYPES.has(e.type.toUpperCase())
+          );
 
           if (args.category) {
             const cat = String(args.category).toLowerCase();
