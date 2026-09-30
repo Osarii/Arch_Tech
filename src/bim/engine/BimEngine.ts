@@ -8,8 +8,11 @@ import {
   StandardViewDirection,
   PerformanceStats,
   SelectedElementDetails,
+  MeasurementType,
+  BimViewpoint,
 } from '@/types/bim';
 import { extractElementProperties } from '../properties/propertyExtractor';
+import { useBimStore } from '@/stores/bimStore';
 
 export class BimEngine {
   public components: OBC.Components;
@@ -21,6 +24,8 @@ export class BimEngine {
   public hider!: OBC.Hider;
   public clipper!: OBC.Clipper;
   public lengthMeasure!: OBF.LengthMeasurement;
+  public areaMeasure!: OBF.AreaMeasurement;
+  public angleMeasure!: OBF.AngleMeasurement;
 
   public container: HTMLElement | null = null;
   public currentModel: FRAGS.FragmentsModel | null = null;
@@ -58,65 +63,65 @@ export class BimEngine {
   }
 
   /**
-   * Initializes the BIM viewport within the given DOM container.
+   * Initializes the That Open engine with container element.
    */
   public async init(container: HTMLElement): Promise<void> {
-    if (this.isInitialized && this.container === container) {
-      return;
-    }
-    if (this.initPromise) {
-      return this.initPromise;
-    }
+    if (this.isInitialized && this.container === container) return;
 
+    this.container = container;
     this.initPromise = (async () => {
-      this.container = container;
-
-      // 1. Create Simple World
+      // 1. Create SimpleWorld
       this.world = this.worlds.create<
         OBC.SimpleScene,
         OBC.OrthoPerspectiveCamera,
         OBC.SimpleRenderer
       >();
 
+      // 2. Setup Scene
       this.world.scene = new OBC.SimpleScene(this.components);
-      this.world.renderer = new OBC.SimpleRenderer(this.components, container);
-      this.world.camera = new OBC.OrthoPerspectiveCamera(this.components);
+      this.world.scene.setup();
 
+      // Configure background and ambient light
+      if (this.world.scene.three) {
+        this.world.scene.three.background = new THREE.Color(0x0e1117);
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333945, 1.2);
+        this.world.scene.three.add(hemiLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight.position.set(20, 40, 20);
+        this.world.scene.three.add(dirLight);
+      }
+
+      // 3. Setup Renderer FIRST (Required by OrthoPerspectiveCamera)
+      this.world.renderer = new OBC.SimpleRenderer(this.components, container);
+      if (this.world.renderer.three) {
+        this.world.renderer.three.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+        this.world.renderer.three.shadowMap.enabled = false;
+      }
+
+      // 4. Setup Camera
+      this.world.camera = new OBC.OrthoPerspectiveCamera(this.components);
+      if (this.world.camera.controls) {
+        this.world.camera.controls.dollyToCursor = true;
+        this.world.camera.controls.infinityDolly = true;
+        this.world.camera.controls.smoothTime = 0.2;
+      }
+
+      // Initialize That Open components
       this.components.init();
 
-      // 2. Hardware profile (Intel UHD Graphics 630 target)
-      // DPR max 1.25, Shadows OFF, bloom/postprocessing OFF
-      const threeRenderer = this.world.renderer.three;
-      threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
-      threeRenderer.shadowMap.enabled = false;
-
-      // 3. Technical background & lighting
-      this.world.scene.three.background = new THREE.Color('#0d0f12');
-
-      // Ambient + 1 directional light
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-      this.world.scene.three.add(ambientLight);
-
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1.4);
-      dirLight.position.set(40, 70, 40);
-      dirLight.castShadow = false;
-      this.world.scene.three.add(dirLight);
-
-      // Subtle technical grid
-      const grid = new THREE.GridHelper(100, 50, 0x0284c7, 0x1e2430);
-      grid.position.y = -0.01;
-      this.world.scene.three.add(grid);
-
-      // 4. Fragments & Worker setup (prefer local worker blob for instant offline init)
+      // 4. FragmentsManager Worker setup
       try {
-        const response = await fetch('/worker.min.mjs');
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const blob = await response.blob();
-        const file = new File([blob], 'worker.mjs', { type: 'text/javascript' });
-        const workerUrl = URL.createObjectURL(file);
-        this.fragments.init(workerUrl);
-      } catch (err) {
-        console.warn('Local worker load fallback to getWorker():', err);
+        const workerResponse = await fetch('/worker.min.mjs');
+        if (workerResponse.ok) {
+          const workerBlob = await workerResponse.blob();
+          const workerUrl = URL.createObjectURL(workerBlob);
+          this.fragments.init(workerUrl);
+        } else {
+          const workerUrl = await OBC.FragmentsManager.getWorker();
+          this.fragments.init(workerUrl);
+        }
+      } catch {
         const workerUrl = await OBC.FragmentsManager.getWorker();
         this.fragments.init(workerUrl);
       }
@@ -131,46 +136,54 @@ export class BimEngine {
         autoSetWasm: false,
       });
 
-    // 6. Highlighter setup
-    this.highlighter = this.components.get(OBF.Highlighter);
-    this.highlighter.setup({
-      world: this.world,
-      selectName: 'select',
-      autoHighlightOnClick: true,
-    });
-
-    // Wire up highlight events
-    if (this.highlighter.events?.select) {
-      this.highlighter.events.select.onHighlight.add((modelIdMap) => {
-        this.handleModelIdMapSelection(modelIdMap);
+      // 6. Highlighter setup
+      this.highlighter = this.components.get(OBF.Highlighter);
+      this.highlighter.setup({
+        world: this.world,
+        selectName: 'select',
+        autoHighlightOnClick: true,
       });
-      this.highlighter.events.select.onClear.add(() => {
-        if (this.onElementSelected) this.onElementSelected(null);
-      });
-    }
 
-    // 7. Hider setup
-    this.hider = this.components.get(OBC.Hider);
+      // Wire up highlight events
+      if (this.highlighter.events?.select) {
+        this.highlighter.events.select.onHighlight.add((modelIdMap) => {
+          this.handleModelIdMapSelection(modelIdMap);
+        });
+        this.highlighter.events.select.onClear.add(() => {
+          if (this.onElementSelected) this.onElementSelected(null);
+        });
+      }
 
-    // 8. Clipper setup
-    this.clipper = this.components.get(OBC.Clipper);
-    this.clipper.enabled = false;
+      // 7. Hider setup
+      this.hider = this.components.get(OBC.Hider);
 
-    // 9. LengthMeasurement setup
-    this.lengthMeasure = this.components.get(OBF.LengthMeasurement);
-    this.lengthMeasure.world = this.world;
-    this.lengthMeasure.enabled = false;
+      // 8. Clipper setup
+      this.clipper = this.components.get(OBC.Clipper);
+      this.clipper.enabled = false;
 
-    // 10. Initial camera view
-    this.world.camera.controls.setLookAt(20, 20, 20, 0, 0, 0, false);
+      // 9. Measurements setup
+      this.lengthMeasure = this.components.get(OBF.LengthMeasurement);
+      this.lengthMeasure.world = this.world;
+      this.lengthMeasure.enabled = false;
 
-    // 11. Handle container resizing
-    this.setupResizeObserver(container);
+      this.areaMeasure = this.components.get(OBF.AreaMeasurement);
+      this.areaMeasure.world = this.world;
+      this.areaMeasure.enabled = false;
 
-    // 12. Performance monitoring loop
-    this.startPerformanceLoop();
+      this.angleMeasure = this.components.get(OBF.AngleMeasurement);
+      this.angleMeasure.world = this.world;
+      this.angleMeasure.enabled = false;
 
-    this.isInitialized = true;
+      // 10. Initial camera view
+      this.world.camera.controls.setLookAt(20, 20, 20, 0, 0, 0, false);
+
+      // 11. Handle container resizing
+      this.setupResizeObserver(container);
+
+      // 12. Performance monitoring loop
+      this.startPerformanceLoop();
+
+      this.isInitialized = true;
     })();
 
     return this.initPromise;
@@ -258,7 +271,9 @@ export class BimEngine {
 
   public setStandardView(direction: StandardViewDirection): void {
     if (!this.world?.camera?.controls) return;
-    const box = this.currentModel?.box || new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
+    const box =
+      this.currentModel?.box ||
+      new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
     const center = new THREE.Vector3();
     const size = new THREE.Vector3();
     box.getCenter(center);
@@ -268,22 +283,70 @@ export class BimEngine {
 
     switch (direction) {
       case 'top':
-        this.world.camera.controls.setLookAt(center.x, center.y + dist, center.z, center.x, center.y, center.z, true);
+        this.world.camera.controls.setLookAt(
+          center.x,
+          center.y + dist,
+          center.z,
+          center.x,
+          center.y,
+          center.z,
+          true
+        );
         break;
       case 'bottom':
-        this.world.camera.controls.setLookAt(center.x, center.y - dist, center.z, center.x, center.y, center.z, true);
+        this.world.camera.controls.setLookAt(
+          center.x,
+          center.y - dist,
+          center.z,
+          center.x,
+          center.y,
+          center.z,
+          true
+        );
         break;
       case 'front':
-        this.world.camera.controls.setLookAt(center.x, center.y, center.z + dist, center.x, center.y, center.z, true);
+        this.world.camera.controls.setLookAt(
+          center.x,
+          center.y,
+          center.z + dist,
+          center.x,
+          center.y,
+          center.z,
+          true
+        );
         break;
       case 'back':
-        this.world.camera.controls.setLookAt(center.x, center.y, center.z - dist, center.x, center.y, center.z, true);
+        this.world.camera.controls.setLookAt(
+          center.x,
+          center.y,
+          center.z - dist,
+          center.x,
+          center.y,
+          center.z,
+          true
+        );
         break;
       case 'left':
-        this.world.camera.controls.setLookAt(center.x - dist, center.y, center.z, center.x, center.y, center.z, true);
+        this.world.camera.controls.setLookAt(
+          center.x - dist,
+          center.y,
+          center.z,
+          center.x,
+          center.y,
+          center.z,
+          true
+        );
         break;
       case 'right':
-        this.world.camera.controls.setLookAt(center.x + dist, center.y, center.z, center.x, center.y, center.z, true);
+        this.world.camera.controls.setLookAt(
+          center.x + dist,
+          center.y,
+          center.z,
+          center.x,
+          center.y,
+          center.z,
+          true
+        );
         break;
       case 'isometric':
       default:
@@ -300,7 +363,7 @@ export class BimEngine {
     }
   }
 
-  // --- SELECTION & VISIBILITY API (AI-READY CLEAN INTERFACE) ---
+  // --- SELECTION & VISIBILITY API ---
 
   public async selectElements(expressIDs: number[], zoom = true): Promise<void> {
     if (!this.currentModelId || !this.highlighter) return;
@@ -349,7 +412,6 @@ export class BimEngine {
       this.fitModel();
       return;
     }
-    // Zoom via highlighter selection
     await this.selectElements(expressIDs, true);
   }
 
@@ -358,30 +420,215 @@ export class BimEngine {
     return extractElementProperties(this.webIfcApi, this.webIfcModelID, expressID);
   }
 
-  // --- INSPECTION TOOLS: CLIPPING & MEASUREMENT ---
+  // --- PHASE 2: FLOOR PLAN MODE (2D ↔ 3D PER STOREY) ---
+
+  public async openFloorPlan(storeyName: string, storeyElementIds: number[]): Promise<void> {
+    if (!this.world?.camera?.controls) return;
+
+    // 1. Isolate the storey elements
+    if (storeyElementIds.length > 0) {
+      await this.isolateElements(storeyElementIds);
+    }
+
+    // 2. Set camera projection to Orthographic
+    this.setCameraMode('orthographic');
+    useBimStore.getState().setCameraMode('orthographic');
+
+    // 3. Look straight down from +Y axis
+    const box =
+      this.currentModel?.box ||
+      new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
+    const center = new THREE.Vector3();
+    const size = new THREE.Vector3();
+    box.getCenter(center);
+    box.getSize(size);
+    const maxDim = Math.max(size.x, size.z, 10);
+    const dist = maxDim * 2.0;
+
+    this.world.camera.controls.setLookAt(
+      center.x,
+      center.y + dist,
+      center.z,
+      center.x,
+      center.y,
+      center.z,
+      true
+    );
+
+    useBimStore.getState().setActiveFloorPlanStorey(storeyName);
+    useBimStore.getState().setIs2DMode(true);
+  }
+
+  public async exitFloorPlan(): Promise<void> {
+    // 1. Show all model elements
+    await this.showAll();
+
+    // 2. Switch back to Perspective camera
+    this.setCameraMode('perspective');
+    useBimStore.getState().setCameraMode('perspective');
+
+    // 3. Reset standard isometric view
+    this.setStandardView('isometric');
+
+    useBimStore.getState().setActiveFloorPlanStorey(null);
+    useBimStore.getState().setIs2DMode(false);
+  }
+
+  // --- PHASE 2: STOREY NAVIGATION ---
+
+  public async isolateStorey(elementIds: number[]): Promise<void> {
+    await this.isolateElements(elementIds);
+  }
+
+  public async fitStorey(elementIds: number[]): Promise<void> {
+    await this.selectElements(elementIds, true);
+  }
+
+  public async restoreAllStoreys(): Promise<void> {
+    await this.showAll();
+    this.fitModel();
+    useBimStore.getState().setActiveFloorPlanStorey(null);
+    useBimStore.getState().setIs2DMode(false);
+  }
+
+  // --- PHASE 2: ADVANCED SECTIONS (X / Y / Z & MULTIPLE PLANES) ---
 
   public async createClippingPlane(): Promise<void> {
     if (!this.clipper || !this.world) return;
     this.clipper.enabled = true;
     await this.clipper.create(this.world);
+    useBimStore.getState().setSectionPlaneCount(useBimStore.getState().sectionPlaneCount + 1);
+  }
+
+  public createOrthogonalClippingPlane(axis: 'x' | 'y' | 'z'): void {
+    if (!this.clipper || !this.world) return;
+    this.clipper.enabled = true;
+    const box =
+      this.currentModel?.box ||
+      new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
+    const center = new THREE.Vector3();
+    box.getCenter(center);
+
+    const normal =
+      axis === 'x'
+        ? new THREE.Vector3(1, 0, 0)
+        : axis === 'y'
+        ? new THREE.Vector3(0, 1, 0)
+        : new THREE.Vector3(0, 0, 1);
+
+    this.clipper.createFromNormalAndCoplanarPoint(this.world, normal, center);
+    useBimStore.getState().setSectionPlaneCount(useBimStore.getState().sectionPlaneCount + 1);
   }
 
   public deleteClippingPlanes(): void {
     if (!this.clipper) return;
     this.clipper.deleteAll();
     this.clipper.enabled = false;
+    useBimStore.getState().setSectionPlaneCount(0);
   }
 
-  public startMeasurement(): void {
-    if (!this.lengthMeasure) return;
-    this.lengthMeasure.enabled = true;
-    this.lengthMeasure.create();
+  // --- PHASE 2: MEASUREMENTS (DISTANCE, AREA, ANGLE) ---
+
+  public startMeasurement(type: MeasurementType = 'distance'): void {
+    if (this.lengthMeasure) this.lengthMeasure.enabled = false;
+    if (this.areaMeasure) this.areaMeasure.enabled = false;
+    if (this.angleMeasure) this.angleMeasure.enabled = false;
+
+    if (type === 'distance' && this.lengthMeasure) {
+      this.lengthMeasure.enabled = true;
+      this.lengthMeasure.create();
+    } else if (type === 'area' && this.areaMeasure) {
+      this.areaMeasure.enabled = true;
+      this.areaMeasure.create();
+    } else if (type === 'angle' && this.angleMeasure) {
+      this.angleMeasure.enabled = true;
+      this.angleMeasure.create();
+    }
   }
 
   public deleteMeasurements(): void {
-    if (!this.lengthMeasure) return;
-    this.lengthMeasure.delete();
-    this.lengthMeasure.enabled = false;
+    if (this.lengthMeasure) {
+      this.lengthMeasure.delete();
+      this.lengthMeasure.enabled = false;
+    }
+    if (this.areaMeasure) {
+      this.areaMeasure.delete();
+      this.areaMeasure.enabled = false;
+    }
+    if (this.angleMeasure) {
+      this.angleMeasure.delete();
+      this.angleMeasure.enabled = false;
+    }
+  }
+
+  // --- PHASE 2: LOCAL BIM VIEWPOINTS ---
+
+  public captureCurrentViewpoint(title: string, description?: string): BimViewpoint {
+    const pos = new THREE.Vector3();
+    const target = new THREE.Vector3();
+
+    if (this.world?.camera?.controls) {
+      this.world.camera.controls.getPosition(pos);
+      this.world.camera.controls.getTarget(target);
+    }
+
+    const state = useBimStore.getState();
+    const selected = state.selectedElement ? [state.selectedElement.expressID] : [];
+
+    const vp: BimViewpoint = {
+      id: `vp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      title: title.trim() || `Viewpoint ${state.viewpoints.length + 1}`,
+      description: description?.trim(),
+      cameraPosition: [
+        Math.round(pos.x * 10) / 10,
+        Math.round(pos.y * 10) / 10,
+        Math.round(pos.z * 10) / 10,
+      ],
+      cameraTarget: [
+        Math.round(target.x * 10) / 10,
+        Math.round(target.y * 10) / 10,
+        Math.round(target.z * 10) / 10,
+      ],
+      cameraMode: state.cameraMode,
+      selectedElements: selected,
+      isolatedStorey: state.activeFloorPlanStorey || undefined,
+      createdAt: new Date().toLocaleTimeString(),
+    };
+
+    return vp;
+  }
+
+  public async restoreViewpoint(vp: BimViewpoint): Promise<void> {
+    if (!this.world?.camera?.controls) return;
+
+    this.setCameraMode(vp.cameraMode);
+    useBimStore.getState().setCameraMode(vp.cameraMode);
+
+    this.world.camera.controls.setLookAt(
+      vp.cameraPosition[0],
+      vp.cameraPosition[1],
+      vp.cameraPosition[2],
+      vp.cameraTarget[0],
+      vp.cameraTarget[1],
+      vp.cameraTarget[2],
+      true
+    );
+
+    if (vp.isolatedStorey) {
+      const storeysData = useBimStore.getState().storeysData;
+      const storey = storeysData.find((s) => s.name === vp.isolatedStorey);
+      if (storey) {
+        await this.isolateElements(storey.elementIds);
+      }
+    } else {
+      await this.showAll();
+    }
+
+    if (vp.selectedElements.length > 0) {
+      await this.selectElements(vp.selectedElements, false);
+    } else {
+      await this.clearSelection();
+    }
   }
 
   // --- MEMORY SAFETY & MODEL UNLOAD ---

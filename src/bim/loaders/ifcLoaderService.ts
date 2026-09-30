@@ -2,6 +2,7 @@ import * as WebIFC from 'web-ifc';
 import { bimEngine } from '../engine/BimEngine';
 import { useBimStore } from '@/stores/bimStore';
 import { buildSpatialTree } from '../tree/spatialTreeBuilder';
+import { BimAnalysisService } from '../analysis/bimAnalysisService';
 import { ModelMetadata } from '@/types/bim';
 
 export class IfcLoaderService {
@@ -93,13 +94,14 @@ export class IfcLoaderService {
       // Frame camera to fit model
       bimEngine.fitModel();
 
-      // 5. Stage: Building BIM tree
+      // 5. Stage: Building BIM tree & Analysis
       store.setLoading({
         stage: 'Building BIM tree',
-        progress: 95,
+        progress: 92,
       });
 
       const treeResult = buildSpatialTree(webIfcApi, modelID);
+      const analysisResult = BimAnalysisService.analyzeModel(webIfcApi, modelID);
 
       const metadata: ModelMetadata = {
         id: fragmentsModel.modelId,
@@ -114,6 +116,11 @@ export class IfcLoaderService {
       store.setSpatialTree(treeResult.tree);
       store.setCategories(treeResult.categories);
       store.setStoreys(treeResult.storeys);
+      store.setExpressIdToCategory(treeResult.expressIdToCategory);
+      store.setExpressIdToStorey(treeResult.expressIdToStorey);
+      store.setStoreysData(analysisResult.storeysData);
+      store.setAnalysisData(analysisResult.analysis);
+      store.setMaterials(analysisResult.materials);
 
       // 6. Stage: Ready
       store.setLoading({

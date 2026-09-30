@@ -25,6 +25,8 @@ export const HeaderBar: React.FC = () => {
   const toggleTreeOpen = useBimStore((s) => s.toggleTreeOpen);
   const isPropsOpen = useBimStore((s) => s.isPropsOpen);
   const togglePropsOpen = useBimStore((s) => s.togglePropsOpen);
+  const is2DMode = useBimStore((s) => s.is2DMode);
+  const activeFloorPlanStorey = useBimStore((s) => s.activeFloorPlanStorey);
 
   const handleOpenFileClick = () => {
     fileInputRef.current?.click();
@@ -112,6 +114,7 @@ export const HeaderBar: React.FC = () => {
           <button
             onClick={() => handleLoadSample('/small_model.ifc', 'Building-Architecture.ifc')}
             disabled={loading.isBusy}
+            data-testid="header-btn-sample-fast"
             className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-[#1c202a] text-slate-300 hover:text-sky-300 text-xs transition disabled:opacity-50"
             title="Load Official buildingSMART Sample Model (90KB)"
           >
@@ -150,6 +153,23 @@ export const HeaderBar: React.FC = () => {
             <span className="text-sky-400 font-mono">{modelMetadata.schema}</span>
             <span className="text-slate-500">•</span>
             <span>{modelMetadata.elementCount} elements</span>
+          </div>
+        )}
+
+        {is2DMode && activeFloorPlanStorey && (
+          <div
+            data-testid="header-badge-2d-mode"
+            className="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-700/80 text-[11px] text-emerald-300"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="font-semibold font-mono">2D: {activeFloorPlanStorey}</span>
+            <button
+              onClick={() => bimEngine.exitFloorPlan()}
+              className="ml-1 text-[10px] text-emerald-400 hover:text-emerald-100 underline"
+              title="Exit 2D Plan Mode"
+            >
+              Exit
+            </button>
           </div>
         )}
       </div>

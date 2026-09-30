@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('BIM LAB V1 Reliability & Workflow Verification', () => {
+test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
   test('renders base application shell, panels, and diagnostics', async ({ page }) => {
     await page.goto('/');
 
@@ -30,7 +30,6 @@ test.describe('BIM LAB V1 Reliability & Workflow Verification', () => {
     const criticalErrors: string[] = [];
     page.on('console', (msg) => {
       const text = msg.text();
-      // Track actual errors excluding informational notices
       if (msg.type() === 'error' && !text.includes('favicon') && !text.includes('download')) {
         criticalErrors.push(`[Console Error] ${text}`);
       }
@@ -48,7 +47,7 @@ test.describe('BIM LAB V1 Reliability & Workflow Verification', () => {
 
     // 2. Ready State & Bottom Toolbar
     await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
-    await expect(page.getByText('Ready')).toBeHidden({ timeout: 25000 }); // Progress bar finishes
+    await expect(page.getByText('Ready')).toBeHidden({ timeout: 25000 });
 
     // 3. BIM Tree verification
     await expect(page.getByText(/project/i).first()).toBeVisible();
@@ -107,7 +106,6 @@ test.describe('BIM LAB V1 Reliability & Workflow Verification', () => {
     await expect(fitBtn).toBeVisible();
     await fitBtn.click();
 
-    // Ensure zero critical WASM, Three.js, or runtime page errors
     expect(criticalErrors).toEqual([]);
   });
 
@@ -128,8 +126,8 @@ test.describe('BIM LAB V1 Reliability & Workflow Verification', () => {
     await page.goto('/');
 
     // --- CYCLE 1: First Load ---
-    const loadSampleBtn = page.getByRole('button', { name: /Load Sample \(Fast/i });
-    await loadSampleBtn.click();
+    const sampleBtn = page.getByTestId('header-btn-sample-fast');
+    await sampleBtn.click();
 
     await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
     await expect(page.getByText(/project/i).first()).toBeVisible();
@@ -157,7 +155,7 @@ test.describe('BIM LAB V1 Reliability & Workflow Verification', () => {
     await expect(page.getByTestId('action-fit')).toBeHidden();
 
     // --- CYCLE 2: Second Load (Reload) ---
-    await loadSampleBtn.click();
+    await sampleBtn.click();
 
     await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
     await expect(page.getByText(/project/i).first()).toBeVisible();
@@ -175,6 +173,111 @@ test.describe('BIM LAB V1 Reliability & Workflow Verification', () => {
     // Clean up
     await page.getByRole('button', { name: /^Close$/i }).click();
     await expect(page.getByText('No BIM Model Loaded')).toBeVisible();
+
+    expect(criticalErrors).toEqual([]);
+  });
+
+  test('verifies Phase 2 advanced inspection: 2D floor plans, X/Y/Z sections, filtering, analysis, viewpoints', async ({ page }) => {
+    test.setTimeout(45000);
+
+    const criticalErrors: string[] = [];
+    page.on('console', (msg) => {
+      const text = msg.text();
+      if (msg.type() === 'error' && !text.includes('favicon') && !text.includes('download')) {
+        criticalErrors.push(`[Console Error] ${text}`);
+      }
+    });
+    page.on('pageerror', (err) => {
+      criticalErrors.push(`[Page Error] ${err.message}`);
+    });
+
+    await page.goto('/');
+
+    // Load Model
+    await page.getByTestId('header-btn-sample-fast').click();
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+
+    // 1. Verify Storeys & 2D Floor Plan Mode
+    await page.getByTestId('tab-storeys').click();
+    await expect(page.getByText(/Building Storeys/i)).toBeVisible();
+    const floorPlanBtn = page.getByRole('button', { name: /2D Floor Plan/i }).first();
+    await expect(floorPlanBtn).toBeVisible();
+    await floorPlanBtn.click();
+
+    // Header should show 2D Plan badge
+    await expect(page.getByTestId('header-badge-2d-mode')).toBeVisible();
+
+    // Exit 2D Mode via toolbar quick toggle
+    const toggle2dBtn = page.getByTestId('btn-toggle-2d-3d');
+    await expect(toggle2dBtn).toBeVisible();
+    await toggle2dBtn.click(); // Returns to 3D
+    await expect(page.getByTestId('header-badge-2d-mode')).toBeHidden();
+
+    // 2. Verify X / Y / Z Section Cuts
+    await page.getByTestId('tool-section').click();
+    await expect(page.getByTestId('section-btn-x')).toBeVisible();
+    await expect(page.getByTestId('section-btn-y')).toBeVisible();
+    await expect(page.getByTestId('section-btn-z')).toBeVisible();
+
+    // Create X and Y section planes
+    await page.getByTestId('section-btn-x').click();
+    await page.getByTestId('section-btn-y').click();
+
+    // Clear section planes
+    const clearSectionsBtn = page.getByTestId('section-btn-clear');
+    await expect(clearSectionsBtn).toBeVisible();
+    await clearSectionsBtn.click();
+    await expect(clearSectionsBtn).toBeHidden();
+
+    // 3. Verify Multi-Mode Measurement
+    await page.getByTestId('tool-measure').click();
+    await expect(page.getByTestId('measure-btn-distance')).toBeVisible();
+    await expect(page.getByTestId('measure-btn-area')).toBeVisible();
+    await expect(page.getByTestId('measure-btn-angle')).toBeVisible();
+
+    await page.getByTestId('measure-btn-area').click();
+    await page.getByTestId('measure-btn-distance').click();
+    await page.getByTestId('measure-btn-clear').click();
+
+    // 4. Verify Advanced Filter Panel
+    await page.getByTestId('tab-filter').click();
+    await expect(page.getByTestId('filter-match-count')).toBeVisible();
+
+    // Select category filter
+    const typeSelect = page.getByTestId('filter-select-type');
+    await expect(typeSelect).toBeVisible();
+    await typeSelect.selectOption({ label: 'Walls' });
+
+    // Verify matching count updated
+    await expect(page.getByTestId('filter-match-count')).not.toHaveText('0');
+
+    // Isolate matches
+    await page.getByTestId('filter-btn-isolate').click();
+
+    // Reset filters
+    await page.getByRole('button', { name: /Reset/i }).click();
+
+    // 5. Verify BIM Analysis Panel
+    await page.getByTestId('tab-analysis').click();
+    await expect(page.getByText(/Real IFC Quantities Takeoff/i)).toBeVisible();
+    await expect(page.getByText(/Storey Distribution/i)).toBeVisible();
+    await expect(page.getByText(/Category Breakdown/i)).toBeVisible();
+
+    // 6. Verify Local Viewpoints
+    await page.getByTestId('tab-viewpoints').click();
+    const saveViewBtn = page.getByTestId('btn-save-viewpoint');
+    await expect(saveViewBtn).toBeVisible();
+    await saveViewBtn.click();
+
+    await page.getByTestId('input-viewpoint-title').fill('Isometric Master View');
+    await page.getByTestId('btn-confirm-save-viewpoint').click();
+
+    // Viewpoint should appear in list
+    const viewpointItem = page.getByTestId('viewpoint-item-isometric-master-view');
+    await expect(viewpointItem).toBeVisible();
+
+    // Click to restore viewpoint
+    await viewpointItem.click();
 
     expect(criticalErrors).toEqual([]);
   });
