@@ -1,0 +1,93 @@
+# CONTEXT.md — Central Technical Context
+
+This is the only technical context document. Read the named section or current line range needed for a task; resolve line ranges from the current HEAD.
+
+## 1. Context Router
+
+- Always bootstrap with `AGENTS.md` and `PROJECT_STATE.md`.
+- Route domain work here by section: engine, AI, editing, persistence, analysis, tree, panels, or Zustand state.
+- Keep architectural decisions, tool definitions, and verification commands in `docs/architecture/DECISIONS.md`, `docs/agent-rules/TOOL_INDEX.md`, and `docs/agent-rules/VERIFY_PROFILES.md`; do not duplicate them here.
+- The repository uses That Open Components, Fragments, Three.js, WebIFC, and lightweight Zustand state. Current phase and verification status live in `PROJECT_STATE.md`.
+
+## 2. BIM Runtime / Engine
+
+Owns `src/bim/engine/BimEngine.ts`, `src/bim/loaders/ifcLoaderService.ts`, and `src/bim/properties/propertyExtractor.ts`.
+
+- Runtime uses one `OBC.Components` instance with `Worlds`, `SimpleScene`, `OrthoPerspectiveCamera`, and `SimpleRenderer`; initialize with `components.init()`.
+- `FragmentsManager` and `IfcLoader` load local WASM from `/`; loaded models live in `fragments.list`.
+- `bimEngine` exposes `init`, `loadIfc`, `unloadModel`, `selectElements`, `hideElements`, `isolateElements`, `showAll`, `fitModel`, `setStandardView`, `setCameraMode`, and `getProperties`.
+- Highlighter, Hider, Clipper, and LengthMeasurement provide selection, visibility, clipping, and distance tools.
+- Keep Three.js objects and engine pointers out of Zustand; keep WASM and workers local/offline-first.
+
+## 3. AI Assistant
+
+Owns `src/bim/ai/AIAgent.ts`, `ToolRegistry.ts`, and `providers/RuleBasedProvider.ts`.
+
+- `bimAgent` supports message sending, proposal confirmation/rejection, and history clearing. `ToolRegistry` registers, inspects, and executes tools; the rule-based provider is deterministic and offline-first.
+- `AIAgent` exposes `sendMessage`, `confirmProposal`, `rejectProposal`, and `clearHistory`; `ToolRegistry` exposes `registerTool`, `getTool`, `getAllTools`, `executeTool`, and `isWriteAction`.
+- Any WRITE tool or IFC persistence export requires explicit human confirmation.
+- Physical-element queries exclude `IFCPROJECT`, `IFCSITE`, `IFCBUILDING`, and `IFCBUILDINGSTOREY`; quantity output uses real analysis metrics, never dummy values or `N/A`.
+
+## 4. Editing
+
+Owns `src/bim/edit/bimEditService.ts` and the `editsGroup` proxy-mesh layer.
+
+- `bimEditService` exposes `transformElement`, `setVisualOverride`, `deleteElement`, `restoreElement`, `resetElement`, `resetAllEdits`, `undo`, `redo`, `getChangeSet`, `getElementState`, `importChangeSet`, and `setSceneBridge`.
+- Editing is non-destructive: loaded IFC fragments remain untouched and edits use proxy meshes or visual overrides.
+- `move`, `rotate`, and `delete` are IFC-persistable; `color` and `opacity` are viewport-only. Record changes chronologically and synchronize them with `useBimStore`.
+
+## 5. Persistence
+
+Owns `src/bim/persistence/ifcPersistenceService.ts`.
+
+- `IfcPersistenceService` exports/imports JSON Change Sets and exposes real IFC export plus JSON/IFC downloads; IFC export mutates real WebIFC STEP-21 data and downloads the resulting binary.
+- Persistable transforms create authentic placement/direction/point records. Deletions disconnect containment relations before commenting out element lines.
+- Never generate fake IFC strings, corrupt spatial relations, or persist without explicit human confirmation.
+
+## 6. Analysis
+
+Owns `src/bim/analysis/bimAnalysisService.ts` and `src/bim/filter/bimFilterService.ts`.
+
+- Traverse WebIFC directly for `IfcElementQuantity`, `IfcQuantityArea`, `IfcQuantityVolume`, and `IfcQuantityLength`; undefined quantities fall back to zero.
+- Analysis returns `BimAnalysisData`, storey data, storey-to-element IDs, and materials. Filtering supports type, category, storey, and text criteria.
+- `BimAnalysisService.analyzeModel` returns those analysis values; `BimFilterService` exposes `filterElements` and `extractFilterOptions`.
+- Preserve storey mappings through `IfcRelContainedInSpatialStructure`, avoid fake values, and do not block the main UI during heavy parsing.
+
+## 7. Spatial Tree
+
+Owns `src/bim/tree/spatialTreeBuilder.ts`.
+
+- Build `IfcProject -> IfcSite -> IfcBuilding -> IfcBuildingStorey -> Categories -> Elements` from `IfcRelAggregates` and `IfcRelContainedInSpatialStructure`.
+- Leaves are physical elements with positive express IDs. Separate spatial containers, including `IFCSPACE`, from selectable physical leaves.
+- Return the tree, element/storey counts, categories, and storeys; initially expand the project and first storey.
+
+## 8. UI / Panels
+
+Owns panels under `src/components/panels/`: spatial tree, storeys, viewpoints, change set, properties, analysis, filter, edit inspector, and AI assistant.
+
+- Use the technical dark palette (`#0d0f12`, `#12141a`, `#151722`) and semantic `data-testid` values on actionable controls.
+- Panels read `useBimStore` and call domain services; they do not hold heavy engine objects or execute AI WRITE tools without confirmation.
+- Model reload resets panel model-dependent state and updates metadata.
+
+## 9. Zustand State
+
+Owns `src/stores/bimStore.ts` and shared types in `src/types/bim.ts`.
+
+- `useBimStore` holds tool/camera/view state, model metadata and loading progress, selection, spatial tree and expansion, filters, Change Set/undo flags, and panel tabs/open state, with setters for each slice and `resetModel()`.
+- Store only lightweight serializable values and UI flags. `resetModel()` clears model-dependent fields while preserving general viewport preferences.
+- Keep business logic, IFC mutations, Three.js objects, engine pointers, binary buffers, and WebGL contexts out of the store.
+
+## 10. BIM Generation
+
+No separate generation API or context is defined. New BIM generation work must use the existing engine, editing, persistence, and analysis boundaries and document any genuinely new boundary here only when explicitly requested.
+
+## 11. Testing
+
+- Domain/unit coverage is organized under `tests/`; browser workflows are under `tests/e2e/`.
+- Use the applicable profile and command from `docs/agent-rules/VERIFY_PROFILES.md`; do not duplicate that command matrix here.
+- Existing domain coverage includes engine properties, editing, persistence, analysis/filtering, spatial tree, AI, and Zustand; E2E covers lifecycle, panels, editing, persistence, and AI flows.
+
+## 12. Performance
+
+- Target MacBook Pro 2019 / Intel UHD Graphics 630: DPR <= 1.25, shadows OFF, bloom/SSAO/postprocessing OFF.
+- Prefer direct That Open rendering, local WASM/workers, lightweight state, and non-blocking heavy parsing. Performance takes precedence over decorative graphics.

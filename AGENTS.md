@@ -9,7 +9,14 @@ Persistent knowledge belongs in small repository files. Current prompts remain s
 
 ## Operating Rules
 1. **Diff-First Workflow**: Inspect `git status` and `git diff` before loading files. Do not reread the entire repo.
-2. **Context Budget**: Start with `CONTEXT: MINIMAL`. Escalate to `AUTO`, then `DEEP` only if blocked.
+2. **Context Routing**:
+   - Always read `AGENTS.md` + `PROJECT_STATE.md`.
+   - Then read the relevant section or current `Lx-Ly` of `docs/context/CONTEXT.md`.
+   - Code is read by exact `FILE:Lx-Ly` whenever known.
+   - Never hardcode permanent line-number references inside `CONTEXT.md`.
+   - Re-resolve code line ranges from latest `main` before each task.
+   - Never load all context sections by default.
+   - Do not create new documentation files unless explicitly requested. Extend `docs/context/CONTEXT.md` instead.
 3. **Scope Control**: Stay strictly within defined SCOPE for each task. Every task uses exact scope. Report bugs as FILE:Lx-Ly — cause — fix scope. Never expand scope silently.
 4. **Stop Policy**: Obey the STOP condition of the current task. Do not jump ahead into future phases.
 5. **Verification Profiles**:
