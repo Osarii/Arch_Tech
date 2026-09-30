@@ -1,0 +1,26 @@
+# AGENTS.md — BIM LAB V1 AGENT CONTEXT & RULES
+
+## Core Operating Principle
+```text
+THE CURRENT PROMPT = current task + scope + acceptance criteria + stop condition
+THE REPOSITORY     = persistent rules + architecture + decisions + current state + reusable context
+```
+Persistent knowledge belongs in small repository files. Current prompts remain short and execution-focused. Apply YAGNI.
+
+## Operating Rules
+1. **Diff-First Workflow**: Inspect `git status` and `git diff` before loading files. Do not reread the entire repo.
+2. **Context Budget**: Start with `CONTEXT: MINIMAL`. Escalate to `AUTO`, then `DEEP` only if blocked.
+3. **Scope Control**: Stay strictly within defined SCOPE for each task.
+4. **Stop Policy**: Obey the STOP condition of the current task. Do not jump ahead into future phases.
+5. **Verification Profiles**:
+   - `TARGETED`: specific affected test/type check
+   - `DOMAIN`: domain/service logic
+   - `UI`: targeted UI/Playwright validation
+   - `FULL`: lint + test + build + app verification
+6. **Hardware Target**: MacBook Pro 2019 / Intel UHD Graphics 630. DPR <= 1.25, Shadows OFF, bloom/SSAO/postprocessing OFF. Performance over decorative graphics.
+
+## Project Structure
+- `src/bim/`: Engine, loaders, selection, properties, tree, visibility, camera, clipping, measurement
+- `src/components/bim/`: Viewport, canvas overlays, BIM tree panel, property inspector, diagnostics
+- `src/stores/`: Lightweight Zustand state (active tool, selected element ID, visibility, camera view)
+- `tests/`: Vitest (unit/domain) and Playwright (E2E/UI)
