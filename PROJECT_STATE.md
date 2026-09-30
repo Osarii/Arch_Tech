@@ -1,12 +1,12 @@
 # PROJECT_STATE.md — Current Working State
 
 ```text
-Current Phase: BIM Lab Phase 3 Complete (Non-Destructive Editing & Change Sets)
-Current Work: Phase 3 Fully Verified (Inspect vs Edit Mode, element translation/rotation, visual appearance overrides, safe temp delete/restore, duplicate instances, Change Set tracking, Undo/Redo/Reset All)
-Last Important Change: Implemented BimEditService with decoupled BimEditSceneBridge, EditInspectorPanel, ChangeSetPanel, HeaderBar mode switch, 19 unit tests passing, 5 Playwright E2E tests passing, clean production build
-Next Allowed Task: Phase 4 (Collaborative review / export / sync / AI tool calling layer)
+Current Phase: BIM Lab Phase 4 Complete (Real IFC Persistence & Change Set JSON)
+Current Work: Phase 4 Fully Verified (Change Set JSON export/import, native WebIFC persistence for Move, Rotate, Delete, export to new .ifc without mutating original, automatic save & reload into That Open viewer, explicit unsupported operation audit)
+Last Important Change: Implemented IfcPersistenceService, ChangeSetPanel persistence UI, unit tests (26/26 passed), Playwright E2E tests (6/6 passed), production build success
+Next Allowed Task: Phase 5 (BIM Lab Final Validation / Packaging)
 Known Blockers: None
-Active Invariants: Intel UHD 630 performance baseline (DPR <= 1.25, Shadows OFF, bloom/postprocessing OFF), YAGNI, That Open + Fragments as BIM engine, non-destructive edit proxies preserve original IFC data
-Important Paths: src/bim/edit/, src/bim/engine/, src/components/panels/, src/stores/, tests/
-Current Verification Status: FULL PASSED (Lint: 0 errors | Vitest: 19/19 passed | Build: success | Playwright: 5/5 passed)
+Active Invariants: Intel UHD 630 performance baseline (DPR <= 1.25, Shadows OFF, bloom/postprocessing OFF), YAGNI, That Open + Fragments as BIM engine, never overwrite original IFC, real ISO STEP-21 persistence via web-ifc
+Important Paths: src/bim/persistence/, src/bim/edit/, src/components/panels/, src/stores/, tests/
+Current Verification Status: FULL PASSED (Lint: 0 errors | Vitest: 26/26 passed | Build: success | Playwright: 6/6 passed)
 ```

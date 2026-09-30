@@ -133,9 +133,10 @@ export const SpatialTreePanel: React.FC = () => {
           ref={isSelected ? selectedItemRef : undefined}
           onClick={() => handleNodeClick(node)}
           style={{ paddingLeft: `${depth * 12 + 6}px` }}
-          data-testid={`tree-node-${node.id}`}
+          data-testid={!hasChildren ? 'tree-element-leaf' : `tree-node-${node.id}`}
           data-type={node.type}
           data-express-id={node.expressID}
+          data-is-element={!hasChildren}
           className={`flex items-center justify-between pr-2 py-1 cursor-pointer transition select-none group border-l-2 ${
             isSelected
               ? 'bg-sky-950/70 border-sky-400 text-sky-200 font-medium'

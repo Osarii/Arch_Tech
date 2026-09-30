@@ -57,8 +57,8 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
     await expect(expandAllBtn).toBeVisible();
     await expandAllBtn.click();
 
-    // Locate element tree nodes with data-express-id
-    const elementNode = page.locator('[data-express-id]').first();
+    // Locate physical building element leaf
+    const elementNode = page.getByTestId('tree-element-leaf').first();
     await expect(elementNode).toBeVisible();
     const expressId = await elementNode.getAttribute('data-express-id');
     expect(expressId).toBeTruthy();
@@ -134,7 +134,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
 
     // Expand and select element
     await page.getByTitle('Expand All').click();
-    const elementNode1 = page.locator('[data-express-id]').first();
+    const elementNode1 = page.getByTestId('tree-element-leaf').first();
     await expect(elementNode1).toBeVisible();
     await elementNode1.click();
     await expect(page.getByTestId('selected-element-express-id')).toBeVisible();
@@ -162,7 +162,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
 
     // Verify tree can be expanded and selected fresh
     await page.getByTitle('Expand All').click();
-    const elementNode2 = page.locator('[data-express-id]').first();
+    const elementNode2 = page.getByTestId('tree-element-leaf').first();
     await expect(elementNode2).toBeVisible();
     await elementNode2.click();
 
@@ -313,7 +313,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
 
     // 3. Select an Element
     await page.getByTitle('Expand All').click();
-    const firstElement = page.locator('[data-express-id]').first();
+    const firstElement = page.getByTestId('tree-element-leaf').first();
     await expect(firstElement).toBeVisible();
     await firstElement.click();
 
@@ -371,6 +371,73 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
 
     // 10. Return to Inspect Mode
     await modeInspectBtn.click();
+
+    expect(criticalErrors).toEqual([]);
+  });
+
+  test('verifies Phase 4 real IFC persistence: JSON export/import, persistable vs viewport badges, save & reload new IFC, persistence audit', async ({ page }) => {
+    test.setTimeout(50000);
+
+    const criticalErrors: string[] = [];
+    page.on('console', (msg) => {
+      const text = msg.text();
+      if (msg.type() === 'error' && !text.includes('favicon') && !text.includes('download')) {
+        criticalErrors.push(`[Console Error] ${text}`);
+      }
+    });
+    page.on('pageerror', (err) => {
+      criticalErrors.push(`[Page Error] ${err.message}`);
+    });
+
+    await page.goto('/');
+
+    // 1. Load initial model
+    await page.getByTestId('header-btn-sample-fast').click();
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+
+    // 2. Switch to Edit Mode
+    await page.getByTestId('mode-edit').click();
+    await expect(page.getByTestId('tab-edit')).toBeVisible();
+
+    // 3. Select an Element
+    await page.getByTitle('Expand All').click();
+    const firstElement = page.getByTestId('tree-element-leaf').first();
+    await expect(firstElement).toBeVisible();
+    await firstElement.click();
+
+    // 4. Apply a translation (move) and color override
+    await page.getByTestId('btn-move-x-add-1').click();
+    await page.getByTestId('color-swatch-cyan').click();
+
+    // 5. Open Change Set Panel
+    await page.getByTestId('tab-changeset').click();
+    await expect(page.getByText('Change Set (2)')).toBeVisible();
+
+    // Verify Persistable vs Viewport Only badges
+    await expect(page.getByText('IFC Persistable')).toBeVisible();
+    await expect(page.getByText('Viewport Only')).toBeVisible();
+
+    // 6. Test JSON Export button
+    const exportJsonBtn = page.getByTestId('btn-export-changeset-json');
+    await expect(exportJsonBtn).toBeEnabled();
+
+    // 7. Save & Reload Persisted IFC
+    const saveReloadBtn = page.getByTestId('btn-save-reload-ifc');
+    await expect(saveReloadBtn).toBeEnabled();
+    await saveReloadBtn.click();
+
+    // Verify Persistence Audit Card
+    const auditCard = page.getByTestId('persistence-audit-card');
+    await expect(auditCard).toBeVisible({ timeout: 15000 });
+    await expect(auditCard).toContainText('Persisted: 1');
+    await expect(auditCard).toContainText('Unsupported: 1');
+
+    // Model reloads with new persisted filename and viewport resets changes
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+    await expect(page.getByText('No changes recorded yet.')).toBeVisible();
+
+    // Return to Inspect Mode
+    await page.getByTestId('mode-inspect').click();
 
     expect(criticalErrors).toEqual([]);
   });

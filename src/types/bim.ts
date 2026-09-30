@@ -171,3 +171,28 @@ export interface ElementEditState {
   isDeleted: boolean;
   isDuplicate?: boolean;
 }
+
+// --- PHASE 4: REAL IFC PERSISTENCE TYPES ---
+
+export type PersistenceStatus = 'persisted' | 'unsupported' | 'failed' | 'skipped';
+
+export interface PersistenceOperationStatus {
+  changeId: string;
+  elementId: number;
+  elementName: string;
+  type: BimChangeType;
+  status: PersistenceStatus;
+  reason?: string;
+  details?: string;
+}
+
+export interface PersistenceResult {
+  success: boolean;
+  persistedCount: number;
+  unsupportedCount: number;
+  failedCount: number;
+  operations: PersistenceOperationStatus[];
+  newIfcData?: Uint8Array;
+  newFilename?: string;
+  error?: string;
+}
