@@ -159,23 +159,46 @@ export const AiAssistantPanel: React.FC = () => {
 
                   {/* Tool Call Badges */}
                   {msg.toolCalls && msg.toolCalls.length > 0 && (
-                    <div className="space-y-1 pt-1">
+                    <div className="space-y-1.5 pt-1">
                       {msg.toolCalls.map((tc, tidx) => (
                         <div
                           key={tidx}
                           data-testid={`ai-tool-call-${tc.toolName}`}
-                          className={`p-1.5 rounded border text-[10px] flex items-center justify-between ${
+                          className={`p-2 rounded-lg border text-[10px] ${
                             tc.category === 'READ'
-                              ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                              : 'bg-amber-950/40 border-amber-800/60 text-amber-300'
+                              ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-200'
+                              : 'bg-amber-950/40 border-amber-800/60 text-amber-200'
                           }`}
                         >
-                          <span className="font-mono font-semibold">
-                            [{tc.category}] {tc.toolName}
-                          </span>
-                          <span className="text-[9px] opacity-80">
-                            {tc.category === 'READ' ? 'Direct execution' : 'Proposal created'}
-                          </span>
+                          <div className="flex items-center justify-between font-mono font-semibold">
+                            <span className="flex items-center space-x-1.5">
+                              <span
+                                className={`px-1 py-0.5 rounded text-[8px] font-bold ${
+                                  tc.category === 'READ'
+                                    ? 'bg-emerald-900/80 text-emerald-300'
+                                    : 'bg-amber-900/80 text-amber-300'
+                                }`}
+                              >
+                                {tc.category}
+                              </span>
+                              <span>{tc.toolName}</span>
+                            </span>
+                            <span className="text-[9px] opacity-75 font-sans">
+                              {tc.category === 'READ' ? 'Executed' : 'Proposal created'}
+                            </span>
+                          </div>
+
+                          {/* Compact Tool Result */}
+                          {tc.result && tc.category === 'READ' && (
+                            <div
+                              data-testid={`ai-tool-result-${tc.toolName}`}
+                              className="mt-1.5 pt-1.5 border-t border-emerald-800/40 font-mono text-[9px] text-emerald-300/90 whitespace-pre-wrap max-h-24 overflow-y-auto"
+                            >
+                              {typeof tc.result === 'string'
+                                ? tc.result
+                                : JSON.stringify(tc.result, null, 2)}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>

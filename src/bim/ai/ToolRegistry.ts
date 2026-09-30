@@ -1,8 +1,10 @@
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { bimEditService } from '@/bim/edit/bimEditService';
 import { BimAnalysisService } from '@/bim/analysis/bimAnalysisService';
+import { IfcPersistenceService } from '@/bim/persistence/ifcPersistenceService';
 import { useBimStore } from '@/stores/bimStore';
 import {
+  BimTreeNode,
   ToolDefinition,
   PendingWriteProposal,
 } from '@/types/bim';
@@ -12,6 +14,66 @@ export interface ToolExecutionResult {
   data?: any;
   error?: string;
   proposal?: PendingWriteProposal;
+}
+
+interface SpatialElementItem {
+  expressID: number;
+  name: string;
+  type: string;
+  category?: string;
+  storey?: string;
+}
+
+/**
+ * Robustly flattens the spatial tree array by traversing root nodes and their children.
+ */
+function extractAllTreeElements(tree: BimTreeNode[]): SpatialElementItem[] {
+  const elements: SpatialElementItem[] = [];
+  const roots = Array.isArray(tree) ? tree : [tree];
+
+  const traverse = (node: BimTreeNode, currentStorey = '', currentCategory = '') => {
+    if (!node) return;
+    const storey = node.type === 'IFCBUILDINGSTOREY' ? node.name : currentStorey;
+    const category = node.category || currentCategory;
+
+    if (node.expressID !== undefined) {
+      elements.push({
+        expressID: node.expressID,
+        name: node.name || `Element #${node.expressID}`,
+        type: node.type || 'Unknown',
+        category: node.category || category,
+        storey,
+      });
+    }
+
+    if (node.children && Array.isArray(node.children)) {
+      for (const child of node.children) {
+        traverse(child, storey, category);
+      }
+    }
+  };
+
+  for (const root of roots) {
+    traverse(root);
+  }
+
+  return elements;
+}
+
+/**
+ * Searches spatial tree elements for matching categories, types, or names.
+ */
+function findCategoryElementIds(tree: BimTreeNode[], categoryQuery: string): number[] {
+  const q = categoryQuery.trim().toLowerCase();
+  const allElements = extractAllTreeElements(tree);
+  const matched = allElements.filter((e) => {
+    const catMatch = e.category && e.category.toLowerCase().includes(q);
+    const typeMatch = e.type && e.type.toLowerCase().includes(q);
+    const nameMatch = e.name && e.name.toLowerCase().includes(q);
+    return catMatch || typeMatch || nameMatch;
+  });
+
+  return Array.from(new Set(matched.map((e) => e.expressID)));
 }
 
 export class ToolRegistry {
@@ -47,29 +109,29 @@ export class ToolRegistry {
     });
 
     this.registerTool({
-      name: 'get_element_properties',
-      description: 'Retrieves all IFC attributes, property sets (Psets), and quantities for an element',
+      name: 'select_category',
+      description: 'Selects and focuses all elements belonging to a category (e.g. walls, slabs, doors) in the 3D viewport',
       category: 'READ',
       parameters: {
-        elementId: { type: 'number', description: 'The expressID of the IFC element', required: true },
+        category: { type: 'string', description: 'Category name to select', required: true },
       },
     });
 
     this.registerTool({
-      name: 'calculate_quantities',
-      description: 'Calculates model-wide BIM takeoffs (volumes, areas, storey distributions, and element counts)',
+      name: 'hide_element',
+      description: 'Hides a specific element in the 3D viewport by its expressID',
       category: 'READ',
-      parameters: {},
+      parameters: {
+        elementId: { type: 'number', description: 'The expressID of the element to hide', required: true },
+      },
     });
 
     this.registerTool({
-      name: 'query_elements',
-      description: 'Queries and filters elements in the active model by type, storey, or name query',
+      name: 'hide_category',
+      description: 'Hides all elements belonging to a category in the 3D viewport',
       category: 'READ',
       parameters: {
-        type: { type: 'string', description: 'IFC Type/Category (e.g. IFCWALL, IFCSLAB)' },
-        storey: { type: 'string', description: 'Building storey name' },
-        nameQuery: { type: 'string', description: 'Text search inside element names' },
+        category: { type: 'string', description: 'Category name to hide', required: true },
       },
     });
 
@@ -94,6 +156,57 @@ export class ToolRegistry {
       description: 'Fits the camera view to encompass the entire model',
       category: 'READ',
       parameters: {},
+    });
+
+    this.registerTool({
+      name: 'get_element_properties',
+      description: 'Retrieves all IFC attributes, property sets (Psets), and quantities for an element',
+      category: 'READ',
+      parameters: {
+        elementId: { type: 'number', description: 'The expressID of the IFC element', required: true },
+      },
+    });
+
+    this.registerTool({
+      name: 'calculate_quantities',
+      description: 'Calculates model-wide BIM takeoffs (volumes, areas, storey distributions, and element counts)',
+      category: 'READ',
+      parameters: {},
+    });
+
+    this.registerTool({
+      name: 'query_elements',
+      description: 'Queries and filters elements in the active model by type, storey, category, or name query',
+      category: 'READ',
+      parameters: {
+        type: { type: 'string', description: 'IFC Type (e.g. IFCWALL, IFCSLAB)' },
+        category: { type: 'string', description: 'BIM Category (e.g. Walls, Slabs)' },
+        storey: { type: 'string', description: 'Building storey name' },
+        nameQuery: { type: 'string', description: 'Text search inside element names' },
+      },
+    });
+
+    this.registerTool({
+      name: 'undo',
+      description: 'Undoes the most recent modification in the Change Set',
+      category: 'READ',
+      parameters: {},
+    });
+
+    this.registerTool({
+      name: 'redo',
+      description: 'Redoes the most recently undone modification',
+      category: 'READ',
+      parameters: {},
+    });
+
+    this.registerTool({
+      name: 'export_changes',
+      description: 'Exports the active Change Set as a downloadable JSON changeset or persisted IFC file',
+      category: 'READ',
+      parameters: {
+        format: { type: 'string', description: 'Export format: "json" or "ifc"', default: 'json' },
+      },
     });
 
     // --- WRITE TOOLS (Require user confirmation before execution) ---
@@ -194,6 +307,71 @@ export class ToolRegistry {
           return { success: true, data: { selectedId: id, message: `Selected element #${id}` } };
         }
 
+        case 'select_category': {
+          const cat = String(args.category || '');
+          const spatialTree = useBimStore.getState().spatialTree;
+          if (!spatialTree || spatialTree.length === 0) {
+            return { success: false, error: 'No spatial tree available. Please load a model first.' };
+          }
+
+          const ids = findCategoryElementIds(spatialTree, cat);
+          if (ids.length === 0) {
+            return { success: false, error: `No elements found matching category '${cat}'.` };
+          }
+
+          await bimEngine.selectElements(ids, true);
+          await bimEngine.focusElements(ids);
+          return { success: true, data: { category: cat, selectedCount: ids.length, ids } };
+        }
+
+        case 'hide_element': {
+          const id = Number(args.elementId);
+          await bimEngine.hideElements([id]);
+          return { success: true, data: { elementId: id, message: `Hid element #${id} in 3D viewport.` } };
+        }
+
+        case 'hide_category': {
+          const cat = String(args.category || '');
+          const spatialTree = useBimStore.getState().spatialTree;
+          if (!spatialTree || spatialTree.length === 0) {
+            return { success: false, error: 'No spatial tree available. Please load a model first.' };
+          }
+
+          const ids = findCategoryElementIds(spatialTree, cat);
+          if (ids.length === 0) {
+            return { success: false, error: `No elements found matching category '${cat}'.` };
+          }
+
+          await bimEngine.hideElements(ids);
+          return { success: true, data: { category: cat, hiddenCount: ids.length, ids } };
+        }
+
+        case 'isolate_category': {
+          const cat = String(args.category || '');
+          const spatialTree = useBimStore.getState().spatialTree;
+          if (!spatialTree || spatialTree.length === 0) {
+            return { success: false, error: 'No spatial tree available. Please load a model first.' };
+          }
+
+          const ids = findCategoryElementIds(spatialTree, cat);
+          if (ids.length === 0) {
+            return { success: false, error: `No elements found matching category '${cat}'.` };
+          }
+
+          await bimEngine.isolateElements(ids);
+          return { success: true, data: { category: cat, isolatedCount: ids.length, ids } };
+        }
+
+        case 'show_all': {
+          await bimEngine.showAll();
+          return { success: true, data: { message: 'All elements restored to visible.' } };
+        }
+
+        case 'fit_view': {
+          bimEngine.fitModel();
+          return { success: true, data: { message: 'Camera fit to model.' } };
+        }
+
         case 'get_element_properties': {
           const id = Number(args.elementId);
           const props = bimEngine.getProperties(id);
@@ -216,30 +394,22 @@ export class ToolRegistry {
 
         case 'query_elements': {
           const spatialTree = useBimStore.getState().spatialTree;
-          if (!spatialTree) return { success: false, error: 'No spatial tree available.' };
+          if (!spatialTree || spatialTree.length === 0) {
+            return { success: false, error: 'No spatial tree available. Please load a model first.' };
+          }
 
-          // Collect all leaf elements from tree
-          const allElements: { expressID: number; name: string; type: string; storey?: string }[] = [];
-          const collectLeaves = (node: any, currentStorey = '') => {
-            const storey = node.type === 'IFCBUILDINGSTOREY' ? node.name : currentStorey;
-            if ((!node.children || node.children.length === 0) && node.expressID !== undefined) {
-              allElements.push({
-                expressID: node.expressID,
-                name: node.name,
-                type: node.type,
-                storey,
-              });
-            }
-            if (node.children) {
-              for (const child of node.children) collectLeaves(child, storey);
-            }
-          };
-          collectLeaves(spatialTree);
-
+          const allElements = extractAllTreeElements(spatialTree);
           let filtered = allElements;
+
+          if (args.category) {
+            const cat = String(args.category).toLowerCase();
+            filtered = filtered.filter(
+              (e) => (e.category && e.category.toLowerCase().includes(cat)) || e.type.toLowerCase().includes(cat)
+            );
+          }
           if (args.type) {
-            const t = String(args.type).toUpperCase();
-            filtered = filtered.filter((e) => e.type.toUpperCase().includes(t));
+            const t = String(args.type).toLowerCase();
+            filtered = filtered.filter((e) => e.type.toLowerCase().includes(t));
           }
           if (args.storey) {
             const s = String(args.storey).toLowerCase();
@@ -254,43 +424,82 @@ export class ToolRegistry {
             success: true,
             data: {
               totalFound: filtered.length,
-              elements: filtered.slice(0, 15).map((e) => ({ id: e.expressID, name: e.name, type: e.type })),
+              elements: filtered.slice(0, 20).map((e) => ({
+                id: e.expressID,
+                name: e.name,
+                type: e.type,
+                category: e.category,
+                storey: e.storey,
+              })),
             },
           };
         }
 
-        case 'isolate_category': {
-          const cat = String(args.category).toUpperCase();
-          const spatialTree = useBimStore.getState().spatialTree;
-          if (!spatialTree) return { success: false, error: 'No spatial tree available.' };
+        case 'undo': {
+          const store = useBimStore.getState();
+          if (!store.canUndo && store.changeSet.length === 0) {
+            return { success: false, error: 'Nothing to undo. Change Set history is empty.' };
+          }
+          await bimEditService.undo();
+          return { success: true, data: { message: 'Reverted the last modification from history.' } };
+        }
 
-          const ids: number[] = [];
-          const collectCat = (node: any) => {
-            if (node.type && node.type.toUpperCase().includes(cat) && node.expressID !== undefined) {
-              ids.push(node.expressID);
-            }
-            if (node.children) {
-              for (const c of node.children) collectCat(c);
-            }
-          };
-          collectCat(spatialTree);
+        case 'redo': {
+          const store = useBimStore.getState();
+          if (!store.canRedo) {
+            return { success: false, error: 'Nothing to redo.' };
+          }
+          await bimEditService.redo();
+          return { success: true, data: { message: 'Reapplied the previously undone modification.' } };
+        }
 
-          if (ids.length === 0) {
-            return { success: false, error: `No elements found for category '${args.category}'.` };
+        case 'export_changes': {
+          const changeSet = useBimStore.getState().changeSet;
+          const modelName = useBimStore.getState().modelMetadata?.name || 'model.ifc';
+          const format = args.format === 'ifc' ? 'ifc' : 'json';
+
+          if (changeSet.length === 0) {
+            return {
+              success: false,
+              error: 'Change Set is currently empty. Make some edits before exporting.',
+            };
           }
 
-          await bimEngine.isolateElements(ids);
-          return { success: true, data: { isolatedCount: ids.length, ids } };
-        }
-
-        case 'show_all': {
-          await bimEngine.showAll();
-          return { success: true, data: { message: 'All elements restored to visible.' } };
-        }
-
-        case 'fit_view': {
-          bimEngine.fitModel();
-          return { success: true, data: { message: 'Camera fit to model.' } };
+          if (format === 'json') {
+            const json = IfcPersistenceService.exportChangeSetAsJson(changeSet);
+            const base = modelName.replace(/\.ifc$/i, '');
+            IfcPersistenceService.downloadJsonFile(`${base}_changeset.json`, json);
+            return {
+              success: true,
+              data: {
+                format: 'json',
+                filename: `${base}_changeset.json`,
+                count: changeSet.length,
+                message: `Exported Change Set (${changeSet.length} modifications) as JSON.`,
+              },
+            };
+          } else {
+            if (!bimEngine.webIfcApi || bimEngine.webIfcModelID === null) {
+              return { success: false, error: 'No active IFC model loaded to persist.' };
+            }
+            const { filename, data, result } = IfcPersistenceService.exportModifiedIfc(
+              bimEngine.webIfcApi,
+              bimEngine.webIfcModelID,
+              changeSet,
+              modelName
+            );
+            IfcPersistenceService.downloadIfcFile(filename, data);
+            return {
+              success: true,
+              data: {
+                format: 'ifc',
+                filename,
+                persistedCount: result.persistedCount,
+                unsupportedCount: result.unsupportedCount,
+                message: `Exported modified IFC (${result.persistedCount} changes persisted) as ${filename}.`,
+              },
+            };
+          }
         }
 
         // --- WRITE ACTIONS (Executed only with confirmed=true) ---

@@ -58,7 +58,7 @@ export class IfcPersistenceService {
    * Triggers browser download for a JSON string.
    */
   public static downloadJsonFile(filename: string, jsonString: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || typeof URL?.createObjectURL === 'undefined') return;
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -74,7 +74,7 @@ export class IfcPersistenceService {
    * Triggers browser download for a raw IFC byte buffer.
    */
   public static downloadIfcFile(filename: string, data: Uint8Array): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || typeof URL?.createObjectURL === 'undefined') return;
     const blob = new Blob([data as any], { type: 'application/x-step' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

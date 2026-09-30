@@ -1,0 +1,27 @@
+// Polyfill WebGPU globals for Node/JSDOM test runner
+if (typeof (globalThis as any).GPUShaderStage === 'undefined') {
+  (globalThis as any).GPUShaderStage = {
+    VERTEX: 1,
+    FRAGMENT: 2,
+    COMPUTE: 4,
+  };
+}
+
+if (typeof (globalThis as any).GPUBufferUsage === 'undefined') {
+  (globalThis as any).GPUBufferUsage = {
+    MAP_READ: 1,
+    MAP_WRITE: 2,
+    COPY_SRC: 4,
+    COPY_DST: 8,
+    INDEX: 16,
+    VERTEX: 32,
+    UNIFORM: 64,
+    STORAGE: 128,
+    INDIRECT: 256,
+  };
+}
+
+if (typeof URL.createObjectURL === 'undefined') {
+  URL.createObjectURL = () => 'blob:mock-object-url';
+  URL.revokeObjectURL = () => {};
+}

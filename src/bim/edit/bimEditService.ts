@@ -173,8 +173,10 @@ export class BimEditService {
     // Apply to visual 3D proxy
     this.updateProxyTransform(elementId, newTransform);
 
-    // Record change
-    const isRotation = delta.rotationX !== undefined || delta.rotationY !== undefined || delta.rotationZ !== undefined;
+    const isRotation =
+      (delta.rotationX !== undefined && Math.abs(newTransform.rotationX - prevTransform.rotationX) > 0.001) ||
+      (delta.rotationY !== undefined && Math.abs(newTransform.rotationY - prevTransform.rotationY) > 0.001) ||
+      (delta.rotationZ !== undefined && Math.abs(newTransform.rotationZ - prevTransform.rotationZ) > 0.001);
     const change: BimChange = {
       id: `change-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       elementId,

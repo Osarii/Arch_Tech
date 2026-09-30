@@ -1,12 +1,12 @@
 # PROJECT_STATE.md — Current Working State
 
 ```text
-Current Phase: BIM Lab Phase 4 Complete (Real IFC Persistence & Change Set JSON)
-Current Work: Phase 4 Fully Verified (Change Set JSON export/import, native WebIFC persistence for Move, Rotate, Delete, export to new .ifc without mutating original, automatic save & reload into That Open viewer, explicit unsupported operation audit)
-Last Important Change: Implemented IfcPersistenceService, ChangeSetPanel persistence UI, unit tests (26/26 passed), Playwright E2E tests (6/6 passed), production build success
-Next Allowed Task: Phase 5 (BIM Lab Final Validation / Packaging)
+Current Phase: BIM Lab Phase 4 Complete (AI BIM Assistant, Tool Execution Engine & Persistence Sync)
+Current Work: Phase 4 Fully Implemented & Verified (Model-agnostic AI agent, Tool Registry with 10 tools, Read/Write separation, strict human confirmation for mutations, bi-directional Change Set JSON & WebIFC persistence sync, Rule-based provider + extensible LLM interface, Vitest: 47/47 passed, Playwright: 10/10 passed)
+Last Important Change: AIAgent, ToolRegistry, RuleBasedProvider, AiAssistantPanel, confirmation modal, Playwright E2E suite
+Next Allowed Task: Phase 5 (Final Validation / Production Packaging)
 Known Blockers: None
-Active Invariants: Intel UHD 630 performance baseline (DPR <= 1.25, Shadows OFF, bloom/postprocessing OFF), YAGNI, That Open + Fragments as BIM engine, never overwrite original IFC, real ISO STEP-21 persistence via web-ifc
-Important Paths: src/bim/persistence/, src/bim/edit/, src/components/panels/, src/stores/, tests/
-Current Verification Status: FULL PASSED (Lint: 0 errors | Vitest: 26/26 passed | Build: success | Playwright: 6/6 passed)
+Active Invariants: Intel UHD 630 performance baseline (DPR <= 1.25, Shadows OFF, bloom/postprocessing OFF), YAGNI, That Open + Fragments as BIM engine, never execute write tools without user confirmation, real ISO STEP-21 persistence via web-ifc
+Important Paths: src/bim/ai/, src/components/panels/AiAssistantPanel.tsx, src/bim/persistence/, src/stores/, tests/
+Current Verification Status: FULL PASSED (Lint: 0 errors | Vitest: 47/47 passed | Build: success | Playwright: 10/10 passed)
 ```

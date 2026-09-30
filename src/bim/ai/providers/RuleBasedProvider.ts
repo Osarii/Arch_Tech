@@ -42,21 +42,211 @@ export class RuleBasedProvider implements AIProvider {
       return context.selectedElementId;
     };
 
-    // 1. SELECT ELEMENT
-    if (prompt.includes('select') || prompt.startsWith('pick') || prompt.startsWith('focus')) {
+    // Helper to detect common BIM category keywords
+    const extractCategory = (text: string): string | undefined => {
+      const categories = [
+        'wall',
+        'walls',
+        'slab',
+        'slabs',
+        'door',
+        'doors',
+        'window',
+        'windows',
+        'column',
+        'columns',
+        'beam',
+        'beams',
+        'space',
+        'spaces',
+        'roof',
+        'roofs',
+        'stair',
+        'stairs',
+        'storey',
+        'storeys',
+      ];
+      for (const cat of categories) {
+        // match whole word or category phrase
+        const regex = new RegExp(`\\b${cat}\\b`, 'i');
+        if (regex.test(text)) {
+          // Normalize singular/plural
+          return cat;
+        }
+      }
+      return undefined;
+    };
+
+    // 1. UNDO / REVERT
+    if (
+      prompt === 'undo' ||
+      prompt.startsWith('undo') ||
+      prompt.includes('revert last') ||
+      prompt.includes('undo last')
+    ) {
+      return {
+        message: 'Undoing the latest modification from history...',
+        toolCalls: [{ toolName: 'undo', args: {} }],
+      };
+    }
+
+    // 2. REDO / REAPPLY
+    if (
+      prompt === 'redo' ||
+      prompt.startsWith('redo') ||
+      prompt.includes('reapply')
+    ) {
+      return {
+        message: 'Redoing previously undone modification...',
+        toolCalls: [{ toolName: 'redo', args: {} }],
+      };
+    }
+
+    // 3. EXPORT CHANGES / PERSIST
+    if (
+      prompt.includes('export') ||
+      prompt.includes('download changeset') ||
+      prompt.includes('download ifc') ||
+      prompt.includes('save changeset') ||
+      prompt.includes('save model')
+    ) {
+      const format = prompt.includes('ifc') ? 'ifc' : 'json';
+      return {
+        message: `Exporting BIM changes as ${format.toUpperCase()}...`,
+        toolCalls: [{ toolName: 'export_changes', args: { format } }],
+      };
+    }
+
+    // 4. HIDE (element or category)
+    if (prompt.startsWith('hide') || prompt.includes('hide element') || prompt.includes('hide category')) {
+      const idMatch = prompt.match(/#(\d+)|element\s+(\d+)/);
+      if (idMatch) {
+        const id = parseInt(idMatch[1] || idMatch[2], 10);
+        return {
+          message: `Hiding element #${id} in the 3D viewport...`,
+          toolCalls: [{ toolName: 'hide_element', args: { elementId: id } }],
+        };
+      }
+
+      const cat = extractCategory(prompt);
+      if (cat) {
+        return {
+          message: `Hiding all ${cat} in the 3D viewport...`,
+          toolCalls: [{ toolName: 'hide_category', args: { category: cat } }],
+        };
+      }
+
+      if (context.selectedElementId !== undefined) {
+        return {
+          message: `Hiding selected element #${context.selectedElementId} in the 3D viewport...`,
+          toolCalls: [{ toolName: 'hide_element', args: { elementId: context.selectedElementId } }],
+        };
+      }
+
+      return {
+        message: 'Please specify an element ID (e.g. "hide #44") or category (e.g. "hide walls") to hide.',
+      };
+    }
+
+    // 5. SHOW ALL / RESTORE VISIBILITY
+    if (
+      prompt === 'show all' ||
+      prompt.includes('show all') ||
+      prompt.includes('unhide all') ||
+      prompt.includes('restore visibility') ||
+      prompt.includes('clear isolation')
+    ) {
+      return {
+        message: 'Restoring visibility of all elements in the 3D viewport...',
+        toolCalls: [{ toolName: 'show_all', args: {} }],
+      };
+    }
+
+    // 6. ISOLATE / SHOW BY CATEGORY
+    if (prompt.startsWith('isolate') || prompt.startsWith('show only') || prompt.includes('isolate category')) {
+      const cat = extractCategory(prompt);
+      if (cat) {
+        return {
+          message: `Isolating category '${cat}' in the 3D viewport...`,
+          toolCalls: [{ toolName: 'isolate_category', args: { category: cat } }],
+        };
+      }
+      return {
+        message: 'Please specify a category to isolate (e.g. "isolate walls", "isolate slabs").',
+      };
+    }
+
+    // 7. SHOW CATEGORY (e.g. "show walls", "show doors")
+    if (prompt.startsWith('show ') && !prompt.includes('all') && !prompt.includes('properties')) {
+      const cat = extractCategory(prompt);
+      if (cat) {
+        return {
+          message: `Displaying category '${cat}' in the 3D viewport...`,
+          toolCalls: [{ toolName: 'isolate_category', args: { category: cat } }],
+        };
+      }
+    }
+
+    // 8. SELECT ELEMENTS (BY CATEGORY OR BY ID)
+    if (prompt.startsWith('select') || prompt.startsWith('pick') || prompt.startsWith('focus')) {
       const id = extractElementId(prompt);
+      const cat = extractCategory(prompt);
+
+      // If category is mentioned without explicit #ID (e.g. "select walls", "select all slabs")
+      if (cat && !prompt.includes('#')) {
+        return {
+          message: `Selecting all elements in category '${cat}'...`,
+          toolCalls: [{ toolName: 'select_category', args: { category: cat } }],
+        };
+      }
+
       if (id !== undefined) {
         return {
           message: `Selecting element #${id} in the 3D viewport...`,
           toolCalls: [{ toolName: 'select_element', args: { elementId: id } }],
         };
       }
+
       return {
-        message: 'Please specify an element ID to select (e.g., "select #44").',
+        message: 'Please specify an element ID (e.g., "select #44") or category (e.g., "select walls").',
       };
     }
 
-    // 2. PROPERTIES / ATTRIBUTES
+    // 9. SEARCH / QUERY ELEMENTS
+    if (
+      prompt.startsWith('search') ||
+      prompt.startsWith('find') ||
+      prompt.startsWith('query') ||
+      prompt.startsWith('filter')
+    ) {
+      const cat = extractCategory(prompt);
+      const typeMatch = prompt.match(/\b(ifc[a-z0-9]+)\b/i);
+      const storeyMatch = prompt.match(/(?:in|on|level|storey|floor)\s+([a-z0-9_-]+)/i);
+
+      let nameQuery: string | undefined;
+      // Extract quoted query if present e.g. search "exterior"
+      const quoteMatch = prompt.match(/["']([^"']+)["']/);
+      if (quoteMatch) {
+        nameQuery = quoteMatch[1];
+      }
+
+      return {
+        message: `Querying BIM elements matching criteria...`,
+        toolCalls: [
+          {
+            toolName: 'query_elements',
+            args: {
+              category: cat,
+              type: typeMatch ? typeMatch[1].toUpperCase() : undefined,
+              storey: storeyMatch ? storeyMatch[1] : undefined,
+              nameQuery,
+            },
+          },
+        ],
+      };
+    }
+
+    // 10. PROPERTIES / ATTRIBUTES / INSPECT
     if (
       prompt.includes('properties') ||
       prompt.includes('property') ||
@@ -76,12 +266,14 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 3. QUANTITIES / TAKEOFFS / ANALYSIS
+    // 11. QUANTITIES / TAKEOFFS / ELEMENT COUNTS
     if (
       prompt.includes('quantities') ||
       prompt.includes('takeoff') ||
       prompt.includes('analysis') ||
-      prompt.includes('count') ||
+      prompt.includes('how many elements') ||
+      prompt.includes('element count') ||
+      prompt.includes('total count') ||
       prompt.includes('volume') ||
       prompt.includes('gross area')
     ) {
@@ -91,25 +283,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 4. ISOLATE CATEGORY
-    const catMatch = prompt.match(/isolate\s+([a-z]+)/);
-    if (catMatch) {
-      const category = catMatch[1];
-      return {
-        message: `Isolating category '${category}' in the 3D viewport...`,
-        toolCalls: [{ toolName: 'isolate_category', args: { category } }],
-      };
-    }
-
-    // 5. SHOW ALL / RESET VISIBILITY
-    if (prompt.includes('show all') || prompt.includes('unhide') || prompt.includes('restore visibility')) {
-      return {
-        message: 'Restoring visibility of all elements in the 3D viewport...',
-        toolCalls: [{ toolName: 'show_all', args: {} }],
-      };
-    }
-
-    // 6. FIT VIEW / RESET CAMERA
+    // 12. FIT VIEW / RESET CAMERA
     if (prompt.includes('fit') || prompt.includes('reset camera')) {
       return {
         message: 'Fitting camera view to model boundaries...',
@@ -117,7 +291,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 7. MOVE ELEMENT (WRITE ACTION - Requires Confirmation)
+    // 13. MOVE ELEMENT (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('move') || prompt.includes('translate')) {
       const id = extractElementId(prompt);
       if (id === undefined) {
@@ -126,7 +300,6 @@ export class RuleBasedProvider implements AIProvider {
         };
       }
 
-      // Check for axis and distance e.g. "by 1.5m in x" or "by 2 x"
       let x = 0;
       let y = 0;
       let z = 0;
@@ -139,7 +312,6 @@ export class RuleBasedProvider implements AIProvider {
         if (axis === 'y') y = val;
         if (axis === 'z') z = val;
       } else {
-        // default offset if just "move #44"
         x = 1.0;
       }
 
@@ -149,7 +321,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 8. ROTATE ELEMENT (WRITE ACTION - Requires Confirmation)
+    // 14. ROTATE ELEMENT (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('rotate') || prompt.includes('turn')) {
       const id = extractElementId(prompt);
       if (id === undefined) {
@@ -167,7 +339,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 9. COLOR OVERRIDE (WRITE ACTION - Requires Confirmation)
+    // 15. COLOR OVERRIDE (WRITE ACTION - Requires Confirmation)
     if (
       prompt.includes('color') ||
       prompt.includes('paint') ||
@@ -181,8 +353,7 @@ export class RuleBasedProvider implements AIProvider {
         };
       }
 
-      // Detect common color names or hex codes
-      let color = '#38bdf8'; // sky/cyan default
+      let color = '#38bdf8'; // cyan default
       if (prompt.includes('cyan') || prompt.includes('sky')) color = '#06b6d4';
       else if (prompt.includes('emerald') || prompt.includes('green')) color = '#10b981';
       else if (prompt.includes('amber') || prompt.includes('orange') || prompt.includes('yellow')) color = '#f59e0b';
@@ -199,7 +370,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 10. DELETE ELEMENT (WRITE ACTION - Requires Confirmation)
+    // 16. DELETE ELEMENT (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('delete') || prompt.includes('remove')) {
       const id = extractElementId(prompt);
       if (id === undefined) {
@@ -214,7 +385,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 11. RESET ALL EDITS (WRITE ACTION - Requires Confirmation)
+    // 17. RESET ALL EDITS (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('reset all') || prompt.includes('revert all')) {
       return {
         message: 'I have prepared a proposal to reset all edits and restore the original IFC model. Please confirm to proceed.',
@@ -225,7 +396,7 @@ export class RuleBasedProvider implements AIProvider {
     // Fallback general guidance
     return {
       message:
-        "I'm your BIM Lab AI Assistant. You can ask me to inspect properties, calculate quantities, isolate categories, or propose model edits (move, rotate, color, delete). Try prompts like:\n• 'Select #44'\n• 'Show properties of #44'\n• 'Calculate model quantities'\n• 'Isolate walls'\n• 'Move #44 by 1m in X'\n• 'Color #44 cyan'",
+        "I'm your BIM Lab AI Assistant. You can ask me to inspect properties, calculate quantities, isolate categories, search elements, or propose model edits:\n• 'Select #44' or 'Select walls'\n• 'Show properties of #44'\n• 'Calculate model quantities'\n• 'Isolate walls' or 'Hide slabs'\n• 'Search doors'\n• 'Undo' or 'Export changes'\n• 'Move #44 by 1m in X'\n• 'Color #44 cyan'",
     };
   }
 }

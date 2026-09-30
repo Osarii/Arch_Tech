@@ -223,7 +223,7 @@ export interface PendingWriteProposal {
   description: string;
   elementId?: number;
   elementName?: string;
-  status: 'pending' | 'confirmed' | 'rejected' | 'executed';
+  status: 'pending' | 'confirmed' | 'rejected' | 'executed' | 'failed';
   createdAt: string;
 }
 
@@ -244,11 +244,11 @@ export interface AIMessage {
 }
 
 export interface ConversationContext {
-  modelLoaded: boolean;
+  modelLoaded?: boolean;
   modelName?: string;
   selectedElementId?: number;
   selectedElementName?: string;
   totalElements?: number;
-  changeSetCount: number;
+  changeSetCount?: number;
 }
 

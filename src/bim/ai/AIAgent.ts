@@ -1,11 +1,11 @@
-import { useBimStore } from '@/stores/bimStore';
 import {
   AIMessage,
   ConversationContext,
   PendingWriteProposal,
 } from '@/types/bim';
-import { ToolRegistry } from './ToolRegistry';
-import { AIProvider, RuleBasedProvider } from './providers/RuleBasedProvider';
+import { ToolRegistry } from '@/bim/ai/ToolRegistry';
+import { AIProvider, RuleBasedProvider } from '@/bim/ai/providers/RuleBasedProvider';
+import { useBimStore } from '@/stores/bimStore';
 
 export class AIAgent {
   private static instance: AIAgent;
@@ -16,14 +16,12 @@ export class AIAgent {
   private constructor() {
     this.provider = new RuleBasedProvider();
     ToolRegistry.initDefaultTools();
-
-    // Default welcome message
     this.messages = [
       {
         id: 'msg-welcome',
         role: 'assistant',
         content:
-          'Hello! I am your AI BIM Assistant. I can inspect model elements, calculate quantities, isolate categories, and prepare non-destructive edits with strict confirmation safeguards. What would you like to explore?',
+          '👋 Hello! I am your BIM Lab AI Assistant. You can ask me to inspect properties, query elements, calculate takeoffs, or propose non-destructive model modifications (moves, rotations, colors, deletes).',
         timestamp: new Date().toLocaleTimeString(),
       },
     ];
@@ -72,6 +70,105 @@ export class AIAgent {
   }
 
   /**
+   * Formats READ tool results into clean, user-visible summaries.
+   */
+  private formatReadResult(toolName: string, args: Record<string, any>, result: any): string {
+    if (!result.success) {
+      return `⚠️ ${result.error || 'Execution failed.'}`;
+    }
+
+    const data = result.data;
+    switch (toolName) {
+      case 'calculate_quantities': {
+        if (!data) return 'No quantities available.';
+        const breakdown = data.categoryBreakdown
+          ? Object.entries(data.categoryBreakdown)
+              .map(([k, v]) => `${k}: ${v}`)
+              .join(', ')
+          : '';
+        const lines = [
+          `📊 Model Breakdown:`,
+          `• Total Elements: ${data.elementCount ?? 'N/A'}`,
+          data.grossFloorAreaM2 !== undefined ? `• Gross Floor Area: ${data.grossFloorAreaM2.toFixed(1)} m²` : null,
+          data.grossVolumeM3 !== undefined ? `• Gross Volume: ${data.grossVolumeM3.toFixed(1)} m³` : null,
+          data.storeyCount !== undefined ? `• Storeys: ${data.storeyCount}` : null,
+          breakdown ? `• Categories: ${breakdown}` : null,
+        ].filter(Boolean);
+        return lines.join('\n');
+      }
+
+      case 'get_element_properties': {
+        if (!data) return 'No element properties returned.';
+        const lines = [
+          `🔍 Properties for Element #${data.expressID} (${data.type}):`,
+          `• Name: ${data.name || 'Unnamed'}`,
+          data.globalId ? `• GlobalId: ${data.globalId}` : null,
+          data.storey ? `• Storey: ${data.storey}` : null,
+        ].filter(Boolean);
+
+        if (data.propertyGroups && data.propertyGroups.length > 0) {
+          lines.push(`• Property Sets:`);
+          for (const grp of data.propertyGroups.slice(0, 3)) {
+            const propsStr = (grp.properties || [])
+              .slice(0, 3)
+              .map((p: any) => `${p.name}: ${p.value}`)
+              .join(', ');
+            lines.push(`  - [${grp.name}]: ${propsStr || 'empty'}`);
+          }
+        }
+        return lines.join('\n');
+      }
+
+      case 'query_elements': {
+        if (!data || data.totalFound === 0) {
+          return `🔎 Found 0 elements matching query.`;
+        }
+        const lines = [`🔎 Found ${data.totalFound} matching element(s):`];
+        for (const e of (data.elements || []).slice(0, 8)) {
+          lines.push(`• #${e.id}: ${e.name || e.type} (${e.category || e.type}${e.storey ? ` @ ${e.storey}` : ''})`);
+        }
+        if (data.totalFound > 8) {
+          lines.push(`... and ${data.totalFound - 8} more`);
+        }
+        return lines.join('\n');
+      }
+
+      case 'select_element':
+        return `✅ Selected element #${args.elementId} in 3D viewport.`;
+
+      case 'select_category':
+        return `✅ Selected ${data.selectedCount} ${args.category} elements in 3D viewport.`;
+
+      case 'isolate_category':
+        return `✅ Isolated ${data.isolatedCount} ${args.category} elements in 3D viewport.`;
+
+      case 'hide_element':
+        return `👁️ Hid element #${args.elementId} in 3D viewport.`;
+
+      case 'hide_category':
+        return `👁️ Hid ${data.hiddenCount} ${args.category} elements in 3D viewport.`;
+
+      case 'show_all':
+        return `👁️ Restored visibility for all elements in 3D viewport.`;
+
+      case 'fit_view':
+        return `🎯 Camera fitted to model.`;
+
+      case 'undo':
+        return `↩️ ${data.message || 'Undo applied.'}`;
+
+      case 'redo':
+        return `↪️ ${data.message || 'Redo applied.'}`;
+
+      case 'export_changes':
+        return `💾 ${data.message || 'Changes exported.'}`;
+
+      default:
+        return typeof data === 'string' ? data : JSON.stringify(data);
+    }
+  }
+
+  /**
    * Processes a natural language user query.
    * READ actions execute directly.
    * WRITE actions produce a pending confirmation proposal.
@@ -97,6 +194,7 @@ export class AIAgent {
 
     let proposal: PendingWriteProposal | undefined;
     const executedToolCalls: any[] = [];
+    const readSummaries: string[] = [];
 
     if (providerResponse.toolCalls && providerResponse.toolCalls.length > 0) {
       for (const call of providerResponse.toolCalls) {
@@ -106,11 +204,16 @@ export class AIAgent {
         if (toolDef.category === 'READ') {
           // Direct execution for READ tools
           const result = await ToolRegistry.executeTool(call.toolName, call.args, false);
+          const formatted = this.formatReadResult(call.toolName, call.args, result);
+          if (formatted) {
+            readSummaries.push(formatted);
+          }
+
           executedToolCalls.push({
             toolName: call.toolName,
             category: 'READ',
             args: call.args,
-            result: result.data || result.error,
+            result: result.success ? (result.data || formatted) : (result.error || 'Execution failed'),
           });
         } else {
           // Intercept WRITE tools: generate proposal requiring user confirmation
@@ -128,10 +231,15 @@ export class AIAgent {
       }
     }
 
+    let finalContent = providerResponse.message;
+    if (readSummaries.length > 0) {
+      finalContent = `${providerResponse.message}\n\n${readSummaries.join('\n\n')}`;
+    }
+
     const assistantMsg: AIMessage = {
       id: `asst-${Date.now()}`,
       role: 'assistant',
-      content: providerResponse.message,
+      content: finalContent,
       timestamp: new Date().toLocaleTimeString(),
       toolCalls: executedToolCalls.length > 0 ? executedToolCalls : undefined,
       proposal,
@@ -165,6 +273,7 @@ export class AIAgent {
         timestamp: new Date().toLocaleTimeString(),
       });
     } else {
+      msg.proposal.status = 'failed';
       this.messages.push({
         id: `sys-${Date.now()}`,
         role: 'system',
