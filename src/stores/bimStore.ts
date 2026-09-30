@@ -14,16 +14,28 @@ import {
   BimViewpoint,
   BimFilterCriteria,
   BimAnalysisData,
+  EditMode,
+  BimChange,
 } from '@/types/bim';
 
 interface BimState {
   // Tools & Navigation
   activeTool: ToolType;
   setActiveTool: (tool: ToolType) => void;
+  editMode: EditMode;
+  setEditMode: (mode: EditMode) => void;
   cameraMode: CameraViewMode;
   setCameraMode: (mode: CameraViewMode) => void;
   measureMode: MeasurementType;
   setMeasureMode: (mode: MeasurementType) => void;
+
+  // Change Set & History (Phase 3)
+  changeSet: BimChange[];
+  setChangeSet: (changes: BimChange[]) => void;
+  canUndo: boolean;
+  setCanUndo: (can: boolean) => void;
+  canRedo: boolean;
+  setCanRedo: (can: boolean) => void;
 
   // 2D Floor Plan Mode
   activeFloorPlanStorey: string | null;
@@ -151,6 +163,16 @@ const initialFilter: BimFilterCriteria = {
 export const useBimStore = create<BimState>((set) => ({
   activeTool: 'select',
   setActiveTool: (tool) => set({ activeTool: tool }),
+
+  editMode: 'inspect',
+  setEditMode: (mode) => set({ editMode: mode }),
+
+  changeSet: [],
+  setChangeSet: (changes) => set({ changeSet: changes }),
+  canUndo: false,
+  setCanUndo: (can) => set({ canUndo: can }),
+  canRedo: false,
+  setCanRedo: (can) => set({ canRedo: can }),
 
   cameraMode: 'perspective',
   setCameraMode: (mode) => set({ cameraMode: mode }),
@@ -306,6 +328,10 @@ export const useBimStore = create<BimState>((set) => ({
       leftPanelTab: 'tree',
       rightPanelTab: 'properties',
       treeSearchQuery: '',
+      editMode: 'inspect',
+      changeSet: [],
+      canUndo: false,
+      canRedo: false,
       activeTool: 'select',
       measureMode: 'distance',
       loading: initialLoading,

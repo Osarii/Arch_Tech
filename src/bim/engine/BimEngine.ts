@@ -12,6 +12,7 @@ import {
   BimViewpoint,
 } from '@/types/bim';
 import { extractElementProperties } from '../properties/propertyExtractor';
+import { bimEditService } from '../edit/bimEditService';
 import { useBimStore } from '@/stores/bimStore';
 
 export class BimEngine {
@@ -90,6 +91,21 @@ export class BimEngine {
         const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
         dirLight.position.set(20, 40, 20);
         this.world.scene.three.add(dirLight);
+
+        bimEditService.initSceneLayer(this.world.scene.three);
+        bimEditService.setSceneBridge({
+          getWebIfcApi: () => this.webIfcApi,
+          getWebIfcModelID: () => this.webIfcModelID,
+          getCurrentModelId: () => this.currentModelId,
+          hideElements: (ids) => this.hideElements(ids),
+          unhideElements: async (ids) => {
+            if (this.currentModelId && this.hider) {
+              await this.hider.set(true, { [this.currentModelId]: new Set(ids) });
+            }
+          },
+          showAll: () => this.showAll(),
+          clearSelection: () => this.clearSelection(),
+        });
       }
 
       // 3. Setup Renderer FIRST (Required by OrthoPerspectiveCamera)
@@ -643,6 +659,7 @@ export class BimEngine {
     }
 
     this.deleteMeasurements();
+    await bimEditService.resetAllEdits();
 
     if (this.hider) {
       try {

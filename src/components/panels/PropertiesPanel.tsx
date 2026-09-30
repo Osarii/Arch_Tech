@@ -11,11 +11,13 @@ import {
   Box,
   BarChart3,
   Filter,
+  Pencil,
 } from 'lucide-react';
 import { useBimStore } from '@/stores/bimStore';
 import { PropertyGroup } from '@/types/bim';
 import { BimAnalysisPanel } from './BimAnalysisPanel';
 import { AdvancedFilterPanel } from './AdvancedFilterPanel';
+import { EditInspectorPanel } from './EditInspectorPanel';
 
 export const PropertiesPanel: React.FC = () => {
   const isPropsOpen = useBimStore((s) => s.isPropsOpen);
@@ -78,7 +80,7 @@ export const PropertiesPanel: React.FC = () => {
         <button
           onClick={() => setRightPanelTab('filter')}
           data-testid="tab-filter"
-          className={`flex-1 h-full flex items-center justify-center space-x-1.5 border-b-2 transition ${
+          className={`flex-1 h-full flex items-center justify-center space-x-1 border-b-2 transition ${
             rightPanelTab === 'filter'
               ? 'border-purple-500 text-purple-300 bg-[#151722]'
               : 'border-transparent hover:text-slate-200 hover:bg-[#12141a]'
@@ -87,6 +89,20 @@ export const PropertiesPanel: React.FC = () => {
           <Filter className="w-3.5 h-3.5" />
           <span>Filters</span>
         </button>
+
+        <button
+          onClick={() => setRightPanelTab('edit')}
+          data-testid="tab-edit"
+          className={`flex-1 h-full flex items-center justify-center space-x-1 border-b-2 transition ${
+            rightPanelTab === 'edit'
+              ? 'border-amber-500 text-amber-300 bg-[#151722]'
+              : 'border-transparent hover:text-slate-200 hover:bg-[#12141a]'
+          }`}
+          title="Non-Destructive Element Editor"
+        >
+          <Pencil className="w-3.5 h-3.5" />
+          <span>Editor</span>
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -94,6 +110,8 @@ export const PropertiesPanel: React.FC = () => {
         <BimAnalysisPanel />
       ) : rightPanelTab === 'filter' ? (
         <AdvancedFilterPanel />
+      ) : rightPanelTab === 'edit' ? (
+        <EditInspectorPanel />
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Properties Header info */}

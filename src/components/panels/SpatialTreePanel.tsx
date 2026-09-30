@@ -14,12 +14,14 @@ import {
   Square,
   Columns,
   Bookmark,
+  ListFilter,
 } from 'lucide-react';
 import { useBimStore } from '@/stores/bimStore';
 import { BimTreeNode } from '@/types/bim';
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { StoreysPanel } from './StoreysPanel';
 import { ViewpointsPanel } from './ViewpointsPanel';
+import { ChangeSetPanel } from './ChangeSetPanel';
 
 export const SpatialTreePanel: React.FC = () => {
   const isTreeOpen = useBimStore((s) => s.isTreeOpen);
@@ -244,7 +246,7 @@ export const SpatialTreePanel: React.FC = () => {
         <button
           onClick={() => setLeftPanelTab('viewpoints')}
           data-testid="tab-viewpoints"
-          className={`flex-1 h-full flex items-center justify-center space-x-1.5 border-b-2 transition ${
+          className={`flex-1 h-full flex items-center justify-center space-x-1 border-b-2 transition ${
             leftPanelTab === 'viewpoints'
               ? 'border-amber-500 text-amber-300 bg-[#151722]'
               : 'border-transparent hover:text-slate-200 hover:bg-[#12141a]'
@@ -253,6 +255,20 @@ export const SpatialTreePanel: React.FC = () => {
           <Bookmark className="w-3.5 h-3.5" />
           <span>Views</span>
         </button>
+
+        <button
+          onClick={() => setLeftPanelTab('changes')}
+          data-testid="tab-changeset"
+          className={`flex-1 h-full flex items-center justify-center space-x-1 border-b-2 transition ${
+            leftPanelTab === 'changes'
+              ? 'border-purple-500 text-purple-300 bg-[#151722]'
+              : 'border-transparent hover:text-slate-200 hover:bg-[#12141a]'
+          }`}
+          title="Non-destructive BIM Edit Change Set"
+        >
+          <ListFilter className="w-3.5 h-3.5" />
+          <span>Edits</span>
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -260,6 +276,8 @@ export const SpatialTreePanel: React.FC = () => {
         <StoreysPanel />
       ) : leftPanelTab === 'viewpoints' ? (
         <ViewpointsPanel />
+      ) : leftPanelTab === 'changes' ? (
+        <ChangeSetPanel />
       ) : (
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Tree Header Controls */}

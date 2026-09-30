@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   FolderOpen,
   Box,
@@ -7,10 +7,16 @@ import {
   SlidersHorizontal,
   XCircle,
   Camera,
+  Eye,
+  Pencil,
+  Undo2,
+  Redo2,
 } from 'lucide-react';
 import { useBimStore } from '@/stores/bimStore';
 import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
 import { bimEngine } from '@/bim/engine/BimEngine';
+import { bimEditService } from '@/bim/edit/bimEditService';
+import { EditMode } from '@/types/bim';
 
 export const HeaderBar: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -28,15 +34,54 @@ export const HeaderBar: React.FC = () => {
   const is2DMode = useBimStore((s) => s.is2DMode);
   const activeFloorPlanStorey = useBimStore((s) => s.activeFloorPlanStorey);
 
+  // Phase 3 Edit Mode & Change Set
+  const editMode = useBimStore((s) => s.editMode);
+  const setEditMode = useBimStore((s) => s.setEditMode);
+  const changeSet = useBimStore((s) => s.changeSet);
+  const canUndo = useBimStore((s) => s.canUndo);
+  const canRedo = useBimStore((s) => s.canRedo);
+  const setLeftPanelTab = useBimStore((s) => s.setLeftPanelTab);
+  const setRightPanelTab = useBimStore((s) => s.setRightPanelTab);
+
+  // Global Undo / Redo keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept if user is typing in an input
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) {
+          bimEditService.redo();
+        } else {
+          bimEditService.undo();
+        }
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+        e.preventDefault();
+        bimEditService.redo();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleOpenFileClick = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
       await IfcLoaderService.loadIfc(file);
-      e.target.value = '';
+    } catch (err) {
+      console.error('Failed to load user IFC file:', err);
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -53,7 +98,7 @@ export const HeaderBar: React.FC = () => {
       const buffer = await response.arrayBuffer();
       await IfcLoaderService.loadIfc(buffer, name);
     } catch (err: any) {
-      console.error('Failed to load sample IFC:', err);
+      console.error(`Failed to load sample ${name}:`, err);
       useBimStore.getState().setLoading({
         isBusy: false,
         stage: 'Error',
@@ -63,49 +108,58 @@ export const HeaderBar: React.FC = () => {
     }
   };
 
-  const handleToggleCamera = () => {
-    const nextMode = cameraMode === 'perspective' ? 'orthographic' : 'perspective';
-    setCameraMode(nextMode);
-    bimEngine.setCameraMode(nextMode);
+  const handleUnload = async () => {
+    await IfcLoaderService.unload();
   };
 
-  // FPS status color
-  const fpsColor =
-    perfStats.fps >= 45
-      ? 'text-emerald-400 bg-emerald-950/60 border-emerald-800'
-      : perfStats.fps >= 30
-      ? 'text-amber-400 bg-amber-950/60 border-amber-800'
-      : 'text-rose-400 bg-rose-950/60 border-rose-800';
+  const handleToggleCamera = () => {
+    const newMode = cameraMode === 'perspective' ? 'orthographic' : 'perspective';
+    bimEngine.setCameraMode(newMode);
+    setCameraMode(newMode);
+  };
+
+  const handleSetMode = (mode: EditMode) => {
+    setEditMode(mode);
+    if (mode === 'edit') {
+      setRightPanelTab('edit');
+    } else {
+      setRightPanelTab('properties');
+    }
+  };
 
   return (
-    <header className="h-11 bg-[#12141a] border-b border-[#222630] px-3 flex items-center justify-between select-none z-30">
-      {/* Brand & Project Info */}
+    <header className="h-12 w-full bg-[#101217] border-b border-[#222630] flex items-center justify-between px-3 select-none z-30">
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".ifc"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
+      {/* Left: Brand & File Actions */}
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 rounded bg-sky-600/30 border border-sky-500/50 flex items-center justify-center text-sky-400 font-mono text-xs font-bold">
+          <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-sky-600 to-indigo-500 flex items-center justify-center font-bold text-white text-xs shadow">
             B1
           </div>
-          <span className="font-semibold text-xs tracking-wider text-slate-200">
-            BIM LAB <span className="text-sky-400 font-mono text-[10px]">V1</span>
+          <span className="font-semibold text-slate-100 text-sm tracking-tight">
+            BIM LAB
+            <span className="ml-1 text-[10px] text-sky-400 font-mono bg-sky-950/70 border border-sky-800 px-1 py-0.5 rounded">
+              V1
+            </span>
           </span>
         </div>
 
-        <div className="h-4 w-[1px] bg-[#2d3240]" />
+        <div className="h-4 w-[1px] bg-[#2d3342]" />
 
-        {/* File Actions */}
         <div className="flex items-center space-x-1">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".ifc"
-            onChange={handleFileChange}
-            className="hidden"
-          />
           <button
             onClick={handleOpenFileClick}
             disabled={loading.isBusy}
-            className="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#1c202a] hover:bg-[#252b39] active:bg-[#2d3547] text-slate-200 text-xs font-medium border border-[#2d3342] transition disabled:opacity-50"
-            title="Open IFC File"
+            className="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#181b24] hover:bg-[#202532] text-slate-200 text-xs font-medium border border-[#2a3040] transition disabled:opacity-50"
+            title="Open local .ifc file"
           >
             <FolderOpen className="w-3.5 h-3.5 text-sky-400" />
             <span>Open IFC</span>
@@ -134,7 +188,7 @@ export const HeaderBar: React.FC = () => {
 
           {modelMetadata && (
             <button
-              onClick={() => IfcLoaderService.unload()}
+              onClick={handleUnload}
               className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-rose-950/40 text-rose-400 text-xs transition"
               title="Close Active Model"
             >
@@ -145,7 +199,7 @@ export const HeaderBar: React.FC = () => {
         </div>
 
         {modelMetadata && (
-          <div className="hidden lg:flex items-center space-x-2 text-[11px] text-slate-400 bg-[#161922] px-2 py-0.5 rounded border border-[#252b3a]">
+          <div className="hidden xl:flex items-center space-x-2 text-[11px] text-slate-400 bg-[#161922] px-2 py-0.5 rounded border border-[#252b3a]">
             <span className="text-slate-300 font-mono font-medium truncate max-w-[140px]">
               {modelMetadata.name}
             </span>
@@ -174,6 +228,77 @@ export const HeaderBar: React.FC = () => {
         )}
       </div>
 
+      {/* Center: Inspect Mode / Edit Mode Switcher */}
+      {modelMetadata && (
+        <div className="flex items-center space-x-2">
+          {/* Mode Pill Toggle */}
+          <div className="flex items-center bg-[#141722] border border-[#262c3b] rounded-lg p-0.5 text-xs select-none">
+            <button
+              onClick={() => handleSetMode('inspect')}
+              data-testid="mode-inspect"
+              className={`flex items-center space-x-1 px-2.5 py-1 rounded-md transition ${
+                editMode === 'inspect'
+                  ? 'bg-sky-600 text-white font-medium shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Inspect Mode (Read-Only Analysis, Slicing, Measurements)"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Inspect</span>
+            </button>
+            <button
+              onClick={() => handleSetMode('edit')}
+              data-testid="mode-edit"
+              className={`flex items-center space-x-1 px-2.5 py-1 rounded-md transition ${
+                editMode === 'edit'
+                  ? 'bg-amber-600 text-white font-semibold shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+              title="Edit Mode (Non-Destructive Transforms, Overrides, Actions)"
+            >
+              <Pencil className="w-3.5 h-3.5" />
+              <span>Edit</span>
+            </button>
+          </div>
+
+          {/* Quick Undo / Redo in Edit Mode */}
+          {editMode === 'edit' && (
+            <div className="flex items-center space-x-1 bg-[#141722] border border-[#262c3b] rounded-lg px-1.5 py-0.5 text-xs">
+              <button
+                onClick={() => bimEditService.undo()}
+                disabled={!canUndo}
+                data-testid="header-btn-undo"
+                className="p-1 text-slate-300 hover:text-white disabled:opacity-30 disabled:hover:text-slate-300 transition"
+                title="Undo (Ctrl+Z)"
+              >
+                <Undo2 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => bimEditService.redo()}
+                disabled={!canRedo}
+                data-testid="header-btn-redo"
+                className="p-1 text-slate-300 hover:text-white disabled:opacity-30 disabled:hover:text-slate-300 transition"
+                title="Redo (Ctrl+Shift+Z)"
+              >
+                <Redo2 className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                onClick={() => setLeftPanelTab('changes')}
+                data-testid="header-changes-badge"
+                className="px-1.5 py-0.5 rounded bg-purple-950/80 border border-purple-800 text-[10px] font-mono text-purple-300 hover:bg-purple-900 transition flex items-center space-x-1"
+                title="View non-destructive change set"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+                <span>
+                  {changeSet.length} {changeSet.length === 1 ? 'edit' : 'edits'}
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Right Tools & Diagnostics */}
       <div className="flex items-center space-x-2">
         {/* Camera Toggle */}
@@ -183,44 +308,63 @@ export const HeaderBar: React.FC = () => {
           title={`Switch Camera Projection (Currently: ${cameraMode})`}
         >
           <Camera className="w-3.5 h-3.5 text-sky-400" />
-          <span className="capitalize font-mono text-[11px]">{cameraMode}</span>
+          <span className="font-mono text-[11px] capitalize">{cameraMode}</span>
         </button>
 
         {/* Panel Toggles */}
-        <button
-          onClick={toggleTreeOpen}
-          className={`p-1.5 rounded text-xs transition border ${
-            isTreeOpen
-              ? 'bg-sky-950/50 border-sky-800/80 text-sky-300'
-              : 'bg-[#181b24] border-[#2a3040] text-slate-400 hover:text-slate-200'
-          }`}
-          title="Toggle Spatial Tree Panel"
-        >
-          <Layers className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center space-x-1 border-l border-[#2d3342] pl-2">
+          <button
+            onClick={toggleTreeOpen}
+            className={`p-1.5 rounded transition ${
+              isTreeOpen
+                ? 'bg-sky-950 text-sky-300 border border-sky-800'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-[#181b24]'
+            }`}
+            title="Toggle Spatial Tree Panel"
+          >
+            <Layers className="w-3.5 h-3.5" />
+          </button>
 
-        <button
-          onClick={togglePropsOpen}
-          className={`p-1.5 rounded text-xs transition border ${
-            isPropsOpen
-              ? 'bg-sky-950/50 border-sky-800/80 text-sky-300'
-              : 'bg-[#181b24] border-[#2a3040] text-slate-400 hover:text-slate-200'
-          }`}
-          title="Toggle Properties Panel"
-        >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-        </button>
+          <button
+            onClick={togglePropsOpen}
+            className={`p-1.5 rounded transition ${
+              isPropsOpen
+                ? 'bg-sky-950 text-sky-300 border border-sky-800'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-[#181b24]'
+            }`}
+            title="Toggle Properties Panel"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
-        <div className="h-4 w-[1px] bg-[#2d3240]" />
-
-        {/* FPS Indicator Badge */}
+        {/* Performance Stats Pill */}
         <button
           onClick={togglePerfOpen}
-          className={`flex items-center space-x-1.5 px-2 py-0.5 rounded text-[11px] font-mono border transition ${fpsColor}`}
-          title="Toggle Performance Diagnostics Panel"
+          data-testid="header-perf-toggle"
+          className="flex items-center space-x-1.5 px-2 py-1 rounded bg-[#141720] hover:bg-[#1b202c] border border-[#262c3b] text-xs font-mono transition"
+          title="Toggle Diagnostics Overlay"
         >
-          <Activity className="w-3 h-3" />
-          <span>{perfStats.fps} FPS</span>
+          <Activity
+            className={`w-3.5 h-3.5 ${
+              perfStats.fps >= 50
+                ? 'text-emerald-400'
+                : perfStats.fps >= 30
+                ? 'text-amber-400'
+                : 'text-rose-400'
+            }`}
+          />
+          <span
+            className={
+              perfStats.fps >= 50
+                ? 'text-emerald-300'
+                : perfStats.fps >= 30
+                ? 'text-amber-300'
+                : 'text-rose-300'
+            }
+          >
+            {perfStats.fps} FPS
+          </span>
         </button>
       </div>
     </header>

@@ -1,14 +1,16 @@
 export type ToolType = 'select' | 'measure' | 'section' | 'isolate' | 'hide';
 
+export type EditMode = 'inspect' | 'edit';
+
 export type MeasurementType = 'distance' | 'area' | 'angle';
 
 export type CameraViewMode = 'perspective' | 'orthographic';
 
 export type StandardViewDirection = 'top' | 'bottom' | 'front' | 'back' | 'left' | 'right' | 'isometric';
 
-export type LeftPanelTab = 'tree' | 'storeys' | 'viewpoints';
+export type LeftPanelTab = 'tree' | 'storeys' | 'viewpoints' | 'changes';
 
-export type RightPanelTab = 'properties' | 'analysis' | 'filter';
+export type RightPanelTab = 'properties' | 'analysis' | 'filter' | 'edit';
 
 export interface LoadingStage {
   isBusy: boolean;
@@ -127,4 +129,45 @@ export interface BimAnalysisData {
     totalWindowsCount: number;
     totalSpacesCount: number;
   };
+}
+
+// --- PHASE 3: NON-DESTRUCTIVE EDITING TYPES ---
+
+export type BimChangeType = 'move' | 'rotate' | 'color' | 'opacity' | 'delete' | 'duplicate';
+
+export interface ElementTransform {
+  x: number;
+  y: number;
+  z: number;
+  rotationX: number;
+  rotationY: number;
+  rotationZ: number;
+}
+
+export interface ElementVisualOverride {
+  color?: string; // hex string e.g. '#38bdf8'
+  opacity?: number; // 0.1 to 1.0
+  wireframe?: boolean;
+}
+
+export interface BimChange {
+  id: string;
+  elementId: number;
+  elementName: string;
+  category?: string;
+  type: BimChangeType;
+  description: string;
+  originalValue: any;
+  newValue: any;
+  timestamp: string;
+}
+
+export interface ElementEditState {
+  elementId: number;
+  elementName: string;
+  category?: string;
+  transform: ElementTransform;
+  override: ElementVisualOverride;
+  isDeleted: boolean;
+  isDuplicate?: boolean;
 }

@@ -281,4 +281,97 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
 
     expect(criticalErrors).toEqual([]);
   });
+
+  test('verifies Phase 3 non-destructive BIM editing: inspect/edit modes, transforms, visual overrides, temp delete/restore, undo/redo, change set tracking, reset all', async ({ page }) => {
+    test.setTimeout(45000);
+
+    const criticalErrors: string[] = [];
+    page.on('console', (msg) => {
+      const text = msg.text();
+      if (msg.type() === 'error' && !text.includes('favicon') && !text.includes('download')) {
+        criticalErrors.push(`[Console Error] ${text}`);
+      }
+    });
+    page.on('pageerror', (err) => {
+      criticalErrors.push(`[Page Error] ${err.message}`);
+    });
+
+    await page.goto('/');
+
+    // 1. Load Model
+    await page.getByTestId('header-btn-sample-fast').click();
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+
+    // 2. Verify Mode Switch (Inspect -> Edit)
+    const modeInspectBtn = page.getByTestId('mode-inspect');
+    const modeEditBtn = page.getByTestId('mode-edit');
+    await expect(modeInspectBtn).toBeVisible();
+    await expect(modeEditBtn).toBeVisible();
+
+    await modeEditBtn.click();
+    await expect(page.getByTestId('tab-edit')).toBeVisible();
+
+    // 3. Select an Element
+    await page.getByTitle('Expand All').click();
+    const firstElement = page.locator('[data-express-id]').first();
+    await expect(firstElement).toBeVisible();
+    await firstElement.click();
+
+    // 4. Verify Edit Inspector shows element and transform controls
+    const inputMoveX = page.getByTestId('input-move-x');
+    await expect(inputMoveX).toBeVisible();
+
+    // Move element by +1m on X axis
+    await page.getByTestId('btn-move-x-add-1').click();
+    await expect(inputMoveX).toHaveValue('1');
+
+    // Header badge should indicate 1 edit
+    await expect(page.getByTestId('header-changes-badge')).toContainText('1 edit');
+
+    // 5. Visual Appearance Overrides (Cyan Color)
+    const cyanSwatch = page.getByTestId('color-swatch-cyan');
+    await expect(cyanSwatch).toBeVisible();
+    await cyanSwatch.click();
+    await expect(page.getByTestId('header-changes-badge')).toContainText('2 edits');
+
+    // 6. Non-Destructive Actions (Temporary Delete & Restore)
+    const deleteBtn = page.getByTestId('btn-toggle-delete');
+    await expect(deleteBtn).toBeVisible();
+    await deleteBtn.click();
+    await expect(page.getByText('Restore Element')).toBeVisible();
+
+    // Restore element
+    await deleteBtn.click();
+    await expect(page.getByText('Temp Delete')).toBeVisible();
+
+    // 7. Verify Change Set Panel
+    await page.getByTestId('tab-changeset').click();
+    await expect(page.getByTestId('change-item-move')).toBeVisible();
+    await expect(page.getByTestId('change-item-color')).toBeVisible();
+
+    // Focus element by clicking change item
+    await page.getByTestId('change-item-move').click();
+    await expect(page.getByTestId('selected-element-express-id')).toBeVisible();
+
+    // 8. Test Undo & Redo
+    const undoBtn = page.getByTestId('header-btn-undo');
+    await expect(undoBtn).toBeEnabled();
+    await undoBtn.click(); // Undo last action
+
+    const redoBtn = page.getByTestId('header-btn-redo');
+    await expect(redoBtn).toBeEnabled();
+    await redoBtn.click(); // Redo
+
+    // 9. Reset All Edits
+    const resetAllBtn = page.getByTestId('btn-changeset-reset-all');
+    await expect(resetAllBtn).toBeVisible();
+    await resetAllBtn.click();
+
+    await expect(page.getByText('No changes recorded yet.')).toBeVisible();
+
+    // 10. Return to Inspect Mode
+    await modeInspectBtn.click();
+
+    expect(criticalErrors).toEqual([]);
+  });
 });
