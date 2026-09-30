@@ -1,4 +1,4 @@
-# AGENTS.md — BIM LAB V1 AGENT CONTEXT & RULES
+# AGENTS.md — BIM LAB AGENT CONTEXT & RULES
 
 ## Core Operating Principle
 ```text
@@ -10,7 +10,7 @@ Persistent knowledge belongs in small repository files. Current prompts remain s
 ## Operating Rules
 1. **Diff-First Workflow**: Inspect `git status` and `git diff` before loading files. Do not reread the entire repo.
 2. **Context Budget**: Start with `CONTEXT: MINIMAL`. Escalate to `AUTO`, then `DEEP` only if blocked.
-3. **Scope Control**: Stay strictly within defined SCOPE for each task.
+3. **Scope Control**: Stay strictly within defined SCOPE for each task. Every task uses exact scope. Report bugs as FILE:Lx-Ly — cause — fix scope. Never expand scope silently.
 4. **Stop Policy**: Obey the STOP condition of the current task. Do not jump ahead into future phases.
 5. **Verification Profiles**:
    - `TARGETED`: specific affected test/type check
@@ -20,7 +20,7 @@ Persistent knowledge belongs in small repository files. Current prompts remain s
 6. **Hardware Target**: MacBook Pro 2019 / Intel UHD Graphics 630. DPR <= 1.25, Shadows OFF, bloom/SSAO/postprocessing OFF. Performance over decorative graphics.
 
 ## Project Structure
-- `src/bim/`: Engine, loaders, selection, properties, tree, visibility, camera, clipping, measurement
-- `src/components/bim/`: Viewport, canvas overlays, BIM tree panel, property inspector, diagnostics
-- `src/stores/`: Lightweight Zustand state (active tool, selected element ID, visibility, camera view)
-- `tests/`: Vitest (unit/domain) and Playwright (E2E/UI)
+- `src/bim/`: Engine, loaders, selection, properties, tree, visibility, camera, clipping, measurement, edit, persistence, analysis, ai (AIAgent, ToolRegistry, providers)
+- `src/components/`: Viewport, layout, overlays, panels (Tree, Properties, ChangeSet, AI Assistant), diagnostics
+- `src/stores/`: Lightweight Zustand state (active tool, selected element ID, visibility, camera view, changeSet, undo/redo state)
+- `tests/`: Vitest (unit/domain) and Playwright (`tests/e2e/`)

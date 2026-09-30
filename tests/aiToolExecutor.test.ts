@@ -97,8 +97,6 @@ describe('ToolRegistry & AI Tool Executor', () => {
         'get_element_properties',
         'calculate_quantities',
         'query_elements',
-        'undo',
-        'redo',
         'export_changes',
       ];
       for (const t of readTools) {
@@ -115,12 +113,28 @@ describe('ToolRegistry & AI Tool Executor', () => {
         'set_color_override',
         'delete_element',
         'reset_all_edits',
+        'undo',
+        'redo',
       ];
       for (const t of writeTools) {
         const tool = ToolRegistry.getTool(t);
         expect(tool, `Tool ${t} must be registered`).toBeDefined();
         expect(tool?.category).toBe('WRITE');
       }
+    });
+
+    it('isWriteAction properly identifies write tools and format-dependent confirmation', () => {
+      expect(ToolRegistry.isWriteAction('undo')).toBe(true);
+      expect(ToolRegistry.isWriteAction('redo')).toBe(true);
+      expect(ToolRegistry.isWriteAction('move_element')).toBe(true);
+      expect(ToolRegistry.isWriteAction('rotate_element')).toBe(true);
+      expect(ToolRegistry.isWriteAction('set_color_override')).toBe(true);
+      expect(ToolRegistry.isWriteAction('delete_element')).toBe(true);
+      expect(ToolRegistry.isWriteAction('reset_all_edits')).toBe(true);
+      expect(ToolRegistry.isWriteAction('export_changes', { format: 'ifc' })).toBe(true);
+      expect(ToolRegistry.isWriteAction('export_changes', { format: 'json' })).toBe(false);
+      expect(ToolRegistry.isWriteAction('select_element')).toBe(false);
+      expect(ToolRegistry.isWriteAction('query_elements')).toBe(false);
     });
   });
 
@@ -246,6 +260,117 @@ describe('ToolRegistry & AI Tool Executor', () => {
       expect(useBimStore.getState().changeSet).toHaveLength(1);
       expect(useBimStore.getState().changeSet[0].elementId).toBe(101);
       expect(useBimStore.getState().changeSet[0].type).toBe('move');
+    });
+
+    it('undo and redo require confirmation and do not mutate state when unconfirmed', async () => {
+      const undoSpy = vi.spyOn(bimEditService, 'undo').mockResolvedValue(undefined);
+      const redoSpy = vi.spyOn(bimEditService, 'redo').mockResolvedValue(undefined);
+      useBimStore.getState().setCanUndo(true);
+      useBimStore.getState().setCanRedo(true);
+
+      // Unconfirmed undo returns proposal
+      const unconfirmedUndo = await ToolRegistry.executeTool('undo', {}, false);
+      expect(unconfirmedUndo.success).toBe(true);
+      expect(unconfirmedUndo.proposal).toBeDefined();
+      expect(unconfirmedUndo.proposal?.toolName).toBe('undo');
+      expect(undoSpy).not.toHaveBeenCalled();
+
+      // Confirmed undo executes
+      const confirmedUndo = await ToolRegistry.executeTool('undo', {}, true);
+      expect(confirmedUndo.success).toBe(true);
+      expect(undoSpy).toHaveBeenCalled();
+
+      // Unconfirmed redo returns proposal
+      const unconfirmedRedo = await ToolRegistry.executeTool('redo', {}, false);
+      expect(unconfirmedRedo.success).toBe(true);
+      expect(unconfirmedRedo.proposal).toBeDefined();
+      expect(unconfirmedRedo.proposal?.toolName).toBe('redo');
+      expect(redoSpy).not.toHaveBeenCalled();
+
+      undoSpy.mockRestore();
+      redoSpy.mockRestore();
+    });
+
+    it('export_changes format=ifc requires confirmation while format=json executes directly', async () => {
+      // Setup a change so export has data
+      await bimEditService.transformElement(101, 'Wall', {
+        x: 1,
+        y: 0,
+        z: 0,
+        rotationX: 0,
+        rotationY: 0,
+        rotationZ: 0,
+      });
+
+      // format=ifc unconfirmed produces proposal
+      const ifcUnconfirmed = await ToolRegistry.executeTool(
+        'export_changes',
+        { format: 'ifc' },
+        false
+      );
+      expect(ifcUnconfirmed.success).toBe(true);
+      expect(ifcUnconfirmed.proposal).toBeDefined();
+      expect(ifcUnconfirmed.proposal?.toolName).toBe('export_changes');
+      expect(ifcUnconfirmed.proposal?.args.format).toBe('ifc');
+
+      // format=json unconfirmed executes directly
+      const jsonDirect = await ToolRegistry.executeTool(
+        'export_changes',
+        { format: 'json' },
+        false
+      );
+      expect(jsonDirect.success).toBe(true);
+      expect(jsonDirect.proposal).toBeUndefined();
+      expect(jsonDirect.data.format).toBe('json');
+    });
+
+    it('excludes spatial hierarchy containers from element queries even if they have an expressID', async () => {
+      const treeWithSpatialIDs: BimTreeNode[] = [
+        {
+          id: 'proj',
+          name: 'Project',
+          type: 'IFCPROJECT',
+          expressID: 1,
+          visible: true,
+          children: [
+            {
+              id: 'site',
+              name: 'Site',
+              type: 'IFCSITE',
+              expressID: 2,
+              visible: true,
+              children: [
+                {
+                  id: 'storey',
+                  name: 'Level 1',
+                  type: 'IFCBUILDINGSTOREY',
+                  expressID: 3,
+                  visible: true,
+                  children: [
+                    {
+                      id: 'wall-1',
+                      name: 'Wall 101',
+                      type: 'IFCWALLSTANDARDCASE',
+                      category: 'Walls',
+                      expressID: 101,
+                      visible: true,
+                      children: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      useBimStore.getState().setSpatialTree(treeWithSpatialIDs);
+
+      const res = await ToolRegistry.executeTool('query_elements', {});
+      expect(res.success).toBe(true);
+      // Only the wall (101) is returned, spatial containers 1, 2, 3 are excluded
+      expect(res.data.totalFound).toBe(1);
+      expect(res.data.elements[0].id).toBe(101);
     });
   });
 });

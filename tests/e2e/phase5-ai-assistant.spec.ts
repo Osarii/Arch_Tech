@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Phase 4: AI BIM Assistant & Tool Safety Execution E2E', () => {
+test.describe('Phase 5: AI BIM Assistant & Tool Safety Execution E2E', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to root
     await page.goto('/');
@@ -35,7 +35,7 @@ test.describe('Phase 4: AI BIM Assistant & Tool Safety Execution E2E', () => {
     await expect(page.getByTestId('ai-chat-input')).toBeVisible();
   });
 
-  test('executes natural language READ tool "calculate quantities" and renders badge & results', async ({ page }) => {
+  test('executes natural language READ tool "calculate quantities" and renders badge & results with actual values', async ({ page }) => {
     // Open AI Panel
     await page.getByTestId('header-btn-ai').click();
 
@@ -51,9 +51,19 @@ test.describe('Phase 4: AI BIM Assistant & Tool Safety Execution E2E', () => {
     await expect(toolBadge).toContainText('calculate_quantities');
     await expect(toolBadge).toContainText('Executed');
 
-    // Verify result is rendered
+    // Verify tool result JSON data contains actual BimAnalysisData keys and values
     const toolResult = page.getByTestId('ai-tool-result-calculate_quantities');
     await expect(toolResult).toBeVisible();
+    await expect(toolResult).toContainText('totalElements');
+    await expect(toolResult).toContainText('quantities');
+    await expect(toolResult).toContainText('totalVolume');
+
+    // Verify assistant formatted message contains real calculated numbers and no N/A
+    const assistantMsg = page.getByTestId('ai-message-assistant').last();
+    await expect(assistantMsg).toContainText('Total Elements:');
+    await expect(assistantMsg).toContainText('Storeys:');
+    await expect(assistantMsg).toContainText('Total Volume:');
+    await expect(assistantMsg).not.toContainText('N/A');
   });
 
   test('executes spatial search "find walls" and renders found count', async ({ page }) => {

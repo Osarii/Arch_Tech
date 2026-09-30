@@ -85,7 +85,7 @@ export class RuleBasedProvider implements AIProvider {
       prompt.includes('undo last')
     ) {
       return {
-        message: 'Undoing the latest modification from history...',
+        message: 'I have prepared a proposal to undo the latest modification. As this mutates model state, please confirm to proceed.',
         toolCalls: [{ toolName: 'undo', args: {} }],
       };
     }
@@ -97,7 +97,7 @@ export class RuleBasedProvider implements AIProvider {
       prompt.includes('reapply')
     ) {
       return {
-        message: 'Redoing previously undone modification...',
+        message: 'I have prepared a proposal to redo the previously undone modification. As this mutates model state, please confirm to proceed.',
         toolCalls: [{ toolName: 'redo', args: {} }],
       };
     }
@@ -112,7 +112,10 @@ export class RuleBasedProvider implements AIProvider {
     ) {
       const format = prompt.includes('ifc') ? 'ifc' : 'json';
       return {
-        message: `Exporting BIM changes as ${format.toUpperCase()}...`,
+        message:
+          format === 'ifc'
+            ? 'I have prepared a proposal to persist changes into an IFC file. Please confirm to export.'
+            : `Exporting BIM changes as ${format.toUpperCase()}...`,
         toolCalls: [{ toolName: 'export_changes', args: { format } }],
       };
     }

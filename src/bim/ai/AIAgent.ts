@@ -209,7 +209,9 @@ export class AIAgent {
         const toolDef = ToolRegistry.getTool(call.toolName);
         if (!toolDef) continue;
 
-        if (toolDef.category === 'READ') {
+        const isWrite = ToolRegistry.isWriteAction(call.toolName, call.args);
+
+        if (!isWrite) {
           // Direct execution for READ tools
           const result = await ToolRegistry.executeTool(call.toolName, call.args, false);
           const formatted = this.formatReadResult(call.toolName, call.args, result);

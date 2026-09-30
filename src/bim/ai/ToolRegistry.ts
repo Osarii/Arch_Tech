@@ -201,21 +201,6 @@ export class ToolRegistry {
         nameQuery: { type: 'string', description: 'Text search inside element names' },
       },
     });
-
-    this.registerTool({
-      name: 'undo',
-      description: 'Undoes the most recent modification in the Change Set',
-      category: 'READ',
-      parameters: {},
-    });
-
-    this.registerTool({
-      name: 'redo',
-      description: 'Redoes the most recently undone modification',
-      category: 'READ',
-      parameters: {},
-    });
-
     this.registerTool({
       name: 'export_changes',
       description: 'Exports the active Change Set as a downloadable JSON changeset or persisted IFC file',
@@ -226,6 +211,20 @@ export class ToolRegistry {
     });
 
     // --- WRITE TOOLS (Require user confirmation before execution) ---
+
+    this.registerTool({
+      name: 'undo',
+      description: 'Undoes the most recent modification in the Change Set',
+      category: 'WRITE',
+      parameters: {},
+    });
+
+    this.registerTool({
+      name: 'redo',
+      description: 'Redoes the most recently undone modification',
+      category: 'WRITE',
+      parameters: {},
+    });
 
     this.registerTool({
       name: 'move_element',
@@ -276,6 +275,15 @@ export class ToolRegistry {
     });
   }
 
+  public static isWriteAction(name: string, args?: Record<string, any>): boolean {
+    this.initDefaultTools();
+    const tool = this.getTool(name);
+    if (!tool) return false;
+    if (tool.category === 'WRITE') return true;
+    if (name === 'export_changes' && args?.format === 'ifc') return true;
+    return false;
+  }
+
   /**
    * Executes a tool with strict READ vs WRITE validation.
    * WRITE actions must have `confirmed: true` to execute; otherwise a proposal is generated.
@@ -292,13 +300,17 @@ export class ToolRegistry {
     }
 
     // 1. Check READ vs WRITE enforcement
-    if (tool.category === 'WRITE' && !confirmed) {
+    const isWrite = this.isWriteAction(name, args);
+    if (isWrite && !confirmed) {
+      const isIfcExport = name === 'export_changes' && args.format === 'ifc';
       const proposal: PendingWriteProposal = {
         proposalId: `prop-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         toolName: name,
         args,
         summary: this.generateWriteSummary(name, args),
-        description: tool.description,
+        description: isIfcExport
+          ? 'Persists modifications into ISO STEP-21 IFC file and downloads'
+          : tool.description,
         elementId: args.elementId,
         elementName: args.elementName || (args.elementId ? `#${args.elementId}` : undefined),
         status: 'pending',
@@ -308,7 +320,11 @@ export class ToolRegistry {
       return {
         success: true,
         proposal,
-        data: { message: 'Write action requires user confirmation before execution.' },
+        data: {
+          message: isIfcExport
+            ? 'IFC persistence export requires user confirmation before execution.'
+            : 'Write action requires user confirmation before execution.',
+        },
       };
     }
 
@@ -628,6 +644,14 @@ export class ToolRegistry {
 
   private static generateWriteSummary(name: string, args: Record<string, any>): string {
     switch (name) {
+      case 'undo':
+        return 'Undo the last modification in Change Set history';
+      case 'redo':
+        return 'Redo the previously undone modification';
+      case 'export_changes':
+        return args.format === 'ifc'
+          ? 'Persist modifications into ISO STEP-21 IFC file and download'
+          : 'Export Change Set as JSON file';
       case 'move_element':
         return `Move element #${args.elementId} by [${args.x || 0}m, ${args.y || 0}m, ${args.z || 0}m]`;
       case 'rotate_element':

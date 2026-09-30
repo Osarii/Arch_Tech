@@ -434,6 +434,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
 
     // Model reloads with new persisted filename and viewport resets changes
     await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+    await page.getByTestId('tab-changeset').click();
     await expect(page.getByText('No changes recorded yet.')).toBeVisible();
 
     // Return to Inspect Mode

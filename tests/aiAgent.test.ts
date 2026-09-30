@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AIAgent } from '@/bim/ai/AIAgent';
 import { RuleBasedProvider } from '@/bim/ai/providers/RuleBasedProvider';
 import { ToolRegistry } from '@/bim/ai/ToolRegistry';
 import { useBimStore } from '@/stores/bimStore';
 import { bimEditService } from '@/bim/edit/bimEditService';
+import { BimAnalysisService } from '@/bim/analysis/bimAnalysisService';
+import { bimEngine } from '@/bim/engine/BimEngine';
+import { BimTreeNode } from '@/types/bim';
 
 describe('AIAgent & RuleBasedProvider Integration', () => {
   let agent: AIAgent;
@@ -231,6 +234,130 @@ describe('AIAgent & RuleBasedProvider Integration', () => {
       const lastMsg = agent.getMessages()[agent.getMessages().length - 1];
       expect(lastMsg.role).toBe('system');
       expect(lastMsg.content).toContain('Cancelled');
+    });
+
+    it('undo and redo generate proposals and do not mutate state without confirmation', async () => {
+      const undoMsg = await agent.sendMessage('undo');
+      expect(undoMsg.proposal).toBeDefined();
+      expect(undoMsg.proposal?.toolName).toBe('undo');
+      expect(undoMsg.proposal?.status).toBe('pending');
+
+      const redoMsg = await agent.sendMessage('redo');
+      expect(redoMsg.proposal).toBeDefined();
+      expect(redoMsg.proposal?.toolName).toBe('redo');
+      expect(redoMsg.proposal?.status).toBe('pending');
+    });
+
+    it('exporting changes as IFC generates a confirmation proposal and does not execute directly', async () => {
+      const ifcMsg = await agent.sendMessage('export changes as ifc');
+      expect(ifcMsg.proposal).toBeDefined();
+      expect(ifcMsg.proposal?.toolName).toBe('export_changes');
+      expect(ifcMsg.proposal?.args.format).toBe('ifc');
+      expect(ifcMsg.proposal?.status).toBe('pending');
+    });
+
+    it('calculates quantities and formats output with real analysis data fields without N/A', async () => {
+      const mockAnalysisData = {
+        analysis: {
+          totalElements: 24,
+          schema: 'IFC2X3',
+          totalStoreys: 2,
+          totalMaterials: 4,
+          materials: ['Concrete', 'Steel', 'Glass', 'Wood'],
+          categoryCounts: { Walls: 8, Slabs: 4, Doors: 4, Windows: 8 },
+          storeyDistributions: {},
+          quantities: {
+            totalWallGrossArea: 180.5,
+            totalWallNetArea: 155.2,
+            totalSlabArea: 120.0,
+            totalVolume: 65.4,
+            totalDoorsCount: 4,
+            totalWindowsCount: 8,
+            totalSpacesCount: 6,
+          },
+        },
+        storeysData: [],
+        storeyToElementIds: new Map(),
+        materials: ['Concrete', 'Steel', 'Glass', 'Wood'],
+      };
+
+      const analyzeSpy = vi
+        .spyOn(BimAnalysisService, 'analyzeModel')
+        .mockReturnValue(mockAnalysisData as any);
+
+      (bimEngine as any).webIfcApi = {} as any;
+      (bimEngine as any).webIfcModelID = 0;
+
+      // Execute calculate_quantities tool directly to verify formatted summary
+      const execRes = await ToolRegistry.executeTool('calculate_quantities', {});
+      expect(execRes.success).toBe(true);
+
+      const msg = await agent.sendMessage('calculate quantities');
+      expect(msg.role).toBe('assistant');
+      expect(msg.proposal).toBeUndefined(); // READ tool executes directly
+      expect(msg.content).toContain('Total Elements: 24');
+      expect(msg.content).toContain('Storeys: 2');
+      expect(msg.content).toContain('Total Volume: 65.40 m³');
+      expect(msg.content).toContain('Wall Gross Area: 180.50 m²');
+      expect(msg.content).toContain('Wall Net Area: 155.20 m²');
+      expect(msg.content).toContain('Slab Area: 120.00 m²');
+      expect(msg.content).toContain('Doors: 4 | Windows: 8 | Spaces: 6');
+      expect(msg.content).not.toContain('N/A');
+      expect(msg.content).not.toContain('undefined');
+
+      (bimEngine as any).webIfcApi = null;
+      (bimEngine as any).webIfcModelID = null;
+      analyzeSpy.mockRestore();
+    });
+
+    it('excludes spatial hierarchy containers from element queries', async () => {
+      const tree: BimTreeNode[] = [
+        {
+          id: 'proj',
+          name: 'Project Alpha',
+          type: 'IFCPROJECT',
+          expressID: 10,
+          visible: true,
+          children: [
+            {
+              id: 'site',
+              name: 'Site Beta',
+              type: 'IFCSITE',
+              expressID: 20,
+              visible: true,
+              children: [
+                {
+                  id: 'storey',
+                  name: 'Ground Level',
+                  type: 'IFCBUILDINGSTOREY',
+                  expressID: 30,
+                  visible: true,
+                  children: [
+                    {
+                      id: 'wall-1',
+                      name: 'Partition Wall',
+                      type: 'IFCWALLSTANDARDCASE',
+                      category: 'Walls',
+                      expressID: 105,
+                      visible: true,
+                      children: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      useBimStore.getState().setSpatialTree(tree);
+
+      const msg = await agent.sendMessage('Find all elements');
+      expect(msg.content).toContain('Found 1 matching element');
+      expect(msg.content).toContain('#105: Partition Wall');
+      expect(msg.content).not.toContain('#10:');
+      expect(msg.content).not.toContain('#20:');
+      expect(msg.content).not.toContain('#30:');
     });
   });
 });
