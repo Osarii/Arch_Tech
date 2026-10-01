@@ -56,7 +56,12 @@ export class BimEngine {
     this.fragments = this.components.get(OBC.FragmentsManager);
     this.ifcLoader = this.components.get(OBC.IfcLoader);
 
-    if (typeof window !== 'undefined') {
+    const isDevOrTest =
+      (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') ||
+      Boolean(import.meta.env?.DEV) ||
+      import.meta.env?.MODE === 'test';
+
+    if (typeof window !== 'undefined' && isDevOrTest) {
       (window as any).bimEngine = this;
     }
   }
@@ -72,17 +77,30 @@ export class BimEngine {
    * Initializes the That Open engine with container element.
    */
   public async init(container: HTMLElement): Promise<void> {
-    if (this.isInitialized && this.container === container) return;
-    if (this.initPromise) return this.initPromise;
+    if (this.isInitialized) {
+      if (this.container !== container) {
+        this.rebindContainer(container);
+      }
+      return;
+    }
+
+    if (this.initPromise) {
+      await this.initPromise;
+      if (container && this.container !== container) {
+        this.rebindContainer(container);
+      }
+      return;
+    }
 
     this.container = container;
-    this.initPromise = (async () => {
-      // 1. Create SimpleWorld
-      this.world = this.worlds.create<
-        OBC.SimpleScene,
-        OBC.OrthoPerspectiveCamera,
-        OBC.SimpleRenderer
-      >();
+    const activeInit = (async () => {
+      try {
+        // 1. Create SimpleWorld
+        this.world = this.worlds.create<
+          OBC.SimpleScene,
+          OBC.OrthoPerspectiveCamera,
+          OBC.SimpleRenderer
+        >();
 
       // 2. Setup Scene
       this.world.scene = new OBC.SimpleScene(this.components);
@@ -212,15 +230,64 @@ export class BimEngine {
       this.startPerformanceLoop();
 
       this.isInitialized = true;
-    })();
+    } finally {
+      this.initPromise = null;
+    }
+  })();
 
-    return this.initPromise;
+  this.initPromise = activeInit;
+  return activeInit;
+}
+
+  /**
+   * Rebinds the existing renderer canvas and resize observer to a new container
+   * without destroying or rebuilding engine state.
+   */
+  public rebindContainer(container: HTMLElement): void {
+    if (!container) return;
+    this.container = container;
+
+    // 1. Clear any stale children in the new container
+    while (container.firstChild) {
+      container.removeChild(container.firstChild);
+    }
+
+    // 2. Reattach the existing canvas if present
+    const canvas = this.world?.renderer?.three?.domElement;
+    if (canvas) {
+      canvas.style.position = 'absolute';
+      canvas.style.inset = '0';
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.display = 'block';
+      if (canvas.parentElement !== container) {
+        container.appendChild(canvas);
+      }
+    }
+
+    // 3. Update That Open SimpleRenderer internal container reference & events
+    if (this.world?.renderer) {
+      (this.world.renderer as any).container = container;
+      try {
+        (this.world.renderer as any).setupEvents(true);
+      } catch {
+        // Safe fallback if renderer does not support setupEvents
+      }
+    }
+
+    // 4. Rebind ResizeObserver to the new container
+    this.setupResizeObserver(container);
+
+    // 5. Trigger resize and aspect ratio update
+    this.resize();
   }
 
   private setupResizeObserver(container: HTMLElement) {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
+      this.resizeObserver = null;
     }
+    if (typeof ResizeObserver === 'undefined') return;
     this.resizeObserver = new ResizeObserver(() => {
       this.resize();
     });
@@ -234,6 +301,9 @@ export class BimEngine {
   }
 
   private startPerformanceLoop(): void {
+    if (this.animFrameId !== null) {
+      cancelAnimationFrame(this.animFrameId);
+    }
     const loop = () => {
       this.frames++;
       const now = performance.now();
@@ -762,11 +832,13 @@ export class BimEngine {
   }
 
   public dispose(): void {
-    if (this.animFrameId) {
+    if (this.animFrameId !== null) {
       cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
     }
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
+      this.resizeObserver = null;
     }
     this.unloadModel();
     try {
@@ -775,6 +847,8 @@ export class BimEngine {
       console.warn('Error disposing components:', err);
     }
     this.isInitialized = false;
+    this.initPromise = null;
+    this.container = null;
   }
 }
 

@@ -415,3 +415,132 @@ describe('Phase 6A: Viewport Visibility & Camera Fit Integration', () => {
   });
 });
 
+describe('Phase 6A Lifecycle Hardening: Viewport & Engine Lifecycle', () => {
+  let mockContainer1: HTMLElement;
+  let mockContainer2: HTMLElement;
+  let mockCanvas: HTMLCanvasElement;
+
+  beforeEach(() => {
+    mockContainer1 = document.createElement('div');
+    mockContainer2 = document.createElement('div');
+    mockCanvas = document.createElement('canvas');
+
+    (bimEngine as any).isInitialized = false;
+    (bimEngine as any).initPromise = null;
+    (bimEngine as any).container = null;
+    bimEngine.world = {
+      renderer: {
+        three: {
+          domElement: mockCanvas,
+          setSize: vi.fn(),
+        },
+        resize: vi.fn(),
+        setupEvents: vi.fn(),
+      },
+      camera: {
+        updateAspect: vi.fn(),
+        controls: {
+          fitToBox: vi.fn(),
+        },
+      },
+      scene: {
+        three: new THREE.Scene(),
+      },
+    } as any;
+  });
+
+  it('rebindContainer reparents existing canvas and updates resize observer without rebuilding engine', () => {
+    mockContainer1.appendChild(mockCanvas);
+    expect(mockCanvas.parentElement).toBe(mockContainer1);
+
+    // Stale child in container 2 that should be cleared
+    const staleChild = document.createElement('span');
+    mockContainer2.appendChild(staleChild);
+
+    bimEngine.rebindContainer(mockContainer2);
+
+    expect(mockCanvas.parentElement).toBe(mockContainer2);
+    expect(mockContainer2.contains(staleChild)).toBe(false);
+    expect((bimEngine as any).container).toBe(mockContainer2);
+    expect((bimEngine.world?.renderer as any).container).toBe(mockContainer2);
+    expect((bimEngine.world?.renderer as any).resize).toHaveBeenCalled();
+    expect((bimEngine.world?.camera as any).updateAspect).toHaveBeenCalled();
+  });
+
+  it('init with new container calls rebindContainer when already initialized', async () => {
+    (bimEngine as any).isInitialized = true;
+    (bimEngine as any).container = mockContainer1;
+
+    const rebindSpy = vi.spyOn(bimEngine, 'rebindContainer');
+
+    await bimEngine.init(mockContainer2);
+
+    expect(rebindSpy).toHaveBeenCalledWith(mockContainer2);
+  });
+
+  it('init with identical container is an immediate no-op when already initialized', async () => {
+    (bimEngine as any).isInitialized = true;
+    (bimEngine as any).container = mockContainer1;
+
+    const rebindSpy = vi.spyOn(bimEngine, 'rebindContainer');
+
+    await bimEngine.init(mockContainer1);
+
+    expect(rebindSpy).not.toHaveBeenCalled();
+  });
+
+  it('concurrent init calls share the active promise and rebind if container changes', async () => {
+    (bimEngine as any).isInitialized = false;
+
+    let resolveActiveInit: () => void = () => {};
+    const activePromise = new Promise<void>((resolve) => {
+      resolveActiveInit = resolve;
+    });
+
+    (bimEngine as any).initPromise = activePromise;
+    const rebindSpy = vi.spyOn(bimEngine, 'rebindContainer');
+
+    const call1 = bimEngine.init(mockContainer1);
+    const call2 = bimEngine.init(mockContainer2);
+
+    // Resolve in-flight init, setting container to mockContainer1
+    (bimEngine as any).container = mockContainer1;
+    resolveActiveInit();
+
+    await Promise.all([call1, call2]);
+
+    // call1 had mockContainer1 (matching container), call2 had mockContainer2 (triggered rebind)
+    expect(rebindSpy).toHaveBeenCalledWith(mockContainer2);
+  });
+
+  it('waitForInit resolves immediately when initialized or awaits active promise', async () => {
+    (bimEngine as any).isInitialized = true;
+    await expect(bimEngine.waitForInit()).resolves.toBeUndefined();
+
+    (bimEngine as any).isInitialized = false;
+    let resolved = false;
+    (bimEngine as any).initPromise = new Promise<void>((res) => {
+      setTimeout(() => {
+        resolved = true;
+        res();
+      }, 10);
+    });
+
+    await bimEngine.waitForInit();
+    expect(resolved).toBe(true);
+  });
+
+  it('dispose cleans up observers, frame loops, and clears initPromise and container', () => {
+    (bimEngine as any).animFrameId = 42;
+    (bimEngine as any).container = mockContainer1;
+    (bimEngine as any).initPromise = Promise.resolve();
+    (bimEngine as any).isInitialized = true;
+
+    bimEngine.dispose();
+
+    expect((bimEngine as any).animFrameId).toBeNull();
+    expect((bimEngine as any).container).toBeNull();
+    expect((bimEngine as any).initPromise).toBeNull();
+    expect((bimEngine as any).isInitialized).toBe(false);
+  });
+});

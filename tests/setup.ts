@@ -25,3 +25,11 @@ if (typeof URL.createObjectURL === 'undefined') {
   URL.createObjectURL = () => 'blob:mock-object-url';
   URL.revokeObjectURL = () => {};
 }
+
+if (typeof (globalThis as any).ResizeObserver === 'undefined') {
+  (globalThis as any).ResizeObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}

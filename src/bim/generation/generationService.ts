@@ -403,6 +403,11 @@ export class BimGenerationService {
 
 export const bimGenerationService = new BimGenerationService();
 
-if (typeof window !== 'undefined') {
+const isDevOrTest =
+  (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') ||
+  Boolean(import.meta.env?.DEV) ||
+  import.meta.env?.MODE === 'test';
+
+if (typeof window !== 'undefined' && isDevOrTest) {
   (window as any).bimGenerationService = bimGenerationService;
 }
