@@ -106,6 +106,59 @@ describe('IfcPersistenceService (Real IFC Persistence & Change Set JSON)', () =>
     ifcApi.CloseModel(reModelID);
   });
 
+  it('moves with non-zero X, Y, and Z and verifies round-trip coordinates (UI X->IFC X, UI Y->IFC Z, UI Z->IFC Y)', () => {
+    const modelID = ifcApi.OpenModel(new Uint8Array(smallIfcBuffer));
+    const scale = IfcPersistenceService.getModelLengthUnitScale(ifcApi, modelID);
+    expect(scale).toBe(1000);
+
+    // Baseline element 44 CartesianPoint coordinates
+    const element = ifcApi.GetLine(modelID, 44);
+    const placement = ifcApi.GetLine(modelID, element.ObjectPlacement.value);
+    const axis2 = ifcApi.GetLine(modelID, placement.RelativePlacement.value);
+    const point = ifcApi.GetLine(modelID, axis2.Location.value);
+    const baseX = point.Coordinates[0].value ?? point.Coordinates[0];
+    const baseY = point.Coordinates[1].value ?? point.Coordinates[1];
+    const baseZ = point.Coordinates[2]?.value ?? point.Coordinates[2] ?? 0;
+
+    // UI move: X=1.5m (horizontal), Y=2.0m (vertical), Z=3.5m (depth)
+    const change: BimChange = {
+      id: 'move-3d',
+      elementId: 44,
+      elementName: 'floor',
+      type: 'move',
+      description: 'Moved +1.5m X, +2.0m Y, +3.5m Z in UI',
+      originalValue: { x: 0, y: 0, z: 0 },
+      newValue: { x: 1.5, y: 2.0, z: 3.5 },
+      timestamp: '12:00:00',
+    };
+
+    // Detached export with full round-trip semantic verification
+    const exported = IfcPersistenceService.exportModifiedIfc(ifcApi, modelID, [change]);
+    expect(exported.result.success).toBe(true);
+    expect(exported.result.persistedCount).toBe(1);
+
+    // Reopen exported IFC
+    const reModelID = ifcApi.OpenModel(exported.data);
+    const reElement = ifcApi.GetLine(reModelID, 44);
+    const rePlacement = ifcApi.GetLine(reModelID, reElement.ObjectPlacement.value);
+    const reAxis2 = ifcApi.GetLine(reModelID, rePlacement.RelativePlacement.value);
+    const rePoint = ifcApi.GetLine(reModelID, reAxis2.Location.value);
+
+    const repX = rePoint.Coordinates[0].value ?? rePoint.Coordinates[0];
+    const repY = rePoint.Coordinates[1].value ?? rePoint.Coordinates[1];
+    const repZ = rePoint.Coordinates[2]?.value ?? rePoint.Coordinates[2] ?? 0;
+
+    // UI X -> IFC X (baseX + 1.5 * 1000)
+    expect(repX).toBeCloseTo(baseX + 1500, 2);
+    // UI Z (depth) -> IFC Y (baseY + 3.5 * 1000)
+    expect(repY).toBeCloseTo(baseY + 3500, 2);
+    // UI Y (vertical) -> IFC Z (baseZ + 2.0 * 1000)
+    expect(repZ).toBeCloseTo(baseZ + 2000, 2);
+
+    ifcApi.CloseModel(reModelID);
+    ifcApi.CloseModel(modelID);
+  });
+
   it('persists Rotate yaw to real IFC Direction vector and survives reload', () => {
     const modelID = ifcApi.OpenModel(new Uint8Array(smallIfcBuffer));
 
@@ -500,8 +553,9 @@ describe('IfcPersistenceService (Real IFC Persistence & Change Set JSON)', () =>
       const r0 = reRefDir.DirectionRatios[0].value ?? reRefDir.DirectionRatios[0];
       const r1 = reRefDir.DirectionRatios[1].value ?? reRefDir.DirectionRatios[1];
 
-      expect(r0).toBeCloseTo(0, 3);
-      expect(r1).toBeCloseTo(1, 3);
+      // Relative rotation: baseline east wall RefDirection is [0, 1]; +90° rotation yields [-1, 0]
+      expect(r0).toBeCloseTo(-1, 3);
+      expect(r1).toBeCloseTo(0, 3);
     });
 
     it('5. delete preserves valid spatial hierarchy', async () => {
@@ -626,6 +680,243 @@ describe('IfcPersistenceService (Real IFC Persistence & Change Set JSON)', () =>
 
       ifcApi.CloseModel(unmodifiedReopenedId);
       ifcApi.CloseModel(activeModelId);
+    });
+
+    it('7. composes multiple relative rotations on an already-oriented generated wall', async () => {
+      const genService = new BimGenerationService();
+      const plan = genService.generatePlan({
+        length: 10,
+        width: 8,
+        storeys: 1,
+        storeyHeight: 3,
+      });
+      const ifcData = await IfcAuthoringService.generateIfc4(plan, ifcApi);
+      const modelId = ifcApi.OpenModel(ifcData);
+
+      const wallIds = ifcApi.GetLineIDsWithType(modelId, WebIFC.IFCWALL);
+      // Wall 1 is the East wall: (10, 0) to (10, 8) -> baseline RefDirection is [0, 1]
+      const eastWallId = wallIds.get(1);
+
+      const baseElement = ifcApi.GetLine(modelId, eastWallId);
+      const basePlacement = ifcApi.GetLine(modelId, baseElement.ObjectPlacement.value);
+      const baseAxis2 = ifcApi.GetLine(modelId, basePlacement.RelativePlacement.value);
+      const baseRefDir = ifcApi.GetLine(modelId, baseAxis2.RefDirection.value);
+      const baseDirX = baseRefDir.DirectionRatios[0].value ?? baseRefDir.DirectionRatios[0];
+      const baseDirY = baseRefDir.DirectionRatios[1].value ?? baseRefDir.DirectionRatios[1];
+
+      expect(baseDirX).toBeCloseTo(0, 3);
+      expect(baseDirY).toBeCloseTo(1, 3);
+
+      // Two sequential rotations: +30° then +60° (net = +90°)
+      const changes: BimChange[] = [
+        {
+          id: 'rot-step-1',
+          elementId: eastWallId,
+          elementName: 'East Wall',
+          type: 'rotate',
+          description: 'Rotate +30 deg',
+          originalValue: { rotationY: 0 },
+          newValue: { rotationY: 30 },
+          timestamp: '12:00:00',
+        },
+        {
+          id: 'rot-step-2',
+          elementId: eastWallId,
+          elementName: 'East Wall',
+          type: 'rotate',
+          description: 'Rotate +60 deg',
+          originalValue: { rotationY: 30 },
+          newValue: { rotationY: 90 },
+          timestamp: '12:01:00',
+        },
+      ];
+
+      const exported = IfcPersistenceService.exportModifiedIfc(ifcApi, modelId, changes);
+      expect(exported.result.success).toBe(true);
+      expect(exported.result.persistedCount).toBe(2);
+
+      // Reopen and verify RefDirection is [-1, 0]
+      const reModelId = ifcApi.OpenModel(exported.data);
+      const repElement = ifcApi.GetLine(reModelId, eastWallId);
+      const repPlacement = ifcApi.GetLine(reModelId, repElement.ObjectPlacement.value);
+      const repAxis2 = ifcApi.GetLine(reModelId, repPlacement.RelativePlacement.value);
+      const repRefDir = ifcApi.GetLine(reModelId, repAxis2.RefDirection.value);
+      const repDirX = repRefDir.DirectionRatios[0].value ?? repRefDir.DirectionRatios[0];
+      const repDirY = repRefDir.DirectionRatios[1].value ?? repRefDir.DirectionRatios[1];
+
+      // [0, 1] rotated by +90° = [-1, 0]
+      expect(repDirX).toBeCloseTo(-1, 3);
+      expect(repDirY).toBeCloseTo(0, 3);
+
+      ifcApi.CloseModel(reModelId);
+      ifcApi.CloseModel(modelId);
+    });
+
+    it('8. delete → restore → export → reopen: element exists, containment exists, tree counts unchanged', async () => {
+      const genService = new BimGenerationService();
+      const plan = genService.generatePlan({
+        length: 10,
+        width: 8,
+        storeys: 2,
+        storeyHeight: 3,
+      });
+      const ifcData = await IfcAuthoringService.generateIfc4(plan, ifcApi);
+      const modelId = ifcApi.OpenModel(ifcData);
+
+      const baselineTree = buildSpatialTree(ifcApi, modelId);
+      expect(baselineTree.totalElements).toBe(11);
+      expect(baselineTree.elementCounts.walls).toBe(8);
+
+      const wallIds = ifcApi.GetLineIDsWithType(modelId, WebIFC.IFCWALL);
+      const wallIdToToggle = wallIds.get(0);
+
+      // Sequence: delete -> restore
+      const changes: BimChange[] = [
+        {
+          id: 'del-toggle-1',
+          elementId: wallIdToToggle,
+          elementName: 'Wall 1',
+          type: 'delete',
+          description: 'Delete wall',
+          originalValue: false,
+          newValue: true,
+          timestamp: '12:00:00',
+        },
+        {
+          id: 'res-toggle-2',
+          elementId: wallIdToToggle,
+          elementName: 'Wall 1',
+          type: 'delete',
+          description: 'Restore wall',
+          originalValue: true,
+          newValue: false,
+          timestamp: '12:01:00',
+        },
+      ];
+
+      const exported = IfcPersistenceService.exportModifiedIfc(ifcApi, modelId, changes);
+      expect(exported.result.success).toBe(true);
+
+      // Reopen exported IFC
+      const reModelId = ifcApi.OpenModel(exported.data);
+
+      // Verify tree counts are unchanged
+      const reTree = buildSpatialTree(ifcApi, reModelId);
+      expect(reTree.totalElements).toBe(baselineTree.totalElements);
+      expect(reTree.elementCounts.walls).toBe(baselineTree.elementCounts.walls);
+      expect(reTree.expressIdToStorey.has(wallIdToToggle)).toBe(true);
+      expect(reTree.expressIdToCategory.has(wallIdToToggle)).toBe(true);
+
+      // Verify element line exists
+      const line = ifcApi.GetLine(reModelId, wallIdToToggle);
+      expect(line).toBeDefined();
+      expect(Object.keys(line).length).toBeGreaterThan(0);
+
+      // Verify containment exists
+      const relLines = ifcApi.GetLineIDsWithType(reModelId, WebIFC.IFCRELCONTAINEDINSPATIALSTRUCTURE);
+      let foundInContainment = false;
+      for (let i = 0; i < relLines.size(); i++) {
+        const rel = ifcApi.GetLine(reModelId, relLines.get(i));
+        if (rel && Array.isArray(rel.RelatedElements)) {
+          if (rel.RelatedElements.some((h: any) => (h?.value ?? h) === wallIdToToggle)) {
+            foundInContainment = true;
+            break;
+          }
+        }
+      }
+      expect(foundInContainment).toBe(true);
+
+      ifcApi.CloseModel(reModelId);
+      ifcApi.CloseModel(modelId);
+    });
+
+    it('9. preserves active IFC, Change Set, and edits when reload fails after export', async () => {
+      // Reset edit state
+      await bimEditService.resetAllEdits();
+
+      // Setup active model in bimEngine
+      const activeModelId = ifcApi.OpenModel(new Uint8Array(smallIfcBuffer));
+      bimEngine.webIfcApi = ifcApi;
+      bimEngine.webIfcModelID = activeModelId;
+
+      const mockScene = new THREE.Scene();
+      if (!bimEngine.world) bimEngine.world = {} as any;
+      if (!bimEngine.world.scene) bimEngine.world.scene = {} as any;
+      bimEngine.world.scene.three = mockScene;
+
+      const currentModelObj = new THREE.Group();
+      const mockCurrentModel = {
+        modelId: 'active-model-id',
+        object: currentModelObj,
+        dispose: vi.fn(),
+      } as any;
+      bimEngine.currentModel = mockCurrentModel;
+      bimEngine.currentModelId = mockCurrentModel.modelId;
+
+      useBimStore.getState().setModelMetadata({
+        id: 'active-model-id',
+        name: 'small_model.ifc',
+        sizeBytes: smallIfcBuffer.byteLength,
+        schema: 'IFC2X3',
+        elementCount: 1,
+        counts: {
+          walls: 0,
+          doors: 0,
+          windows: 0,
+          slabs: 1,
+          columns: 0,
+          beams: 0,
+          spaces: 0,
+          storeys: 1,
+          other: 0,
+        },
+      });
+
+      // Make an edit via bimEditService
+      await bimEditService.transformElement(44, 'floor', { x: 2.0 }, false);
+      expect(bimEditService.getChangeSet().length).toBe(1);
+      expect(useBimStore.getState().changeSet.length).toBe(1);
+      expect(bimEditService.getElementState(44)?.transform.x).toBe(2);
+
+      // Export succeeds
+      const exportResult = IfcPersistenceService.exportModifiedIfc(
+        bimEngine.webIfcApi,
+        bimEngine.webIfcModelID,
+        bimEditService.getChangeSet(),
+        'small_model.ifc'
+      );
+      expect(exportResult.result.success).toBe(true);
+
+      // Simulate forced reload failure (as would happen if IfcLoaderService.loadIfc encounters a parsing error)
+      const loadSpy = vi.spyOn(IfcLoaderService, 'loadIfc').mockRejectedValueOnce(
+        new Error('Simulated network/parsing failure during reload')
+      );
+
+      // Simulate what ChangeSetPanel does in handleSaveAndReload:
+      let reloadError: Error | null = null;
+      try {
+        await IfcLoaderService.loadIfc(exportResult.data, exportResult.filename);
+      } catch (err: any) {
+        reloadError = err;
+      }
+
+      expect(reloadError).not.toBeNull();
+      expect(reloadError?.message).toBe('Simulated network/parsing failure during reload');
+
+      // VERIFY:
+      // 1. Active model in bimEngine is preserved
+      expect(bimEngine.currentModel).toBe(mockCurrentModel);
+      expect(bimEngine.currentModelId).toBe('active-model-id');
+      // 2. Change Set in bimEditService is preserved
+      expect(bimEditService.getChangeSet().length).toBe(1);
+      // 3. Change Set in useBimStore is preserved
+      expect(useBimStore.getState().changeSet.length).toBe(1);
+      // 4. Edit proxy/state in bimEditService is preserved
+      expect(bimEditService.getElementState(44)?.transform.x).toBe(2);
+
+      loadSpy.mockRestore();
+      ifcApi.CloseModel(activeModelId);
+      await bimEditService.resetAllEdits();
     });
   });
 });

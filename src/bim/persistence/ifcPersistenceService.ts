@@ -131,10 +131,21 @@ export class IfcPersistenceService {
 
     const scale = this.getModelLengthUnitScale(ifcApi, modelID);
 
+    // Pre-evaluate final delete intent per element (delete -> newValue=true, restore -> newValue=false)
+    const finalDeleteState = new Map<number, boolean>();
+    const alreadyDeleted = new Set<number>();
+    for (const change of changeSet) {
+      if (change.type === 'delete') {
+        finalDeleteState.set(change.elementId, Boolean(change.newValue));
+      }
+    }
+
     for (const change of changeSet) {
       const { id, elementId, elementName, type } = change;
 
       // 1. Move Operation (Translates IfcCartesianPoint of element placement)
+      // UI/Three.js: X horizontal, Y vertical, Z depth
+      // IFC:         X horizontal, Y depth,    Z vertical
       if (type === 'move') {
         try {
           const element = ifcApi.GetLine(modelID, elementId);
@@ -159,31 +170,36 @@ export class IfcPersistenceService {
           const point = ifcApi.GetLine(modelID, axis2Placement.Location.value);
 
           // delta values are in meters from the UI, scale converts to IFC units
-          const deltaX = (change.newValue.x - (change.originalValue?.x || 0)) * scale;
-          const deltaY = (change.newValue.y - (change.originalValue?.y || 0)) * scale;
-          const deltaZ = (change.newValue.z - (change.originalValue?.z || 0)) * scale;
+          const uiDeltaX = (change.newValue.x - (change.originalValue?.x || 0)) * scale;
+          const uiDeltaY = (change.newValue.y - (change.originalValue?.y || 0)) * scale;
+          const uiDeltaZ = (change.newValue.z - (change.originalValue?.z || 0)) * scale;
+
+          // Coordinate mapping: UI X -> IFC X, UI Y -> IFC Z (vertical), UI Z -> IFC Y (depth)
+          const ifcDeltaX = uiDeltaX;
+          const ifcDeltaY = uiDeltaZ;
+          const ifcDeltaZ = uiDeltaY;
 
           if (point.Coordinates && point.Coordinates.length >= 2) {
-            // Coordinate 0 (X)
+            // Coordinate 0 (IFC X)
             if (typeof point.Coordinates[0] === 'object' && point.Coordinates[0] !== null) {
-              point.Coordinates[0].value = (point.Coordinates[0].value ?? 0) + deltaX;
+              point.Coordinates[0].value = (point.Coordinates[0].value ?? 0) + ifcDeltaX;
             } else {
-              point.Coordinates[0] = (point.Coordinates[0] ?? 0) + deltaX;
+              point.Coordinates[0] = (point.Coordinates[0] ?? 0) + ifcDeltaX;
             }
 
-            // Coordinate 1 (Y)
+            // Coordinate 1 (IFC Y)
             if (typeof point.Coordinates[1] === 'object' && point.Coordinates[1] !== null) {
-              point.Coordinates[1].value = (point.Coordinates[1].value ?? 0) + deltaY;
+              point.Coordinates[1].value = (point.Coordinates[1].value ?? 0) + ifcDeltaY;
             } else {
-              point.Coordinates[1] = (point.Coordinates[1] ?? 0) + deltaY;
+              point.Coordinates[1] = (point.Coordinates[1] ?? 0) + ifcDeltaY;
             }
 
-            // Coordinate 2 (Z) if 3D
+            // Coordinate 2 (IFC Z) if 3D
             if (point.Coordinates.length >= 3) {
               if (typeof point.Coordinates[2] === 'object' && point.Coordinates[2] !== null) {
-                point.Coordinates[2].value = (point.Coordinates[2].value ?? 0) + deltaZ;
+                point.Coordinates[2].value = (point.Coordinates[2].value ?? 0) + ifcDeltaZ;
               } else {
-                point.Coordinates[2] = (point.Coordinates[2] ?? 0) + deltaZ;
+                point.Coordinates[2] = (point.Coordinates[2] ?? 0) + ifcDeltaZ;
               }
             }
 
@@ -195,7 +211,7 @@ export class IfcPersistenceService {
               elementName,
               type,
               status: 'persisted',
-              details: `Translated IfcCartesianPoint #${point.expressID} by [${deltaX}, ${deltaY}, ${deltaZ}]`,
+              details: `Translated IfcCartesianPoint #${point.expressID} by IFC [${ifcDeltaX}, ${ifcDeltaY}, ${ifcDeltaZ}] (UI [${uiDeltaX}, ${uiDeltaY}, ${uiDeltaZ}])`,
             });
             persistedCount++;
           } else {
@@ -222,7 +238,7 @@ export class IfcPersistenceService {
         }
       }
 
-      // 2. Rotate Operation (Updates IfcDirection of RefDirection in IfcAxis2Placement3D)
+      // 2. Rotate Operation (Relative rotation of RefDirection in IfcAxis2Placement3D)
       else if (type === 'rotate') {
         try {
           const element = ifcApi.GetLine(modelID, elementId);
@@ -247,23 +263,43 @@ export class IfcPersistenceService {
 
           if (axis2Placement.RefDirection) {
             const refDir = ifcApi.GetLine(modelID, axis2Placement.RefDirection.value);
-            const rotDeg = change.newValue.rotationY || 0;
-            const rotRad = (rotDeg * Math.PI) / 180;
+            const deltaRotDeg = (change.newValue.rotationY || 0) - (change.originalValue?.rotationY || 0);
+            const deltaRotRad = (deltaRotDeg * Math.PI) / 180;
 
-            const cos = Math.cos(rotRad);
-            const sin = Math.sin(rotRad);
+            const cos = Math.cos(deltaRotRad);
+            const sin = Math.sin(deltaRotRad);
 
             if (refDir.DirectionRatios && refDir.DirectionRatios.length >= 2) {
+              const curX =
+                typeof refDir.DirectionRatios[0] === 'object' && refDir.DirectionRatios[0] !== null
+                  ? (refDir.DirectionRatios[0].value ?? 0)
+                  : (refDir.DirectionRatios[0] ?? 0);
+              const curY =
+                typeof refDir.DirectionRatios[1] === 'object' && refDir.DirectionRatios[1] !== null
+                  ? (refDir.DirectionRatios[1].value ?? 0)
+                  : (refDir.DirectionRatios[1] ?? 0);
+
+              // Relative rotation in IFC XY plane:
+              // x' = x*cos(d) - y*sin(d)
+              // y' = x*sin(d) + y*cos(d)
+              let newX = curX * cos - curY * sin;
+              let newY = curX * sin + curY * cos;
+              const len = Math.hypot(newX, newY);
+              if (len > 1e-6) {
+                newX /= len;
+                newY /= len;
+              }
+
               if (typeof refDir.DirectionRatios[0] === 'object' && refDir.DirectionRatios[0] !== null) {
-                refDir.DirectionRatios[0].value = cos;
+                refDir.DirectionRatios[0].value = newX;
               } else {
-                refDir.DirectionRatios[0] = cos;
+                refDir.DirectionRatios[0] = newX;
               }
 
               if (typeof refDir.DirectionRatios[1] === 'object' && refDir.DirectionRatios[1] !== null) {
-                refDir.DirectionRatios[1].value = sin;
+                refDir.DirectionRatios[1].value = newY;
               } else {
-                refDir.DirectionRatios[1] = sin;
+                refDir.DirectionRatios[1] = newY;
               }
 
               if (refDir.DirectionRatios.length >= 3) {
@@ -282,7 +318,7 @@ export class IfcPersistenceService {
                 elementName,
                 type,
                 status: 'persisted',
-                details: `Updated IfcDirection #${refDir.expressID} DirectionRatios to [${cos.toFixed(4)}, ${sin.toFixed(4)}, 0]`,
+                details: `Rotated IfcDirection #${refDir.expressID} by ${deltaRotDeg}° to [${newX.toFixed(4)}, ${newY.toFixed(4)}, 0]`,
               });
               persistedCount++;
             }
@@ -310,53 +346,79 @@ export class IfcPersistenceService {
         }
       }
 
-      // 3. Delete Operation (Safely unlinks from spatial containment and deletes line)
+      // 3. Delete / Restore Operation (Honors final intent: delete=true vs restore=false)
       else if (type === 'delete') {
-        try {
-          // Unlink from spatial containment structures
-          const relLines = ifcApi.GetLineIDsWithType(
-            modelID,
-            WebIFC.IFCRELCONTAINEDINSPATIALSTRUCTURE
-          );
-          let unlinked = false;
-
-          for (let i = 0; i < relLines.size(); i++) {
-            const relId = relLines.get(i);
-            const rel = ifcApi.GetLine(modelID, relId);
-            if (rel && Array.isArray(rel.RelatedElements)) {
-              const originalCount = rel.RelatedElements.length;
-              rel.RelatedElements = rel.RelatedElements.filter(
-                (h: any) => (h?.value ?? h) !== elementId
-              );
-              if (rel.RelatedElements.length !== originalCount) {
-                ifcApi.WriteLine(modelID, rel);
-                unlinked = true;
-              }
-            }
-          }
-
-          // Delete the element line
-          ifcApi.DeleteLine(modelID, elementId);
-
+        const isFinallyDeleted = finalDeleteState.get(elementId) === true;
+        if (!isFinallyDeleted) {
+          // Element was restored; do NOT delete line or unlink containment
           operations.push({
             changeId: id,
             elementId,
             elementName,
             type,
             status: 'persisted',
-            details: `Unlinked from spatial hierarchy (found in ${unlinked ? 1 : 0} containers) and deleted line #${elementId}`,
+            details: `Element restored in ChangeSet; preserved spatial containment and line #${elementId}`,
           });
           persistedCount++;
-        } catch (err: any) {
+        } else if (alreadyDeleted.has(elementId)) {
+          // Already deleted in an earlier change
           operations.push({
             changeId: id,
             elementId,
             elementName,
             type,
-            status: 'failed',
-            reason: `Error during delete persistence: ${err.message}`,
+            status: 'persisted',
+            details: `Element #${elementId} already unlinked and deleted in prior change`,
           });
-          failedCount++;
+          persistedCount++;
+        } else {
+          try {
+            // Unlink from spatial containment structures
+            const relLines = ifcApi.GetLineIDsWithType(
+              modelID,
+              WebIFC.IFCRELCONTAINEDINSPATIALSTRUCTURE
+            );
+            let unlinked = false;
+
+            for (let i = 0; i < relLines.size(); i++) {
+              const relId = relLines.get(i);
+              const rel = ifcApi.GetLine(modelID, relId);
+              if (rel && Array.isArray(rel.RelatedElements)) {
+                const originalCount = rel.RelatedElements.length;
+                rel.RelatedElements = rel.RelatedElements.filter(
+                  (h: any) => (h?.value ?? h) !== elementId
+                );
+                if (rel.RelatedElements.length !== originalCount) {
+                  ifcApi.WriteLine(modelID, rel);
+                  unlinked = true;
+                }
+              }
+            }
+
+            // Delete the element line
+            ifcApi.DeleteLine(modelID, elementId);
+            alreadyDeleted.add(elementId);
+
+            operations.push({
+              changeId: id,
+              elementId,
+              elementName,
+              type,
+              status: 'persisted',
+              details: `Unlinked from spatial hierarchy (found in ${unlinked ? 1 : 0} containers) and deleted line #${elementId}`,
+            });
+            persistedCount++;
+          } catch (err: any) {
+            operations.push({
+              changeId: id,
+              elementId,
+              elementName,
+              type,
+              status: 'failed',
+              reason: `Error during delete persistence: ${err.message}`,
+            });
+            failedCount++;
+          }
         }
       }
 
@@ -516,33 +578,46 @@ export class IfcPersistenceService {
       result.operations.filter((op) => op.status === 'persisted').map((op) => op.changeId)
     );
 
+    // Determine final delete intent per element (delete -> newValue=true, restore -> newValue=false)
+    const finalDeleteState = new Map<number, boolean>();
+    for (const change of changeSet) {
+      if (change.type === 'delete') {
+        finalDeleteState.set(change.elementId, Boolean(change.newValue));
+      }
+    }
+
     // Aggregate net expected changes per element
     const netMoves = new Map<number, { dx: number; dy: number; dz: number }>();
-    const lastRotates = new Map<number, number>();
-    const deletedIds = new Set<number>();
+    const netRotates = new Map<number, number>();
 
     for (const change of changeSet) {
       if (!persistedOps.has(change.id)) continue;
 
       if (change.type === 'move') {
-        const dx = (change.newValue.x - (change.originalValue?.x || 0)) * scale;
-        const dy = (change.newValue.y - (change.originalValue?.y || 0)) * scale;
-        const dz = (change.newValue.z - (change.originalValue?.z || 0)) * scale;
+        const uiDeltaX = (change.newValue.x - (change.originalValue?.x || 0)) * scale;
+        const uiDeltaY = (change.newValue.y - (change.originalValue?.y || 0)) * scale;
+        const uiDeltaZ = (change.newValue.z - (change.originalValue?.z || 0)) * scale;
+
+        // UI X -> IFC X, UI Y -> IFC Z (vertical), UI Z -> IFC Y (depth)
+        const ifcDeltaX = uiDeltaX;
+        const ifcDeltaY = uiDeltaZ;
+        const ifcDeltaZ = uiDeltaY;
+
         const existing = netMoves.get(change.elementId) || { dx: 0, dy: 0, dz: 0 };
-        existing.dx += dx;
-        existing.dy += dy;
-        existing.dz += dz;
+        existing.dx += ifcDeltaX;
+        existing.dy += ifcDeltaY;
+        existing.dz += ifcDeltaZ;
         netMoves.set(change.elementId, existing);
       } else if (change.type === 'rotate') {
-        lastRotates.set(change.elementId, change.newValue.rotationY || 0);
-      } else if (change.type === 'delete') {
-        deletedIds.add(change.elementId);
+        const deltaRotDeg = (change.newValue.rotationY || 0) - (change.originalValue?.rotationY || 0);
+        const existingRot = netRotates.get(change.elementId) || 0;
+        netRotates.set(change.elementId, existingRot + deltaRotDeg);
       }
     }
 
     // 1. Verify MOVE: exported placement changed exactly once
     for (const [elementId, netDelta] of netMoves.entries()) {
-      if (deletedIds.has(elementId)) continue;
+      if (finalDeleteState.get(elementId) === true) continue;
 
       const baseElement = ifcApi.GetLine(baselineModelId, elementId);
       if (!baseElement?.ObjectPlacement) continue;
@@ -599,14 +674,42 @@ export class IfcPersistenceService {
         Math.abs(repZ - expectedZ) > tol
       ) {
         throw new Error(
-          `Semantic verification failed: element #${elementId} placement changed incorrectly. Expected [${expectedX}, ${expectedY}, ${expectedZ}], got [${repX}, ${repY}, ${repZ}].`
+          `Semantic verification failed: element #${elementId} placement changed incorrectly. Expected IFC [${expectedX}, ${expectedY}, ${expectedZ}], got [${repX}, ${repY}, ${repZ}].`
         );
       }
     }
 
-    // 2. Verify ROTATE: exported RefDirection changed exactly once
-    for (const [elementId, rotDeg] of lastRotates.entries()) {
-      if (deletedIds.has(elementId)) continue;
+    // 2. Verify ROTATE: baseline RefDirection rotated by net delta
+    for (const [elementId, netRotDeg] of netRotates.entries()) {
+      if (finalDeleteState.get(elementId) === true) continue;
+
+      const baseElement = ifcApi.GetLine(baselineModelId, elementId);
+      if (!baseElement?.ObjectPlacement) continue;
+      const basePlacement = ifcApi.GetLine(baselineModelId, baseElement.ObjectPlacement.value);
+      const baseAxis2 = ifcApi.GetLine(baselineModelId, basePlacement.RelativePlacement.value);
+      if (!baseAxis2.RefDirection) continue;
+
+      const baseRefDir = ifcApi.GetLine(baselineModelId, baseAxis2.RefDirection.value);
+      const baseDirX =
+        typeof baseRefDir.DirectionRatios[0] === 'object' && baseRefDir.DirectionRatios[0] !== null
+          ? baseRefDir.DirectionRatios[0].value
+          : baseRefDir.DirectionRatios[0];
+      const baseDirY =
+        typeof baseRefDir.DirectionRatios[1] === 'object' && baseRefDir.DirectionRatios[1] !== null
+          ? baseRefDir.DirectionRatios[1].value
+          : baseRefDir.DirectionRatios[1];
+
+      const netRad = (netRotDeg * Math.PI) / 180;
+      const cos = Math.cos(netRad);
+      const sin = Math.sin(netRad);
+
+      let expectedDirX = baseDirX * cos - baseDirY * sin;
+      let expectedDirY = baseDirX * sin + baseDirY * cos;
+      const len = Math.hypot(expectedDirX, expectedDirY);
+      if (len > 1e-6) {
+        expectedDirX /= len;
+        expectedDirY /= len;
+      }
 
       const repElement = ifcApi.GetLine(verifyModelId, elementId);
       if (!repElement?.ObjectPlacement) continue;
@@ -615,10 +718,6 @@ export class IfcPersistenceService {
       if (!repAxis2.RefDirection) continue;
 
       const repRefDir = ifcApi.GetLine(verifyModelId, repAxis2.RefDirection.value);
-      const rotRad = (rotDeg * Math.PI) / 180;
-      const expectedCos = Math.cos(rotRad);
-      const expectedSin = Math.sin(rotRad);
-
       const repCos =
         typeof repRefDir.DirectionRatios[0] === 'object' && repRefDir.DirectionRatios[0] !== null
           ? repRefDir.DirectionRatios[0].value
@@ -629,39 +728,74 @@ export class IfcPersistenceService {
           : repRefDir.DirectionRatios[1];
 
       const tol = 1e-2;
-      if (Math.abs(repCos - expectedCos) > tol || Math.abs(repSin - expectedSin) > tol) {
+      if (Math.abs(repCos - expectedDirX) > tol || Math.abs(repSin - expectedDirY) > tol) {
         throw new Error(
-          `Semantic verification failed: element #${elementId} RefDirection changed incorrectly for rotation ${rotDeg}°. Expected [${expectedCos.toFixed(4)}, ${expectedSin.toFixed(4)}], got [${repCos.toFixed(4)}, ${repSin.toFixed(4)}].`
+          `Semantic verification failed: element #${elementId} RefDirection changed incorrectly for relative rotation ${netRotDeg}°. Expected [${expectedDirX.toFixed(4)}, ${expectedDirY.toFixed(4)}], got [${repCos.toFixed(4)}, ${repSin.toFixed(4)}].`
         );
       }
     }
 
-    // 3. Verify DELETE: element absent and removed from spatial containment
-    for (const elementId of deletedIds) {
-      let elementPresent = false;
-      try {
-        const line = ifcApi.GetLine(verifyModelId, elementId);
-        if (line && Object.keys(line).length > 0) {
-          elementPresent = true;
-        }
-      } catch {
-        elementPresent = false;
-      }
-      if (elementPresent) {
-        throw new Error(`Semantic verification failed: deleted element #${elementId} is still present in persisted IFC.`);
-      }
-
-      const relLines = ifcApi.GetLineIDsWithType(verifyModelId, WebIFC.IFCRELCONTAINEDINSPATIALSTRUCTURE);
-      for (let i = 0; i < relLines.size(); i++) {
-        const relId = relLines.get(i);
-        const rel = ifcApi.GetLine(verifyModelId, relId);
-        if (rel && Array.isArray(rel.RelatedElements)) {
-          const found = rel.RelatedElements.some((h: any) => (h?.value ?? h) === elementId);
-          if (found) {
-            throw new Error(
-              `Semantic verification failed: deleted element #${elementId} is still referenced in spatial containment relation #${relId}.`
-            );
+    // 3. Verify DELETE / RESTORE final state
+    for (const [elementId, isFinallyDeleted] of finalDeleteState.entries()) {
+      if (isFinallyDeleted) {
+        // Element must be absent
+        let elementPresent = false;
+        try {
+          const line = ifcApi.GetLine(verifyModelId, elementId);
+          if (line && Object.keys(line).length > 0) {
+            elementPresent = true;
           }
+        } catch {
+          elementPresent = false;
+        }
+        if (elementPresent) {
+          throw new Error(`Semantic verification failed: deleted element #${elementId} is still present in persisted IFC.`);
+        }
+
+        const relLines = ifcApi.GetLineIDsWithType(verifyModelId, WebIFC.IFCRELCONTAINEDINSPATIALSTRUCTURE);
+        for (let i = 0; i < relLines.size(); i++) {
+          const relId = relLines.get(i);
+          const rel = ifcApi.GetLine(verifyModelId, relId);
+          if (rel && Array.isArray(rel.RelatedElements)) {
+            const found = rel.RelatedElements.some((h: any) => (h?.value ?? h) === elementId);
+            if (found) {
+              throw new Error(
+                `Semantic verification failed: deleted element #${elementId} is still referenced in spatial containment relation #${relId}.`
+              );
+            }
+          }
+        }
+      } else {
+        // Element was restored; verify it EXISTS and is in spatial containment
+        let elementPresent = false;
+        try {
+          const line = ifcApi.GetLine(verifyModelId, elementId);
+          if (line && Object.keys(line).length > 0) {
+            elementPresent = true;
+          }
+        } catch {
+          elementPresent = false;
+        }
+        if (!elementPresent) {
+          throw new Error(`Semantic verification failed: restored element #${elementId} is missing in persisted IFC.`);
+        }
+
+        const relLines = ifcApi.GetLineIDsWithType(verifyModelId, WebIFC.IFCRELCONTAINEDINSPATIALSTRUCTURE);
+        let inContainment = false;
+        for (let i = 0; i < relLines.size(); i++) {
+          const rel = ifcApi.GetLine(verifyModelId, relLines.get(i));
+          if (rel && Array.isArray(rel.RelatedElements)) {
+            const found = rel.RelatedElements.some((h: any) => (h?.value ?? h) === elementId);
+            if (found) {
+              inContainment = true;
+              break;
+            }
+          }
+        }
+        if (!inContainment) {
+          throw new Error(
+            `Semantic verification failed: restored element #${elementId} is missing from spatial containment in persisted IFC.`
+          );
         }
       }
     }

@@ -130,10 +130,19 @@ export const ChangeSetPanel: React.FC = () => {
     setPersistenceResult(result);
 
     if (result.success && result.persistedCount > 0) {
-      // Clear in-memory proxies
-      await bimEditService.resetAllEdits();
-      // Reload newly serialized model directly into BIM viewer
-      await IfcLoaderService.loadIfc(data.buffer as ArrayBuffer, filename);
+      try {
+        // Reload newly serialized model directly into BIM viewer.
+        // IfcLoaderService.loadIfc executes post-commit cleanup (resetAllEdits) only AFTER commit succeeds.
+        await IfcLoaderService.loadIfc(data, filename);
+        useBimStore.getState().setLeftPanelTab('changes');
+      } catch (err: any) {
+        console.error('Failed to reload persisted IFC model:', err);
+        setPersistenceResult({
+          ...result,
+          success: false,
+          error: `Model export succeeded, but reload failed: ${err.message || 'Unknown error'}. Your edits and Change Set were preserved.`,
+        });
+      }
     }
   };
 
