@@ -57,6 +57,7 @@ export class IfcLoaderService {
     let modelID: number | null = null;
     let fragmentsModel: any = null;
     let commitStarted = false;
+    let commitCompleted = false;
 
     try {
       // 1. Stage: Reading IFC
@@ -144,7 +145,7 @@ export class IfcLoaderService {
         counts: treeResult.elementCounts,
       };
 
-      // 5. COMMIT NEW: Switch scene and engine references without destroying old resources first
+      // 5. REVERSIBLE COMMIT NEW: Switch scene and engine references without destroying old resources first
       commitStarted = true;
 
       // Switch scene model
@@ -186,42 +187,19 @@ export class IfcLoaderService {
       store.setAnalysisData(analysisResult.analysis);
       store.setMaterials(analysisResult.materials);
 
-      // 6. Stage: Ready
+      // 6. Stage: Ready - Transaction is committed
       store.setLoading({
         isBusy: false,
         stage: 'Ready',
         progress: 100,
       });
 
-      // 7. COMMIT SUCCEEDED: Safely dispose OLD resources now
-      if (prevEngineState.currentModel && prevEngineState.currentModel !== fragmentsModel) {
-        try {
-          await prevEngineState.currentModel.dispose?.();
-        } catch (e) {
-          console.warn('Error disposing old fragments model:', e);
-        }
-      }
-
-      if (
-        prevEngineState.webIfcApi &&
-        prevEngineState.webIfcModelID !== null &&
-        prevEngineState.webIfcModelID !== undefined &&
-        prevEngineState.webIfcApi !== webIfcApi
-      ) {
-        try {
-          prevEngineState.webIfcApi.CloseModel(prevEngineState.webIfcModelID);
-        } catch (e) {
-          console.warn('Error closing old web-ifc model:', e);
-        }
-      }
-
-      // Clear old edit state and generation preview upon successful commit
-      await bimEditService.resetAllEdits();
-      bimGenerationService.clearPreview();
+      // Mark commit as completed BEFORE destroying OLD resources
+      commitCompleted = true;
     } catch (err: any) {
       console.error('Failed to load IFC file:', err);
 
-      if (commitStarted) {
+      if (commitStarted && !commitCompleted) {
         // ROLLBACK: Restore OLD engine references
         bimEngine.webIfcApi = prevEngineState.webIfcApi;
         bimEngine.webIfcModelID = prevEngineState.webIfcModelID;
@@ -275,6 +253,46 @@ export class IfcLoaderService {
       });
 
       throw err;
+    }
+
+    // 7. POST-COMMIT CLEANUP:
+    // Model swap has successfully committed. Post-commit cleanup failures
+    // MUST NOT trigger rollback to disposed old resources.
+    if (commitCompleted) {
+      if (prevEngineState.currentModel && prevEngineState.currentModel !== fragmentsModel) {
+        try {
+          await prevEngineState.currentModel.dispose?.();
+        } catch (e) {
+          console.warn('Error disposing old fragments model during post-commit cleanup:', e);
+        }
+      }
+
+      if (
+        prevEngineState.webIfcApi &&
+        prevEngineState.webIfcModelID !== null &&
+        prevEngineState.webIfcModelID !== undefined &&
+        prevEngineState.webIfcApi !== webIfcApi
+      ) {
+        try {
+          prevEngineState.webIfcApi.CloseModel(prevEngineState.webIfcModelID);
+        } catch (e) {
+          console.warn('Error closing old web-ifc model during post-commit cleanup:', e);
+        }
+      }
+
+      // Reset old edit state (best-effort)
+      try {
+        await bimEditService.resetAllEdits();
+      } catch (e) {
+        console.warn('Error resetting edit state during post-commit cleanup:', e);
+      }
+
+      // Clear generation preview (best-effort)
+      try {
+        bimGenerationService.clearPreview();
+      } catch (e) {
+        console.warn('Error clearing generation preview during post-commit cleanup:', e);
+      }
     }
   }
 

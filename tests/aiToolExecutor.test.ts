@@ -541,6 +541,104 @@ describe('ToolRegistry & AI Tool Executor', () => {
       bimEngine.webIfcModelID = null;
     });
 
+    it('IfcLoaderService.loadIfc: post-commit cleanup failure does NOT roll back committed new model or restore disposed old references', async () => {
+      // 1. Establish existing loaded model, webIfc API, scene object, and store state
+      const mockOldSceneObj = { id: 'old-scene-mesh', visible: true };
+      const oldDisposeSpy = vi.fn();
+      const mockOldModel = {
+        modelId: 'existing-model-111',
+        object: mockOldSceneObj,
+        dispose: oldDisposeSpy,
+      } as any;
+      const oldCloseSpy = vi.fn();
+      const mockOldApi = {
+        CloseModel: oldCloseSpy,
+      } as any;
+      const mockOldModelId = 111;
+
+      bimEngine.currentModel = mockOldModel;
+      bimEngine.currentModelId = 'existing-model-111';
+      bimEngine.webIfcApi = mockOldApi;
+      bimEngine.webIfcModelID = mockOldModelId;
+      useBimStore.getState().setSpatialTree(sampleTree);
+
+      // Track objects in the three.js scene
+      const sceneObjects: any[] = [mockOldSceneObj];
+      if (!bimEngine.world) bimEngine.world = {} as any;
+      if (!bimEngine.world.scene) bimEngine.world.scene = {} as any;
+      bimEngine.world.scene.three = {
+        add: vi.fn((obj: any) => sceneObjects.push(obj)),
+        remove: vi.fn((obj: any) => {
+          const idx = sceneObjects.indexOf(obj);
+          if (idx !== -1) sceneObjects.splice(idx, 1);
+        }),
+      } as any;
+
+      // 2. Set up plan and active preview
+      const plan = bimGenerationService.generatePlan({
+        length: 10,
+        width: 8,
+        storeys: 1,
+        storeyHeight: 3,
+      });
+      bimGenerationService.previewPlan(plan);
+      expect(bimGenerationService.hasActivePreview()).toBe(true);
+
+      // 3. Staged new model mock
+      const stagedNewDisposeSpy = vi.fn();
+      const mockStagedSceneObj = { id: 'staged-new-scene-mesh', visible: true };
+      const mockStagedModel = {
+        modelId: 'staged-new-model-222',
+        object: mockStagedSceneObj,
+        dispose: stagedNewDisposeSpy,
+      };
+
+      if (!bimEngine.ifcLoader) bimEngine.ifcLoader = {} as any;
+      const loadLoaderSpy = vi.spyOn(bimEngine.ifcLoader, 'load').mockResolvedValue(mockStagedModel as any);
+      const waitInitSpy = vi.spyOn(bimEngine, 'waitForInit').mockResolvedValue(undefined);
+
+      // 4. Force bimEditService.resetAllEdits to throw during post-commit cleanup
+      const resetEditsSpy = vi.spyOn(bimEditService, 'resetAllEdits').mockRejectedValue(
+        new Error('Post-commit cleanup failure: simulated storage failure')
+      );
+
+      // 5. Author valid IFC data and call loadIfc
+      const ifcData = await IfcAuthoringService.generateIfc4(plan);
+      await IfcLoaderService.loadIfc(ifcData, 'model.ifc');
+
+      // 6. Assertions:
+      // - NEW model remains current
+      expect(bimEngine.currentModel).toBe(mockStagedModel);
+      expect(bimEngine.currentModelId).toBe('staged-new-model-222');
+
+      // - OLD model is NOT restored
+      expect(bimEngine.currentModel).not.toBe(mockOldModel);
+
+      // - OLD WebIFC is NOT restored
+      expect(bimEngine.webIfcModelID).not.toBe(mockOldModelId);
+
+      // - no staged-new disposal occurs
+      expect(stagedNewDisposeSpy).not.toHaveBeenCalled();
+
+      // - transaction does not produce invalid old references:
+      // Old resources WERE disposed as part of normal successful commit
+      expect(oldDisposeSpy).toHaveBeenCalled();
+      expect(oldCloseSpy).toHaveBeenCalledWith(111);
+
+      // Scene contains new model, not old model
+      expect(sceneObjects).toContain(mockStagedSceneObj);
+      expect(sceneObjects).not.toContain(mockOldSceneObj);
+
+      // Clean up spies
+      loadLoaderSpy.mockRestore();
+      waitInitSpy.mockRestore();
+      resetEditsSpy.mockRestore();
+      bimEngine.currentModel = null;
+      bimEngine.currentModelId = null;
+      bimEngine.webIfcApi = null;
+      bimEngine.webIfcModelID = null;
+    });
+
     it('excludes spatial hierarchy containers from element queries even if they have an expressID', async () => {
       const treeWithSpatialIDs: BimTreeNode[] = [
         {
