@@ -418,6 +418,25 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
+    // 14b. COMMIT GENERATION (WRITE ACTION - Requires Confirmation)
+    if (
+      prompt.includes('commit') ||
+      prompt.includes('save generated') ||
+      prompt.includes('build ifc') ||
+      prompt.includes('author ifc')
+    ) {
+      return {
+        message:
+          'I have prepared a proposal to author an authentic IFC4 model from the active generation plan and load it into the viewer. As this is a WRITE action replacing the current viewport model, please confirm to proceed.',
+        toolCalls: [
+          {
+            toolName: 'commit_generation',
+            args: {},
+          },
+        ],
+      };
+    }
+
     // 15. MOVE ELEMENT (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('move') || prompt.includes('translate')) {
       const id = extractElementId(prompt);

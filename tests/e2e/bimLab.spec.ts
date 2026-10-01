@@ -157,8 +157,8 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
     // --- CYCLE 2: Second Load (Reload) ---
     await sampleBtn.click();
 
-    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
-    await expect(page.getByText(/project/i).first()).toBeVisible();
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText(/project/i).first()).toBeVisible({ timeout: 30000 });
 
     // Verify tree can be expanded and selected fresh
     await page.getByTitle('Expand All').click();

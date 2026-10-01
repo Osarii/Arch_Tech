@@ -22,8 +22,8 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
     await expect(aiTab).toBeVisible();
     await aiTab.click();
 
-    // Verify Phase 6A badge
-    await expect(page.getByText('Phase 6A')).toBeVisible();
+    // Verify Phase 6B.1 badge
+    await expect(page.getByText('Phase 6B.1')).toBeVisible();
 
     // 2. Click Quick Generation Prompt Chip
     const genChip = page.getByTestId('ai-chip-0');
@@ -207,6 +207,126 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
     });
     expect(finalState.hasControls).toBe(true);
     expect(finalState.boundsEmpty).toBe(false);
+
+    expect(criticalErrors).toEqual([]);
+  });
+
+  test('Phase 6B.1: authors real IFC4 from generation plan, validates by reopening with web-ifc, and loads generated model upon human confirmation', async ({ page }) => {
+    test.setTimeout(60000);
+
+    const criticalErrors: string[] = [];
+    page.on('console', (msg) => {
+      const text = msg.text();
+      if (msg.type() === 'error' && !text.includes('favicon') && !text.includes('download')) {
+        criticalErrors.push(`[Console Error] ${text}`);
+      }
+    });
+    page.on('pageerror', (err) => {
+      criticalErrors.push(`[Page Error] ${err.message}`);
+    });
+
+    await page.goto('/');
+
+    // 1. Open AI Assistant Tab
+    const aiTab = page.getByTestId('tab-ai');
+    await aiTab.click();
+
+    // 2. Click Quick Generation Prompt Chip to generate preview
+    const genChip = page.getByTestId('ai-chip-0');
+    await expect(genChip).toBeVisible();
+    await genChip.click();
+
+    await expect(page.getByText('BIM Generation Preview')).toBeVisible({ timeout: 15000 });
+
+    // Verify active preview in Three.js
+    const previewActive = await page.evaluate(() => {
+      const genService = (window as any).bimGenerationService;
+      return genService ? genService.hasActivePreview() : false;
+    });
+    expect(previewActive).toBe(true);
+
+    // 3. Click 'Commit to model' chip (ai-chip-2)
+    const commitChip = page.getByTestId('ai-chip-2');
+    await expect(commitChip).toBeVisible();
+    await expect(commitChip).toContainText('Commit to model');
+    await commitChip.click();
+
+    // 4. Verify WRITE proposal card appears and does NOT execute yet
+    const proposalCard = page.getByTestId('ai-proposal-card');
+    await expect(proposalCard).toBeVisible({ timeout: 10000 });
+    await expect(proposalCard).toContainText('WRITE ACTION CONFIRMATION');
+    await expect(proposalCard).toContainText('commit_generation');
+    await expect(proposalCard).toContainText('Author real IFC4 model from generation plan');
+
+    // Confirm buttons are available
+    const confirmBtn = page.getByTestId('ai-confirm-write');
+    const rejectBtn = page.getByTestId('ai-reject-write');
+    await expect(confirmBtn).toBeVisible();
+    await expect(rejectBtn).toBeVisible();
+
+    // 5. Test rejection safety first
+    await rejectBtn.click();
+    await expect(page.getByText('Action Cancelled')).toBeVisible();
+
+    // Verify preview is STILL intact after rejection
+    const stillActivePreview = await page.evaluate(() => {
+      const genService = (window as any).bimGenerationService;
+      return genService ? genService.hasActivePreview() : false;
+    });
+    expect(stillActivePreview).toBe(true);
+
+    // 6. Now commit again and confirm
+    await commitChip.click();
+    const newProposalCard = page.getByTestId('ai-proposal-card').last();
+    await expect(newProposalCard).toBeVisible({ timeout: 10000 });
+    const newConfirmBtn = page.getByTestId('ai-confirm-write').last();
+    await newConfirmBtn.click();
+
+    // 7. Verify model loads into viewer
+    // Waiting for confirmation execution and loadIfc
+    await expect(page.getByText('generated_building_2s.ifc').first()).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText('11 elements').first()).toBeVisible();
+
+    // Verify Model Overview in Properties panel
+    await expect(page.getByText(/Total Elements:\s*11/i)).toBeVisible();
+    await expect(page.getByText(/Walls\s*8/i)).toBeVisible();
+    await expect(page.getByText(/Slabs\s*3/i)).toBeVisible();
+    await expect(page.getByText(/Storeys\s*3/i)).toBeVisible();
+
+    // Open AI tab to verify success message
+    await aiTab.click();
+    await expect(page.getByText('Executed & Recorded in Change Set').last()).toBeVisible();
+    await expect(page.getByText(/Confirmed & Executed: Author real IFC4 model/i)).toBeVisible();
+
+    // Verify preview is cleared and real IFC model is loaded in bimEngine
+    const authoredModelState = await page.evaluate(() => {
+      const genService = (window as any).bimGenerationService;
+      const engine = (window as any).bimEngine;
+      const model = engine?.currentModel;
+      const bounds = engine?.getModelBounds();
+      return {
+        hasActivePreview: genService?.hasActivePreview(),
+        hasLoadedModel: !!model,
+        modelBoundsEmpty: bounds ? bounds.isEmpty() : true,
+      };
+    });
+
+    expect(authoredModelState.hasActivePreview).toBe(false);
+    expect(authoredModelState.hasLoadedModel).toBe(true);
+    expect(authoredModelState.modelBoundsEmpty).toBe(false);
+
+    // 8. Verify Spatial Tree Panel reflects the generated IFC model
+    const treeTab = page.getByTestId('tab-spatial-tree');
+    await treeTab.click();
+
+    // Storeys from generated plan should be in the tree
+    await expect(page.getByText('Level 0 (Ground Floor)')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText('Level 1')).toBeVisible();
+    await expect(page.getByText('Roof Level')).toBeVisible();
+
+    // Verify Wall and Slab category counts match generation plan (8 walls, 3 slabs = 11 elements)
+    await expect(page.getByText(/Walls/i).first()).toBeVisible();
+    await expect(page.getByText(/Slabs/i).first()).toBeVisible();
 
     expect(criticalErrors).toEqual([]);
   });

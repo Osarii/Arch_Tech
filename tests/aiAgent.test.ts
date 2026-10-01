@@ -256,6 +256,13 @@ describe('AIAgent & RuleBasedProvider Integration', () => {
       expect(ifcMsg.proposal?.status).toBe('pending');
     });
 
+    it('commit to model generates a confirmation proposal and does not execute directly', async () => {
+      const commitMsg = await agent.sendMessage('Commit to model');
+      expect(commitMsg.proposal).toBeDefined();
+      expect(commitMsg.proposal?.toolName).toBe('commit_generation');
+      expect(commitMsg.proposal?.status).toBe('pending');
+    });
+
     it('calculates quantities and formats output with real analysis data fields without N/A', async () => {
       const mockAnalysisData = {
         analysis: {

@@ -79,12 +79,15 @@ Owns `src/stores/bimStore.ts` and shared types in `src/types/bim.ts`.
 
 ## 10. BIM Generation
 
-Owns `src/bim/generation/generationService.ts`.
+Owns `src/bim/generation/generationService.ts` and `src/bim/generation/ifcAuthoringService.ts`.
 
 - `BimGenerationService` exposes `validateParams`, `generatePlan`, `previewPlan`, `clearPreview`, `hasActivePreview`, `getActivePlan`, and `getPreviewBounds`.
 - Computes deterministic parametric plans (`BimGenerationPlan`) for rectangular massings with multi-storey perimeter walls and floor/roof slabs.
 - Renders disposable Three.js preview overlays (`BimGenerationPreview` group) in `BimEngine.world.scene.three` with zero IFC or Change Set mutations.
-- `ToolRegistry` registers `preview_generation` and `discard_generation_preview` as non-destructive `READ` tools; `preview_generation` automatically computes bounds and fits camera to preview, while `discard_generation_preview` refits camera to loaded IFC model.
+- `IfcAuthoringService` authors authentic IFC4 ISO STEP-21 models directly from `BimGenerationPlan` via native `web-ifc` (`IfcProject`, `IfcSite`, `IfcBuilding`, `IfcBuildingStorey`, `IfcWall`, `IfcSlab`, SI meters/radians, extruded swept solids, local placements, `IfcRelAggregates`, `IfcRelContainedInSpatialStructure`, valid 22-char IFC GUIDs).
+- Coordinate remapping: Plan X -> IFC X, Plan Z -> IFC Y, Plan Y/elevation -> IFC Z.
+- Pre-load reopening validation: `validateIfc` opens the authored buffer with `web-ifc` to verify spatial hierarchy, entity counts, and geometry mesh streaming before touching the current model or preview. Temporary models are always closed in `finally` to prevent WASM leaks.
+- `ToolRegistry` registers `commit_generation` as an explicit confirmation gated `WRITE` tool. Only upon confirmed execution and validated success is the preview cleared and the authored binary loaded via `IfcLoaderService.loadIfc()`. Failure leaves the existing model and preview intact.
 - Strict parameter parsing: missing dimensions prompt the user for clarification without silent defaults. All previous implicit move/rotate defaults are removed.
 
 ## 11. Testing

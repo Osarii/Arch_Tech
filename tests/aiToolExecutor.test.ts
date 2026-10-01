@@ -3,6 +3,8 @@ import { ToolRegistry } from '@/bim/ai/ToolRegistry';
 import { useBimStore } from '@/stores/bimStore';
 import { bimEditService } from '@/bim/edit/bimEditService';
 import { bimEngine } from '@/bim/engine/BimEngine';
+import { bimGenerationService } from '@/bim/generation/generationService';
+import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
 import { BimTreeNode } from '@/types/bim';
 
 describe('ToolRegistry & AI Tool Executor', () => {
@@ -322,6 +324,118 @@ describe('ToolRegistry & AI Tool Executor', () => {
       expect(jsonDirect.success).toBe(true);
       expect(jsonDirect.proposal).toBeUndefined();
       expect(jsonDirect.data.format).toBe('json');
+    });
+
+    it('commit_generation is gated as a WRITE tool requiring explicit confirmation', async () => {
+      // Unconfirmed execution returns a PendingWriteProposal
+      const unconfirmed = await ToolRegistry.executeTool('commit_generation', {}, false);
+      expect(unconfirmed.success).toBe(true);
+      expect(unconfirmed.proposal).toBeDefined();
+      expect(unconfirmed.proposal?.toolName).toBe('commit_generation');
+      expect(unconfirmed.proposal?.status).toBe('pending');
+      expect(unconfirmed.proposal?.summary).toContain('Author real IFC4 model');
+    });
+
+    it('commit_generation fails safely if confirmed without an active generation plan', async () => {
+      bimGenerationService.clearPreview();
+      const res = await ToolRegistry.executeTool('commit_generation', {}, true);
+      expect(res.success).toBe(false);
+      expect(res.error).toContain('No active generation plan');
+    });
+
+    it('commit_generation authors IFC4, validates it, and loads it when confirmed with active plan', async () => {
+      // 1. Setup active preview
+      const plan = bimGenerationService.generatePlan({
+        length: 10,
+        width: 8,
+        storeys: 1,
+        storeyHeight: 3,
+      });
+      bimGenerationService.previewPlan(plan);
+      expect(bimGenerationService.hasActivePreview()).toBe(true);
+
+      const loadSpy = vi.spyOn(IfcLoaderService, 'loadIfc').mockResolvedValue(undefined);
+
+      // 2. Execute confirmed commit
+      const res = await ToolRegistry.executeTool('commit_generation', {}, true);
+      expect(res.success).toBe(true);
+      expect(res.data.fileName).toContain('generated_building_1s.ifc');
+      expect(res.data.stats.wallsCount).toBe(4);
+      expect(res.data.stats.slabsCount).toBe(2);
+      expect(loadSpy).toHaveBeenCalled();
+      // Preview cleared after successful commit
+      expect(bimGenerationService.hasActivePreview()).toBe(false);
+
+      loadSpy.mockRestore();
+    });
+
+    it('commit_generation is atomic: failure during reload preserves old model, spatial tree, and preview', async () => {
+      // 1. Establish existing loaded model & tree in engine and store
+      const mockOldModel = {
+        modelId: 'existing-model-123',
+        object: { visible: true },
+        dispose: vi.fn(),
+      } as any;
+      bimEngine.currentModel = mockOldModel;
+      bimEngine.currentModelId = 'existing-model-123';
+      useBimStore.getState().setSpatialTree(sampleTree);
+
+      // 2. Generate plan and preview
+      const plan = bimGenerationService.generatePlan({
+        length: 12,
+        width: 8,
+        storeys: 1,
+        storeyHeight: 3,
+      });
+      bimGenerationService.previewPlan(plan);
+      expect(bimGenerationService.hasActivePreview()).toBe(true);
+
+      // 3. Mock IfcLoaderService.loadIfc to simulate a reload failure AFTER authoring and validation
+      const loadSpy = vi.spyOn(IfcLoaderService, 'loadIfc').mockRejectedValue(new Error('Simulated fragment load failure'));
+
+      // 4. Execute confirmed commit
+      const res = await ToolRegistry.executeTool('commit_generation', {}, true);
+
+      // 5. Assert: commit failed with error message
+      expect(res.success).toBe(false);
+      expect(res.error).toContain('Simulated fragment load failure');
+
+      // 6. Assert: existing model remains active, tree remains intact, preview survives
+      expect(bimEngine.currentModel).toBe(mockOldModel);
+      expect(bimEngine.currentModelId).toBe('existing-model-123');
+      expect(mockOldModel.dispose).not.toHaveBeenCalled();
+      expect(useBimStore.getState().spatialTree).toEqual(sampleTree);
+      expect(bimGenerationService.hasActivePreview()).toBe(true);
+
+      loadSpy.mockRestore();
+      bimEngine.currentModel = null;
+      bimEngine.currentModelId = null;
+    });
+
+    it('IfcLoaderService.loadIfc is transactional: preflight failure leaves active model and store untouched', async () => {
+      const mockOldModel = {
+        modelId: 'existing-model-456',
+        object: { visible: true },
+        dispose: vi.fn(),
+      } as any;
+      bimEngine.currentModel = mockOldModel;
+      bimEngine.currentModelId = 'existing-model-456';
+      useBimStore.getState().setSpatialTree(sampleTree);
+
+      const unloadSpy = vi.spyOn(bimEngine, 'unloadModel');
+
+      // Call loadIfc with invalid data that fails during WebIFC parsing preflight
+      const corruptData = new Uint8Array([1, 2, 3, 4, 5]);
+      await expect(IfcLoaderService.loadIfc(corruptData, 'corrupt.ifc')).rejects.toThrow();
+
+      // Ensure unloadModel was NEVER called
+      expect(unloadSpy).not.toHaveBeenCalled();
+      expect(bimEngine.currentModel).toBe(mockOldModel);
+      expect(useBimStore.getState().spatialTree).toEqual(sampleTree);
+
+      unloadSpy.mockRestore();
+      bimEngine.currentModel = null;
+      bimEngine.currentModelId = null;
     });
 
     it('excludes spatial hierarchy containers from element queries even if they have an expressID', async () => {

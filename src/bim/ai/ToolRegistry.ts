@@ -3,6 +3,8 @@ import { bimEditService } from '@/bim/edit/bimEditService';
 import { bimGenerationService } from '@/bim/generation/generationService';
 import { BimAnalysisService } from '@/bim/analysis/bimAnalysisService';
 import { IfcPersistenceService } from '@/bim/persistence/ifcPersistenceService';
+import { IfcAuthoringService } from '@/bim/generation/ifcAuthoringService';
+import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
 import { useBimStore } from '@/stores/bimStore';
 import {
   BimTreeNode,
@@ -295,6 +297,13 @@ export class ToolRegistry {
     this.registerTool({
       name: 'reset_all_edits',
       description: 'Reverts all active edits and restores pristine original IFC model state',
+      category: 'WRITE',
+      parameters: {},
+    });
+
+    this.registerTool({
+      name: 'commit_generation',
+      description: 'Authors an authentic IFC4 model from the active generation preview and loads it into the viewer',
       category: 'WRITE',
       parameters: {},
     });
@@ -714,6 +723,57 @@ export class ToolRegistry {
           return { success: true, data: { message: 'All edits reset. Restored original IFC state.' } };
         }
 
+        case 'commit_generation': {
+          const plan = bimGenerationService.getActivePlan();
+          if (!plan) {
+            return {
+              success: false,
+              error: 'No active generation plan to commit. Generate a preview first.',
+            };
+          }
+
+          // 1. Author real IFC4 bytes using native web-ifc
+          let ifcData: Uint8Array;
+          try {
+            ifcData = await IfcAuthoringService.generateIfc4(plan);
+          } catch (err: any) {
+            return {
+              success: false,
+              error: `IFC authoring failed: ${err.message || String(err)}`,
+            };
+          }
+
+          // 2. Validate by reopening with web-ifc before touching current model or preview
+          const validation = await IfcAuthoringService.validateIfc(ifcData);
+          if (!validation.valid || !validation.stats) {
+            return {
+              success: false,
+              error: `IFC validation failed: ${validation.error || 'Invalid IFC model'}`,
+            };
+          }
+
+          // 3. Only on validated and mounted success: load new model through IfcLoaderService then clear preview
+          try {
+            const fileName = `generated_building_${plan.params.storeys}s.ifc`;
+            await IfcLoaderService.loadIfc(ifcData, fileName);
+            bimGenerationService.clearPreview();
+
+            return {
+              success: true,
+              data: {
+                fileName,
+                stats: validation.stats,
+                message: `Successfully authored and loaded IFC4 model (${validation.stats.wallsCount} walls, ${validation.stats.slabsCount} slabs across ${validation.stats.storeysCount} storeys).`,
+              },
+            };
+          } catch (err: any) {
+            return {
+              success: false,
+              error: `Failed to load authored IFC model: ${err.message || String(err)}`,
+            };
+          }
+        }
+
         default:
           return { success: false, error: `Tool handler for ${name} not implemented.` };
       }
@@ -742,6 +802,8 @@ export class ToolRegistry {
         return `Delete element #${args.elementId} from model view`;
       case 'reset_all_edits':
         return 'Reset all edits and restore original IFC model';
+      case 'commit_generation':
+        return 'Author real IFC4 model from generation plan and load into viewport';
       default:
         return `Execute ${name} with arguments: ${JSON.stringify(args)}`;
     }
