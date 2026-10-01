@@ -168,11 +168,11 @@ export const HeaderBar: React.FC = () => {
           </button>
 
           <button
-            onClick={() => handleLoadSample('/small_model.ifc', 'Building-Architecture.ifc')}
+            onClick={() => handleLoadSample('/ifc_open_house.ifc', 'IfcOpenHouse_IFC4.ifc')}
             disabled={loading.isBusy}
             data-testid="header-btn-sample-fast"
             className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-[#1c202a] text-slate-300 hover:text-sky-300 text-xs transition disabled:opacity-50"
-            title="Load Official buildingSMART Sample Model (90KB)"
+            title="Load IfcOpenHouse Sample Model (IFC4, 111KB)"
           >
             <Box className="w-3.5 h-3.5 text-slate-400" />
             <span>Sample (Fast)</span>

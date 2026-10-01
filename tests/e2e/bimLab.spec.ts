@@ -41,7 +41,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
     await page.goto('/');
 
     // 1. IFC Load
-    const loadSampleBtn = page.getByRole('button', { name: /Load Sample \(Fast/i });
+    const loadSampleBtn = page.getByTestId('header-btn-sample-fast');
     await expect(loadSampleBtn).toBeVisible();
     await loadSampleBtn.click();
 
@@ -50,7 +50,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
     await expect(page.getByText('Ready')).toBeHidden({ timeout: 25000 });
 
     // 3. BIM Tree verification
-    await expect(page.getByText(/project/i).first()).toBeVisible();
+    await expect(page.locator('[data-type="IFCPROJECT"]').first()).toBeVisible();
 
     // Expand tree to find real elements
     const expandAllBtn = page.getByTitle('Expand All');
@@ -130,7 +130,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
     await sampleBtn.click();
 
     await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
-    await expect(page.getByText(/project/i).first()).toBeVisible();
+    await expect(page.locator('[data-type="IFCPROJECT"]').first()).toBeVisible();
 
     // Expand and select element
     await page.getByTitle('Expand All').click();
@@ -158,7 +158,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
     await sampleBtn.click();
 
     await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 30000 });
-    await expect(page.getByText(/project/i).first()).toBeVisible({ timeout: 30000 });
+    await expect(page.locator('[data-type="IFCPROJECT"]').first()).toBeVisible({ timeout: 30000 });
 
     // Verify tree can be expanded and selected fresh
     await page.getByTitle('Expand All').click();
