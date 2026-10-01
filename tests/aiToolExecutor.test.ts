@@ -5,6 +5,7 @@ import { bimEditService } from '@/bim/edit/bimEditService';
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { bimGenerationService } from '@/bim/generation/generationService';
 import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
+import { IfcAuthoringService } from '@/bim/generation/ifcAuthoringService';
 import { BimTreeNode } from '@/types/bim';
 
 describe('ToolRegistry & AI Tool Executor', () => {
@@ -436,6 +437,108 @@ describe('ToolRegistry & AI Tool Executor', () => {
       unloadSpy.mockRestore();
       bimEngine.currentModel = null;
       bimEngine.currentModelId = null;
+    });
+
+    it('IfcLoaderService.loadIfc rolls back cleanly if commit fails after staging succeeds', async () => {
+      // 1. Establish existing loaded model, webIfc API, scene object, and store state
+      const mockOldSceneObj = { id: 'old-scene-mesh', visible: true };
+      const mockOldModel = {
+        modelId: 'existing-model-789',
+        object: mockOldSceneObj,
+        dispose: vi.fn(),
+      } as any;
+      const mockOldApi = {
+        CloseModel: vi.fn(),
+      } as any;
+      const mockOldModelId = 555;
+
+      bimEngine.currentModel = mockOldModel;
+      bimEngine.currentModelId = 'existing-model-789';
+      bimEngine.webIfcApi = mockOldApi;
+      bimEngine.webIfcModelID = mockOldModelId;
+      useBimStore.getState().setSpatialTree(sampleTree);
+
+      // Track objects in the three.js scene
+      const sceneObjects: any[] = [mockOldSceneObj];
+      if (!bimEngine.world) bimEngine.world = {} as any;
+      if (!bimEngine.world.scene) bimEngine.world.scene = {} as any;
+      bimEngine.world.scene.three = {
+        add: vi.fn((obj: any) => sceneObjects.push(obj)),
+        remove: vi.fn((obj: any) => {
+          const idx = sceneObjects.indexOf(obj);
+          if (idx !== -1) sceneObjects.splice(idx, 1);
+        }),
+      } as any;
+
+      // 2. Set up active preview
+      const plan = bimGenerationService.generatePlan({
+        length: 10,
+        width: 8,
+        storeys: 2,
+        storeyHeight: 3,
+      });
+      bimGenerationService.previewPlan(plan);
+      expect(bimGenerationService.hasActivePreview()).toBe(true);
+
+      // 3. Mock staged resources:
+      // bimEngine.ifcLoader.load returns stagedFragmentsModel
+      const stagedDisposeSpy = vi.fn();
+      const mockStagedSceneObj = { id: 'staged-scene-mesh' };
+      const mockStagedModel = {
+        modelId: 'staged-new-model-999',
+        object: mockStagedSceneObj,
+        dispose: stagedDisposeSpy,
+      };
+
+      if (!bimEngine.ifcLoader) bimEngine.ifcLoader = {} as any;
+      const loadLoaderSpy = vi.spyOn(bimEngine.ifcLoader, 'load').mockResolvedValue(mockStagedModel as any);
+      const waitInitSpy = vi.spyOn(bimEngine, 'waitForInit').mockResolvedValue(undefined);
+
+      // 4. Author real valid IFC4 bytes for staging to parse
+      const ifcData = await IfcAuthoringService.generateIfc4(plan);
+
+      // 5. Force an exception DURING commit (e.g. camera fit throws)
+      const fitSpy = vi.spyOn(bimEngine, 'fitModel').mockImplementation(() => {
+        throw new Error('Simulated WebGPU out of memory error during commit camera fitting');
+      });
+
+      // 6. Execute loadIfc and assert it rejects with the commit failure
+      await expect(IfcLoaderService.loadIfc(ifcData, 'fail_commit.ifc')).rejects.toThrow(
+        'Simulated WebGPU out of memory error during commit camera fitting'
+      );
+
+      // 7. Verify ROLLBACK guarantees:
+      // - old currentModel restored
+      expect(bimEngine.currentModel).toBe(mockOldModel);
+      expect(bimEngine.currentModelId).toBe('existing-model-789');
+      expect(mockOldModel.dispose).not.toHaveBeenCalled();
+
+      // - old webIfc API/modelID restored
+      expect(bimEngine.webIfcApi).toBe(mockOldApi);
+      expect(bimEngine.webIfcModelID).toBe(mockOldModelId);
+      expect(mockOldApi.CloseModel).not.toHaveBeenCalled();
+
+      // - old spatial tree restored
+      expect(useBimStore.getState().spatialTree).toEqual(sampleTree);
+
+      // - old scene object still present
+      expect(sceneObjects).toContain(mockOldSceneObj);
+      expect(sceneObjects).not.toContain(mockStagedSceneObj);
+
+      // - preview remains active
+      expect(bimGenerationService.hasActivePreview()).toBe(true);
+
+      // - staged new resources disposed
+      expect(stagedDisposeSpy).toHaveBeenCalled();
+
+      // Clean up spies
+      loadLoaderSpy.mockRestore();
+      waitInitSpy.mockRestore();
+      fitSpy.mockRestore();
+      bimEngine.currentModel = null;
+      bimEngine.currentModelId = null;
+      bimEngine.webIfcApi = null;
+      bimEngine.webIfcModelID = null;
     });
 
     it('excludes spatial hierarchy containers from element queries even if they have an expressID', async () => {

@@ -97,10 +97,14 @@ describe('Phase 6A: BimGenerationService (Domain & Geometry)', () => {
     expect(plan.slabs.length).toBe(3);
     expect(plan.slabs[0].type).toBe('base');
     expect(plan.slabs[0].elevation).toBe(0);
+    expect(plan.slabs[0].storeyIndex).toBe(0);
     expect(plan.slabs[1].type).toBe('floor');
     expect(plan.slabs[1].elevation).toBe(3);
+    expect(plan.slabs[1].storeyIndex).toBe(1);
     expect(plan.slabs[2].type).toBe('roof');
     expect(plan.slabs[2].elevation).toBe(6);
+    expect(plan.slabs[2].storeyIndex).toBe(1); // Belongs to last existing storey (Level 1)
+    expect(plan.slabs[2].storeyName).toBe('Level 1');
   });
 
   it('builds disposable Three.js preview objects without mutating ChangeSet or model', () => {

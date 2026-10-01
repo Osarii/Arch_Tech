@@ -220,8 +220,8 @@ export class BimGenerationService {
       const isTop = s === storeys - 1;
       slabs.push({
         id: isTop ? `slab-roof-${s + 1}` : `slab-floor-${s + 1}`,
-        storeyIndex: s + 1,
-        storeyName: isTop ? 'Roof Level' : `Level ${s + 1}`,
+        storeyIndex: isTop ? s : s + 1,
+        storeyName: isTop ? storeyName : `Level ${s + 1}`,
         elevation: elevation + storeyHeight,
         length,
         width,

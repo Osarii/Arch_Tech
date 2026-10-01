@@ -252,13 +252,6 @@ export class IfcAuthoringService {
         });
       }
 
-      // Add Roof Level storey for top roof slab
-      storeys.push({
-        index: numStoreys,
-        name: 'Roof Level',
-        elevation: originY + numStoreys * storeyHeight,
-      });
-
       const storeyMap = new Map<
         number,
         {
@@ -509,6 +502,13 @@ export class IfcAuthoringService {
         );
         ifcApi.WriteLine(modelID, prodRep);
 
+        let predefinedType = WebIFC.IFC4.IfcSlabTypeEnum.FLOOR;
+        if (slab.type === 'roof') {
+          predefinedType = WebIFC.IFC4.IfcSlabTypeEnum.ROOF;
+        } else if (slab.type === 'base') {
+          predefinedType = WebIFC.IFC4.IfcSlabTypeEnum.BASESLAB;
+        }
+
         const slabEntity = new WebIFC.IFC4.IfcSlab(
           new WebIFC.IFC4.IfcGloballyUniqueId(createIfcGuid()),
           null,
@@ -518,7 +518,7 @@ export class IfcAuthoringService {
           new WebIFC.Handle(slabPlacement.expressID),
           new WebIFC.Handle(prodRep.expressID),
           null,
-          null
+          predefinedType
         );
         ifcApi.WriteLine(modelID, slabEntity);
         sData.elements.push(new WebIFC.Handle(slabEntity.expressID));

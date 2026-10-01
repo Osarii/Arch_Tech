@@ -53,8 +53,7 @@ describe('IfcAuthoringService', () => {
       expect(validation.stats).toBeDefined();
       expect(validation.stats?.wallsCount).toBe(4);
       expect(validation.stats?.slabsCount).toBe(2);
-      expect(validation.stats?.totalElements).toBe(6);
-      expect(validation.stats?.storeysCount).toBe(2); // Level 0 + Roof Level
+      expect(validation.stats?.storeysCount).toBe(1); // Exactly 1 storey: Level 0
     });
 
     it('authors and validates a multi-storey building plan with exact counts', async () => {
@@ -77,7 +76,51 @@ describe('IfcAuthoringService', () => {
       expect(validation.stats?.wallsCount).toBe(12);
       expect(validation.stats?.slabsCount).toBe(4);
       expect(validation.stats?.totalElements).toBe(16);
-      expect(validation.stats?.storeysCount).toBe(4); // Level 0, 1, 2 + Roof Level
+      expect(validation.stats?.storeysCount).toBe(3); // Exactly 3 storeys: Level 0, 1, 2
+    });
+
+    it('authors a 10x8 2-storey building with exactly 2 storeys, 8 walls, 3 slabs (11 physical elements) and ROOF predefined type', async () => {
+      const plan = bimGenerationService.generatePlan({
+        length: 10,
+        width: 8,
+        storeys: 2,
+        storeyHeight: 3,
+      });
+
+      expect(plan.walls.length).toBe(8);
+      expect(plan.slabs.length).toBe(3);
+
+      const ifcData = await IfcAuthoringService.generateIfc4(plan);
+      const validation = await IfcAuthoringService.validateIfc(ifcData);
+
+      expect(validation.valid).toBe(true);
+      expect(validation.stats?.storeysCount).toBe(2); // Level 0, Level 1 (NO Roof Level storey)
+      expect(validation.stats?.wallsCount).toBe(8);
+      expect(validation.stats?.slabsCount).toBe(3);
+      expect(validation.stats?.totalElements).toBe(11);
+
+      // Verify that roof slab has PredefinedType = ROOF and belongs to last existing storey
+      const ifcApi = new WebIFC.IfcAPI();
+      await ifcApi.Init();
+      const modelID = ifcApi.OpenModel(ifcData);
+
+      try {
+        const slabIds = ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCSLAB);
+        expect(slabIds.size()).toBe(3);
+
+        const roofSlabLine = ifcApi.GetLine(modelID, slabIds.get(2)); // 3rd slab is roof slab
+        expect(roofSlabLine.PredefinedType.value).toBe('ROOF');
+
+        // Check building storeys
+        const storeyIds = ifcApi.GetLineIDsWithType(modelID, WebIFC.IFCBUILDINGSTOREY);
+        expect(storeyIds.size()).toBe(2);
+        const s0 = ifcApi.GetLine(modelID, storeyIds.get(0));
+        const s1 = ifcApi.GetLine(modelID, storeyIds.get(1));
+        expect(s0.Name.value).toBe('Level 0 (Ground Floor)');
+        expect(s1.Name.value).toBe('Level 1');
+      } finally {
+        ifcApi.CloseModel(modelID);
+      }
     });
 
     it('creates correct spatial hierarchy and containment relations', async () => {

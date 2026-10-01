@@ -291,7 +291,7 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
     await expect(page.getByText(/Total Elements:\s*11/i)).toBeVisible();
     await expect(page.getByText(/Walls\s*8/i)).toBeVisible();
     await expect(page.getByText(/Slabs\s*3/i)).toBeVisible();
-    await expect(page.getByText(/Storeys\s*3/i)).toBeVisible();
+    await expect(page.getByText(/Storeys\s*2/i)).toBeVisible();
 
     // Open AI tab to verify success message
     await aiTab.click();
@@ -319,10 +319,10 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
     const treeTab = page.getByTestId('tab-spatial-tree');
     await treeTab.click();
 
-    // Storeys from generated plan should be in the tree
+    // Exactly 2 storeys from generated plan should be in the tree (NO Roof Level storey)
     await expect(page.getByText('Level 0 (Ground Floor)')).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Level 1')).toBeVisible();
-    await expect(page.getByText('Roof Level')).toBeVisible();
+    await expect(page.getByText('Roof Level')).not.toBeVisible();
 
     // Verify Wall and Slab category counts match generation plan (8 walls, 3 slabs = 11 elements)
     await expect(page.getByText(/Walls/i).first()).toBeVisible();
