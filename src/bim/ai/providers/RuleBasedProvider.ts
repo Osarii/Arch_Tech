@@ -294,7 +294,131 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 13. MOVE ELEMENT (WRITE ACTION - Requires Confirmation)
+    // 13. DISCARD / CLEAR GENERATION PREVIEW
+    if (
+      prompt === 'discard preview' ||
+      prompt.includes('discard preview') ||
+      prompt.includes('clear preview') ||
+      prompt.includes('remove preview') ||
+      prompt.includes('delete preview') ||
+      prompt.includes('close preview')
+    ) {
+      return {
+        message: 'Discarding 3D generation preview overlay...',
+        toolCalls: [{ toolName: 'discard_generation_preview', args: {} }],
+      };
+    }
+
+    // 14. PREVIEW GENERATION (BIM Massing / Building Plan)
+    if (
+      prompt.includes('generate') ||
+      prompt.includes('preview') ||
+      prompt.includes('massing') ||
+      prompt.includes('create building') ||
+      prompt.includes('build') ||
+      prompt.includes('house')
+    ) {
+      // Dimensions: e.g. "10x8", "10 x 8", "10m x 8m", "10 by 8", "length 10 ... width 8"
+      let length: number | undefined;
+      let width: number | undefined;
+
+      const dimMatch = prompt.match(/(\d+\.?\d*)\s*(?:m)?\s*(?:x|by|×|\*)\s*(\d+\.?\d*)\s*(?:m)?/);
+      if (dimMatch) {
+        length = parseFloat(dimMatch[1]);
+        width = parseFloat(dimMatch[2]);
+      } else {
+        const lenMatch = prompt.match(/length\s*[:=]?\s*(\d+\.?\d*)/);
+        const widMatch = prompt.match(/width\s*[:=]?\s*(\d+\.?\d*)/);
+        if (lenMatch && widMatch) {
+          length = parseFloat(lenMatch[1]);
+          width = parseFloat(widMatch[1]);
+        }
+      }
+
+      // Storeys: e.g. "2 storeys", "2-storey", "1 story", "3 floors", "storeys: 2"
+      let storeys: number | undefined;
+      const storeyMatch = prompt.match(/(\d+)\s*-?\s*(?:storey|storeys|story|stories|floors?|levels?)/);
+      if (storeyMatch) {
+        storeys = parseInt(storeyMatch[1], 10);
+      } else {
+        const storeyNamedMatch = prompt.match(/storeys?\s*[:=]?\s*(\d+)/);
+        if (storeyNamedMatch) {
+          storeys = parseInt(storeyNamedMatch[1], 10);
+        }
+      }
+
+      // Height: e.g. "3m height per storey", "3m storey height", "6m height", "3m tall", "height: 3"
+      let storeyHeight: number | undefined;
+      let totalHeight: number | undefined;
+
+      const perStoreyMatch = prompt.match(
+        /(\d+\.?\d*)\s*-?\s*m?\s*(?:storey\s*height|height\s*per\s*storey|height\s*each\s*storey|floor\s*height|each\s*storey|per\s*storey)/
+      );
+      if (perStoreyMatch) {
+        storeyHeight = parseFloat(perStoreyMatch[1]);
+      }
+
+      const totalHMatch = prompt.match(/(\d+\.?\d*)\s*-?\s*m?\s*(?:total\s*height|height|tall|high)/);
+      if (totalHMatch && !storeyHeight) {
+        totalHeight = parseFloat(totalHMatch[1]);
+      }
+
+      // Wall thickness
+      let wallThickness: number | undefined;
+      const thickMatch = prompt.match(/(\d+\.?\d*)\s*-?\s*m?\s*(?:wall\s*thickness|thickness)/);
+      if (thickMatch) {
+        wallThickness = parseFloat(thickMatch[1]);
+      }
+
+      // Missing dimensions validation - NO silent defaults
+      if (length === undefined || width === undefined) {
+        return {
+          message:
+            "To preview a generated building, please specify dimensions: length, width, height (or storey height), and storeys (e.g., 'Generate 10x8m building, 2 storeys, 3m height').",
+        };
+      }
+
+      if (storeys === undefined && storeyHeight === undefined && totalHeight === undefined) {
+        return {
+          message:
+            "Please specify the number of storeys and height (e.g., '2 storeys, 3m height per storey').",
+        };
+      }
+
+      if (storeys === undefined) {
+        return {
+          message:
+            "Please specify the number of storeys for the building (e.g., '1 storey' or '2 storeys').",
+        };
+      }
+
+      if (storeyHeight === undefined && totalHeight === undefined) {
+        return {
+          message:
+            "Please specify the storey height or total building height (e.g., '3m height per storey').",
+        };
+      }
+
+      const calculatedStoreyHeight = storeyHeight || (totalHeight! / storeys);
+
+      return {
+        message: `Generating 3D preview for a ${storeys}-storey building (${length}m × ${width}m, ${calculatedStoreyHeight}m/storey)...`,
+        toolCalls: [
+          {
+            toolName: 'preview_generation',
+            args: {
+              length,
+              width,
+              storeys,
+              storeyHeight: calculatedStoreyHeight,
+              ...(wallThickness ? { wallThickness } : {}),
+            },
+          },
+        ],
+      };
+    }
+
+    // 15. MOVE ELEMENT (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('move') || prompt.includes('translate')) {
       const id = extractElementId(prompt);
       if (id === undefined) {
@@ -303,20 +427,22 @@ export class RuleBasedProvider implements AIProvider {
         };
       }
 
+      const axisMatch = prompt.match(/(-?\d+\.?\d*)\s*m?\s*(?:in|along)?\s*([xyz])/);
+      if (!axisMatch) {
+        return {
+          message: `Please specify the displacement distance and axis to move element #${id} (e.g., 'move #${id} by 1m in X').`,
+        };
+      }
+
       let x = 0;
       let y = 0;
       let z = 0;
 
-      const axisMatch = prompt.match(/(-?\d+\.?\d*)\s*m?\s*(?:in|along)?\s*([xyz])/);
-      if (axisMatch) {
-        const val = parseFloat(axisMatch[1]);
-        const axis = axisMatch[2];
-        if (axis === 'x') x = val;
-        if (axis === 'y') y = val;
-        if (axis === 'z') z = val;
-      } else {
-        x = 1.0;
-      }
+      const val = parseFloat(axisMatch[1]);
+      const axis = axisMatch[2];
+      if (axis === 'x') x = val;
+      if (axis === 'y') y = val;
+      if (axis === 'z') z = val;
 
       return {
         message: `I have prepared a proposal to translate element #${id} by [${x}m, ${y}m, ${z}m]. As this is a WRITE action, please confirm to apply the change.`,
@@ -324,7 +450,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 14. ROTATE ELEMENT (WRITE ACTION - Requires Confirmation)
+    // 16. ROTATE ELEMENT (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('rotate') || prompt.includes('turn')) {
       const id = extractElementId(prompt);
       if (id === undefined) {
@@ -334,7 +460,13 @@ export class RuleBasedProvider implements AIProvider {
       }
 
       const degMatch = prompt.match(/(-?\d+\.?\d*)\s*(?:deg|degrees?)/);
-      const degrees = degMatch ? parseFloat(degMatch[1]) : 45;
+      if (!degMatch) {
+        return {
+          message: `Please specify the rotation angle in degrees (e.g. 'rotate #${id} by 45 degrees').`,
+        };
+      }
+
+      const degrees = parseFloat(degMatch[1]);
 
       return {
         message: `I have prepared a proposal to rotate element #${id} by ${degrees}°. As this is a WRITE action, please confirm to apply the change.`,
@@ -342,7 +474,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 15. COLOR OVERRIDE (WRITE ACTION - Requires Confirmation)
+    // 17. COLOR OVERRIDE (WRITE ACTION - Requires Confirmation)
     if (
       prompt.includes('color') ||
       prompt.includes('paint') ||
@@ -373,7 +505,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 16. DELETE ELEMENT (WRITE ACTION - Requires Confirmation)
+    // 18. DELETE ELEMENT (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('delete') || prompt.includes('remove')) {
       const id = extractElementId(prompt);
       if (id === undefined) {
@@ -388,7 +520,7 @@ export class RuleBasedProvider implements AIProvider {
       };
     }
 
-    // 17. RESET ALL EDITS (WRITE ACTION - Requires Confirmation)
+    // 19. RESET ALL EDITS (WRITE ACTION - Requires Confirmation)
     if (prompt.includes('reset all') || prompt.includes('revert all')) {
       return {
         message: 'I have prepared a proposal to reset all edits and restore the original IFC model. Please confirm to proceed.',
@@ -399,7 +531,7 @@ export class RuleBasedProvider implements AIProvider {
     // Fallback general guidance
     return {
       message:
-        "I'm your BIM Lab AI Assistant. You can ask me to inspect properties, calculate quantities, isolate categories, search elements, or propose model edits:\n• 'Select #44' or 'Select walls'\n• 'Show properties of #44'\n• 'Calculate model quantities'\n• 'Isolate walls' or 'Hide slabs'\n• 'Search doors'\n• 'Undo' or 'Export changes'\n• 'Move #44 by 1m in X'\n• 'Color #44 cyan'",
+        "I'm your BIM Lab AI Assistant. You can ask me to inspect properties, calculate quantities, isolate categories, search elements, or propose model edits:\n• 'Select #44' or 'Select walls'\n• 'Show properties of #44'\n• 'Calculate model quantities'\n• 'Preview 10x8m 2-storey building, 3m height'\n• 'Discard preview'\n• 'Isolate walls' or 'Hide slabs'\n• 'Undo' or 'Export changes'\n• 'Move #44 by 1m in X'\n• 'Color #44 cyan'",
     };
   }
 }

@@ -252,3 +252,66 @@ export interface ConversationContext {
   changeSetCount?: number;
 }
 
+// --- PHASE 6: DETERMINISTIC BIM GENERATION TYPES ---
+
+export interface BimGenerationParams {
+  length: number; // meters along X (> 0)
+  width: number; // meters along Z (> 0)
+  height?: number; // total height in meters (> 0)
+  storeyHeight?: number; // height per storey in meters (> 0)
+  storeys?: number; // number of storeys (>= 1)
+  wallThickness?: number; // wall thickness in meters (> 0)
+  slabThickness?: number; // slab thickness in meters (> 0)
+  originX?: number;
+  originY?: number;
+  originZ?: number;
+}
+
+export interface BimGenerationWallSpec {
+  id: string;
+  storeyIndex: number;
+  storeyName: string;
+  startX: number;
+  startZ: number;
+  endX: number;
+  endZ: number;
+  elevation: number;
+  height: number;
+  thickness: number;
+}
+
+export interface BimGenerationSlabSpec {
+  id: string;
+  storeyIndex: number;
+  storeyName: string;
+  elevation: number;
+  length: number;
+  width: number;
+  thickness: number;
+  originX: number;
+  originZ: number;
+  type: 'base' | 'floor' | 'roof';
+}
+
+export interface BimGenerationPlan {
+  id: string;
+  timestamp: number;
+  params: {
+    length: number;
+    width: number;
+    storeyHeight: number;
+    storeys: number;
+    wallThickness: number;
+    slabThickness: number;
+    totalHeight: number;
+    footprintArea: number;
+    grossVolume: number;
+    originX: number;
+    originY: number;
+    originZ: number;
+  };
+  walls: BimGenerationWallSpec[];
+  slabs: BimGenerationSlabSpec[];
+}
+
+

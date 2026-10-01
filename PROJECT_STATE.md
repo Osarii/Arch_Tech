@@ -1,12 +1,12 @@
 # PROJECT_STATE.md — Current Working State
 
 ```text
-Current Phase: Phase 5 Complete (AI BIM Assistant, Deterministic Tool Calling, Confirmation Guardrails & Semantic Verification)
-Current Work: Phase 5 Fully Implemented & Verified (Model-agnostic AI agent, Tool Registry with 18 tools [11 READ tools, 7 WRITE tools], confirmation guardrails for mutations [including undo, redo, and format-dependent IFC persistence export], direct JSON changeset export, spatial container exclusion from physical element queries, real BIM quantity takeoffs formatting, Vitest: 55/55 passed, Playwright: 10/10 passed)
-Last Important Change: ToolRegistry undo/redo WRITE categorization, format-dependent IFC export confirmation, spatial container exclusion, real quantity regression tests, Playwright Phase 5 suite
-Next Allowed Task: Phase 6
+Current Phase: Phase 6A Complete (Deterministic BIM Generation Plan & Safe 3D Three.js Preview)
+Current Work: Phase 6A Fully Implemented & Verified (Deterministic BimGenerationService, rectangular massing with multi-storey walls & slabs, disposable BimGenerationPreview scene overlay with zero IFC or ChangeSet mutation, ToolRegistry preview_generation and discard_generation_preview READ tools, strict parameter validation with no silent defaults and implicit move/rotate defaults removed, Vitest: 63/63 passed, Playwright: 11/11 passed)
+Last Important Change: BimGenerationService implementation, preview_generation & discard_generation_preview tools, strict prompt parameter parsing, generation unit & E2E suites
+Next Allowed Task: Phase 6B (IFC Entity Generation & Persistence Sync)
 Known Blockers: None
-Active Invariants: Intel UHD 630 performance baseline (DPR <= 1.25, Shadows OFF, bloom/postprocessing OFF), YAGNI, That Open + Fragments as BIM engine, never execute write tools without user confirmation, real ISO STEP-21 persistence via web-ifc
-Important Paths: src/bim/ai/, src/components/panels/AiAssistantPanel.tsx, src/bim/persistence/, src/stores/, tests/
-Current Verification Status: FULL PASSED (Lint: 0 errors | Vitest: 55/55 passed | Build: success | Playwright: 10/10 passed)
+Active Invariants: Intel UHD 630 performance baseline (DPR <= 1.25, Shadows OFF, bloom/postprocessing OFF), YAGNI, That Open + Fragments as BIM engine, zero IFC or ChangeSet mutation during preview, real ISO STEP-21 persistence via web-ifc
+Important Paths: src/bim/generation/, src/bim/ai/, src/bim/engine/, src/components/panels/AiAssistantPanel.tsx, tests/
+Current Verification Status: FULL PASSED (Lint: 0 errors | Vitest: 63/63 passed | Build: success | Playwright: 11/11 passed)
 ```

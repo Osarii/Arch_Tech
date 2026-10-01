@@ -13,6 +13,7 @@ import {
 } from '@/types/bim';
 import { extractElementProperties } from '../properties/propertyExtractor';
 import { bimEditService } from '../edit/bimEditService';
+import { bimGenerationService } from '../generation/generationService';
 import { useBimStore } from '@/stores/bimStore';
 
 export class BimEngine {
@@ -93,6 +94,7 @@ export class BimEngine {
         this.world.scene.three.add(dirLight);
 
         bimEditService.initSceneLayer(this.world.scene.three);
+        bimGenerationService.initSceneLayer(this.world.scene.three);
         bimEditService.setSceneBridge({
           getWebIfcApi: () => this.webIfcApi,
           getWebIfcModelID: () => this.webIfcModelID,
@@ -660,6 +662,7 @@ export class BimEngine {
 
     this.deleteMeasurements();
     await bimEditService.resetAllEdits();
+    bimGenerationService.clearPreview();
 
     if (this.hider) {
       try {

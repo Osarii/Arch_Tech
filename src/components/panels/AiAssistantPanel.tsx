@@ -67,6 +67,8 @@ export const AiAssistantPanel: React.FC = () => {
   };
 
   const quickPrompts = [
+    'Preview 10x8m 2-storey building, 3m height per storey',
+    'Discard preview',
     'Select slab #44',
     'Show properties of #44',
     'Calculate model quantities',
@@ -89,7 +91,7 @@ export const AiAssistantPanel: React.FC = () => {
             <div className="font-semibold text-slate-200 text-[11px] flex items-center space-x-1.5">
               <span>BIM AI Assistant</span>
               <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/80">
-                Phase 5
+                Phase 6A
               </span>
             </div>
             <div className="text-[10px] text-slate-400 flex items-center space-x-1">

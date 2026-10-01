@@ -1,5 +1,6 @@
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { bimEditService } from '@/bim/edit/bimEditService';
+import { bimGenerationService } from '@/bim/generation/generationService';
 import { BimAnalysisService } from '@/bim/analysis/bimAnalysisService';
 import { IfcPersistenceService } from '@/bim/persistence/ifcPersistenceService';
 import { useBimStore } from '@/stores/bimStore';
@@ -208,6 +209,30 @@ export class ToolRegistry {
       parameters: {
         format: { type: 'string', description: 'Export format: "json" or "ifc"', default: 'json' },
       },
+    });
+
+    this.registerTool({
+      name: 'preview_generation',
+      description: 'Generates a deterministic 3D massing preview for a rectangular multi-storey building',
+      category: 'READ',
+      parameters: {
+        length: { type: 'number', description: 'Building length in meters (along X)', required: true },
+        width: { type: 'number', description: 'Building width in meters (along Z)', required: true },
+        storeyHeight: { type: 'number', description: 'Height per storey in meters' },
+        height: { type: 'number', description: 'Total building height in meters' },
+        storeys: { type: 'number', description: 'Number of storeys' },
+        wallThickness: { type: 'number', description: 'Wall thickness in meters' },
+        originX: { type: 'number', description: 'Origin X offset in meters' },
+        originY: { type: 'number', description: 'Origin Y offset in meters' },
+        originZ: { type: 'number', description: 'Origin Z offset in meters' },
+      },
+    });
+
+    this.registerTool({
+      name: 'discard_generation_preview',
+      description: 'Discards and clears the 3D generation preview overlay from the viewport',
+      category: 'READ',
+      parameters: {},
     });
 
     // --- WRITE TOOLS (Require user confirmation before execution) ---
@@ -465,6 +490,48 @@ export class ToolRegistry {
                 category: e.category,
                 storey: e.storey,
               })),
+            },
+          };
+        }
+
+        case 'preview_generation': {
+          try {
+            const plan = bimGenerationService.generatePlan({
+              length: args.length,
+              width: args.width,
+              storeyHeight: args.storeyHeight,
+              height: args.height,
+              storeys: args.storeys,
+              wallThickness: args.wallThickness,
+              originX: args.originX,
+              originY: args.originY,
+              originZ: args.originZ,
+            });
+
+            const scene = bimEngine.world?.scene?.three;
+            bimGenerationService.previewPlan(plan, scene);
+
+            return {
+              success: true,
+              data: {
+                plan,
+                message: `Generated 3D preview for ${plan.params.storeys}-storey building (${plan.params.length}m × ${plan.params.width}m).`,
+              },
+            };
+          } catch (err: any) {
+            return {
+              success: false,
+              error: err.message || 'Failed to generate BIM preview.',
+            };
+          }
+        }
+
+        case 'discard_generation_preview': {
+          bimGenerationService.clearPreview();
+          return {
+            success: true,
+            data: {
+              message: 'Cleared 3D generation preview overlay.',
             },
           };
         }

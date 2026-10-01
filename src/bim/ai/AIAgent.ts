@@ -171,6 +171,25 @@ export class AIAgent {
       case 'export_changes':
         return `💾 ${data.message || 'Changes exported.'}`;
 
+      case 'preview_generation': {
+        const plan = data.plan;
+        if (!plan) return data.message || '3D generation preview rendered.';
+        const p = plan.params;
+        const lines = [
+          `🏗️ BIM Generation Preview:`,
+          `• Dimensions: ${p.length}m × ${p.width}m`,
+          `• Height: ${p.totalHeight}m (${p.storeys} storey${p.storeys > 1 ? 's' : ''}, ${p.storeyHeight}m/storey)`,
+          `• Elements: ${plan.walls.length} walls, ${plan.slabs.length} slabs`,
+          `• Footprint Area: ${p.footprintArea.toFixed(2)} m²`,
+          `• Gross Volume: ${p.grossVolume.toFixed(2)} m³`,
+          `💡 Non-destructive 3D preview overlay rendered. (No IFC or Change Set changes).`,
+        ];
+        return lines.join('\n');
+      }
+
+      case 'discard_generation_preview':
+        return `🗑️ ${data.message || 'Generation preview overlay cleared.'}`;
+
       default:
         return typeof data === 'string' ? data : JSON.stringify(data);
     }

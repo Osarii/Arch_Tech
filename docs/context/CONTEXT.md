@@ -79,7 +79,13 @@ Owns `src/stores/bimStore.ts` and shared types in `src/types/bim.ts`.
 
 ## 10. BIM Generation
 
-No separate generation API or context is defined. New BIM generation work must use the existing engine, editing, persistence, and analysis boundaries and document any genuinely new boundary here only when explicitly requested.
+Owns `src/bim/generation/generationService.ts`.
+
+- `BimGenerationService` exposes `validateParams`, `generatePlan`, `previewPlan`, `clearPreview`, `hasActivePreview`, and `getActivePlan`.
+- Computes deterministic parametric plans (`BimGenerationPlan`) for rectangular massings with multi-storey perimeter walls and floor/roof slabs.
+- Renders disposable Three.js preview overlays (`BimGenerationPreview` group) in `BimEngine.world.scene.three` with zero IFC or Change Set mutations.
+- `ToolRegistry` registers `preview_generation` and `discard_generation_preview` as non-destructive `READ` tools.
+- Strict parameter parsing: missing dimensions prompt the user for clarification without silent defaults. All previous implicit move/rotate defaults are removed.
 
 ## 11. Testing
 
