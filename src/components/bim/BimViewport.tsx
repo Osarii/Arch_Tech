@@ -106,14 +106,14 @@ export const BimViewport: React.FC = () => {
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <button
                 onClick={async () => {
-                  const res = await fetch('/small_model.ifc');
+                  const res = await fetch('/ifc_open_house.ifc');
                   const buf = await res.arrayBuffer();
-                  await IfcLoaderService.loadIfc(buf, 'Building-Architecture.ifc');
+                  await IfcLoaderService.loadIfc(buf, 'IfcOpenHouse_IFC4.ifc');
                 }}
                 className="px-3 py-2 rounded bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium shadow-sm transition flex items-center justify-center space-x-1.5"
               >
                 <Box className="w-3.5 h-3.5" />
-                <span>Load Sample (Fast, 90KB)</span>
+                <span>Load Sample (Fast, 111KB)</span>
               </button>
               <button
                 onClick={async () => {
