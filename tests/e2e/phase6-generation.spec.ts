@@ -212,7 +212,7 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
   });
 
   test('Phase 6B.1: authors real IFC4 from generation plan, validates by reopening with web-ifc, and loads generated model upon human confirmation', async ({ page }) => {
-    test.setTimeout(60000);
+    test.setTimeout(80000);
 
     const criticalErrors: string[] = [];
     page.on('console', (msg) => {
@@ -327,6 +327,63 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
     // Verify Wall and Slab category counts match generation plan (8 walls, 3 slabs = 11 elements)
     await expect(page.getByText(/Walls/i).first()).toBeVisible();
     await expect(page.getByText(/Slabs/i).first()).toBeVisible();
+
+    // 9. Phase 6B.2 Persistence Round-Trip: edit -> persist -> reload -> edit again -> persist again -> reload again
+    // Switch to Edit Mode
+    await page.getByTestId('mode-edit').click();
+    await expect(page.getByTestId('tab-edit')).toBeVisible();
+
+    // Select the first element in spatial tree
+    await page.getByTitle('Expand All').click();
+    const firstWall = page.getByTestId('tree-element-leaf').first();
+    await expect(firstWall).toBeVisible();
+    await firstWall.click();
+
+    // First edit: Move element
+    await page.getByTestId('btn-move-x-add-1').click();
+
+    // Open Change Set Panel
+    const csTab = page.getByTestId('tab-changeset');
+    await csTab.click();
+    await expect(page.getByText('Change Set (1)')).toBeVisible();
+
+    // Save & Reload Persisted IFC
+    const saveReloadBtn = page.getByTestId('btn-save-reload-ifc');
+    await expect(saveReloadBtn).toBeEnabled();
+    await saveReloadBtn.click();
+
+    // Verify first persisted reload
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+    await expect(page.getByText('generated_building_2s_persisted.ifc').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('11 elements').first()).toBeVisible();
+
+    // Verify change set is reset
+    await csTab.click();
+    await expect(page.getByText('No changes recorded yet.')).toBeVisible();
+
+    // Second edit: Select an element and move it again
+    await page.getByTestId('tab-spatial-tree').click();
+    await page.getByTitle('Expand All').click();
+    const secondElem = page.getByTestId('tree-element-leaf').nth(1);
+    await secondElem.click();
+
+    await page.getByTestId('tab-edit').click();
+    await page.getByTestId('btn-move-x-add-1').click();
+
+    // Second Save & Reload
+    await csTab.click();
+    await expect(page.getByText('Change Set (1)')).toBeVisible();
+    const saveReloadBtn2 = page.getByTestId('btn-save-reload-ifc');
+    await expect(saveReloadBtn2).toBeEnabled();
+    await saveReloadBtn2.click();
+
+    // Verify second persisted reload completes with no corruption
+    await expect(page.getByTestId('action-fit')).toBeVisible({ timeout: 25000 });
+    await expect(page.getByText(/generated_building_2s_persisted.*\.ifc/i).first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('11 elements').first()).toBeVisible();
+
+    await csTab.click();
+    await expect(page.getByText('No changes recorded yet.')).toBeVisible();
 
     expect(criticalErrors).toEqual([]);
   });

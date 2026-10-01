@@ -40,9 +40,9 @@ Owns `src/bim/edit/bimEditService.ts` and the `editsGroup` proxy-mesh layer.
 
 Owns `src/bim/persistence/ifcPersistenceService.ts`.
 
-- `IfcPersistenceService` exports/imports JSON Change Sets and exposes real IFC export plus JSON/IFC downloads; IFC export mutates real WebIFC STEP-21 data and downloads the resulting binary.
-- Persistable transforms create authentic placement/direction/point records. Deletions disconnect containment relations before commenting out element lines.
-- Never generate fake IFC strings, corrupt spatial relations, or persist without explicit human confirmation.
+- `IfcPersistenceService` exports/imports JSON Change Sets and exposes real IFC export plus JSON/IFC downloads. Persistence export is detached and idempotent: extracts active baseline bytes via `SaveModel`, applies changes to an isolated temporary WebIFC model only, serializes persisted bytes, reopens for semantic verification, and closes temporary models, leaving the active model and viewport 100% untouched.
+- Persistable transforms create authentic placement/direction/point records. Deletions disconnect containment relations before deleting element lines. Reopening verifies placement delta, rotation RefDirection, containment unlinking, and spatial tree validity exactly once.
+- Never generate fake IFC strings, corrupt spatial relations, double-apply transforms, or persist without explicit human confirmation.
 
 ## 6. Analysis
 

@@ -4,6 +4,7 @@ import {
   PersistenceOperationStatus,
   PersistenceResult,
 } from '@/types/bim';
+import { buildSpatialTree } from '@/bim/tree/spatialTreeBuilder';
 
 export class IfcPersistenceService {
   /**
@@ -325,7 +326,7 @@ export class IfcPersistenceService {
             if (rel && Array.isArray(rel.RelatedElements)) {
               const originalCount = rel.RelatedElements.length;
               rel.RelatedElements = rel.RelatedElements.filter(
-                (h: any) => h.value !== elementId
+                (h: any) => (h?.value ?? h) !== elementId
               );
               if (rel.RelatedElements.length !== originalCount) {
                 ifcApi.WriteLine(modelID, rel);
@@ -412,7 +413,18 @@ export class IfcPersistenceService {
 
   /**
    * Applies the Change Set and serializes a brand new modified IFC byte array.
-   * Never modifies or overwrites the original IFC file.
+   * Detached and idempotent: leaves the active WebIFC model 100% untouched.
+   *
+   * Flow:
+   * ACTIVE IFC
+   * -> SaveModel baseline bytes
+   * -> open TEMP WebIFC model
+   * -> apply ChangeSet to TEMP only
+   * -> SaveModel persisted bytes
+   * -> reopen persisted bytes
+   * -> semantic verification
+   * -> CloseModel all TEMP models
+   * -> active IFC remains untouched
    */
   public static exportModifiedIfc(
     ifcApi: WebIFC.IfcAPI,
@@ -420,19 +432,248 @@ export class IfcPersistenceService {
     changeSet: BimChange[],
     originalFilename = 'model.ifc'
   ): { filename: string; data: Uint8Array; result: PersistenceResult } {
-    // 1. Apply changes in memory
-    const result = this.applyChangeSetToIfc(ifcApi, modelID, changeSet);
+    let tempModelId: number | null = null;
+    let verifyModelId: number | null = null;
 
-    // 2. Serialize model via native WebIFC STEP-21 engine
-    const data = ifcApi.SaveModel(modelID);
+    try {
+      // 1. Save baseline bytes from active model (active model is only read, never mutated)
+      const baselineBytes = ifcApi.SaveModel(modelID);
+      if (!baselineBytes || baselineBytes.byteLength === 0) {
+        throw new Error('Active IFC model failed to serialize baseline bytes.');
+      }
 
-    // 3. Generate safe non-colliding filename
-    const base = originalFilename.replace(/\.ifc$/i, '');
-    const filename = `${base}_persisted.ifc`;
+      // 2. Open isolated temporary WebIFC model
+      tempModelId = ifcApi.OpenModel(baselineBytes);
+      if (tempModelId === null || tempModelId === undefined) {
+        throw new Error('Failed to open temporary WebIFC model from baseline.');
+      }
 
-    result.newIfcData = data;
-    result.newFilename = filename;
+      // 3. Apply changes to temporary model ONLY
+      const result = this.applyChangeSetToIfc(ifcApi, tempModelId, changeSet);
 
-    return { filename, data, result };
+      // 4. Serialize persisted bytes from temporary model
+      const persistedBytes = ifcApi.SaveModel(tempModelId);
+      if (!persistedBytes || persistedBytes.byteLength === 0) {
+        throw new Error('Failed to serialize persisted bytes from temporary WebIFC model.');
+      }
+
+      // 5. Reopen persisted bytes in temporary verification model
+      try {
+        verifyModelId = ifcApi.OpenModel(persistedBytes);
+      } catch (err: any) {
+        throw new Error(`Persisted IFC is corrupted and cannot be reopened: ${err.message}`);
+      }
+
+      if (verifyModelId === null || verifyModelId === undefined) {
+        throw new Error('Persisted IFC is corrupted and cannot be reopened by WebIFC.');
+      }
+
+      // 6. Semantic verification
+      this.verifySemanticPersistence(ifcApi, modelID, verifyModelId, changeSet, result);
+
+      // 7. Generate safe non-colliding filename
+      const base = originalFilename.replace(/\.ifc$/i, '');
+      const filename = `${base}_persisted.ifc`;
+
+      result.newIfcData = persistedBytes;
+      result.newFilename = filename;
+
+      return { filename, data: persistedBytes, result };
+    } finally {
+      // Always close all temporary models to prevent WASM memory leaks
+      if (verifyModelId !== null) {
+        try {
+          ifcApi.CloseModel(verifyModelId);
+        } catch {
+          // best-effort cleanup
+        }
+      }
+      if (tempModelId !== null) {
+        try {
+          ifcApi.CloseModel(tempModelId);
+        } catch {
+          // best-effort cleanup
+        }
+      }
+    }
+  }
+
+  /**
+   * Verifies that persisted modifications are accurately reflected in the re-opened model
+   * exactly once and that spatial hierarchy and STEP semantics remain intact.
+   */
+  public static verifySemanticPersistence(
+    ifcApi: WebIFC.IfcAPI,
+    baselineModelId: number,
+    verifyModelId: number,
+    changeSet: BimChange[],
+    result: PersistenceResult
+  ): void {
+    const scale = this.getModelLengthUnitScale(ifcApi, baselineModelId);
+
+    // Only verify operations that were successfully marked as persisted
+    const persistedOps = new Set(
+      result.operations.filter((op) => op.status === 'persisted').map((op) => op.changeId)
+    );
+
+    // Aggregate net expected changes per element
+    const netMoves = new Map<number, { dx: number; dy: number; dz: number }>();
+    const lastRotates = new Map<number, number>();
+    const deletedIds = new Set<number>();
+
+    for (const change of changeSet) {
+      if (!persistedOps.has(change.id)) continue;
+
+      if (change.type === 'move') {
+        const dx = (change.newValue.x - (change.originalValue?.x || 0)) * scale;
+        const dy = (change.newValue.y - (change.originalValue?.y || 0)) * scale;
+        const dz = (change.newValue.z - (change.originalValue?.z || 0)) * scale;
+        const existing = netMoves.get(change.elementId) || { dx: 0, dy: 0, dz: 0 };
+        existing.dx += dx;
+        existing.dy += dy;
+        existing.dz += dz;
+        netMoves.set(change.elementId, existing);
+      } else if (change.type === 'rotate') {
+        lastRotates.set(change.elementId, change.newValue.rotationY || 0);
+      } else if (change.type === 'delete') {
+        deletedIds.add(change.elementId);
+      }
+    }
+
+    // 1. Verify MOVE: exported placement changed exactly once
+    for (const [elementId, netDelta] of netMoves.entries()) {
+      if (deletedIds.has(elementId)) continue;
+
+      const baseElement = ifcApi.GetLine(baselineModelId, elementId);
+      if (!baseElement?.ObjectPlacement) continue;
+      const basePlacement = ifcApi.GetLine(baselineModelId, baseElement.ObjectPlacement.value);
+      const baseAxis2 = ifcApi.GetLine(baselineModelId, basePlacement.RelativePlacement.value);
+      const basePoint = ifcApi.GetLine(baselineModelId, baseAxis2.Location.value);
+
+      const baseX =
+        typeof basePoint.Coordinates[0] === 'object' && basePoint.Coordinates[0] !== null
+          ? (basePoint.Coordinates[0].value ?? 0)
+          : (basePoint.Coordinates[0] ?? 0);
+      const baseY =
+        typeof basePoint.Coordinates[1] === 'object' && basePoint.Coordinates[1] !== null
+          ? (basePoint.Coordinates[1].value ?? 0)
+          : (basePoint.Coordinates[1] ?? 0);
+      const baseZ =
+        basePoint.Coordinates.length >= 3
+          ? typeof basePoint.Coordinates[2] === 'object' && basePoint.Coordinates[2] !== null
+            ? (basePoint.Coordinates[2].value ?? 0)
+            : (basePoint.Coordinates[2] ?? 0)
+          : 0;
+
+      const repElement = ifcApi.GetLine(verifyModelId, elementId);
+      if (!repElement || !repElement.ObjectPlacement) {
+        throw new Error(`Semantic verification failed: element #${elementId} missing in persisted IFC.`);
+      }
+      const repPlacement = ifcApi.GetLine(verifyModelId, repElement.ObjectPlacement.value);
+      const repAxis2 = ifcApi.GetLine(verifyModelId, repPlacement.RelativePlacement.value);
+      const repPoint = ifcApi.GetLine(verifyModelId, repAxis2.Location.value);
+
+      const repX =
+        typeof repPoint.Coordinates[0] === 'object' && repPoint.Coordinates[0] !== null
+          ? (repPoint.Coordinates[0].value ?? 0)
+          : (repPoint.Coordinates[0] ?? 0);
+      const repY =
+        typeof repPoint.Coordinates[1] === 'object' && repPoint.Coordinates[1] !== null
+          ? (repPoint.Coordinates[1].value ?? 0)
+          : (repPoint.Coordinates[1] ?? 0);
+      const repZ =
+        repPoint.Coordinates.length >= 3
+          ? typeof repPoint.Coordinates[2] === 'object' && repPoint.Coordinates[2] !== null
+            ? (repPoint.Coordinates[2].value ?? 0)
+            : (repPoint.Coordinates[2] ?? 0)
+          : 0;
+
+      const expectedX = baseX + netDelta.dx;
+      const expectedY = baseY + netDelta.dy;
+      const expectedZ = baseZ + netDelta.dz;
+
+      const tol = 1e-2;
+      if (
+        Math.abs(repX - expectedX) > tol ||
+        Math.abs(repY - expectedY) > tol ||
+        Math.abs(repZ - expectedZ) > tol
+      ) {
+        throw new Error(
+          `Semantic verification failed: element #${elementId} placement changed incorrectly. Expected [${expectedX}, ${expectedY}, ${expectedZ}], got [${repX}, ${repY}, ${repZ}].`
+        );
+      }
+    }
+
+    // 2. Verify ROTATE: exported RefDirection changed exactly once
+    for (const [elementId, rotDeg] of lastRotates.entries()) {
+      if (deletedIds.has(elementId)) continue;
+
+      const repElement = ifcApi.GetLine(verifyModelId, elementId);
+      if (!repElement?.ObjectPlacement) continue;
+      const repPlacement = ifcApi.GetLine(verifyModelId, repElement.ObjectPlacement.value);
+      const repAxis2 = ifcApi.GetLine(verifyModelId, repPlacement.RelativePlacement.value);
+      if (!repAxis2.RefDirection) continue;
+
+      const repRefDir = ifcApi.GetLine(verifyModelId, repAxis2.RefDirection.value);
+      const rotRad = (rotDeg * Math.PI) / 180;
+      const expectedCos = Math.cos(rotRad);
+      const expectedSin = Math.sin(rotRad);
+
+      const repCos =
+        typeof repRefDir.DirectionRatios[0] === 'object' && repRefDir.DirectionRatios[0] !== null
+          ? repRefDir.DirectionRatios[0].value
+          : repRefDir.DirectionRatios[0];
+      const repSin =
+        typeof repRefDir.DirectionRatios[1] === 'object' && repRefDir.DirectionRatios[1] !== null
+          ? repRefDir.DirectionRatios[1].value
+          : repRefDir.DirectionRatios[1];
+
+      const tol = 1e-2;
+      if (Math.abs(repCos - expectedCos) > tol || Math.abs(repSin - expectedSin) > tol) {
+        throw new Error(
+          `Semantic verification failed: element #${elementId} RefDirection changed incorrectly for rotation ${rotDeg}°. Expected [${expectedCos.toFixed(4)}, ${expectedSin.toFixed(4)}], got [${repCos.toFixed(4)}, ${repSin.toFixed(4)}].`
+        );
+      }
+    }
+
+    // 3. Verify DELETE: element absent and removed from spatial containment
+    for (const elementId of deletedIds) {
+      let elementPresent = false;
+      try {
+        const line = ifcApi.GetLine(verifyModelId, elementId);
+        if (line && Object.keys(line).length > 0) {
+          elementPresent = true;
+        }
+      } catch {
+        elementPresent = false;
+      }
+      if (elementPresent) {
+        throw new Error(`Semantic verification failed: deleted element #${elementId} is still present in persisted IFC.`);
+      }
+
+      const relLines = ifcApi.GetLineIDsWithType(verifyModelId, WebIFC.IFCRELCONTAINEDINSPATIALSTRUCTURE);
+      for (let i = 0; i < relLines.size(); i++) {
+        const relId = relLines.get(i);
+        const rel = ifcApi.GetLine(verifyModelId, relId);
+        if (rel && Array.isArray(rel.RelatedElements)) {
+          const found = rel.RelatedElements.some((h: any) => (h?.value ?? h) === elementId);
+          if (found) {
+            throw new Error(
+              `Semantic verification failed: deleted element #${elementId} is still referenced in spatial containment relation #${relId}.`
+            );
+          }
+        }
+      }
+    }
+
+    // 4. Verify overall spatial tree hierarchy validity
+    try {
+      const tree = buildSpatialTree(ifcApi, verifyModelId);
+      if (!tree || tree.totalElements < 0) {
+        throw new Error('Spatial tree construction failed for persisted IFC.');
+      }
+    } catch (err: any) {
+      throw new Error(`Semantic verification failed: invalid spatial hierarchy in persisted model: ${err.message}`);
+    }
   }
 }

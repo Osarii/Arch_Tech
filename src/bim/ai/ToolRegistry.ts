@@ -611,6 +611,12 @@ export class ToolRegistry {
               changeSet,
               modelName
             );
+            if (!result.success) {
+              const failReason =
+                result.operations.find((o) => o.status === 'failed')?.reason ||
+                'Persistence verification failed';
+              return { success: false, error: `Persistence export failed: ${failReason}` };
+            }
             IfcPersistenceService.downloadIfcFile(filename, data);
             return {
               success: true,

@@ -110,7 +110,9 @@ export const ChangeSetPanel: React.FC = () => {
     );
 
     setPersistenceResult(result);
-    IfcPersistenceService.downloadIfcFile(filename, data);
+    if (result.success) {
+      IfcPersistenceService.downloadIfcFile(filename, data);
+    }
   };
 
   // Phase 4: Save & Reload Persisted IFC
@@ -127,7 +129,7 @@ export const ChangeSetPanel: React.FC = () => {
 
     setPersistenceResult(result);
 
-    if (result.persistedCount > 0) {
+    if (result.success && result.persistedCount > 0) {
       // Clear in-memory proxies
       await bimEditService.resetAllEdits();
       // Reload newly serialized model directly into BIM viewer
