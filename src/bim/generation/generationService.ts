@@ -259,9 +259,21 @@ export class BimGenerationService {
   /**
    * Constructs disposable Three.js preview objects and renders them non-destructively.
    */
+  public getPreviewBounds(): THREE.Box3 {
+    const box = new THREE.Box3();
+    if (this.previewGroup.children.length > 0) {
+      this.previewGroup.updateWorldMatrix(true, true);
+      box.setFromObject(this.previewGroup);
+    }
+    return box;
+  }
+
   public previewPlan(plan: BimGenerationPlan, scene?: THREE.Scene): THREE.Group {
     this.clearPreview();
 
+    if (scene) {
+      this.attachedScene = scene;
+    }
     const targetScene = scene || this.attachedScene;
     if (targetScene && !targetScene.children.includes(this.previewGroup)) {
       targetScene.add(this.previewGroup);
@@ -390,3 +402,7 @@ export class BimGenerationService {
 }
 
 export const bimGenerationService = new BimGenerationService();
+
+if (typeof window !== 'undefined') {
+  (window as any).bimGenerationService = bimGenerationService;
+}

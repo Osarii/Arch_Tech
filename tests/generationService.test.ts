@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as THREE from 'three';
 import { BimGenerationService, bimGenerationService } from '@/bim/generation/generationService';
+import { bimEngine } from '@/bim/engine/BimEngine';
 import { ToolRegistry } from '@/bim/ai/ToolRegistry';
 import { RuleBasedProvider } from '@/bim/ai/providers/RuleBasedProvider';
 import { AIAgent } from '@/bim/ai/AIAgent';
@@ -152,6 +153,27 @@ describe('Phase 6A: BimGenerationService (Domain & Geometry)', () => {
     service.clearPreview();
     expect(service.previewGroup.children.length).toBe(0);
   });
+
+  it('computes accurate non-empty world bounds for preview and clears cleanly', () => {
+    expect(service.getPreviewBounds().isEmpty()).toBe(true);
+
+    const plan = service.generatePlan({
+      length: 10,
+      width: 8,
+      storeys: 2,
+      storeyHeight: 3,
+    });
+    service.previewPlan(plan, scene);
+
+    const bounds = service.getPreviewBounds();
+    expect(bounds.isEmpty()).toBe(false);
+    expect(bounds.max.x - bounds.min.x).toBeCloseTo(10.2, 1);
+    expect(bounds.max.z - bounds.min.z).toBeCloseTo(8.2, 1);
+    expect(bounds.max.y - bounds.min.y).toBeGreaterThanOrEqual(6);
+
+    service.clearPreview();
+    expect(service.getPreviewBounds().isEmpty()).toBe(true);
+  });
 });
 
 describe('Phase 6A: AI Assistant Integration & Strict Intent Validation', () => {
@@ -262,3 +284,134 @@ describe('Phase 6A: AI Assistant Integration & Strict Intent Validation', () => 
     expect(rotateRes.message).toContain('Please specify the rotation angle in degrees');
   });
 });
+
+describe('Phase 6A: Viewport Visibility & Camera Fit Integration', () => {
+  let mockFitToBox: any;
+  let mockScene: THREE.Scene;
+
+  beforeEach(() => {
+    mockFitToBox = vi.fn();
+    mockScene = new THREE.Scene();
+    bimEngine.world = {
+      camera: {
+        controls: {
+          fitToBox: mockFitToBox,
+        },
+      },
+      scene: {
+        three: mockScene,
+      },
+    } as any;
+    bimEngine.currentModel = null;
+    bimGenerationService.clearPreview();
+    bimGenerationService.initSceneLayer(mockScene);
+  });
+
+  it('keeps currentModel.box as primary when available and non-empty', () => {
+    const primaryBox = new THREE.Box3(new THREE.Vector3(1, 2, 3), new THREE.Vector3(10, 20, 30));
+    bimEngine.currentModel = {
+      box: primaryBox,
+      object: new THREE.Group(),
+    } as any;
+
+    bimEngine.fitModel();
+
+    expect(mockFitToBox).toHaveBeenCalledTimes(1);
+    expect(mockFitToBox).toHaveBeenCalledWith(primaryBox, true);
+  });
+
+  it('computes bounds from currentModel.object when currentModel.box is missing or empty', () => {
+    const group = new THREE.Group();
+    const mesh = new THREE.Mesh(
+      new THREE.BoxGeometry(4, 6, 8),
+      new THREE.MeshBasicMaterial()
+    );
+    mesh.position.set(10, 5, 20);
+    group.add(mesh);
+
+    bimEngine.currentModel = {
+      box: undefined,
+      object: group,
+    } as any;
+
+    bimEngine.fitModel();
+
+    expect(mockFitToBox).toHaveBeenCalledTimes(1);
+    const fittedBox = mockFitToBox.mock.calls[0][0] as THREE.Box3;
+    expect(fittedBox.isEmpty()).toBe(false);
+    expect(fittedBox.min.x).toBeCloseTo(8, 1);
+    expect(fittedBox.max.x).toBeCloseTo(12, 1);
+    expect(fittedBox.min.y).toBeCloseTo(2, 1);
+    expect(fittedBox.max.y).toBeCloseTo(8, 1);
+    expect(fittedBox.min.z).toBeCloseTo(16, 1);
+    expect(fittedBox.max.z).toBeCloseTo(24, 1);
+  });
+
+  it('falls back to active preview bounds when no IFC model is loaded', () => {
+    const plan = bimGenerationService.generatePlan({
+      length: 12,
+      width: 6,
+      storeys: 1,
+      storeyHeight: 3,
+    });
+    bimGenerationService.previewPlan(plan, mockScene);
+
+    bimEngine.fitModel();
+
+    expect(mockFitToBox).toHaveBeenCalledTimes(1);
+    const fittedBox = mockFitToBox.mock.calls[0][0] as THREE.Box3;
+    expect(fittedBox.isEmpty()).toBe(false);
+    expect(fittedBox.max.x - fittedBox.min.x).toBeCloseTo(12.2, 1);
+    expect(fittedBox.max.z - fittedBox.min.z).toBeCloseTo(6.2, 1);
+  });
+
+  it('preview_generation tool automatically fits camera to non-empty preview world bounds', async () => {
+    const fitSpy = vi.spyOn(bimEngine, 'fitModel');
+
+    const result = await ToolRegistry.executeTool('preview_generation', {
+      length: 10,
+      width: 8,
+      storeys: 2,
+      storeyHeight: 3,
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data.previewBounds).toBeDefined();
+    expect(result.data.previewBounds.max[0] - result.data.previewBounds.min[0]).toBeCloseTo(10.2, 1);
+    expect(result.data.previewBounds.max[2] - result.data.previewBounds.min[2]).toBeCloseTo(8.2, 1);
+
+    expect(fitSpy).toHaveBeenCalledTimes(1);
+    const passedBox = fitSpy.mock.calls[0][0] as THREE.Box3;
+    expect(passedBox).toBeDefined();
+    expect(passedBox.isEmpty()).toBe(false);
+    expect(mockFitToBox).toHaveBeenCalledTimes(1);
+  });
+
+  it('discard_generation_preview safely clears preview and refits camera to IFC model when present', async () => {
+    // Generate preview
+    await ToolRegistry.executeTool('preview_generation', {
+      length: 10,
+      width: 8,
+      storeys: 1,
+      storeyHeight: 3,
+    });
+    expect(bimGenerationService.hasActivePreview()).toBe(true);
+
+    // Mock an IFC model
+    const ifcBox = new THREE.Box3(new THREE.Vector3(-5, 0, -5), new THREE.Vector3(5, 10, 5));
+    bimEngine.currentModel = {
+      box: ifcBox,
+      object: new THREE.Group(),
+    } as any;
+
+    const fitSpy = vi.spyOn(bimEngine, 'fitModel');
+
+    const result = await ToolRegistry.executeTool('discard_generation_preview', {});
+    expect(result.success).toBe(true);
+    expect(bimGenerationService.hasActivePreview()).toBe(false);
+
+    expect(fitSpy).toHaveBeenCalled();
+    expect(mockFitToBox).toHaveBeenCalledWith(ifcBox, true);
+  });
+});
+

@@ -55,6 +55,10 @@ export class BimEngine {
     this.worlds = this.components.get(OBC.Worlds);
     this.fragments = this.components.get(OBC.FragmentsManager);
     this.ifcLoader = this.components.get(OBC.IfcLoader);
+
+    if (typeof window !== 'undefined') {
+      (window as any).bimEngine = this;
+    }
   }
 
   public async waitForInit(): Promise<void> {
@@ -69,6 +73,7 @@ export class BimEngine {
    */
   public async init(container: HTMLElement): Promise<void> {
     if (this.isInitialized && this.container === container) return;
+    if (this.initPromise) return this.initPromise;
 
     this.container = container;
     this.initPromise = (async () => {
@@ -111,10 +116,15 @@ export class BimEngine {
       }
 
       // 3. Setup Renderer FIRST (Required by OrthoPerspectiveCamera)
+      while (container.firstChild) {
+        container.removeChild(container.firstChild);
+      }
       this.world.renderer = new OBC.SimpleRenderer(this.components, container);
       if (this.world.renderer.three) {
         this.world.renderer.three.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
         this.world.renderer.three.shadowMap.enabled = false;
+        this.world.renderer.three.domElement.style.position = 'absolute';
+        this.world.renderer.three.domElement.style.inset = '0';
       }
 
       // 4. Setup Camera
@@ -279,9 +289,53 @@ export class BimEngine {
     }
   }
 
+  /**
+   * Computes or retrieves bounding box for the current model.
+   * Primary: currentModel.box.
+   * Fallback: computed from currentModel.object via THREE.Box3().setFromObject.
+   */
+  public getModelBounds(): THREE.Box3 | null {
+    if (this.currentModel?.box && !this.currentModel.box.isEmpty()) {
+      return this.currentModel.box;
+    }
+    if (this.currentModel?.object) {
+      const computed = new THREE.Box3().setFromObject(this.currentModel.object);
+      if (!computed.isEmpty()) {
+        (this.currentModel as any).box = computed;
+        return computed;
+      }
+    }
+    return null;
+  }
+
   public fitModel(box?: THREE.Box3): void {
     if (!this.world?.camera?.controls) return;
-    const targetBox = box || this.currentModel?.box;
+    let targetBox: THREE.Box3 | null = box && !box.isEmpty() ? box : null;
+
+    if (!targetBox) {
+      targetBox = this.getModelBounds();
+    }
+
+    // Never silently fail when valid scene geometry exists
+    if (!targetBox || targetBox.isEmpty()) {
+      if (bimGenerationService.hasActivePreview()) {
+        const previewBox = bimGenerationService.getPreviewBounds();
+        if (!previewBox.isEmpty()) {
+          targetBox = previewBox;
+        }
+      } else if (this.world?.scene?.three) {
+        const sceneBox = new THREE.Box3();
+        this.world.scene.three.traverse((obj) => {
+          if ((obj as THREE.Mesh).isMesh && obj.visible) {
+            sceneBox.expandByObject(obj);
+          }
+        });
+        if (!sceneBox.isEmpty()) {
+          targetBox = sceneBox;
+        }
+      }
+    }
+
     if (targetBox && !targetBox.isEmpty()) {
       this.world.camera.controls.fitToBox(targetBox, true);
     }
@@ -290,7 +344,7 @@ export class BimEngine {
   public setStandardView(direction: StandardViewDirection): void {
     if (!this.world?.camera?.controls) return;
     const box =
-      this.currentModel?.box ||
+      this.getModelBounds() ||
       new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
     const center = new THREE.Vector3();
     const size = new THREE.Vector3();
@@ -454,7 +508,7 @@ export class BimEngine {
 
     // 3. Look straight down from +Y axis
     const box =
-      this.currentModel?.box ||
+      this.getModelBounds() ||
       new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
     const center = new THREE.Vector3();
     const size = new THREE.Vector3();
@@ -522,7 +576,7 @@ export class BimEngine {
     if (!this.clipper || !this.world) return;
     this.clipper.enabled = true;
     const box =
-      this.currentModel?.box ||
+      this.getModelBounds() ||
       new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
     const center = new THREE.Vector3();
     box.getCenter(center);
@@ -683,6 +737,14 @@ export class BimEngine {
       }
       this.currentModel = null;
       this.currentModelId = null;
+    }
+
+    if (this.ifcLoader) {
+      try {
+        await this.ifcLoader.cleanUp();
+      } catch (err) {
+        console.warn('Error cleaning up ifcLoader:', err);
+      }
     }
 
     if (this.webIfcApi && this.webIfcModelID !== null) {

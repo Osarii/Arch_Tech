@@ -81,10 +81,10 @@ Owns `src/stores/bimStore.ts` and shared types in `src/types/bim.ts`.
 
 Owns `src/bim/generation/generationService.ts`.
 
-- `BimGenerationService` exposes `validateParams`, `generatePlan`, `previewPlan`, `clearPreview`, `hasActivePreview`, and `getActivePlan`.
+- `BimGenerationService` exposes `validateParams`, `generatePlan`, `previewPlan`, `clearPreview`, `hasActivePreview`, `getActivePlan`, and `getPreviewBounds`.
 - Computes deterministic parametric plans (`BimGenerationPlan`) for rectangular massings with multi-storey perimeter walls and floor/roof slabs.
 - Renders disposable Three.js preview overlays (`BimGenerationPreview` group) in `BimEngine.world.scene.three` with zero IFC or Change Set mutations.
-- `ToolRegistry` registers `preview_generation` and `discard_generation_preview` as non-destructive `READ` tools.
+- `ToolRegistry` registers `preview_generation` and `discard_generation_preview` as non-destructive `READ` tools; `preview_generation` automatically computes bounds and fits camera to preview, while `discard_generation_preview` refits camera to loaded IFC model.
 - Strict parameter parsing: missing dimensions prompt the user for clarification without silent defaults. All previous implicit move/rotate defaults are removed.
 
 ## 11. Testing

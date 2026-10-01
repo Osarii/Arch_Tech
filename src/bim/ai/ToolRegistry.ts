@@ -511,10 +511,20 @@ export class ToolRegistry {
             const scene = bimEngine.world?.scene?.three;
             bimGenerationService.previewPlan(plan, scene);
 
+            // Compute preview world bounds and automatically fit camera to preview
+            const previewBounds = bimGenerationService.getPreviewBounds();
+            if (!previewBounds.isEmpty()) {
+              bimEngine.fitModel(previewBounds);
+            }
+
             return {
               success: true,
               data: {
                 plan,
+                previewBounds: {
+                  min: [previewBounds.min.x, previewBounds.min.y, previewBounds.min.z],
+                  max: [previewBounds.max.x, previewBounds.max.y, previewBounds.max.z],
+                },
                 message: `Generated 3D preview for ${plan.params.storeys}-storey building (${plan.params.length}m × ${plan.params.width}m).`,
               },
             };
@@ -528,6 +538,9 @@ export class ToolRegistry {
 
         case 'discard_generation_preview': {
           bimGenerationService.clearPreview();
+          if (bimEngine.currentModel) {
+            bimEngine.fitModel();
+          }
           return {
             success: true,
             data: {
