@@ -129,7 +129,15 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('creates projects through the admin portal form', () => {
     demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
-    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    const adminNavigate = vi.fn();
+    render(<AdminDashboardPage onNavigate={adminNavigate} onSignOut={vi.fn()} />);
+    expect(screen.getByText('Portfolio overview')).toBeDefined();
+    expect(screen.getByText('Project health / attention')).toBeDefined();
+    expect(screen.getByText('Development stages')).toBeDefined();
+    expect(screen.getByText('Pending approvals')).toBeDefined();
+    expect(screen.getByText('Recent activity')).toBeDefined();
+    fireEvent.click(screen.getByTestId('admin-open-model-lake-house'));
+    expect(adminNavigate).toHaveBeenCalledWith('/workspace');
     fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
     expect(screen.getByRole('dialog', { name: 'New project.' })).toBeDefined();
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Portal Annex' } });
