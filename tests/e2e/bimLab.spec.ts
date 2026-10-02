@@ -455,7 +455,7 @@ test.describe('Arch_Tech Architectural Landing Page E2E', () => {
 
     // 2. Demo client access
     await page.getByTestId('client-login-link').click();
-    await expect(page.getByRole('heading', { name: 'Client Login' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Portal Access' })).toBeVisible();
     await page.getByTestId('login-submit').click();
     await expect(page.getByText('Projects in progress.')).toBeVisible();
 
