@@ -51,6 +51,9 @@ type PortalProjectRecord = {
   market?: string;
   developmentType?: string;
   publicStage?: string;
+  context?: string;
+  scale?: string;
+  longView?: string;
   archived?: boolean;
 };
 

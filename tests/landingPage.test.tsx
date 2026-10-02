@@ -36,12 +36,17 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Selected projects')).toBeDefined();
     expect(screen.getByText('From possibility to place.')).toBeDefined();
     expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
+    expect(screen.getByText('Río Segundo Commons')).toBeDefined();
+    expect(screen.getByText('Golfo Dulce Retreat')).toBeDefined();
+    expect(screen.getByText('Private project portal')).toBeDefined();
     expect(screen.queryByText(/OpenBIM|IFC|engineering pipeline/i)).toBeNull();
 
     fireEvent.click(screen.getByTestId('client-login-link'));
     expect(onLogin).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getAllByRole('button', { name: /Client Login/i }).at(-1)!);
     expect(onLogin).toHaveBeenCalledTimes(2);
+    fireEvent.click(screen.getByTestId('development-portal-link'));
+    expect(onLogin).toHaveBeenCalledTimes(3);
   });
 
   it('uses a simple three-image architectural hero without sticky scroll state', () => {
@@ -65,6 +70,12 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Project intent')).toBeDefined();
     expect(screen.getByText('Development path')).toBeDefined();
     expect(screen.getAllByText('Costa Rica · Central Valley').length).toBeGreaterThan(0);
+
+    cleanup();
+    render(<PublicProjectPage projectId="rio-segundo-commons" onNavigate={onNavigate} />);
+    expect(screen.getByText('Río Segundo Commons')).toBeDefined();
+    expect(screen.getByText('Neighbourhood block')).toBeDefined();
+    expect(screen.getByText('Long view')).toBeDefined();
   });
 
   it('keeps demo authentication isolated inside the login overlay', () => {

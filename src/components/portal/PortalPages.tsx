@@ -428,16 +428,22 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
           <p className="mt-14 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
           <h1 className="mt-5 max-w-5xl font-serif text-6xl font-light tracking-tight sm:text-8xl">{project.title}</h1>
           <p className="mt-8 max-w-2xl text-lg leading-8 text-stone-300">{project.summary}</p>
-          <dl className="mt-12 grid max-w-4xl gap-6 border-y border-white/[0.12] py-6 text-sm sm:grid-cols-3">
+          <dl className="mt-12 grid max-w-5xl gap-6 border-y border-white/[0.12] py-6 text-sm sm:grid-cols-2 lg:grid-cols-5">
             <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Market</dt><dd className="mt-2 text-stone-200">{project.market ?? 'Costa Rica'}</dd></div>
             <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Development</dt><dd className="mt-2 text-stone-200">{project.developmentType ?? project.category}</dd></div>
             <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Current stage</dt><dd className="mt-2 text-stone-200">{project.publicStage ?? project.phase}</dd></div>
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Context</dt><dd className="mt-2 text-stone-200">{project.context ?? 'Costa Rica'}</dd></div>
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Scale</dt><dd className="mt-2 text-stone-200">{project.scale ?? 'Project study'}</dd></div>
           </dl>
         </div>
         <img src={project.image} alt={project.title} className="h-[62vh] min-h-[460px] w-full object-cover" />
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Project intent</p>
           <p className="max-w-3xl font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>
+        </div>
+        <div className="mx-auto grid max-w-7xl gap-10 border-t border-white/[0.08] px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Long view</p>
+          <p className="max-w-3xl font-serif text-3xl font-light leading-snug text-stone-200 sm:text-4xl">{project.longView ?? 'Clear decisions, durable materials and a place that can remain useful over time.'}</p>
         </div>
         <div className="mx-auto grid max-w-7xl gap-10 border-t border-white/[0.08] px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Development path</p>

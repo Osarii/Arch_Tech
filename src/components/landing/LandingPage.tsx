@@ -19,7 +19,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
       <main>
         <Hero onViewProjects={viewProjects} />
         <ProjectShowcase onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
-        <DevelopmentFrame />
+        <DevelopmentFrame onLogin={onLogin} />
       </main>
       <Footer onLogin={onLogin} />
     </div>

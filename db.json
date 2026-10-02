@@ -42,7 +42,10 @@
       "image": "/arch_hero.jpg",
       "market": "Costa Rica · Central Valley",
       "developmentType": "Private residential development",
-      "publicStage": "In design development"
+      "publicStage": "In design development",
+      "context": "Hillside lake edge",
+      "scale": "Single residence",
+      "longView": "Durability, shade and a measured relationship to water."
     },
     {
       "id": "woodland-house",
@@ -57,7 +60,10 @@
       "image": "/arch_openhouse.jpg",
       "market": "Costa Rica · Forest edge",
       "developmentType": "Residential concept study",
-      "publicStage": "In concept design"
+      "publicStage": "In concept design",
+      "context": "Protected woodland / courtyard site",
+      "scale": "Single residence",
+      "longView": "A compact footprint organized around light, privacy and daily life."
     },
     {
       "id": "cantilever-residence",
@@ -72,7 +78,46 @@
       "image": "/arch_cantilever.jpg",
       "market": "Costa Rica · Pacific slope",
       "developmentType": "Private residential development",
-      "publicStage": "In documentation"
+      "publicStage": "In documentation",
+      "context": "Sloping site / Pacific exposure",
+      "scale": "Single residence",
+      "longView": "Deep shade and durable transitions for a changing coastal climate."
+    },
+    {
+      "id": "rio-segundo-commons",
+      "code": "AT / 04",
+      "title": "Río Segundo Commons",
+      "category": "Mixed-use · Development Study",
+      "phase": "Brief and site study",
+      "progress": 18,
+      "nextMilestone": "Development brief · 12 November",
+      "summary": "A mixed-use neighborhood study that brings homes, work and everyday services into a more connected urban edge.",
+      "statement": "The project begins with the relationship between a working street, a shaded public threshold and a flexible mix of uses. Its early study asks how a compact development can remain useful as needs change.",
+      "image": "/arch_openhouse.jpg",
+      "market": "Costa Rica · Greater San José",
+      "developmentType": "Mixed-use neighborhood development",
+      "publicStage": "In site and feasibility study",
+      "context": "Urban infill / transit edge",
+      "scale": "Neighbourhood block",
+      "longView": "Adaptable uses, connected daily life and a clear public edge."
+    },
+    {
+      "id": "golfo-dulce-retreat",
+      "code": "AT / 05",
+      "title": "Golfo Dulce Retreat",
+      "category": "Hospitality · Destination Study",
+      "phase": "Concept design",
+      "progress": 31,
+      "nextMilestone": "Hospitality brief · 21 November",
+      "summary": "A small hospitality development shaped by arrival, rest and a close reading of the forested coast.",
+      "statement": "The retreat is conceived as a sequence of sheltered rooms and shared spaces that keep the landscape present without competing with it. Operations, seasonality and the character of the site guide the first design decisions.",
+      "image": "/arch_cantilever.jpg",
+      "market": "Costa Rica · Osa Peninsula",
+      "developmentType": "Small hospitality development",
+      "publicStage": "In concept design",
+      "context": "Coastal forest / Osa Peninsula",
+      "scale": "Boutique retreat",
+      "longView": "A durable guest experience shaped by landscape, seasonality and stewardship."
     }
   ],
   "updates": [
@@ -125,7 +170,13 @@
     { "projectId": "cantilever-residence", "label": "Concept design", "status": "Complete" },
     { "projectId": "cantilever-residence", "label": "Design development", "status": "Complete" },
     { "projectId": "cantilever-residence", "label": "Documentation", "status": "Current" },
-    { "projectId": "cantilever-residence", "label": "Documentation issue", "status": "Upcoming" }
+    { "projectId": "cantilever-residence", "label": "Documentation issue", "status": "Upcoming" },
+    { "projectId": "rio-segundo-commons", "label": "Context and feasibility", "status": "Complete" },
+    { "projectId": "rio-segundo-commons", "label": "Development brief", "status": "Current" },
+    { "projectId": "rio-segundo-commons", "label": "Program and massing", "status": "Upcoming" },
+    { "projectId": "golfo-dulce-retreat", "label": "Site and operations study", "status": "Complete" },
+    { "projectId": "golfo-dulce-retreat", "label": "Concept design", "status": "Current" },
+    { "projectId": "golfo-dulce-retreat", "label": "Hospitality brief", "status": "Upcoming" }
   ],
   "documents": [
     { "projectId": "lake-house", "name": "Design development set", "meta": "PDF · Updated 02 Oct 2026" },
