@@ -30,7 +30,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
               <span className={`flex items-center justify-between font-mono text-[10px] text-stone-500 ${index === 0 ? 'md:col-span-2' : ''}`}><span>{String(index + 1).padStart(2, '0')}</span><span>{project.market ?? 'Costa Rica'}</span></span>
               <span className={index === 0 ? 'mt-5 block md:mt-0' : 'mt-5 block'}>
                 <span className="relative block aspect-[16/9] overflow-hidden bg-stone-300">
-                  <img src={project.image} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+                  <img src={project.media?.aerial ?? project.image} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
                 </span>
               </span>
               <span className={index === 0 ? 'mt-6 block md:mt-0' : 'mt-6 block'}>

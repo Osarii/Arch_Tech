@@ -36,11 +36,13 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Development portfolio')).toBeDefined();
     expect(screen.getByText('From opportunity to operation.')).toBeDefined();
     expect(screen.getByText('A portfolio built for consequence.')).toBeDefined();
-    expect(screen.getAllByText('Coyol Free Zone Campus').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Central Valley Corporate Campus').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Guanacaste Coastal District').length).toBeGreaterThan(0);
-    expect(screen.getByText('Río Segundo Commons')).toBeDefined();
-    expect(screen.getByText('Golfo Dulce Retreat')).toBeDefined();
+    expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Summit Point Corporate District').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Mar Vista Hospitality District').length).toBeGreaterThan(0);
+    expect(screen.getByText('Caribbean AI Compute Campus')).toBeDefined();
+    expect(screen.getByText('Guanacaste Renewable Compute Campus')).toBeDefined();
+    expect(screen.getByText('Pacific Regional Medical Campus')).toBeDefined();
+    expect(screen.getAllByTestId(/^public-project-/)).toHaveLength(6);
     expect(screen.queryByText('Lake House')).toBeNull();
     expect(screen.getByText('Private project portal')).toBeDefined();
     expect(screen.queryByText(/OpenBIM|IFC|engineering pipeline/i)).toBeNull();
@@ -58,27 +60,27 @@ describe('ARCH_TECH client architecture portal', () => {
 
     expect(screen.getByTestId('hero-gallery').querySelectorAll('img')).toHaveLength(3);
     expect(screen.getByTestId('hero-gallery').className).not.toContain('sticky');
-    expect(screen.getByText('Coyol Free Zone Campus')).toBeDefined();
+    expect(screen.getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
   });
 
   it('opens public project details from the selected projects list', () => {
     const onOpenProject = vi.fn();
     render(<ProjectShowcase onOpenProject={onOpenProject} />);
 
-    fireEvent.click(screen.getByTestId('public-project-coyol-free-zone'));
-    expect(onOpenProject).toHaveBeenCalledWith('coyol-free-zone');
+    fireEvent.click(screen.getByTestId('public-project-pacific-nexus-free-zone'));
+    expect(onOpenProject).toHaveBeenCalledWith('pacific-nexus-free-zone');
 
     const onNavigate = vi.fn();
-    render(<PublicProjectPage projectId="coyol-free-zone" onNavigate={onNavigate} />);
-    expect(screen.getAllByText('Coyol Free Zone Campus').length).toBeGreaterThan(0);
+    render(<PublicProjectPage projectId="pacific-nexus-free-zone" onNavigate={onNavigate} />);
+    expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
     expect(screen.getByText('Project intent')).toBeDefined();
     expect(screen.getByText('Development path')).toBeDefined();
-    expect(screen.getAllByText('Costa Rica · Alajuela').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Costa Rica · Central Pacific').length).toBeGreaterThan(0);
 
     cleanup();
-    render(<PublicProjectPage projectId="rio-segundo-commons" onNavigate={onNavigate} />);
-    expect(screen.getByText('Río Segundo Commons')).toBeDefined();
-    expect(screen.getByText('Mixed-use district')).toBeDefined();
+    render(<PublicProjectPage projectId="summit-point-corporate-district" onNavigate={onNavigate} />);
+    expect(screen.getByText('Summit Point Corporate District')).toBeDefined();
+    expect(screen.getByText('Corporate district')).toBeDefined();
     expect(screen.getByText('Long view')).toBeDefined();
   });
 

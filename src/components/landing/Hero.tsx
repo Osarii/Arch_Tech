@@ -6,9 +6,9 @@ interface HeroProps {
 }
 
 const heroProjects = [
-  { image: '/arch_hero.jpg', title: 'Coyol Free Zone Campus', label: 'Free zone / Alajuela', className: 'md:col-span-2 md:row-span-2' },
-  { image: '/arch_openhouse.jpg', title: 'Central Valley Corporate Campus', label: 'Corporate / Greater San José', className: '' },
-  { image: '/arch_cantilever.jpg', title: 'Guanacaste Coastal District', label: 'Masterplan / Guanacaste', className: '' },
+  { image: '/projects/pacific-nexus-free-zone/aerial-overview.jpg', title: 'Pacific Nexus Free Zone Campus', label: 'Free zone / Central Pacific', className: 'md:col-span-2 md:row-span-2' },
+  { image: '/projects/summit-point-corporate-district/campus-overview.jpg', title: 'Summit Point Corporate District', label: 'Corporate / Central Valley', className: '' },
+  { image: '/projects/mar-vista-hospitality-district/aerial-overview.jpg', title: 'Mar Vista Hospitality District', label: 'Hospitality / Pacific Coast', className: '' },
 ];
 
 const sectors = ['Free zones', 'Industrial / logistics', 'Corporate campuses', 'Mixed-use districts', 'Hospitality destinations', 'Masterplans'];

@@ -424,6 +424,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
 export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }> = ({ projectId, onNavigate }) => {
   const project = getPublicProject(projectId);
   if (!project) return <NotFoundPage onNavigate={onNavigate} />;
+  const media = project.media;
 
   return (
     <div className="h-screen overflow-y-auto bg-[#0a0b0d] text-[#f4efe8]">
@@ -446,6 +447,18 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
           </dl>
         </div>
         <img src={project.image} alt={project.title} className="h-[62vh] min-h-[460px] w-full object-cover" />
+        {media && <section className="mx-auto max-w-7xl px-6 py-20 sm:px-8 lg:px-12 lg:py-28">
+          <div className="grid gap-10 border-b border-white/[0.08] pb-10 lg:grid-cols-[0.35fr_1fr] lg:items-end">
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Development studies</p>
+            <p className="max-w-2xl text-sm leading-6 text-stone-400">Aerial views, campus structure and planning studies that make the development sequence legible.</p>
+          </div>
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {[['Aerial overview', media.aerial, false], ['Campus overview', media.campusOverview, false], ['Masterplan', media.masterplan, true], ['Site strategy', media.sitePlan, true], ['Program study', media.floorPlan, true], ['Arrival / interior', media.interior, false], ['Concept board', media.conceptBoard, true]].map(([label, source, contain]) => <figure key={label as string} className="overflow-hidden border border-white/[0.08] bg-[#101115]">
+              <img src={source as string} alt={`${project.title} ${label}`} loading="lazy" className={`aspect-[16/9] h-full w-full ${contain ? 'bg-[#e9e5dc] object-contain' : 'object-cover'}`} />
+              <figcaption className="border-t border-white/[0.08] px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{label as string}</figcaption>
+            </figure>)}
+          </div>
+        </section>}
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Project intent</p>
           <p className="max-w-3xl font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>

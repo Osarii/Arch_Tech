@@ -56,6 +56,15 @@ type PortalProjectRecord = {
   scale?: string;
   longView?: string;
   archived?: boolean;
+  media?: {
+    aerial: string;
+    masterplan: string;
+    sitePlan: string;
+    floorPlan: string;
+    interior: string;
+    campusOverview: string;
+    conceptBoard: string;
+  };
 };
 
 export type PortalProject = PortalProjectRecord & {
