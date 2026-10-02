@@ -32,42 +32,89 @@ const sequence = [
   },
 ];
 
+const scheduleFrame = (callback: () => void) => (
+  typeof window.requestAnimationFrame === 'function'
+    ? window.requestAnimationFrame(callback)
+    : window.setTimeout(callback, 16)
+);
+
+const cancelScheduledFrame = (frameId: number) => {
+  if (typeof window.cancelAnimationFrame === 'function') {
+    window.cancelAnimationFrame(frameId);
+  } else {
+    window.clearTimeout(frameId);
+  }
+};
+
 export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
   const sequenceRef = useRef<HTMLDivElement>(null);
+  const panelTrackRef = useRef<HTMLDivElement>(null);
+  const mobilePanelStepRef = useRef(0);
+  const desktopFrameRef = useRef<number | null>(null);
+  const mobileFrameRef = useRef<number | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const section = sequenceRef.current;
-      if (!section || window.innerWidth < 768) return;
+    const section = sequenceRef.current;
+    const scrollContainer = section?.closest<HTMLElement>('[data-landing-scroll-container]');
+    if (!section || !scrollContainer) return;
+
+    const updateActiveIndex = () => {
+      desktopFrameRef.current = null;
+      if (window.innerWidth < 768) return;
 
       const { top, height } = section.getBoundingClientRect();
-      const scrollRange = Math.max(1, height - window.innerHeight);
+      const scrollRange = Math.max(1, height - scrollContainer.clientHeight);
       const progress = Math.min(1, Math.max(0, -top / scrollRange));
       const nextIndex = Math.min(sequence.length - 1, Math.floor(progress * sequence.length));
 
       setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
     };
 
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll);
+    const scheduleUpdate = () => {
+      if (desktopFrameRef.current !== null) return;
+      desktopFrameRef.current = scheduleFrame(updateActiveIndex);
+    };
+
+    scheduleUpdate();
+    scrollContainer.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
+      scrollContainer.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      if (desktopFrameRef.current !== null) cancelScheduledFrame(desktopFrameRef.current);
     };
   }, []);
 
-  const handleMobileScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    if (window.innerWidth >= 768) return;
-    const firstPanel = event.currentTarget.firstElementChild as HTMLElement | null;
-    if (!firstPanel) return;
+  useEffect(() => {
+    const measurePanelStep = () => {
+      const firstPanel = panelTrackRef.current?.firstElementChild as HTMLElement | null;
+      mobilePanelStepRef.current = firstPanel ? firstPanel.offsetWidth + 12 : 0;
+    };
 
-    const nextIndex = Math.min(
-      sequence.length - 1,
-      Math.max(0, Math.round(event.currentTarget.scrollLeft / (firstPanel.offsetWidth + 12))),
-    );
-    setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
+    measurePanelStep();
+    window.addEventListener('resize', measurePanelStep);
+    return () => {
+      window.removeEventListener('resize', measurePanelStep);
+      if (mobileFrameRef.current !== null) cancelScheduledFrame(mobileFrameRef.current);
+    };
+  }, []);
+
+  const handleMobileScroll = () => {
+    if (window.innerWidth >= 768 || mobileFrameRef.current !== null) return;
+
+    mobileFrameRef.current = scheduleFrame(() => {
+      mobileFrameRef.current = null;
+      const step = mobilePanelStepRef.current;
+      const track = panelTrackRef.current;
+      if (!step || !track) return;
+
+      const nextIndex = Math.min(
+        sequence.length - 1,
+        Math.max(0, Math.round(track.scrollLeft / step)),
+      );
+      setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
+    });
   };
 
   const selectPanel = (index: number) => {
@@ -79,7 +126,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
   };
 
   return (
-    <section id="hero" className="relative pt-32 pb-20 px-6 sm:px-8 lg:px-12 border-b border-white/[0.08] overflow-hidden">
+    <section id="hero" className="relative pt-32 pb-20 px-6 sm:px-8 lg:px-12 border-b border-white/[0.08]">
       {/* Background Architectural Grid Lines */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <div
@@ -124,10 +171,11 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
           </div>
         </div>
 
-        <div ref={sequenceRef} data-testid="hero-sequence" className="relative mt-12 md:min-h-[230vh]">
+        <div ref={sequenceRef} data-testid="hero-sequence" className="relative mt-12 md:min-h-[200vh]">
           <div className="md:sticky md:top-0 md:flex md:h-screen md:max-h-[780px] md:min-h-[640px] md:items-center">
             <div className="w-full">
               <div
+                ref={panelTrackRef}
                 className="flex gap-3 overflow-x-auto pb-4 snap-x snap-mandatory md:h-[70vh] md:gap-2 md:overflow-visible md:pb-0"
                 onScroll={handleMobileScroll}
               >
@@ -142,21 +190,21 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
                       onMouseEnter={() => selectPanel(index)}
                       onFocus={() => selectPanel(index)}
                       onClick={() => selectPanel(index)}
-                      className={`group relative h-[68svh] min-h-[460px] min-w-[82vw] snap-center overflow-hidden border border-white/[0.12] bg-[#0c0d11] text-left md:h-full md:min-h-0 md:min-w-0 md:basis-0 md:transition-[flex] md:duration-700 md:ease-[cubic-bezier(0.22,1,0.36,1)] ${isActive ? 'md:flex-[4]' : 'md:flex-1'}`}
+                      className={`group relative h-[68svh] min-h-[460px] min-w-[82vw] snap-center overflow-hidden border border-white/[0.12] bg-[#0c0d11] text-left md:h-full md:min-h-0 md:min-w-0 md:basis-0 md:transition-[flex-grow] md:duration-300 md:ease-out ${isActive ? 'md:flex-[4]' : 'md:flex-1'}`}
                     >
                       <img
                         src={panel.image}
                         alt={panel.alt}
-                        className={`absolute inset-0 h-full w-full object-cover grayscale-[12%] contrast-[1.05] transition-transform duration-1000 ease-out ${isActive ? 'scale-[1.04]' : 'scale-[1.01]'}`}
+                        className={`absolute inset-0 h-full w-full object-cover grayscale-[12%] contrast-[1.05] transition-transform duration-500 ease-out ${isActive ? 'scale-[1.04]' : 'scale-[1.01]'}`}
                         style={{ objectPosition: panel.position }}
                         loading={index === 0 ? 'eager' : 'lazy'}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#060709] via-[#060709]/10 to-[#060709]/20" />
                       <div
-                        className="absolute inset-0 bg-[#08090b]/65 transition-[clip-path] duration-700 ease-out"
+                        className="absolute inset-0 bg-[#08090b]/65 transition-[clip-path] duration-300 ease-out"
                         style={{ clipPath: isActive ? 'inset(100% 0 0 0)' : 'inset(0 0 0 0)' }}
                       />
-                      <div className={`absolute inset-x-0 bottom-0 p-5 sm:p-6 transition-all duration-500 ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-80 md:opacity-0'}`}>
+                      <div className={`absolute inset-x-0 bottom-0 p-5 sm:p-6 transition-[opacity,transform] duration-250 ease-out ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-80 md:opacity-0'}`}>
                         <div className="mb-3 font-mono text-[10px] tracking-[0.2em] text-stone-300">
                           {panel.index} / {panel.title}
                         </div>
@@ -180,7 +228,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
                       type="button"
                       aria-label={`Go to ${panel.index} / ${panel.title}`}
                       onClick={() => selectPanel(index)}
-                      className={`h-px flex-1 transition-colors duration-500 ${activeIndex === index ? 'bg-stone-200' : 'bg-white/20 hover:bg-white/50'}`}
+                      className={`h-px flex-1 transition-colors duration-300 ${activeIndex === index ? 'bg-stone-200' : 'bg-white/20 hover:bg-white/50'}`}
                     />
                   ))}
                 </div>

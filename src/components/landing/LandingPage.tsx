@@ -15,7 +15,7 @@ interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onOpenWorkspace }) => {
   return (
-    <div className="w-full h-screen overflow-y-auto overflow-x-hidden bg-[#0a0b0d] text-[#f4efe8] scroll-smooth selection:bg-stone-300 selection:text-black font-sans">
+    <div data-landing-scroll-container className="w-full h-screen overflow-y-auto overflow-x-hidden bg-[#0a0b0d] text-[#f4efe8] scroll-smooth selection:bg-stone-300 selection:text-black font-sans">
       {/* Editorial Architectural Header / Navigation */}
       <LandingNavbar onOpenWorkspace={onOpenWorkspace} />
 
