@@ -103,11 +103,15 @@ describe('ARCH_TECH client architecture portal', () => {
     demoAuth.signIn('client@arch-tech.studio', 'studio-demo');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
-    expect(screen.getByText('Client projects')).toBeDefined();
+    expect(screen.getByText('Your projects')).toBeDefined();
     expect(screen.getAllByText('Progress').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Design development').length).toBeGreaterThan(0);
-    expect(screen.getByText('Latest update')).toBeDefined();
-    expect(screen.getByText('Next milestone')).toBeDefined();
+    expect(screen.getAllByText(/Design development/).length).toBeGreaterThan(0);
+    expect(screen.getByText('Decisions requiring your attention')).toBeDefined();
+    expect(screen.getByText('Upcoming milestones')).toBeDefined();
+    expect(screen.getByText('Recent project updates')).toBeDefined();
+    expect(screen.getAllByRole('button', { name: 'Approve' }).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getAllByRole('button', { name: 'Approve' })[0]);
+    expect(screen.getByText('Request changes')).toBeDefined();
   });
 
   it('limits architect data and exposes the admin register', () => {

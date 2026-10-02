@@ -167,10 +167,18 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 };
 
 export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
-  const [snapshot] = useState(getPortalSnapshot);
+  const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const client = getPortalUser(demoAuth.getSession()?.email ?? '');
   const projects = snapshot.projects.filter((project) => !project.archived && client?.projectIds.includes(project.id));
-  const latestUpdate = projects[0]?.updates[0];
+  const updates = projects.flatMap((project) => project.updates.map((update) => ({ ...update, projectTitle: project.title }))).slice(0, 5);
+  const upcomingMilestones = projects.flatMap((project) => project.milestones.filter((milestone) => milestone.status === 'Upcoming').map((milestone) => ({ ...milestone, projectTitle: project.title })));
+  const pendingApprovals = projects.flatMap((project) => project.approvals.filter((approval) => approval.status === 'Pending').map((approval) => ({ ...approval, projectTitle: project.title })));
+  const notifications = snapshot.db.notifications.filter((notification) => notification.userId === client?.id);
+  const refresh = () => setSnapshot(getPortalSnapshot());
+  const respondToApproval = (projectId: string, title: string, status: 'Approved' | 'Rejected') => {
+    updatePortalApproval(projectId, title, status);
+    refresh();
+  };
 
   return (
     <div className="portal-surface h-screen overflow-y-auto bg-[#f2efe8] text-[#171714]">
@@ -181,53 +189,38 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Client portal / Overview</p>
             <h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Projects in progress.</h1>
           </div>
-          <p className="max-w-sm text-sm leading-6 text-stone-600">A concise view of current phases, upcoming decisions and the latest information shared with you.</p>
+          <p className="max-w-sm text-sm leading-6 text-stone-600">A clear view of where each project stands, what needs your decision and what has changed since your last visit.</p>
         </div>
 
         <section id="portal-section-projects" className="py-14" aria-labelledby="client-projects-title">
           <div className="mb-8 flex items-center justify-between">
-            <h2 id="client-projects-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Client projects</h2>
+            <h2 id="client-projects-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Your projects</h2>
             <span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active</span>
           </div>
           <div className="divide-y divide-black/15 border-y border-black/15">
             {projects.map((project) => (
-              <button
-                key={project.id}
-                data-testid={`dashboard-project-${project.id}`}
-                onClick={() => onNavigate(`/dashboard/projects/${project.id}`)}
-                className="group grid w-full gap-6 py-7 text-left transition-colors hover:bg-white/35 sm:grid-cols-[80px_1fr_150px_180px_auto] sm:items-center sm:px-3"
-              >
+              <article key={project.id} className="grid gap-5 py-7 sm:grid-cols-[80px_1fr_170px_auto] sm:items-center">
                 <span className="font-mono text-[10px] text-stone-500">{project.code}</span>
-                <span>
-                  <span className="block font-serif text-2xl">{project.title}</span>
-                  <span className="mt-1 block text-xs text-stone-500">{project.category}</span>
-                </span>
-                <span className="text-xs text-stone-600">{project.phase}</span>
-                <span>
-                  <span className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500"><span>Progress</span><span>{project.progress}%</span></span>
-                  <span className="block h-px bg-black/15"><span className="block h-px bg-black" style={{ width: `${project.progress}%` }} /></span>
-                </span>
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </button>
+                <button data-testid={`dashboard-project-${project.id}`} onClick={() => onNavigate(`/dashboard/projects/${project.id}`)} className="text-left"><span className="block font-serif text-2xl">{project.title}</span><span className="mt-1 block text-xs text-stone-500">{project.phase} · {project.progress}% complete</span></button>
+                <div><p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500"><span>Progress</span><span>{project.progress}%</span></p><div className="h-px bg-black/15"><div className="h-px bg-black" style={{ width: `${project.progress}%` }} /></div><p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p></div>
+                <div className="flex gap-3 sm:justify-end"><button onClick={() => onNavigate(`/dashboard/projects/${project.id}`)} className="border border-black/20 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]">Open project</button><button onClick={() => onNavigate('/workspace')} className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white">3D model</button></div>
+              </article>
             ))}
           </div>
         </section>
 
-        <section id="portal-section-updates" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Latest update</p>
-            <p className="mt-8 font-mono text-[10px] text-stone-500">{latestUpdate?.date}</p>
-            <h2 className="mt-3 font-serif text-3xl">{latestUpdate?.title}</h2>
-            <p className="mt-3 max-w-lg text-sm leading-6 text-stone-600">{latestUpdate?.body}</p>
-          </div>
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Next milestone</p>
-            <h2 className="mt-8 font-serif text-3xl">{projects[0]?.nextMilestone}</h2>
-            <p className="mt-3 text-sm leading-6 text-stone-600">The latest documents and model remain available inside the project view.</p>
-          </div>
+        <section className="grid gap-12 border-t border-black/15 py-12 lg:grid-cols-[1fr_1fr]" aria-label="Client decisions">
+          <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring your attention</p>{pendingApprovals.length ? pendingApprovals.map((approval) => <div key={`${approval.projectId}-${approval.title}`} className="mt-6 border-b border-black/10 pb-5"><div className="flex items-start justify-between gap-6"><div><p className="font-serif text-2xl">{approval.title}</p><p className="mt-1 text-xs text-stone-500">{approval.projectTitle}</p></div><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Pending</span></div><div className="mt-4 flex gap-2"><button onClick={() => respondToApproval(approval.projectId, approval.title, 'Approved')} className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white">Approve</button><button onClick={() => respondToApproval(approval.projectId, approval.title, 'Rejected')} className="border border-black/20 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]">Request changes</button></div></div>) : <p className="mt-6 text-sm leading-6 text-stone-600">No decisions are waiting for you.</p>}</div>
+          <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>{upcomingMilestones.length ? upcomingMilestones.map((milestone) => <p key={`${milestone.projectId}-${milestone.label}`} className="mt-6 flex justify-between gap-5 text-sm"><span>{milestone.projectTitle} · {milestone.label}</span><span className="font-mono text-[9px] uppercase text-stone-500">Upcoming</span></p>) : <p className="mt-6 text-sm text-stone-600">Milestones will appear here as projects advance.</p>}</div>
         </section>
-        <section id="portal-section-documents" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Documents</p>{projects.flatMap((project) => project.documents.slice(0, 2).map((document) => <p key={`${project.id}-${document.name}`} className="mt-5 flex justify-between gap-5 text-sm"><span>{project.title} · {document.name}</span><span className="font-mono text-[9px] text-stone-500">{document.meta}</span></p>))}</section>
-        <section id="portal-section-notifications" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>{snapshot.db.notifications.filter((notification) => notification.userId === client?.id).map((notification) => <p key={`${notification.date}-${notification.message}`} className="mt-5 flex justify-between gap-5 text-sm"><span>{notification.message}</span><span className="font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</section>
+
+        <section id="portal-section-updates" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2">
+          <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent project updates</p>{updates.map((update) => <button key={`${update.projectId}-${update.date}-${update.title}`} onClick={() => onNavigate(`/dashboard/projects/${update.projectId}`)} className="mt-6 block w-full border-b border-black/10 pb-5 text-left"><span className="font-mono text-[10px] text-stone-500">{update.date} · {update.projectTitle}</span><span className="mt-2 block font-serif text-2xl">{update.title}</span><span className="mt-2 block text-sm leading-6 text-stone-600">{update.body}</span></button>)}</div>
+          <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Latest milestone</p><h2 className="mt-8 font-serif text-3xl">{projects[0]?.nextMilestone}</h2><p className="mt-3 text-sm leading-6 text-stone-600">Open a project to review its complete timeline, documents, decisions and model.</p><button onClick={() => projects[0] && onNavigate(`/dashboard/projects/${projects[0].id}`)} className="mt-6 border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Review project</button></div>
+        </section>
+
+        <section id="portal-section-documents" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Shared documents</p>{projects.flatMap((project) => project.documents.map((document) => <button key={`${project.id}-${document.name}`} onClick={() => onNavigate(`/dashboard/projects/${project.id}`)} className="mt-5 flex w-full justify-between gap-5 border-b border-black/10 pb-4 text-left text-sm"><span>{project.title} · {document.name}</span><span className="font-mono text-[9px] text-stone-500">{document.meta} · Open project</span></button>))}</section>
+        <section id="portal-section-notifications" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>{notifications.length ? notifications.map((notification) => <button key={`${notification.date}-${notification.message}`} onClick={() => onNavigate(`/dashboard/projects/${notification.projectId}`)} className="mt-5 flex w-full justify-between gap-5 border-b border-black/10 pb-4 text-left text-sm"><span>{notification.message}</span><span className="font-mono text-[9px] text-stone-500">{notification.date} · Open project</span></button>) : <p className="mt-5 text-sm text-stone-600">You are up to date.</p>}</section>
       </main>
     </div>
   );
