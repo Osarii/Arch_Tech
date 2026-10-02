@@ -134,6 +134,9 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Cantilever Residence').length).toBeGreaterThan(0);
     expect(screen.queryByText('Woodland House')).toBeNull();
+    fireEvent.click(screen.getByTestId('theme-toggle'));
+    expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
+    expect(document.querySelectorAll('.portal-overview-tile')).toHaveLength(4);
     fireEvent.click(screen.getByTestId('architect-approval-lake-house'));
     expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/lake-house');
 

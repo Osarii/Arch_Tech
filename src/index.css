@@ -99,6 +99,12 @@ html.portal-dark .portal-surface .hover\:bg-white\/35:hover {
 html.portal-dark .portal-surface .admin-overview-tile {
   background-color: #171714 !important;
 }
+html.portal-dark .portal-surface .portal-overview-tile {
+  background-color: #171714 !important;
+}
+html.portal-dark .portal-surface .hover\:text-stone-500:hover {
+  color: #f4efe8 !important;
+}
 html.portal-dark .portal-surface .admin-action:hover {
   color: #f4efe8 !important;
 }
