@@ -433,7 +433,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
       </header>
       <main>
         <div className="mx-auto max-w-7xl px-6 pb-10 pt-14 sm:px-8 lg:px-12 lg:pb-16 lg:pt-24">
-          <button onClick={() => onNavigate('/')} className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Selected projects</button>
+          <button onClick={() => onNavigate('/')} className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Development portfolio</button>
           <p className="mt-14 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
           <h1 className="mt-5 max-w-5xl font-serif text-6xl font-light tracking-tight sm:text-8xl">{project.title}</h1>
           <p className="mt-8 max-w-2xl text-lg leading-8 text-stone-300">{project.summary}</p>

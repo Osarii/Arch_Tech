@@ -32,12 +32,16 @@ describe('ARCH_TECH client architecture portal', () => {
     const onLogin = vi.fn();
     render(<LandingPage onNavigate={onNavigate} onLogin={onLogin} />);
 
-    expect(screen.getByText(/Architecture,/i)).toBeDefined();
-    expect(screen.getByText('Selected projects')).toBeDefined();
-    expect(screen.getByText('From possibility to place.')).toBeDefined();
-    expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: /Development at a larger scale/ })).toBeDefined();
+    expect(screen.getByText('Development portfolio')).toBeDefined();
+    expect(screen.getByText('From opportunity to operation.')).toBeDefined();
+    expect(screen.getByText('A portfolio built for consequence.')).toBeDefined();
+    expect(screen.getAllByText('Coyol Free Zone Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Central Valley Corporate Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Guanacaste Coastal District').length).toBeGreaterThan(0);
     expect(screen.getByText('Río Segundo Commons')).toBeDefined();
     expect(screen.getByText('Golfo Dulce Retreat')).toBeDefined();
+    expect(screen.queryByText('Lake House')).toBeNull();
     expect(screen.getByText('Private project portal')).toBeDefined();
     expect(screen.queryByText(/OpenBIM|IFC|engineering pipeline/i)).toBeNull();
 
@@ -54,27 +58,27 @@ describe('ARCH_TECH client architecture portal', () => {
 
     expect(screen.getByTestId('hero-gallery').querySelectorAll('img')).toHaveLength(3);
     expect(screen.getByTestId('hero-gallery').className).not.toContain('sticky');
-    expect(screen.getByText('01 / Lake House')).toBeDefined();
+    expect(screen.getByText('Coyol Free Zone Campus')).toBeDefined();
   });
 
   it('opens public project details from the selected projects list', () => {
     const onOpenProject = vi.fn();
     render(<ProjectShowcase onOpenProject={onOpenProject} />);
 
-    fireEvent.click(screen.getByTestId('public-project-lake-house'));
-    expect(onOpenProject).toHaveBeenCalledWith('lake-house');
+    fireEvent.click(screen.getByTestId('public-project-coyol-free-zone'));
+    expect(onOpenProject).toHaveBeenCalledWith('coyol-free-zone');
 
     const onNavigate = vi.fn();
-    render(<PublicProjectPage projectId="lake-house" onNavigate={onNavigate} />);
-    expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
+    render(<PublicProjectPage projectId="coyol-free-zone" onNavigate={onNavigate} />);
+    expect(screen.getAllByText('Coyol Free Zone Campus').length).toBeGreaterThan(0);
     expect(screen.getByText('Project intent')).toBeDefined();
     expect(screen.getByText('Development path')).toBeDefined();
-    expect(screen.getAllByText('Costa Rica · Central Valley').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Costa Rica · Alajuela').length).toBeGreaterThan(0);
 
     cleanup();
     render(<PublicProjectPage projectId="rio-segundo-commons" onNavigate={onNavigate} />);
     expect(screen.getByText('Río Segundo Commons')).toBeDefined();
-    expect(screen.getByText('Neighbourhood block')).toBeDefined();
+    expect(screen.getByText('Mixed-use district')).toBeDefined();
     expect(screen.getByText('Long view')).toBeDefined();
   });
 
