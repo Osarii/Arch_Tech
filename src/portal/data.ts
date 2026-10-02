@@ -48,6 +48,9 @@ type PortalProjectRecord = {
   summary: string;
   statement: string;
   image: string;
+  market?: string;
+  developmentType?: string;
+  publicStage?: string;
   archived?: boolean;
 };
 
@@ -118,13 +121,7 @@ export const createPortalProject = (project: PortalProjectRecord) => updatePorta
 
 export const getPortalUser = (email: string) => readPortalDatabase().users.find((user) => user.email === email);
 
-export const portalProjects: PortalProject[] = portalDb.projects.map((project) => ({
-  ...project,
-  updates: portalDb.updates.filter((update) => update.projectId === project.id),
-  milestones: portalDb.milestones.filter((milestone) => milestone.projectId === project.id),
-  documents: portalDb.documents.filter((document) => document.projectId === project.id),
-  approvals: portalDb.approvals.filter((approval) => approval.projectId === project.id),
-}));
+export const portalProjects: PortalProject[] = getPortalSnapshot().projects;
 
 export const getPortalProject = (id: string) => getPortalSnapshot().projects.find((project) => project.id === id);
 

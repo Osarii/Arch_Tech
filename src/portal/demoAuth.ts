@@ -16,7 +16,11 @@ export const demoAuth = {
     try {
       const session = JSON.parse(value) as Partial<ClientSession> & Pick<ClientSession, 'email' | 'name'>;
       const user = getPortalUser(session.email);
-      return user ? { name: user.name, email: user.email, role: user.role } : null;
+      if (!user || user.status !== 'active') {
+        window.localStorage.removeItem(SESSION_KEY);
+        return null;
+      }
+      return { name: user.name, email: user.email, role: user.role };
     } catch {
       window.localStorage.removeItem(SESSION_KEY);
       return null;

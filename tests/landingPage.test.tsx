@@ -34,7 +34,8 @@ describe('ARCH_TECH client architecture portal', () => {
 
     expect(screen.getByText(/Architecture,/i)).toBeDefined();
     expect(screen.getByText('Selected projects')).toBeDefined();
-    expect(screen.getByText('Lake House')).toBeDefined();
+    expect(screen.getByText('From possibility to place.')).toBeDefined();
+    expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
     expect(screen.queryByText(/OpenBIM|IFC|engineering pipeline/i)).toBeNull();
 
     fireEvent.click(screen.getByTestId('client-login-link'));
@@ -62,6 +63,8 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<PublicProjectPage projectId="lake-house" onNavigate={onNavigate} />);
     expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
     expect(screen.getByText('Project intent')).toBeDefined();
+    expect(screen.getByText('Development path')).toBeDefined();
+    expect(screen.getAllByText('Costa Rica · Central Valley').length).toBeGreaterThan(0);
   });
 
   it('keeps demo authentication isolated inside the login overlay', () => {
@@ -97,6 +100,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('shows client projects, progress, phase, milestone and latest updates', () => {
+    demoAuth.signIn('client@arch-tech.studio', 'studio-demo');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
     expect(screen.getByText('Client projects')).toBeDefined();
@@ -107,17 +111,34 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('limits architect data and exposes the admin register', () => {
+    demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
     render(<ArchitectDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     expect(screen.getByText('Assigned projects')).toBeDefined();
-    expect(screen.getByText('Lake House')).toBeDefined();
-    expect(screen.getByText('Cantilever Residence')).toBeDefined();
+    expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Cantilever Residence').length).toBeGreaterThan(0);
     expect(screen.queryByText('Woodland House')).toBeNull();
 
+    cleanup();
+    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
     render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     expect(screen.getByText('All projects / assignments')).toBeDefined();
     expect(screen.getAllByText('Woodland House').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Demo Architect').length).toBeGreaterThan(0);
     expect(screen.getByText('Material palette')).toBeDefined();
+  });
+
+  it('creates projects through the admin portal form', () => {
+    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
+    expect(screen.getByRole('dialog', { name: 'New project.' })).toBeDefined();
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Portal Annex' } });
+    fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '24' } });
+    fireEvent.click(screen.getAllByRole('button', { name: 'Create project' }).at(-1)!);
+    expect(screen.getAllByText('Portal Annex').length).toBeGreaterThan(0);
+    cleanup();
+    render(<ProjectShowcase onOpenProject={vi.fn()} />);
+    expect(screen.getByText('Portal Annex')).toBeDefined();
   });
 
   it('redirects each demo role to its protected dashboard', () => {
@@ -139,6 +160,18 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByTestId('login-submit'));
     expect(window.location.pathname).toBe('/admin');
     expect(screen.getByText('The project register.')).toBeDefined();
+  });
+
+  it('quick logs into each demo role from Portal Access', () => {
+    for (const [role, path] of [['client', '/dashboard'], ['architect', '/architect'], ['admin', '/admin']] as const) {
+      cleanup();
+      window.localStorage.clear();
+      window.history.replaceState({}, '', '/');
+      render(<App />);
+      fireEvent.click(screen.getByTestId('client-login-link'));
+      fireEvent.click(screen.getByTestId(`quick-login-${role}`));
+      expect(window.location.pathname).toBe(path);
+    }
   });
 
   it('redirects an authenticated role away from another role route', async () => {
@@ -201,6 +234,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('provides a persistent portal theme switch', () => {
+    demoAuth.signIn('client@arch-tech.studio', 'studio-demo');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
@@ -225,6 +259,18 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(await screen.findByTestId('workspace')).toBeDefined();
   });
 
+  it('requires a session for production workspace navigation but preserves the dev entry', async () => {
+    window.history.replaceState({}, '', '/workspace');
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'Portal Access' })).toBeDefined();
+    expect(screen.queryByTestId('workspace')).toBeNull();
+
+    cleanup();
+    window.history.replaceState({}, '', '/?view=workspace');
+    render(<App />);
+    expect(await screen.findByTestId('workspace')).toBeDefined();
+  });
+
   it('opens landing login from navbar and footer, then restores trigger focus', async () => {
     render(<App />);
 
@@ -246,7 +292,7 @@ describe('ARCH_TECH client architecture portal', () => {
     window.history.replaceState({}, '', '/dashboard');
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: 'Client Login' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Portal Access' })).toBeDefined();
     expect(window.location.pathname).toBe('/dashboard');
     expect(screen.queryByText('Projects in progress.')).toBeNull();
   });

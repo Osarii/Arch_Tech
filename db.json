@@ -39,7 +39,10 @@
       "nextMilestone": "Client design review · 18 October",
       "summary": "A quiet concrete pavilion shaped by water, horizon and the changing edge of the landscape.",
       "statement": "The project is organized as a sequence of sheltered rooms opening toward the lake. A restrained material palette keeps attention on light, proportion and the landscape beyond.",
-      "image": "/arch_hero.jpg"
+      "image": "/arch_hero.jpg",
+      "market": "Costa Rica · Central Valley",
+      "developmentType": "Private residential development",
+      "publicStage": "In design development"
     },
     {
       "id": "woodland-house",
@@ -51,7 +54,10 @@
       "nextMilestone": "Concept presentation · 29 October",
       "summary": "A compact house composed around a protected courtyard and a continuous relationship with the trees.",
       "statement": "Deep thresholds frame the woodland and give each room a distinct degree of privacy. The courtyard becomes the center of daily life and the reference point for movement through the house.",
-      "image": "/arch_openhouse.jpg"
+      "image": "/arch_openhouse.jpg",
+      "market": "Costa Rica · Forest edge",
+      "developmentType": "Residential concept study",
+      "publicStage": "In concept design"
     },
     {
       "id": "cantilever-residence",
@@ -63,7 +69,10 @@
       "nextMilestone": "Documentation issue · 23 October",
       "summary": "A layered residence where a precise upper volume creates shade, shelter and long framed views.",
       "statement": "The upper level extends beyond the lower stone base to form a generous covered terrace. Interior spaces follow the same linear order, moving from enclosed service rooms to open living areas.",
-      "image": "/arch_cantilever.jpg"
+      "image": "/arch_cantilever.jpg",
+      "market": "Costa Rica · Pacific slope",
+      "developmentType": "Private residential development",
+      "publicStage": "In documentation"
     }
   ],
   "updates": [

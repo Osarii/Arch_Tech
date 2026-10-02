@@ -10,12 +10,14 @@ import {
   getPortalProject,
   getPortalSnapshot,
   getProjectsForUser,
+  portalDb,
   updatePortalApproval,
   updatePortalDatabase,
   updatePortalProject,
   updatePortalUser,
   PortalProject,
   PortalRole,
+  getPortalUser,
 } from '../../portal/data';
 
 type Navigate = (path: string) => void;
@@ -41,7 +43,7 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
         <button onClick={() => onNavigate(homePath)} className="transition-colors hover:text-black">
           {role === 'admin' ? 'Register' : role === 'architect' ? 'Workboard' : 'Projects'}
         </button>
-        <nav aria-label={`${role} navigation`} className="hidden gap-3 border-l border-black/15 pl-5 lg:flex">{navigation.slice(1).map((item) => <button key={item} onClick={() => onNavigate(homePath)} className="transition-colors hover:text-black">{item}</button>)}</nav>
+        <nav aria-label={`${role} navigation`} className="hidden gap-3 border-l border-black/15 pl-5 lg:flex">{navigation.slice(1).map((item) => <button key={item} onClick={() => (document.getElementById(`portal-section-${item.toLowerCase()}`) ?? document.getElementById('portal-section-people'))?.scrollIntoView({ behavior: 'smooth' })} className="transition-colors hover:text-black">{item}</button>)}</nav>
         <button onClick={() => setDark((value) => !value)} aria-label={dark ? 'Use light mode' : 'Use dark mode'} data-testid="theme-toggle" className="inline-flex items-center gap-2 transition-colors hover:text-black">
           {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />} {dark ? 'Light' : 'Dark'}
         </button>
@@ -97,6 +99,15 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
     onSuccess();
   };
 
+  const handleQuickLogin = (role: PortalRole) => {
+    const user = portalDb.users.find((candidate) => candidate.role === role);
+    if (!user || !demoAuth.signIn(user.email, user.password)) {
+      setError('This demo account is unavailable.');
+      return;
+    }
+    onSuccess();
+  };
+
   if (!open) return null;
 
   return (
@@ -113,8 +124,10 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
         </button>
         <div className="mt-6">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Private access</p>
-          <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">Client Login</h1>
+          <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">Portal Access</h1>
           <p className="mt-4 max-w-sm text-sm leading-6 text-stone-400">Review project progress, updates, documents and the current model.</p>
+
+          <div className="mt-8 border-y border-white/10 py-5"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Quick access</p><div className="mt-4 grid grid-cols-3 gap-2">{(['client', 'architect', 'admin'] as PortalRole[]).map((role) => <button key={role} type="button" data-testid={`quick-login-${role}`} onClick={() => handleQuickLogin(role)} className="border border-white/20 px-2 py-3 font-mono text-[9px] uppercase tracking-[0.12em] text-stone-200 transition-colors hover:border-white hover:bg-white hover:text-black">{`Login as ${role[0].toUpperCase()}${role.slice(1)}`}</button>)}</div><p className="mt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">— or use credentials manually —</p></div>
 
           <form onSubmit={handleSubmit} className="mt-12 space-y-7">
             <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
@@ -155,7 +168,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 
 export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
   const [snapshot] = useState(getPortalSnapshot);
-  const client = snapshot.db.users.find((user) => user.id === 'demo-client');
+  const client = getPortalUser(demoAuth.getSession()?.email ?? '');
   const projects = snapshot.projects.filter((project) => !project.archived && client?.projectIds.includes(project.id));
   const latestUpdate = projects[0]?.updates[0];
 
@@ -171,7 +184,7 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
           <p className="max-w-sm text-sm leading-6 text-stone-600">A concise view of current phases, upcoming decisions and the latest information shared with you.</p>
         </div>
 
-        <section className="py-14" aria-labelledby="client-projects-title">
+        <section id="portal-section-projects" className="py-14" aria-labelledby="client-projects-title">
           <div className="mb-8 flex items-center justify-between">
             <h2 id="client-projects-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Client projects</h2>
             <span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active</span>
@@ -200,7 +213,7 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
           </div>
         </section>
 
-        <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2">
+        <section id="portal-section-updates" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Latest update</p>
             <p className="mt-8 font-mono text-[10px] text-stone-500">{latestUpdate?.date}</p>
@@ -213,7 +226,8 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
             <p className="mt-3 text-sm leading-6 text-stone-600">The latest documents and model remain available inside the project view.</p>
           </div>
         </section>
-        <section className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>{snapshot.db.notifications.filter((notification) => notification.userId === client?.id).map((notification) => <p key={`${notification.date}-${notification.message}`} className="mt-5 flex justify-between gap-5 text-sm"><span>{notification.message}</span><span className="font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</section>
+        <section id="portal-section-documents" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Documents</p>{projects.flatMap((project) => project.documents.slice(0, 2).map((document) => <p key={`${project.id}-${document.name}`} className="mt-5 flex justify-between gap-5 text-sm"><span>{project.title} · {document.name}</span><span className="font-mono text-[9px] text-stone-500">{document.meta}</span></p>))}</section>
+        <section id="portal-section-notifications" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>{snapshot.db.notifications.filter((notification) => notification.userId === client?.id).map((notification) => <p key={`${notification.date}-${notification.message}`} className="mt-5 flex justify-between gap-5 text-sm"><span>{notification.message}</span><span className="font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</section>
       </main>
     </div>
   );
@@ -234,13 +248,22 @@ const ProjectRows: React.FC<{ projects: PortalProject[]; onNavigate: Navigate; d
 );
 
 export const ArchitectDashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
-  const projects = getProjectsForUser('demo-architect');
+  const architect = getPortalUser(demoAuth.getSession()?.email ?? '');
+  const projects = getProjectsForUser(architect?.id ?? '');
+  const attention = projects.filter((project) => project.progress < 50 || project.approvals.some((approval) => approval.status === 'Pending'));
+  const milestones = projects.flatMap((project) => project.milestones.filter((milestone) => milestone.status !== 'Complete').map((milestone) => ({ ...milestone, projectTitle: project.title })));
+  const approvals = projects.flatMap((project) => project.approvals.filter((approval) => approval.status === 'Pending').map((approval) => ({ ...approval, projectTitle: project.title })));
+  const activity = projects.flatMap((project) => project.updates.map((update) => ({ ...update, projectTitle: project.title }))).slice(0, 5);
   return (
     <div className="portal-surface h-screen overflow-y-auto bg-[#f2efe8] text-[#171714]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/architect" role="architect" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
-        <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Architect workspace / Assigned projects</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Work in progress.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">The current project set, decisions and documents assigned to this studio.</p></div>
-        <section className="py-14"><div className="mb-8 flex items-center justify-between"><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Assigned projects</h2><span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active</span></div><ProjectRows projects={projects} onNavigate={onNavigate} detailPath={(id) => `/architect/projects/${id}`} /></section>
-        <section className="grid gap-10 border-t border-black/15 pt-12 lg:grid-cols-3"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Next milestone</p><h2 className="mt-6 font-serif text-3xl">{projects[0]?.nextMilestone}</h2></div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Latest update</p><h2 className="mt-6 font-serif text-3xl">{projects[0]?.updates[0]?.title}</h2><p className="mt-3 text-sm leading-6 text-stone-600">{projects[0]?.updates[0]?.body}</p></div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Studio tools</p><div className="mt-6 space-y-3 font-mono text-[10px] uppercase tracking-[0.12em] text-stone-600"><p>Project activity</p><p>Milestone management</p><p>Client approvals</p><p>Document issue</p></div></div></section>
+        <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Architect workspace / Assigned projects</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Work in progress.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">A focused view of the projects, decisions and deliverables currently assigned to this studio.</p></div>
+        <section id="portal-section-projects" className="py-12"><div className="mb-8 flex items-center justify-between"><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Assigned projects</h2><span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active · {attention.length.toString().padStart(2, '0')} need attention</span></div><div className="divide-y divide-black/15 border-y border-black/15">{projects.map((project) => <article key={project.id} className="grid gap-5 py-7 lg:grid-cols-[1fr_170px_auto] lg:items-center"><button onClick={() => onNavigate(`/architect/projects/${project.id}`)} className="text-left"><span className="font-mono text-[10px] text-stone-500">{project.code}</span><h2 className="mt-2 font-serif text-3xl">{project.title}</h2><p className="mt-1 text-xs text-stone-500">{project.phase} · {project.progress}%</p></button><div><p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500"><span>Progress</span><span>{project.progress}%</span></p><div className="h-px bg-black/15"><div className="h-px bg-black" style={{ width: `${project.progress}%` }} /></div>{project.approvals.some((approval) => approval.status === 'Pending') && <p className="mt-3 font-mono text-[9px] uppercase text-stone-500">Client response pending</p>}</div><div className="flex gap-2 lg:justify-end"><button onClick={() => onNavigate(`/architect/projects/${project.id}`)} className="border border-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]">Open project</button><button onClick={() => onNavigate('/workspace')} className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white">3D model</button></div></article>)}</div></section>
+        <section id="portal-section-activity" className="grid gap-10 border-t border-black/15 pt-12 lg:grid-cols-3"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Attention needed</p>{attention.length ? attention.map((project) => <p key={project.id} className="mt-5 font-serif text-2xl">{project.title}</p>) : <p className="mt-5 text-sm text-stone-600">All assigned projects are moving to plan.</p>}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>{milestones.slice(0, 4).map((milestone) => <p key={`${milestone.projectId}-${milestone.label}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{milestone.projectTitle} · {milestone.label}</span><span className="font-mono text-[9px] uppercase text-stone-500">{milestone.status}</span></p>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Pending client approvals</p>{approvals.map((approval) => <p key={`${approval.projectId}-${approval.title}`} className="mt-5 text-sm">{approval.projectTitle} · {approval.title}</p>)}</div></section>
+        <section className="grid gap-10 border-t border-black/15 pt-12 lg:grid-cols-2"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent project activity</p>{activity.map((update) => <p key={`${update.projectId}-${update.date}-${update.title}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{update.projectTitle} · {update.title}</span><span className="font-mono text-[9px] text-stone-500">{update.date}</span></p>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Tasks / deliverables</p>{projects.flatMap((project) => project.documents.slice(0, 2).map((document) => <p key={`${project.id}-${document.name}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{project.title} · {document.name}</span><span className="font-mono text-[9px] uppercase text-stone-500">Issue</span></p>))}</div></section>
+        <section id="portal-section-milestones" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Milestones</p>{milestones.map((milestone) => <p key={`${milestone.projectId}-${milestone.label}`} className="mt-4 flex justify-between text-sm"><span>{milestone.projectTitle} · {milestone.label}</span><span className="font-mono text-[9px] uppercase text-stone-500">{milestone.status}</span></p>)}</section>
+        <section id="portal-section-documents" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Documents</p>{projects.flatMap((project) => project.documents.map((document) => <p key={`${project.id}-${document.name}`} className="mt-4 text-sm">{project.title} · {document.name}</p>))}</section>
+        <section id="portal-section-approvals" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Approvals</p>{approvals.map((approval) => <p key={`${approval.projectId}-${approval.title}`} className="mt-4 flex justify-between text-sm"><span>{approval.projectTitle} · {approval.title}</span><span className="font-mono text-[9px] uppercase text-stone-500">{approval.status}</span></p>)}</section>
       </main>
     </div>
   );
@@ -248,6 +271,8 @@ export const ArchitectDashboardPage: React.FC<NavigationProps & { onSignOut: () 
 
 export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newProject, setNewProject] = useState({ title: '', category: 'Residential · New project', phase: 'Brief and site study', progress: '0' });
   const { db, projects } = snapshot;
   const clients = db.users.filter((user) => user.role === 'client');
   const architects = db.users.filter((user) => user.role === 'architect');
@@ -257,21 +282,23 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
     refresh();
   };
   const createProject = () => {
-    const title = window.prompt('Project title');
-    if (!title) return;
+    if (!newProject.title.trim()) return;
     const id = `admin-project-${Date.now()}`;
-    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title, category: 'Residential · New project', phase: 'Brief and site study', progress: 0, nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/arch_hero.jpg' }] }));
+    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title: newProject.title.trim(), category: newProject.category, phase: newProject.phase, progress: Number(newProject.progress), nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/arch_hero.jpg' }] }));
+    setNewProject({ title: '', category: 'Residential · New project', phase: 'Brief and site study', progress: '0' });
+    setCreateOpen(false);
     refresh();
   };
   return (
     <div className="portal-surface h-screen overflow-y-auto bg-[#f2efe8] text-[#171714]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/admin" role="admin" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Administration / Portal overview</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">The project register.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">Projects, people, approvals and shared information across the ARCH_TECH portal.</p></div>
-        <section className="flex flex-wrap gap-3 py-10"><button onClick={createProject} className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white">Create project</button><span className="border border-black/15 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Operational controls</span></section>
-        <section className="py-4"><div className="mb-8 flex items-center justify-between"><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">All projects / assignments</h2><span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active</span></div><ProjectRows projects={projects} onNavigate={onNavigate} detailPath={(id) => `/admin/projects/${id}`} /></section>
-        <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-3"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Clients</h2>{clients.map((user) => <div key={user.id} className="mt-5 flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex gap-2"><button onClick={() => updatePortalUser(user.id, { role: 'architect' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">Make architect</button><button onClick={() => updatePortalUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Architects</h2>{architects.map((user) => <div key={user.id} className="mt-5"><div className="flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex gap-2"><button onClick={() => updatePortalUser(user.id, { role: 'client' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">Make client</button><button onClick={() => updatePortalUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div><p className="mt-1 text-xs text-stone-500">{user.projectIds.length} assigned projects</p></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global approvals</h2>{db.approvals.map((approval) => <p key={approval.projectId} className="mt-5 flex justify-between gap-4 text-sm"><span>{approval.title}</span><span className="font-mono text-[9px] uppercase text-stone-500">{approval.status}</span></p>)}</div></section>
-        <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Assign people to projects</h2>{projects.map((project) => <div key={project.id} className="mt-5"><p className="text-sm">{project.title}</p><div className="mt-2 flex flex-wrap gap-2">{[...clients, ...architects].map((user) => <button key={user.id} onClick={() => toggleAssignment(user.id, project.id)} className={`border px-2 py-1 font-mono text-[9px] uppercase ${user.projectIds.includes(project.id) ? 'border-black bg-black text-white' : 'border-black/15 text-stone-500'}`}>{user.name}</button>)}</div></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global notifications</h2>{db.notifications.map((notification) => <p key={`${notification.userId}-${notification.date}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{notification.message}</span><span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</div></section>
+        <section className="flex flex-wrap gap-3 py-10"><button onClick={() => setCreateOpen(true)} className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white">Create project</button><span className="border border-black/15 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Operational controls</span></section>
+        <section id="portal-section-projects" className="py-4"><div className="mb-8 flex items-center justify-between"><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">All projects / assignments</h2><span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active</span></div><ProjectRows projects={projects} onNavigate={onNavigate} detailPath={(id) => `/admin/projects/${id}`} /></section>
+        <section id="portal-section-people" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-3"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Clients</h2>{clients.map((user) => <div key={user.id} className="mt-5 flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex gap-2"><button onClick={() => updatePortalUser(user.id, { role: 'architect' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">Make architect</button><button onClick={() => updatePortalUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Architects</h2>{architects.map((user) => <div key={user.id} className="mt-5"><div className="flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex gap-2"><button onClick={() => updatePortalUser(user.id, { role: 'client' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">Make client</button><button onClick={() => updatePortalUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div><p className="mt-1 text-xs text-stone-500">{user.projectIds.length} assigned projects</p></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global approvals</h2>{db.approvals.map((approval) => <p key={approval.projectId} className="mt-5 flex justify-between gap-4 text-sm"><span>{approval.title}</span><span className="font-mono text-[9px] uppercase text-stone-500">{approval.status}</span></p>)}</div></section>
+        <section id="portal-section-activity" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Assign people to projects</h2>{projects.map((project) => <div key={project.id} className="mt-5"><p className="text-sm">{project.title}</p><div className="mt-2 flex flex-wrap gap-2">{[...clients, ...architects].map((user) => <button key={user.id} onClick={() => toggleAssignment(user.id, project.id)} className={`border px-2 py-1 font-mono text-[9px] uppercase ${user.projectIds.includes(project.id) ? 'border-black bg-black text-white' : 'border-black/15 text-stone-500'}`}>{user.name}</button>)}</div></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global notifications</h2>{db.notifications.map((notification) => <p key={`${notification.userId}-${notification.date}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{notification.message}</span><span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</div></section>
       </main>
+      {createOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-4 py-4 backdrop-blur-sm sm:items-center" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setCreateOpen(false)}><form role="dialog" aria-modal="true" aria-labelledby="create-project-title" onSubmit={(event) => { event.preventDefault(); createProject(); }} className="w-full max-w-xl border border-white/15 bg-[#11110f] p-7 text-[#f4efe8] shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Administration</p><h2 id="create-project-title" className="mt-4 font-serif text-4xl">New project.</h2></div><button type="button" onClick={() => setCreateOpen(false)} aria-label="Close create project" className="border border-white/20 p-2 text-stone-300"><X className="h-4 w-4" /></button></div><div className="mt-8 space-y-5"><label className="block font-mono text-[9px] uppercase text-stone-400">Title<input autoFocus required value={newProject.title} onChange={(event) => setNewProject({ ...newProject, title: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><label className="block font-mono text-[9px] uppercase text-stone-400">Category<input required value={newProject.category} onChange={(event) => setNewProject({ ...newProject, category: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><div className="grid gap-5 sm:grid-cols-2"><label className="block font-mono text-[9px] uppercase text-stone-400">Phase<select value={newProject.phase} onChange={(event) => setNewProject({ ...newProject, phase: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-[#11110f] py-3 text-sm text-white outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><label className="block font-mono text-[9px] uppercase text-stone-400">Initial progress<input required type="number" min="0" max="100" value={newProject.progress} onChange={(event) => setNewProject({ ...newProject, progress: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label></div></div><button type="submit" className="mt-8 w-full bg-[#f4efe8] px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-black">Create project</button></form></div>}
     </div>
   );
 };
@@ -396,11 +423,22 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
           <p className="mt-14 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
           <h1 className="mt-5 max-w-5xl font-serif text-6xl font-light tracking-tight sm:text-8xl">{project.title}</h1>
           <p className="mt-8 max-w-2xl text-lg leading-8 text-stone-300">{project.summary}</p>
+          <dl className="mt-12 grid max-w-4xl gap-6 border-y border-white/[0.12] py-6 text-sm sm:grid-cols-3">
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Market</dt><dd className="mt-2 text-stone-200">{project.market ?? 'Costa Rica'}</dd></div>
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Development</dt><dd className="mt-2 text-stone-200">{project.developmentType ?? project.category}</dd></div>
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Current stage</dt><dd className="mt-2 text-stone-200">{project.publicStage ?? project.phase}</dd></div>
+          </dl>
         </div>
         <img src={project.image} alt={project.title} className="h-[62vh] min-h-[460px] w-full object-cover" />
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Project intent</p>
           <p className="max-w-3xl font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>
+        </div>
+        <div className="mx-auto grid max-w-7xl gap-10 border-t border-white/[0.08] px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Development path</p>
+          <ol className="divide-y divide-white/[0.1] border-y border-white/[0.1]">
+            {project.milestones.map((milestone, index) => <li key={milestone.label} className="grid gap-4 py-5 sm:grid-cols-[50px_1fr_auto] sm:items-center"><span className="font-mono text-[10px] text-stone-500">{String(index + 1).padStart(2, '0')}</span><span className="font-serif text-2xl font-light">{milestone.label}</span><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{milestone.status}</span></li>)}
+          </ol>
         </div>
       </main>
     </div>

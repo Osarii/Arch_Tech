@@ -82,3 +82,17 @@ html.portal-dark .portal-surface .border-black\/15,
 html.portal-dark .portal-surface .border-black\/10 {
   border-color: rgb(255 255 255 / 0.14) !important;
 }
+html.portal-dark .portal-surface .portal-header button:first-child,
+html.portal-dark .portal-surface .portal-header button:hover {
+  color: #f4efe8 !important;
+}
+html.portal-dark .portal-surface .bg-black {
+  background-color: #f4efe8 !important;
+  color: #171714 !important;
+}
+html.portal-dark .portal-surface .bg-black\/15 {
+  background-color: rgb(255 255 255 / 0.18) !important;
+}
+html.portal-dark .portal-surface .hover\:bg-white\/35:hover {
+  background-color: rgb(255 255 255 / 0.08) !important;
+}

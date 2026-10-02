@@ -16,19 +16,19 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects }) => (
     <div className="mx-auto max-w-7xl">
       <div className="grid gap-10 lg:grid-cols-[1.35fr_0.65fr] lg:items-end">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-stone-500">Architecture / Selected work</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-stone-500">Costa Rica / Development portfolio</p>
           <h1 className="mt-7 max-w-5xl font-serif text-7xl font-light leading-[0.88] tracking-[-0.045em] text-[#f4efe8] sm:text-8xl lg:text-[8.5rem]">
-            Architecture,<br />made visible.
+            Architecture,<br />with a longer view.
           </h1>
         </div>
         <div className="border-l border-white/15 pl-6 lg:mb-3">
-          <p className="max-w-sm text-base leading-7 text-stone-300">A private window into the ideas, decisions and progress shaping each project.</p>
+          <p className="max-w-sm text-base leading-7 text-stone-300">A portfolio of places in formation, carried from land and possibility through design, decisions and delivery.</p>
           <button
             data-testid="hero-view-projects"
             onClick={onViewProjects}
             className="group mt-7 inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-300 transition-colors hover:text-white"
           >
-            View selected projects
+            Explore the portfolio
             <ArrowDownRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:translate-y-0.5" />
           </button>
         </div>
