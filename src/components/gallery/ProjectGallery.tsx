@@ -35,34 +35,34 @@ export const buildProjectGallerySlides = (project: PortalProject): GallerySlide[
   return [
     {
       id: 'hero',
-      title: 'Hero Exterior',
-      category: 'Primary Architecture',
+      title: 'Facility Overview',
+      category: 'Campus / Infrastructure Overview',
       src: project.image,
       contain: false,
-      tagline: 'Primary Massing & Elevation',
-      description: 'Principal architectural perspective establishing volumetric presence, tectonic rhythm, and envelope materiality.',
+      tagline: 'Primary Facility & Infrastructure Framework',
+      description: 'Principal facility perspective establishing campus massing, operational thresholds, access spines, and building envelope.',
       spanClass: 'md:col-span-2 md:row-span-2',
       icon: Building2,
     },
     {
       id: 'aerial',
       title: 'Aerial Overview',
-      category: 'Site Context',
+      category: 'Site & Regional Context',
       src: m?.aerial ?? project.image,
       contain: false,
-      tagline: 'Territorial Integration',
-      description: 'Macro environmental context, topography relationships, and perimeter infrastructure connection.',
+      tagline: 'Regional Logistics & Infrastructure Spine',
+      description: 'Macro environmental context, arterial transit corridors, and perimeter utility connections.',
       spanClass: 'md:col-span-1 md:row-span-1',
       icon: Compass,
     },
     {
       id: 'campusOverview',
-      title: 'Campus Overview',
-      category: 'Campus Structure',
+      title: 'Campus Structure',
+      category: 'Circulation & Logistics Grid',
       src: m?.campusOverview ?? project.image,
       contain: false,
-      tagline: 'Circulation & Massing Hierarchy',
-      description: 'Building envelope grouping, pedestrian circulation spines, and operational logistic corridors.',
+      tagline: 'Operational Circulation & Phasing Hierarchy',
+      description: 'Building cluster organization, high-throughput freight lanes, and multi-tenant operational easements.',
       spanClass: 'md:col-span-1 md:row-span-1',
       icon: Layers,
     },
@@ -72,52 +72,52 @@ export const buildProjectGallerySlides = (project: PortalProject): GallerySlide[
       category: 'Planning & Zoning',
       src: m?.masterplan ?? project.image,
       contain: true,
-      tagline: 'Framework & Phasing Grid',
-      description: 'Zoning allocation, land use easements, parcel division, and future development expansion vectors.',
+      tagline: 'Zoning Allocation & Expansion Phasing',
+      description: 'Comprehensive land-use allocation, utility easements, parcel subdivision, and future development reserve capacity.',
       spanClass: 'md:col-span-1 md:row-span-1',
       icon: FileCode,
     },
     {
       id: 'sitePlan',
       title: 'Site Strategy',
-      category: 'Civil & Access',
+      category: 'Civil & Site Strategy',
       src: m?.sitePlan ?? project.image,
       contain: true,
-      tagline: 'Arterial Logistics & Boundaries',
-      description: 'Vehicle routing, heavy logistics access, security perimeters, and boundary drainage infrastructure.',
+      tagline: 'Heavy Transport Routing & Perimeter Controls',
+      description: 'Dedicated heavy-vehicle ingress, grade-separated logistics access, secure boundary perimeters, and site stormwater infrastructure.',
       spanClass: 'md:col-span-1 md:row-span-1',
       icon: MapPin,
     },
     {
       id: 'floorPlan',
       title: 'Program Study',
-      category: 'Spatial Programming',
+      category: 'Operations & Phasing Layout',
       src: m?.floorPlan ?? project.image,
       contain: true,
-      tagline: 'Interior Functional Zoning',
-      description: 'Structural column grid, core placements, usable floor plates, and egress pathways.',
+      tagline: 'Flexible Production & Service Core Layout',
+      description: 'Structural column bays, high-capacity utility cores, adaptable tenant floor plates, and emergency egress routing.',
       spanClass: 'md:col-span-1 md:row-span-1',
       icon: FileCode,
     },
     {
       id: 'interior',
-      title: 'Arrival / Interior',
-      category: 'Atmospheric Experience',
+      title: 'Arrival & Operations Portal',
+      category: 'Operational Portal & Experience',
       src: m?.interior ?? project.image,
       contain: false,
-      tagline: 'Daylight & Tectonic Threshold',
-      description: 'Double-height volume, curated materiality, acoustic comfort, and natural illumination strategy.',
+      tagline: 'Facility Access & Operations Management',
+      description: 'Primary operational reception, access management portal, high-volume tenant interface, and durable public circulation.',
       spanClass: 'md:col-span-1 md:row-span-1',
       icon: Eye,
     },
     {
       id: 'conceptBoard',
-      title: 'Concept Board',
-      category: 'Materiality & Form',
+      title: 'Systems & Specifications',
+      category: 'Utilities & Technical Standards',
       src: m?.conceptBoard ?? project.image,
       contain: true,
-      tagline: 'Material Palette & Precedents',
-      description: 'Architectural expression, tactile materiality studies, and construction assembly references.',
+      tagline: 'Durable Materials & Infrastructure Systems',
+      description: 'Industrial durability standards, high-efficiency building envelope assemblies, and infrastructure specification guidelines.',
       spanClass: 'md:col-span-2 md:row-span-1',
       icon: Sparkles,
     },
@@ -185,11 +185,21 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ project, classNa
     }
   }, [currentIndex, shouldReduceMotion]);
 
-  // Keyboard navigation
+  // Scoped keyboard navigation (active only when gallery is focused or lightbox is open)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't intercept if focus is in an input or textarea
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName)) return;
+
+      const isGalleryFocused = Boolean(
+        galleryRef.current && (
+          galleryRef.current.contains(document.activeElement) ||
+          document.activeElement === galleryRef.current
+        )
+      );
+
+      // Only intercept if lightbox is open OR if gallery currently has focus
+      if (!lightboxOpen && !isGalleryFocused) return;
 
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
@@ -206,8 +216,8 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ project, classNa
           setLightboxOpen((prev) => !prev);
         }
       } else if (e.key === ' ') {
-        // Space to toggle autoplay when gallery has focus
-        if (galleryRef.current?.contains(document.activeElement) && !lightboxOpen) {
+        // Space to toggle autoplay when gallery has focus and lightbox is closed
+        if (isGalleryFocused && !lightboxOpen) {
           e.preventDefault();
           setIsAutoplay((prev) => !prev);
         }
@@ -233,11 +243,12 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ project, classNa
   return (
     <div
       ref={galleryRef}
-      className={`project-gallery relative w-full select-none ${className}`}
+      tabIndex={0}
+      className={`project-gallery relative w-full select-none outline-none focus-visible:ring-1 focus-visible:ring-white/20 ${className}`}
       data-testid="project-gallery"
       role="region"
       aria-roledescription="carousel"
-      aria-label={`${project.title} Architectural Gallery`}
+      aria-label={`${project.title} Development Gallery`}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
@@ -371,6 +382,9 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ project, classNa
                     src={slide.src}
                     alt={`${project.title} - ${slide.title}`}
                     draggable={false}
+                    loading={isCenter ? 'eager' : 'eager'}
+                    decoding="async"
+                    fetchPriority={isCenter ? 'high' : 'low'}
                     className={`h-full w-full select-none transition-transform duration-700 ${
                       slide.contain
                         ? 'bg-[#e9e5dc] object-contain p-2 sm:p-4'
@@ -454,6 +468,9 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ project, classNa
                 <img
                   src={slide.src}
                   alt={slide.title}
+                  loading="lazy"
+                  decoding="async"
+                  fetchPriority="low"
                   className={`absolute inset-0 h-full w-full ${
                     slide.contain ? 'bg-[#e9e5dc] object-contain p-1' : 'object-cover'
                   }`}
@@ -486,7 +503,7 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ project, classNa
               Interactive Matrix
             </p>
             <h3 className="mt-2 font-serif text-3xl font-light tracking-tight text-[#f4efe8]">
-              Comprehensive Architectural Studies
+              Development Studies
             </h3>
           </div>
           <p className="max-w-md text-xs leading-relaxed text-stone-400">
@@ -527,6 +544,8 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ project, classNa
                     src={slide.src}
                     alt={slide.title}
                     loading="lazy"
+                    decoding="async"
+                    fetchPriority="low"
                     className={`h-full w-full transition-transform duration-500 group-hover:scale-105 ${
                       slide.contain ? 'bg-[#e9e5dc] object-contain p-2' : 'object-cover'
                     }`}
@@ -651,6 +670,9 @@ export const ProjectGallery: React.FC<ProjectGalleryProps> = ({ project, classNa
                 <img
                   src={activeSlide.src}
                   alt={activeSlide.title}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                   className={`max-h-[80vh] max-w-[88vw] shadow-2xl ${
                     isContain ? 'bg-[#e9e5dc] object-contain p-2 sm:p-4' : 'object-contain'
                   }`}
