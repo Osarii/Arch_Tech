@@ -1,9 +1,9 @@
-import { render, screen, fireEvent, act, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 import { ProjectGallery, buildProjectGallerySlides } from '../src/components/gallery/ProjectGallery';
 import { getPublicProject } from '../src/portal/data';
 
-describe('ARCH_TECH ProjectGallery', () => {
+describe('ARCH_TECH ProjectGallery (Embla Carousel)', () => {
   const sampleProject = getPublicProject('pacific-nexus-free-zone')!;
 
   it('builds exactly 8 development infrastructure slides from project media and hero image', () => {
@@ -21,7 +21,7 @@ describe('ARCH_TECH ProjectGallery', () => {
     ]);
   });
 
-  it('renders the gallery with 01 / 08 counter, infrastructure category tag, development studies heading, and thumbnails', () => {
+  it('renders the gallery with 01 / 08 counter, infrastructure category tag, and compact thumbnails', () => {
     render(<ProjectGallery project={sampleProject} />);
 
     const gallery = screen.getByTestId('project-gallery');
@@ -29,7 +29,6 @@ describe('ARCH_TECH ProjectGallery', () => {
     expect(gallery.getAttribute('aria-label')).toContain('Development Gallery');
     expect(screen.getByText(/Study 01/i)).toBeDefined();
     expect(screen.getAllByText(/Campus \/ Infrastructure Overview/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole('heading', { level: 3, name: /Development Studies/i })).toBeDefined();
 
     // Check thumbnail strip
     const strip = screen.getByTestId('gallery-thumbnail-strip');
@@ -43,17 +42,9 @@ describe('ARCH_TECH ProjectGallery', () => {
       expect(img.getAttribute('decoding')).toBe('async');
     });
 
-    // Check bento grid
-    const bento = screen.getByTestId('gallery-bento-grid');
-    const bentoTiles = bento.querySelectorAll('[data-testid^="bento-tile-"]');
-    expect(bentoTiles).toHaveLength(8);
-
-    // Verify bento images are lazy loaded
-    const bentoImages = bento.querySelectorAll('img');
-    bentoImages.forEach((img) => {
-      expect(img.getAttribute('loading')).toBe('lazy');
-      expect(img.getAttribute('decoding')).toBe('async');
-    });
+    // Verify all 8 slides exist in the Embla track
+    const slides = screen.getAllByTestId(/^gallery-slide-/);
+    expect(slides).toHaveLength(8);
   });
 
   it('advances slides using next and prev navigation controls', () => {
@@ -73,7 +64,7 @@ describe('ARCH_TECH ProjectGallery', () => {
     expect(screen.getByRole('heading', { level: 2, name: /Facility Overview/i })).toBeDefined();
   });
 
-  it('switches slide on thumbnail click and bento tile click', () => {
+  it('switches slide on thumbnail click', () => {
     render(<ProjectGallery project={sampleProject} />);
 
     // Click Masterplan thumbnail (4th item, index 3)
@@ -81,33 +72,10 @@ describe('ARCH_TECH ProjectGallery', () => {
     expect(screen.getByText(/Study 04/i)).toBeDefined();
     expect(screen.getByRole('heading', { level: 2, name: /Masterplan/i })).toBeDefined();
 
-    // Click Floor Plan bento tile (6th item, index 5)
-    fireEvent.click(screen.getByTestId('bento-tile-floorPlan'));
+    // Click Program Study thumbnail (6th item, index 5)
+    fireEvent.click(screen.getByTestId('gallery-thumb-floorPlan'));
     expect(screen.getByText(/Study 06/i)).toBeDefined();
     expect(screen.getByRole('heading', { level: 2, name: /Program Study/i })).toBeDefined();
-  });
-
-  it('toggles autoplay and advances on timer', () => {
-    vi.useFakeTimers();
-    try {
-      render(<ProjectGallery project={sampleProject} />);
-
-      const toggle = screen.getByTestId('gallery-autoplay-toggle');
-      expect(toggle.textContent).toContain('Autoplay');
-
-      // Turn autoplay ON
-      fireEvent.click(toggle);
-      expect(toggle.textContent).toContain('Autoplay on');
-
-      // Fast forward timer
-      act(() => {
-        vi.advanceTimersByTime(6600);
-      });
-
-      expect(screen.getByText(/Study 02/i)).toBeDefined();
-    } finally {
-      vi.useRealTimers();
-    }
   });
 
   it('opens, navigates, and closes the high-res lightbox modal', async () => {

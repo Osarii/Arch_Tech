@@ -33,3 +33,24 @@ if (typeof (globalThis as any).ResizeObserver === 'undefined') {
     disconnect() {}
   };
 }
+
+if (typeof (globalThis as any).IntersectionObserver === 'undefined') {
+  (globalThis as any).IntersectionObserver = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}
+
+if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
+  window.matchMedia = (query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: () => {},
+    removeListener: () => {},
+    addEventListener: () => {},
+    removeEventListener: () => {},
+    dispatchEvent: () => false,
+  });
+}
