@@ -136,6 +136,9 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Development stages')).toBeDefined();
     expect(screen.getByText('Pending approvals')).toBeDefined();
     expect(screen.getByText('Recent activity')).toBeDefined();
+    expect(screen.getByText('average progress across active work')).toBeDefined();
+    fireEvent.click(screen.getByTestId('theme-toggle'));
+    expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
     fireEvent.click(screen.getByTestId('admin-open-model-lake-house'));
     expect(adminNavigate).toHaveBeenCalledWith('/workspace');
     fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
