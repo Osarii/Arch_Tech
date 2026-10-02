@@ -64,3 +64,21 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #373b47;
 }
+
+html.portal-dark .portal-surface {
+  background-color: #11110f !important;
+  color: #f4efe8 !important;
+}
+html.portal-dark .portal-surface .portal-header {
+  background-color: #171714 !important;
+  border-color: rgb(255 255 255 / 0.14);
+}
+html.portal-dark .portal-surface .text-stone-600,
+html.portal-dark .portal-surface .text-stone-500,
+html.portal-dark .portal-surface .text-stone-400 {
+  color: #a8a29e !important;
+}
+html.portal-dark .portal-surface .border-black\/15,
+html.portal-dark .portal-surface .border-black\/10 {
+  border-color: rgb(255 255 255 / 0.14) !important;
+}

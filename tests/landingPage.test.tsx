@@ -1,138 +1,259 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { App } from '../src/App';
+import { Hero } from '../src/components/landing/Hero';
 import { LandingPage } from '../src/components/landing/LandingPage';
 import { LandingNavbar } from '../src/components/landing/LandingNavbar';
-import { Hero } from '../src/components/landing/Hero';
-import { ProductPreview } from '../src/components/landing/ProductPreview';
-import { Capabilities } from '../src/components/landing/Capabilities';
-import { Workflow } from '../src/components/landing/Workflow';
-import { TechnologyStrip } from '../src/components/landing/TechnologyStrip';
-import { FinalCTA } from '../src/components/landing/FinalCTA';
-import { App } from '../src/App';
+import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
+import { getPortalProject } from '../src/portal/data';
+import { demoAuth } from '../src/portal/demoAuth';
+import {
+  DashboardPage,
+  DashboardProjectPage,
+  AdminDashboardPage,
+  ArchitectDashboardPage,
+  LoginOverlay,
+  PublicProjectPage,
+} from '../src/components/portal/PortalPages';
 
-describe('Phase LANDING-1: Architectural Studio Editorial Landing Page', () => {
-  it('renders LandingNavbar with architectural brand, links, and primary CTA', () => {
-    const handleOpenWorkspace = vi.fn();
-    render(<LandingNavbar onOpenWorkspace={handleOpenWorkspace} />);
+vi.mock('../src/components/layout/Workspace', () => ({
+  Workspace: () => <div data-testid="workspace">BIM Workspace</div>,
+}));
 
-    expect(screen.getByText('ARCH_TECH')).toBeDefined();
-    expect(screen.getByText(/STUDIO \/\/ OPENBIM/i)).toBeDefined();
-    expect(screen.getByText('Capabilities')).toBeDefined();
-    expect(screen.getByText('Workflow')).toBeDefined();
-    expect(screen.getByText('Selected Models')).toBeDefined();
-
-    const ctaBtn = screen.getByTestId('landing-btn-open-workspace');
-    expect(ctaBtn).toBeDefined();
-    expect(ctaBtn.textContent).toContain('ENTER WORKSPACE');
-    fireEvent.click(ctaBtn);
-    expect(handleOpenWorkspace).toHaveBeenCalledTimes(1);
+describe('ARCH_TECH client architecture portal', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.history.replaceState({}, '', '/');
+    document.documentElement.classList.remove('portal-dark');
   });
 
-  it('renders Hero section with architectural typography, subtitle, and primary CTA', () => {
-    const handleOpenWorkspace = vi.fn();
-    render(<Hero onOpenWorkspace={handleOpenWorkspace} />);
+  it('renders a projects-only public landing with client login', () => {
+    const onNavigate = vi.fn();
+    const onLogin = vi.fn();
+    render(<LandingPage onNavigate={onNavigate} onLogin={onLogin} />);
 
-    expect(screen.getByText('ARCH_TECH')).toBeDefined();
-    expect(screen.getByText('Design, inspect and modify IFC models in the browser.')).toBeDefined();
-    expect(screen.getByText('OpenBIM tools for architectural workflows.')).toBeDefined();
+    expect(screen.getByText(/Architecture,/i)).toBeDefined();
+    expect(screen.getByText('Selected projects')).toBeDefined();
+    expect(screen.getByText('Lake House')).toBeDefined();
+    expect(screen.queryByText(/OpenBIM|IFC|engineering pipeline/i)).toBeNull();
 
-    const heroCta = screen.getByTestId('hero-btn-open-workspace');
-    expect(heroCta).toBeDefined();
-    expect(heroCta.textContent).toContain('ENTER WORKSPACE');
-    fireEvent.click(heroCta);
-    expect(handleOpenWorkspace).toHaveBeenCalledTimes(1);
-
-    expect(screen.getByText('01 / ARCHITECTURAL STUDY')).toBeDefined();
-    expect(screen.getByText('02 / OPENBIM MODEL')).toBeDefined();
-    expect(screen.getByText('03 / ARCH_TECH WORKSPACE')).toBeDefined();
-    expect(screen.getAllByTestId(/hero-sequence-panel-/i)).toHaveLength(3);
-
-    fireEvent.mouseEnter(screen.getByTestId('hero-sequence-panel-1'));
-    expect(screen.getByTestId('hero-sequence-counter').textContent).toContain('02 / 03');
-
-    fireEvent.mouseLeave(screen.getByTestId('hero-sequence-panel-1'));
-    expect(screen.getByTestId('hero-sequence-counter').textContent).toContain('01 / 03');
+    fireEvent.click(screen.getByTestId('client-login-link'));
+    expect(onLogin).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getAllByRole('button', { name: /Client Login/i }).at(-1)!);
+    expect(onLogin).toHaveBeenCalledTimes(2);
   });
 
-  it('renders Product section with workspace screenshot and minimal caption', () => {
-    const handleOpenWorkspace = vi.fn();
-    render(<ProductPreview onOpenWorkspace={handleOpenWorkspace} />);
+  it('uses a simple three-image architectural hero without sticky scroll state', () => {
+    render(<Hero onViewProjects={vi.fn()} />);
 
-    expect(screen.getByText(/One workspace./i)).toBeDefined();
-    expect(screen.getByText(/IFC from inspection to export./i)).toBeDefined();
-    expect(screen.getByAltText(/Arch_Tech BIM Workspace Screenshot/i)).toBeDefined();
+    expect(screen.getByTestId('hero-gallery').querySelectorAll('img')).toHaveLength(3);
+    expect(screen.getByTestId('hero-gallery').className).not.toContain('sticky');
+    expect(screen.getByText('01 / Lake House')).toBeDefined();
   });
 
-  it('renders Capabilities section with exactly 3 large editorial rows', () => {
-    render(<Capabilities />);
+  it('opens public project details from the selected projects list', () => {
+    const onOpenProject = vi.fn();
+    render(<ProjectShowcase onOpenProject={onOpenProject} />);
 
-    expect(screen.getByText('Inspect IFC')).toBeDefined();
-    expect(screen.getByText('Modify models')).toBeDefined();
-    expect(screen.getByText('Generate & export')).toBeDefined();
+    fireEvent.click(screen.getByTestId('public-project-lake-house'));
+    expect(onOpenProject).toHaveBeenCalledWith('lake-house');
+
+    const onNavigate = vi.fn();
+    render(<PublicProjectPage projectId="lake-house" onNavigate={onNavigate} />);
+    expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
+    expect(screen.getByText('Project intent')).toBeDefined();
   });
 
-  it('renders Workflow section with horizontal architectural diagram language', () => {
-    render(<Workflow />);
+  it('keeps demo authentication isolated inside the login overlay', () => {
+    const onSuccess = vi.fn();
+    const onClose = vi.fn();
+    render(<LoginOverlay open onClose={onClose} onSuccess={onSuccess} />);
 
-    expect(screen.getByText('IMPORT')).toBeDefined();
-    expect(screen.getByText('INSPECT')).toBeDefined();
-    expect(screen.getByText('EDIT')).toBeDefined();
-    expect(screen.getByText('EXPORT')).toBeDefined();
+    expect(screen.getByRole('dialog')).toBeDefined();
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'incorrect' } });
+    fireEvent.click(screen.getByTestId('login-submit'));
+    expect(screen.getByRole('alert').textContent).toContain('Check the demo email');
+    expect(onSuccess).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'studio-demo' } });
+    fireEvent.click(screen.getByTestId('login-submit'));
+    expect(onSuccess).toHaveBeenCalledTimes(1);
+    expect(window.localStorage.getItem('arch-tech-demo-session')).not.toBeNull();
   });
 
-  it('renders TechnologyStrip with understated technical stack', () => {
-    render(<TechnologyStrip />);
+  it('closes the login overlay with escape and backdrop, and traps focus', () => {
+    const onClose = vi.fn();
+    const { rerender } = render(<LoginOverlay open onClose={onClose} onSuccess={vi.fn()} />);
 
-    expect(screen.getByText('IFC4')).toBeDefined();
-    expect(screen.getByText('web-ifc')).toBeDefined();
-    expect(screen.getByText('That Open')).toBeDefined();
-    expect(screen.getByText('Three.js')).toBeDefined();
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('Close login');
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(screen.getByTestId('login-submit'));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    rerender(<LoginOverlay open onClose={onClose} onSuccess={vi.fn()} />);
+    fireEvent.mouseDown(screen.getAllByRole('presentation').at(-1)!);
+    expect(onClose).toHaveBeenCalledTimes(2);
   });
 
-  it('renders FinalCTA with editorial title and primary CTA', () => {
-    const handleOpenWorkspace = vi.fn();
-    render(<FinalCTA onOpenWorkspace={handleOpenWorkspace} />);
+  it('shows client projects, progress, phase, milestone and latest updates', () => {
+    render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
-    expect(screen.getByText('Open your model.')).toBeDefined();
-    const ctaBtn = screen.getByTestId('final-cta-btn-open-workspace');
-    expect(ctaBtn).toBeDefined();
-    expect(ctaBtn.textContent).toContain('ENTER WORKSPACE');
-    fireEvent.click(ctaBtn);
-    expect(handleOpenWorkspace).toHaveBeenCalledTimes(1);
+    expect(screen.getByText('Client projects')).toBeDefined();
+    expect(screen.getAllByText('Progress').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Design development').length).toBeGreaterThan(0);
+    expect(screen.getByText('Latest update')).toBeDefined();
+    expect(screen.getByText('Next milestone')).toBeDefined();
   });
 
-  it('renders full LandingPage assembling all sections in architectural flow', () => {
-    const handleOpenWorkspace = vi.fn();
-    render(<LandingPage onOpenWorkspace={handleOpenWorkspace} />);
+  it('limits architect data and exposes the admin register', () => {
+    render(<ArchitectDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    expect(screen.getByText('Assigned projects')).toBeDefined();
+    expect(screen.getByText('Lake House')).toBeDefined();
+    expect(screen.getByText('Cantilever Residence')).toBeDefined();
+    expect(screen.queryByText('Woodland House')).toBeNull();
 
-    expect(screen.getAllByText('ARCH_TECH').length).toBeGreaterThan(0);
-    expect(screen.getByText('Design, inspect and modify IFC models in the browser.')).toBeDefined();
-    expect(screen.getByText(/IFC from inspection to export./i)).toBeDefined();
-    expect(screen.getByText('Inspect IFC')).toBeDefined();
-    expect(screen.getByText('The engineering pipeline.')).toBeDefined();
-    expect(screen.getByText('Curated model library.')).toBeDefined();
-    expect(screen.getByText('Open your model.')).toBeDefined();
-    expect(screen.getByTestId('hero-sequence').closest('[data-landing-scroll-container]')).not.toBeNull();
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    expect(screen.getByText('All projects / assignments')).toBeDefined();
+    expect(screen.getAllByText('Woodland House').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Demo Architect').length).toBeGreaterThan(0);
+    expect(screen.getByText('Material palette')).toBeDefined();
   });
 
-  it('App defaults to LandingPage and switches to Workspace when CTA clicked', () => {
-    window.location.hash = '';
+  it('redirects each demo role to its protected dashboard', () => {
+    render(<App />);
+    fireEvent.click(screen.getByTestId('client-login-link'));
+    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'architect@arch-tech.studio' } });
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'architect-demo' } });
+    fireEvent.click(screen.getByTestId('login-submit'));
+    expect(window.location.pathname).toBe('/architect');
+    expect(screen.getByText('Assigned projects')).toBeDefined();
+
+    cleanup();
+    window.localStorage.clear();
+    window.history.replaceState({}, '', '/');
+    render(<App />);
+    fireEvent.click(screen.getByTestId('client-login-link'));
+    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'admin@arch-tech.studio' } });
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'admin-demo' } });
+    fireEvent.click(screen.getByTestId('login-submit'));
+    expect(window.location.pathname).toBe('/admin');
+    expect(screen.getByText('The project register.')).toBeDefined();
+  });
+
+  it('redirects an authenticated role away from another role route', async () => {
+    demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
+    window.history.replaceState({}, '', '/admin');
+    render(<App />);
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/architect');
+      expect(screen.getByText('Assigned projects')).toBeDefined();
+    });
+  });
+
+  it('protects unassigned architect project details', async () => {
+    demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
+    window.history.replaceState({}, '', '/architect/projects/woodland-house');
+    render(<App />);
+    await waitFor(() => expect(window.location.pathname).toBe('/architect'));
+    expect(screen.getByText('Assigned projects')).toBeDefined();
+    expect(screen.queryByText('Woodland House')).toBeNull();
+  });
+
+  it('provides all project detail sections and opens the existing workspace', () => {
+    const onOpenWorkspace = vi.fn();
+    expect(getPortalProject('lake-house')?.approvals[0].title).toBe('Material palette');
+    render(
+      <DashboardProjectPage
+        projectId="lake-house"
+        onNavigate={vi.fn()}
+        onSignOut={vi.fn()}
+        onOpenWorkspace={onOpenWorkspace}
+      />,
+    );
+
+    expect(screen.getByText('Current phase')).toBeDefined();
+    fireEvent.click(screen.getByTestId('project-tab-updates'));
+    expect(screen.getByText('Material study issued')).toBeDefined();
+    fireEvent.click(screen.getByTestId('project-tab-milestones'));
+    expect(screen.getByText('Client design review')).toBeDefined();
+    fireEvent.click(screen.getByTestId('project-tab-documents'));
+    expect(screen.getByText('Design development set')).toBeDefined();
+    fireEvent.click(screen.getByTestId('project-tab-model'));
+    fireEvent.click(screen.getByTestId('open-3d-model'));
+    expect(onOpenWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps client approvals actionable and gives staff management controls', () => {
+    render(<DashboardProjectPage projectId="lake-house" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="client" />);
+    fireEvent.click(screen.getByTestId('project-tab-approvals'));
+    fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
+    expect(screen.getByText('Approved')).toBeDefined();
+
+    cleanup();
+    render(<DashboardProjectPage projectId="lake-house" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
+    expect(screen.getByTestId('role-management-panel')).toBeDefined();
+    fireEvent.change(screen.getByLabelText('Update title'), { target: { value: 'Coordination note' } });
+    fireEvent.change(screen.getByLabelText('Update body'), { target: { value: 'Team review completed.' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Publish update' }));
+    fireEvent.click(screen.getByTestId('project-tab-updates'));
+    expect(screen.getByText('Coordination note')).toBeDefined();
+  });
+
+  it('provides a persistent portal theme switch', () => {
+    render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    fireEvent.click(screen.getByTestId('theme-toggle'));
+    expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
+    expect(window.localStorage.getItem('arch-tech-portal-theme')).toBe('dark');
+  });
+
+  it('routes login to dashboard, project detail and workspace', async () => {
     render(<App />);
 
-    // Initially landing page is rendered
-    expect(screen.getByText('Design, inspect and modify IFC models in the browser.')).toBeDefined();
-    expect(screen.getByTestId('hero-btn-open-workspace')).toBeDefined();
+    fireEvent.click(screen.getByTestId('client-login-link'));
+    expect(window.location.pathname).toBe('/');
+    expect(screen.getByRole('dialog')).toBeDefined();
+    fireEvent.click(screen.getByTestId('login-submit'));
+    expect(window.location.pathname).toBe('/dashboard');
+    expect(screen.getByText('Projects in progress.')).toBeDefined();
 
-    // Click CTA to enter Workspace
-    fireEvent.click(screen.getByTestId('hero-btn-open-workspace'));
+    fireEvent.click(screen.getByTestId('dashboard-project-lake-house'));
+    expect(window.location.pathname).toBe('/dashboard/projects/lake-house');
+    fireEvent.click(screen.getByTestId('project-tab-model'));
+    fireEvent.click(screen.getByTestId('open-3d-model'));
+    expect(window.location.pathname).toBe('/workspace');
+    expect(await screen.findByTestId('workspace')).toBeDefined();
+  });
 
-    // Hash is updated and Workspace is mounted with return button
-    expect(window.location.hash).toBe('#workspace');
-    expect(screen.getByTestId('btn-back-to-landing')).toBeDefined();
+  it('opens landing login from navbar and footer, then restores trigger focus', async () => {
+    render(<App />);
 
-    // Click return to landing
-    fireEvent.click(screen.getByTestId('btn-back-to-landing'));
-    expect(window.location.hash).toBe('#landing');
-    expect(screen.getByText('Design, inspect and modify IFC models in the browser.')).toBeDefined();
+    const navLogin = screen.getByTestId('client-login-link');
+    fireEvent.click(navLogin);
+    expect(window.location.pathname).toBe('/');
+    expect(screen.getByRole('dialog')).toBeDefined();
+
+    fireEvent.click(screen.getByLabelText('Close login'));
+    await waitFor(() => expect(document.activeElement).toBe(navLogin));
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Client Login/i }).at(-1)!);
+    expect(screen.getByRole('dialog')).toBeDefined();
+    fireEvent.mouseDown(screen.getAllByRole('presentation').at(-1)!);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('guards private routes with the isolated demo login', () => {
+    window.history.replaceState({}, '', '/dashboard');
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: 'Client Login' })).toBeDefined();
+    expect(window.location.pathname).toBe('/dashboard');
+    expect(screen.queryByText('Projects in progress.')).toBeNull();
+  });
+
+  it('keeps the public navigation compact', () => {
+    render(<LandingNavbar onLogin={vi.fn()} />);
+    expect(screen.getByText('Projects')).toBeDefined();
+    expect(screen.getByTestId('client-login-link').textContent).toContain('Client Login');
   });
 });

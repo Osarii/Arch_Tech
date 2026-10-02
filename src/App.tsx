@@ -1,65 +1,164 @@
-import React, { useState, useEffect } from 'react';
-import { Workspace } from './components/layout/Workspace';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { LandingPage } from './components/landing/LandingPage';
+import {
+  DashboardPage,
+  DashboardProjectPage,
+  AdminDashboardPage,
+  ArchitectDashboardPage,
+  LoginOverlay,
+  NotFoundPage,
+  PublicProjectPage,
+} from './components/portal/PortalPages';
+import { demoAuth } from './portal/demoAuth';
+import { getPortalUser, PortalRole } from './portal/data';
+
+const Workspace = React.lazy(() => import('./components/layout/Workspace').then((module) => ({ default: module.Workspace })));
+
+const legacyWorkspaceRequested = () => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('view') === 'workspace'
+    || params.get('app') === 'true'
+    || window.location.hash === '#workspace'
+    || window.location.hash === '#/workspace';
+};
+
+const readRoute = () => legacyWorkspaceRequested() ? '/workspace' : window.location.pathname || '/';
+
+const roleHome = (role?: PortalRole) => role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard';
+
+const RoleRedirect: React.FC<{ path: string; onRedirect: (path: string) => void }> = ({ path, onRedirect }) => {
+  useEffect(() => {
+    window.history.replaceState({}, '', path);
+    onRedirect(path);
+  }, [path, onRedirect]);
+  return null;
+};
 
 export const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'workspace'>(() => {
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (
-        params.get('view') === 'workspace' ||
-        params.get('app') === 'true' ||
-        window.location.hash === '#workspace' ||
-        window.location.hash === '#/workspace'
-      ) {
-        return 'workspace';
-      }
-    }
-    return 'landing';
-  });
+  const initialRoute = readRoute();
+  const [route, setRoute] = useState(initialRoute === '/login' ? '/' : initialRoute);
+  const [loginOpen, setLoginOpen] = useState(initialRoute === '/login');
+  const loginTriggerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash;
-      if (hash === '#workspace' || hash === '#/workspace') {
-        setCurrentView('workspace');
-      } else if (hash === '' || hash === '#landing' || hash === '#/landing' || hash === '#hero') {
-        setCurrentView('landing');
+    const syncRoute = () => {
+      const nextRoute = readRoute();
+      if (nextRoute === '/login') {
+        window.history.replaceState({}, '', '/');
+        setRoute('/');
+        setLoginOpen(true);
+        return;
       }
+      setRoute(nextRoute);
     };
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
+    window.addEventListener('popstate', syncRoute);
+    window.addEventListener('hashchange', syncRoute);
+    return () => {
+      window.removeEventListener('popstate', syncRoute);
+      window.removeEventListener('hashchange', syncRoute);
+    };
   }, []);
 
-  const handleOpenWorkspace = () => {
-    window.location.hash = '#workspace';
-    setCurrentView('workspace');
+  const openLogin = (trigger?: HTMLElement) => {
+    loginTriggerRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    setLoginOpen(true);
   };
 
-  const handleBackToLanding = () => {
-    window.location.hash = '#landing';
-    setCurrentView('landing');
+  const closeLogin = () => {
+    setLoginOpen(false);
+    window.setTimeout(() => loginTriggerRef.current?.focus(), 0);
   };
 
-  return (
-    <div className="w-full h-full">
-      {currentView === 'landing' ? (
-        <LandingPage onOpenWorkspace={handleOpenWorkspace} />
-      ) : (
-        <div className="relative w-full h-full">
-          <button
-            onClick={handleBackToLanding}
-            data-testid="btn-back-to-landing"
-            className="fixed top-2.5 right-64 z-50 px-2 py-1 rounded bg-[#181c26]/90 hover:bg-[#222736] text-[11px] font-mono text-stone-300 hover:text-white border border-white/10 shadow-sm backdrop-blur transition flex items-center space-x-1"
-            title="Return to Architectural Landing Page"
-          >
-            <span>← Landing</span>
-          </button>
+  const navigate = (path: string) => {
+    if (path === '/login') {
+      window.history.replaceState({}, '', '/');
+      setRoute('/');
+      openLogin();
+      return;
+    }
+    setLoginOpen(false);
+    window.history.pushState({}, '', path);
+    setRoute(path);
+  };
+
+  const signOut = () => {
+    demoAuth.signOut();
+    navigate('/');
+  };
+
+  const handleLoginSuccess = () => navigate(roleHome(demoAuth.getSession()?.role));
+
+  const session = demoAuth.getSession();
+  const dashboardProjectMatch = route.match(/^\/dashboard\/projects\/([^/]+)$/);
+  const architectProjectMatch = route.match(/^\/architect\/projects\/([^/]+)$/);
+  const adminProjectMatch = route.match(/^\/admin\/projects\/([^/]+)$/);
+  const publicProjectMatch = route.match(/^\/projects\/([^/]+)$/);
+  const needsAuth = ['/dashboard', '/architect', '/admin', '/workspace'].includes(route)
+    || !!dashboardProjectMatch || !!architectProjectMatch || !!adminProjectMatch;
+
+  if (route === '/') {
+    return (
+      <>
+        <LandingPage onNavigate={navigate} onLogin={(trigger) => openLogin(trigger)} />
+        <LoginOverlay open={loginOpen} onClose={closeLogin} onSuccess={handleLoginSuccess} />
+      </>
+    );
+  }
+  if (publicProjectMatch) return <PublicProjectPage projectId={publicProjectMatch[1]} onNavigate={navigate} />;
+
+  if (needsAuth && !session && !legacyWorkspaceRequested()) {
+    return (
+      <>
+        <LandingPage onNavigate={navigate} onLogin={(trigger) => openLogin(trigger)} />
+        <LoginOverlay open onClose={() => navigate('/')} onSuccess={handleLoginSuccess} />
+      </>
+    );
+  }
+
+  const protectedRole = route === '/admin' || adminProjectMatch ? 'admin' : route === '/architect' || architectProjectMatch ? 'architect' : route === '/dashboard' || dashboardProjectMatch ? 'client' : undefined;
+  const architectProjectForbidden = architectProjectMatch && session?.role === 'architect'
+    && !getPortalUser(session.email)?.projectIds.includes(architectProjectMatch[1]);
+  const roleMismatch = Boolean((protectedRole && session && session.role !== protectedRole) || architectProjectForbidden);
+  if (roleMismatch && session) return <RoleRedirect path={roleHome(session.role)} onRedirect={setRoute} />;
+
+  if (route === '/dashboard') return <DashboardPage onNavigate={navigate} onSignOut={signOut} />;
+  if (route === '/architect') return <ArchitectDashboardPage onNavigate={navigate} onSignOut={signOut} />;
+  if (route === '/admin') return <AdminDashboardPage onNavigate={navigate} onSignOut={signOut} />;
+  if (dashboardProjectMatch) {
+    return (
+      <DashboardProjectPage
+        projectId={dashboardProjectMatch[1]}
+        onNavigate={navigate}
+        onSignOut={signOut}
+        onOpenWorkspace={() => navigate('/workspace')}
+        role="client"
+      />
+    );
+  }
+  if (architectProjectMatch || adminProjectMatch) {
+    const isAdmin = !!adminProjectMatch;
+    return <DashboardProjectPage projectId={(isAdmin ? adminProjectMatch : architectProjectMatch)![1]} onNavigate={navigate} onSignOut={signOut} onOpenWorkspace={() => navigate('/workspace')} homePath={isAdmin ? '/admin' : '/architect'} role={isAdmin ? 'admin' : 'architect'} />;
+  }
+
+  if (route === '/workspace') {
+    return (
+      <div className="relative h-full w-full">
+        <button
+          onClick={() => navigate(session ? roleHome(session.role) : '/')}
+          data-testid="btn-back-to-landing"
+          className="fixed bottom-4 left-4 z-50 flex items-center space-x-1 rounded border border-white/10 bg-[#181c26]/90 px-2 py-1 font-mono text-[11px] text-stone-300 shadow-sm backdrop-blur transition hover:bg-[#222736] hover:text-white"
+          title={session ? 'Return to client dashboard' : 'Return to architectural portfolio'}
+        >
+          <span>← {session ? 'Dashboard' : 'Projects'}</span>
+        </button>
+        <Suspense fallback={<div className="flex h-full items-center justify-center bg-[#0d0f12] font-mono text-xs text-stone-400">Opening model workspace…</div>}>
           <Workspace />
-        </div>
-      )}
-    </div>
-  );
+        </Suspense>
+      </div>
+    );
+  }
+
+  return <NotFoundPage onNavigate={navigate} />;
 };
 
 export default App;

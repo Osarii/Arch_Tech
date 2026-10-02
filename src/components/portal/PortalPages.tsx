@@ -1,0 +1,416 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowLeft, ArrowRight, Box, FileText, LogOut, Moon, Sun, X } from 'lucide-react';
+import { demoAuth } from '../../portal/demoAuth';
+import {
+  addPortalApproval,
+  addPortalDocument,
+  addPortalMilestone,
+  addPortalUpdate,
+  demoPortalUser,
+  getPortalProject,
+  getPortalSnapshot,
+  getProjectsForUser,
+  updatePortalApproval,
+  updatePortalDatabase,
+  updatePortalProject,
+  updatePortalUser,
+  PortalProject,
+  PortalRole,
+} from '../../portal/data';
+
+type Navigate = (path: string) => void;
+
+interface NavigationProps {
+  onNavigate: Navigate;
+}
+
+const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePath?: string; role?: PortalRole }> = ({ onNavigate, onSignOut, homePath = '/dashboard', role = 'client' }) => {
+  const [dark, setDark] = useState(() => typeof window !== 'undefined' && window.localStorage.getItem('arch-tech-portal-theme') === 'dark');
+  useEffect(() => {
+    document.documentElement.classList.toggle('portal-dark', dark);
+    window.localStorage.setItem('arch-tech-portal-theme', dark ? 'dark' : 'light');
+  }, [dark]);
+  const navigation = role === 'admin' ? ['Projects', 'People', 'Approvals', 'Activity'] : role === 'architect' ? ['Projects', 'Activity', 'Milestones', 'Documents', 'Approvals'] : ['Projects', 'Updates', 'Documents', 'Notifications'];
+  return (
+  <header className="portal-header border-b border-black/10 bg-[#f2efe8]">
+    <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
+      <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em] text-[#171714]">
+        ARCH_TECH
+      </button>
+      <div className="flex items-center gap-5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600">
+        <button onClick={() => onNavigate(homePath)} className="transition-colors hover:text-black">
+          {role === 'admin' ? 'Register' : role === 'architect' ? 'Workboard' : 'Projects'}
+        </button>
+        <nav aria-label={`${role} navigation`} className="hidden gap-3 border-l border-black/15 pl-5 lg:flex">{navigation.slice(1).map((item) => <button key={item} onClick={() => onNavigate(homePath)} className="transition-colors hover:text-black">{item}</button>)}</nav>
+        <button onClick={() => setDark((value) => !value)} aria-label={dark ? 'Use light mode' : 'Use dark mode'} data-testid="theme-toggle" className="inline-flex items-center gap-2 transition-colors hover:text-black">
+          {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />} {dark ? 'Light' : 'Dark'}
+        </button>
+        {onSignOut && (
+          <button onClick={onSignOut} className="inline-flex items-center gap-2 transition-colors hover:text-black">
+            Sign out <LogOut className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+    </div>
+  </header>
+  );
+};
+
+export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSuccess: () => void }> = ({ open, onClose, onSuccess }) => {
+  const [email, setEmail] = useState(demoPortalUser.email);
+  const [password, setPassword] = useState(demoPortalUser.password);
+  const [error, setError] = useState('');
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const dialog = dialogRef.current;
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button, input') ?? []);
+    focusable()[0]?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!demoAuth.signIn(email, password)) {
+      setError('Check the demo email and password.');
+      return;
+    }
+    onSuccess();
+  };
+
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-black/45 px-4 py-4 backdrop-blur-sm sm:items-center" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="client-login-title"
+        className="w-full max-w-lg border border-white/15 bg-[#11110f]/95 p-6 text-[#f4efe8] shadow-2xl sm:p-8"
+      >
+        <button onClick={onClose} aria-label="Close login" className="ml-auto flex h-9 w-9 items-center justify-center border border-white/15 text-stone-300 transition-colors hover:border-white hover:text-white">
+          <X className="h-4 w-4" />
+        </button>
+        <div className="mt-6">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Private access</p>
+          <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">Client Login</h1>
+          <p className="mt-4 max-w-sm text-sm leading-6 text-stone-400">Review project progress, updates, documents and the current model.</p>
+
+          <form onSubmit={handleSubmit} className="mt-12 space-y-7">
+            <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
+              Email
+              <input
+                data-testid="login-email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                className="mt-3 w-full border-0 border-b border-white/25 bg-transparent px-0 py-3 font-sans text-sm text-white outline-none transition-colors focus:border-white"
+              />
+            </label>
+            <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
+              Password
+              <input
+                data-testid="login-password"
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                className="mt-3 w-full border-0 border-b border-white/25 bg-transparent px-0 py-3 font-sans text-sm text-white outline-none transition-colors focus:border-white"
+              />
+            </label>
+            {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
+            <button
+              data-testid="login-submit"
+              type="submit"
+              className="group flex w-full items-center justify-between bg-[#f4efe8] px-6 py-4 font-mono text-[10px] uppercase tracking-[0.2em] text-black transition-transform duration-200 active:translate-y-px"
+            >
+              Enter portal <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </button>
+          </form>
+          <p className="mt-6 font-mono text-[10px] leading-5 text-stone-500">Demo access is prefilled. Authentication is isolated for a later provider connection.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
+  const [snapshot] = useState(getPortalSnapshot);
+  const client = snapshot.db.users.find((user) => user.id === 'demo-client');
+  const projects = snapshot.projects.filter((project) => !project.archived && client?.projectIds.includes(project.id));
+  const latestUpdate = projects[0]?.updates[0];
+
+  return (
+    <div className="portal-surface h-screen overflow-y-auto bg-[#f2efe8] text-[#171714]">
+      <PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} role="client" />
+      <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
+        <div className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Client portal / Overview</p>
+            <h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Projects in progress.</h1>
+          </div>
+          <p className="max-w-sm text-sm leading-6 text-stone-600">A concise view of current phases, upcoming decisions and the latest information shared with you.</p>
+        </div>
+
+        <section className="py-14" aria-labelledby="client-projects-title">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 id="client-projects-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Client projects</h2>
+            <span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active</span>
+          </div>
+          <div className="divide-y divide-black/15 border-y border-black/15">
+            {projects.map((project) => (
+              <button
+                key={project.id}
+                data-testid={`dashboard-project-${project.id}`}
+                onClick={() => onNavigate(`/dashboard/projects/${project.id}`)}
+                className="group grid w-full gap-6 py-7 text-left transition-colors hover:bg-white/35 sm:grid-cols-[80px_1fr_150px_180px_auto] sm:items-center sm:px-3"
+              >
+                <span className="font-mono text-[10px] text-stone-500">{project.code}</span>
+                <span>
+                  <span className="block font-serif text-2xl">{project.title}</span>
+                  <span className="mt-1 block text-xs text-stone-500">{project.category}</span>
+                </span>
+                <span className="text-xs text-stone-600">{project.phase}</span>
+                <span>
+                  <span className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500"><span>Progress</span><span>{project.progress}%</span></span>
+                  <span className="block h-px bg-black/15"><span className="block h-px bg-black" style={{ width: `${project.progress}%` }} /></span>
+                </span>
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Latest update</p>
+            <p className="mt-8 font-mono text-[10px] text-stone-500">{latestUpdate?.date}</p>
+            <h2 className="mt-3 font-serif text-3xl">{latestUpdate?.title}</h2>
+            <p className="mt-3 max-w-lg text-sm leading-6 text-stone-600">{latestUpdate?.body}</p>
+          </div>
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Next milestone</p>
+            <h2 className="mt-8 font-serif text-3xl">{projects[0]?.nextMilestone}</h2>
+            <p className="mt-3 text-sm leading-6 text-stone-600">The latest documents and model remain available inside the project view.</p>
+          </div>
+        </section>
+        <section className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>{snapshot.db.notifications.filter((notification) => notification.userId === client?.id).map((notification) => <p key={`${notification.date}-${notification.message}`} className="mt-5 flex justify-between gap-5 text-sm"><span>{notification.message}</span><span className="font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</section>
+      </main>
+    </div>
+  );
+};
+
+const ProjectRows: React.FC<{ projects: PortalProject[]; onNavigate: Navigate; detailPath: (id: string) => string }> = ({ projects, onNavigate, detailPath }) => (
+  <div className="divide-y divide-black/15 border-y border-black/15">
+    {projects.map((project) => (
+      <button key={project.id} onClick={() => onNavigate(detailPath(project.id))} className="group grid w-full gap-5 py-7 text-left transition-colors hover:bg-white/35 sm:grid-cols-[80px_1fr_150px_180px_auto] sm:items-center sm:px-3">
+        <span className="font-mono text-[10px] text-stone-500">{project.code}</span>
+        <span><span className="block font-serif text-2xl">{project.title}</span><span className="mt-1 block text-xs text-stone-500">{project.category}</span></span>
+        <span className="text-xs text-stone-600">{project.phase}</span>
+        <span><span className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500"><span>Progress</span><span>{project.progress}%</span></span><span className="block h-px bg-black/15"><span className="block h-px bg-black" style={{ width: `${project.progress}%` }} /></span></span>
+        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+      </button>
+    ))}
+  </div>
+);
+
+export const ArchitectDashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
+  const projects = getProjectsForUser('demo-architect');
+  return (
+    <div className="portal-surface h-screen overflow-y-auto bg-[#f2efe8] text-[#171714]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/architect" role="architect" />
+      <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
+        <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Architect workspace / Assigned projects</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Work in progress.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">The current project set, decisions and documents assigned to this studio.</p></div>
+        <section className="py-14"><div className="mb-8 flex items-center justify-between"><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Assigned projects</h2><span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active</span></div><ProjectRows projects={projects} onNavigate={onNavigate} detailPath={(id) => `/architect/projects/${id}`} /></section>
+        <section className="grid gap-10 border-t border-black/15 pt-12 lg:grid-cols-3"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Next milestone</p><h2 className="mt-6 font-serif text-3xl">{projects[0]?.nextMilestone}</h2></div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Latest update</p><h2 className="mt-6 font-serif text-3xl">{projects[0]?.updates[0]?.title}</h2><p className="mt-3 text-sm leading-6 text-stone-600">{projects[0]?.updates[0]?.body}</p></div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Studio tools</p><div className="mt-6 space-y-3 font-mono text-[10px] uppercase tracking-[0.12em] text-stone-600"><p>Project activity</p><p>Milestone management</p><p>Client approvals</p><p>Document issue</p></div></div></section>
+      </main>
+    </div>
+  );
+};
+
+export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
+  const [snapshot, setSnapshot] = useState(getPortalSnapshot);
+  const { db, projects } = snapshot;
+  const clients = db.users.filter((user) => user.role === 'client');
+  const architects = db.users.filter((user) => user.role === 'architect');
+  const refresh = () => setSnapshot(getPortalSnapshot());
+  const toggleAssignment = (userId: string, projectId: string) => {
+    updatePortalDatabase((current) => ({ ...current, users: current.users.map((user) => user.id !== userId ? user : { ...user, projectIds: user.projectIds.includes(projectId) ? user.projectIds.filter((id) => id !== projectId) : [...user.projectIds, projectId] }) }));
+    refresh();
+  };
+  const createProject = () => {
+    const title = window.prompt('Project title');
+    if (!title) return;
+    const id = `admin-project-${Date.now()}`;
+    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title, category: 'Residential · New project', phase: 'Brief and site study', progress: 0, nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/arch_hero.jpg' }] }));
+    refresh();
+  };
+  return (
+    <div className="portal-surface h-screen overflow-y-auto bg-[#f2efe8] text-[#171714]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/admin" role="admin" />
+      <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
+        <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Administration / Portal overview</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">The project register.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">Projects, people, approvals and shared information across the ARCH_TECH portal.</p></div>
+        <section className="flex flex-wrap gap-3 py-10"><button onClick={createProject} className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white">Create project</button><span className="border border-black/15 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Operational controls</span></section>
+        <section className="py-4"><div className="mb-8 flex items-center justify-between"><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">All projects / assignments</h2><span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active</span></div><ProjectRows projects={projects} onNavigate={onNavigate} detailPath={(id) => `/admin/projects/${id}`} /></section>
+        <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-3"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Clients</h2>{clients.map((user) => <div key={user.id} className="mt-5 flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex gap-2"><button onClick={() => updatePortalUser(user.id, { role: 'architect' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">Make architect</button><button onClick={() => updatePortalUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Architects</h2>{architects.map((user) => <div key={user.id} className="mt-5"><div className="flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex gap-2"><button onClick={() => updatePortalUser(user.id, { role: 'client' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">Make client</button><button onClick={() => updatePortalUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div><p className="mt-1 text-xs text-stone-500">{user.projectIds.length} assigned projects</p></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global approvals</h2>{db.approvals.map((approval) => <p key={approval.projectId} className="mt-5 flex justify-between gap-4 text-sm"><span>{approval.title}</span><span className="font-mono text-[9px] uppercase text-stone-500">{approval.status}</span></p>)}</div></section>
+        <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Assign people to projects</h2>{projects.map((project) => <div key={project.id} className="mt-5"><p className="text-sm">{project.title}</p><div className="mt-2 flex flex-wrap gap-2">{[...clients, ...architects].map((user) => <button key={user.id} onClick={() => toggleAssignment(user.id, project.id)} className={`border px-2 py-1 font-mono text-[9px] uppercase ${user.projectIds.includes(project.id) ? 'border-black bg-black text-white' : 'border-black/15 text-stone-500'}`}>{user.name}</button>)}</div></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global notifications</h2>{db.notifications.map((notification) => <p key={`${notification.userId}-${notification.date}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{notification.message}</span><span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</div></section>
+      </main>
+    </div>
+  );
+};
+
+const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project }) => (
+  <div className="grid gap-12 lg:grid-cols-[1.3fr_0.7fr]">
+    <div>
+      <p className="font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>
+      <img src={project.image} alt={project.title} className="mt-10 aspect-[16/9] w-full object-cover" />
+    </div>
+    <dl className="divide-y divide-black/15 border-y border-black/15 text-sm">
+      <div className="grid grid-cols-2 py-5"><dt className="text-stone-500">Current phase</dt><dd>{project.phase}</dd></div>
+      <div className="grid grid-cols-2 py-5"><dt className="text-stone-500">Progress</dt><dd>{project.progress}%</dd></div>
+      <div className="grid grid-cols-2 py-5"><dt className="text-stone-500">Next milestone</dt><dd>{project.nextMilestone}</dd></div>
+      <div className="grid grid-cols-2 py-5"><dt className="text-stone-500">Model access</dt><dd>Available</dd></div>
+    </dl>
+  </div>
+);
+
+export const DashboardProjectPage: React.FC<NavigationProps & { projectId: string; onOpenWorkspace: () => void; onSignOut: () => void; homePath?: string; role?: PortalRole }> = ({ projectId, onNavigate, onOpenWorkspace, onSignOut, homePath = '/dashboard', role = 'client' }) => {
+  const [snapshot, setSnapshot] = useState(getPortalSnapshot);
+  const [activeTab, setActiveTab] = useState('Overview');
+  const [progress, setProgress] = useState('');
+  const [phase, setPhase] = useState('');
+  const [projectTitle, setProjectTitle] = useState('');
+  const [updateTitle, setUpdateTitle] = useState('');
+  const [updateBody, setUpdateBody] = useState('');
+  const [milestone, setMilestone] = useState('');
+  const [documentName, setDocumentName] = useState('');
+  const [approvalTitle, setApprovalTitle] = useState('');
+  const tabs = ['Overview', 'Updates', 'Milestones', 'Documents', 'Approvals', 'Model'];
+  const project = snapshot.projects.find((candidate) => candidate.id === projectId);
+  const canManage = role === 'architect' || role === 'admin';
+  const refresh = () => setSnapshot(getPortalSnapshot());
+  const saveStatus = () => { updatePortalProject(projectId, { progress: Number(progress), phase, ...(role === 'admin' && projectTitle ? { title: projectTitle } : {}) }); refresh(); };
+  const addUpdate = () => { if (!updateTitle || !updateBody) return; addPortalUpdate({ projectId, date: '02 OCT 2026', title: updateTitle, body: updateBody }); setUpdateTitle(''); setUpdateBody(''); refresh(); };
+  const addMilestone = () => { if (!milestone) return; addPortalMilestone({ projectId, label: milestone, status: 'Upcoming' }); setMilestone(''); refresh(); };
+  const addDocument = () => { if (!documentName) return; addPortalDocument({ projectId, name: documentName, meta: 'PDF · Added in portal' }); setDocumentName(''); refresh(); };
+  const requestApproval = () => { if (!approvalTitle) return; addPortalApproval({ projectId, title: approvalTitle, status: 'Pending' }); setApprovalTitle(''); refresh(); };
+
+  if (!project) return <NotFoundPage onNavigate={onNavigate} />;
+
+  return (
+    <div className="portal-surface h-screen overflow-y-auto bg-[#f2efe8] text-[#171714]">
+      <PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath={homePath} role={role} />
+      <main className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12 lg:py-16">
+        <button onClick={() => onNavigate(homePath)} className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-black">
+          <ArrowLeft className="h-3.5 w-3.5" /> All projects
+        </button>
+        <div className="mt-10 grid gap-8 border-b border-black/15 pb-12 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
+            <h1 className="mt-5 font-serif text-6xl font-light tracking-tight sm:text-7xl">{project.title}</h1>
+          </div>
+          <div className="min-w-64">
+            <div className="flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500"><span>{project.phase}</span><span>{project.progress}%</span></div>
+            <div className="mt-3 h-px bg-black/15"><div className="h-px bg-black" style={{ width: `${project.progress}%` }} /></div>
+          </div>
+        </div>
+
+        <div className="flex gap-7 overflow-x-auto border-b border-black/15 py-5">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              data-testid={`project-tab-${tab.toLowerCase()}`}
+              onClick={() => setActiveTab(tab)}
+              className={`shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors ${activeTab === tab ? 'text-black' : 'text-stone-400 hover:text-stone-700'}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        <section className="py-12">
+          {activeTab === 'Overview' && <ProjectOverview project={project} />}
+          {activeTab === 'Updates' && (
+            <div className="divide-y divide-black/15 border-y border-black/15">
+              {project.updates.map((update) => <article key={update.date + update.title} className="grid gap-4 py-8 md:grid-cols-[140px_1fr]"><p className="font-mono text-[10px] text-stone-500">{update.date}</p><div><h2 className="font-serif text-3xl">{update.title}</h2><p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{update.body}</p></div></article>)}
+            </div>
+          )}
+          {activeTab === 'Milestones' && (
+            <ol className="divide-y divide-black/15 border-y border-black/15">
+              {project.milestones.map((milestone, index) => <li key={milestone.label} className="grid grid-cols-[60px_1fr_auto] items-center py-6"><span className="font-mono text-[10px] text-stone-500">{String(index + 1).padStart(2, '0')}</span><span className="font-serif text-2xl">{milestone.label}</span><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{milestone.status}</span></li>)}
+            </ol>
+          )}
+          {activeTab === 'Documents' && (
+            <div className="divide-y divide-black/15 border-y border-black/15">
+              {project.documents.map((document) => <div key={document.name} className="flex items-center justify-between gap-6 py-6"><div className="flex items-center gap-4"><FileText className="h-4 w-4" /><div><p className="font-serif text-xl">{document.name}</p><p className="mt-1 font-mono text-[9px] uppercase tracking-wider text-stone-500">{document.meta}</p></div></div><span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">Available</span></div>)}
+            </div>
+          )}
+          {activeTab === 'Approvals' && (
+            <div className="divide-y divide-black/15 border-y border-black/15">
+              {project.approvals.map((approval) => <div key={approval.title} className="flex items-center justify-between gap-6 py-6"><p className="font-serif text-2xl">{approval.title}</p><span className="flex items-center gap-3"><span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{approval.status}</span>{role === 'client' && approval.status === 'Pending' && <><button onClick={() => { updatePortalApproval(projectId, approval.title, 'Approved'); refresh(); }} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">Approve</button><button onClick={() => { updatePortalApproval(projectId, approval.title, 'Rejected'); refresh(); }} className="border border-black/15 px-3 py-2 font-mono text-[9px] uppercase text-stone-500">Reject</button></>}{canManage && <button onClick={() => { updatePortalApproval(projectId, approval.title, approval.status === 'Approved' ? 'Pending' : 'Approved'); refresh(); }} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">{approval.status === 'Approved' ? 'Reopen' : 'Resolve'}</button>}</span></div>)}
+            </div>
+          )}
+          {activeTab === 'Model' && (
+            <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+              <div><Box className="h-6 w-6" /><h2 className="mt-8 font-serif text-4xl">Current project model</h2><p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">Open the project model in the existing ARCH_TECH workspace.</p></div>
+              <button data-testid="open-3d-model" onClick={onOpenWorkspace} className="group inline-flex items-center justify-between gap-12 bg-[#171714] px-6 py-4 font-mono text-[10px] uppercase tracking-[0.2em] text-white transition-transform active:translate-y-px">Open 3D Model <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></button>
+            </div>
+          )}
+        </section>
+        {canManage && <section data-testid="role-management-panel" className="border-t border-black/15 py-12"><div className="flex items-end justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{role === 'admin' ? 'Administration' : 'Studio management'}</p><h2 className="mt-4 font-serif text-4xl">Project controls.</h2></div>{role === 'admin' && <button onClick={() => { updatePortalProject(projectId, { archived: true }); onNavigate(homePath); }} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Archive project</button>}</div><div className="mt-8 grid gap-8 lg:grid-cols-2"><div className="space-y-4">{role === 'admin' && <label className="block font-mono text-[9px] uppercase text-stone-500">Project title<input aria-label="Project title" value={projectTitle || project.title} onChange={(event) => setProjectTitle(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label>}<label className="block font-mono text-[9px] uppercase text-stone-500">Progress / phase<input aria-label="Project progress" type="number" value={progress || project.progress} onChange={(event) => setProgress(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /><select aria-label="Project phase" value={phase || project.phase} onChange={(event) => setPhase(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><button onClick={saveStatus} className="bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-white">Save status</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Create project update<input aria-label="Update title" value={updateTitle} onChange={(event) => setUpdateTitle(event.target.value)} placeholder="Update title" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /><textarea aria-label="Update body" value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} placeholder="What changed?" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addUpdate} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Publish update</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Manage milestones<input aria-label="New milestone" value={milestone} onChange={(event) => setMilestone(event.target.value)} placeholder="Milestone name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addMilestone} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add milestone</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Issue document<input aria-label="New document" value={documentName} onChange={(event) => setDocumentName(event.target.value)} placeholder="Document name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addDocument} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add document</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Client approval request<input aria-label="New approval" value={approvalTitle} onChange={(event) => setApprovalTitle(event.target.value)} placeholder="Approval request" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={requestApproval} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Request approval</button></div><div><p className="font-mono text-[9px] uppercase text-stone-500">Project activity</p>{project.updates.slice(0, 3).map((update) => <p key={update.date + update.title} className="mt-4 text-sm text-stone-600">{update.date} · {update.title}</p>)}</div></div></section>}
+      </main>
+    </div>
+  );
+};
+
+export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }> = ({ projectId, onNavigate }) => {
+  const project = getPortalProject(projectId);
+  if (!project) return <NotFoundPage onNavigate={onNavigate} />;
+
+  return (
+    <div className="h-screen overflow-y-auto bg-[#0a0b0d] text-[#f4efe8]">
+      <header className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
+        <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em]">ARCH_TECH</button>
+        <button onClick={() => onNavigate('/login')} className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white">Client Login</button>
+      </header>
+      <main>
+        <div className="mx-auto max-w-7xl px-6 pb-10 pt-14 sm:px-8 lg:px-12 lg:pb-16 lg:pt-24">
+          <button onClick={() => onNavigate('/')} className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Selected projects</button>
+          <p className="mt-14 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
+          <h1 className="mt-5 max-w-5xl font-serif text-6xl font-light tracking-tight sm:text-8xl">{project.title}</h1>
+          <p className="mt-8 max-w-2xl text-lg leading-8 text-stone-300">{project.summary}</p>
+        </div>
+        <img src={project.image} alt={project.title} className="h-[62vh] min-h-[460px] w-full object-cover" />
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Project intent</p>
+          <p className="max-w-3xl font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => (
+  <main className="flex h-screen flex-col items-center justify-center bg-[#f2efe8] px-6 text-center text-[#171714]">
+    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">404</p>
+    <h1 className="mt-5 font-serif text-5xl">Project not found.</h1>
+    <button onClick={() => onNavigate('/')} className="mt-8 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em]"><ArrowLeft className="h-3.5 w-3.5" /> Return home</button>
+  </main>
+);

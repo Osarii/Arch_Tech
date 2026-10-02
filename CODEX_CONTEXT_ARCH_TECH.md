@@ -37,7 +37,7 @@
 **Name:** Arch_Tech  
 **Repo:** `https://github.com/Osarii/Arch_Tech`  
 **Local path:** `/Users/osariii/Documents/arch_tech`  
-**Owner:** Bernny Dumani Vásquez  
+**Owner:** Jared Prendas Ramirez (Osari)
 **Machine target:** MacBook Pro 2019, Intel i7, 16 GB RAM, Intel UHD 630 + Radeon 5300M.
 
 ### Remote `main` baseline
@@ -553,3 +553,22 @@ Default flow:
 Serena → targeted reads → Ponytail → minimal diff → targeted tests → RTK for verbose output → full verification once.
 
 Do not repeat these rules in task prompts.
+## FAST TASK MODE
+
+For small UI/portal changes:
+
+- Do not reread tool/skill documentation if already configured globally.
+- Do not perform extra "best practices" reviews unless the task requires them.
+- Do not narrate intermediate reasoning or command-by-command progress.
+- Serena: locate exact symbols/files only.
+- RTK: use only for large test/build/diff output, not small file reads.
+- Run targeted tests first.
+- Run targeted Playwright only for the affected flow.
+- Run build + diff check.
+- DO NOT run full BIM Playwright/Vitest unless:
+  - BIM/core code changed,
+  - shared infrastructure changed,
+  - routing changes can affect BIM entry,
+  - or the user explicitly requests FULL verification.
+
+Return only the final compact report.

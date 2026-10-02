@@ -1,0 +1,140 @@
+{
+  "users": [
+    {
+      "id": "demo-client",
+      "name": "Demo Client",
+      "email": "client@arch-tech.studio",
+      "password": "studio-demo",
+      "role": "client",
+      "projectIds": ["lake-house", "woodland-house", "cantilever-residence"],
+      "status": "active"
+    },
+    {
+      "id": "demo-architect",
+      "name": "Demo Architect",
+      "email": "architect@arch-tech.studio",
+      "password": "architect-demo",
+      "role": "architect",
+      "projectIds": ["lake-house", "cantilever-residence"],
+      "status": "active"
+    },
+    {
+      "id": "demo-admin",
+      "name": "Demo Admin",
+      "email": "admin@arch-tech.studio",
+      "password": "admin-demo",
+      "role": "admin",
+      "projectIds": ["lake-house", "woodland-house", "cantilever-residence"],
+      "status": "active"
+    }
+  ],
+  "projects": [
+    {
+      "id": "lake-house",
+      "code": "AT / 01",
+      "title": "Lake House",
+      "category": "Residential · Concept Study",
+      "phase": "Design development",
+      "progress": 68,
+      "nextMilestone": "Client design review · 18 October",
+      "summary": "A quiet concrete pavilion shaped by water, horizon and the changing edge of the landscape.",
+      "statement": "The project is organized as a sequence of sheltered rooms opening toward the lake. A restrained material palette keeps attention on light, proportion and the landscape beyond.",
+      "image": "/arch_hero.jpg"
+    },
+    {
+      "id": "woodland-house",
+      "code": "AT / 02",
+      "title": "Woodland House",
+      "category": "Residential · Spatial Study",
+      "phase": "Concept design",
+      "progress": 42,
+      "nextMilestone": "Concept presentation · 29 October",
+      "summary": "A compact house composed around a protected courtyard and a continuous relationship with the trees.",
+      "statement": "Deep thresholds frame the woodland and give each room a distinct degree of privacy. The courtyard becomes the center of daily life and the reference point for movement through the house.",
+      "image": "/arch_openhouse.jpg"
+    },
+    {
+      "id": "cantilever-residence",
+      "code": "AT / 03",
+      "title": "Cantilever Residence",
+      "category": "Residential · Architectural Study",
+      "phase": "Documentation",
+      "progress": 84,
+      "nextMilestone": "Documentation issue · 23 October",
+      "summary": "A layered residence where a precise upper volume creates shade, shelter and long framed views.",
+      "statement": "The upper level extends beyond the lower stone base to form a generous covered terrace. Interior spaces follow the same linear order, moving from enclosed service rooms to open living areas.",
+      "image": "/arch_cantilever.jpg"
+    }
+  ],
+  "updates": [
+    {
+      "projectId": "lake-house",
+      "date": "02 OCT 2026",
+      "title": "Material study issued",
+      "body": "The concrete, timber and glazing palette is ready for client review."
+    },
+    {
+      "projectId": "lake-house",
+      "date": "24 SEP 2026",
+      "title": "Plan development complete",
+      "body": "Primary room relationships and circulation have been coordinated."
+    },
+    {
+      "projectId": "woodland-house",
+      "date": "30 SEP 2026",
+      "title": "Courtyard option selected",
+      "body": "The preferred plan establishes a central garden and a quieter arrival sequence."
+    },
+    {
+      "projectId": "woodland-house",
+      "date": "19 SEP 2026",
+      "title": "Initial studies shared",
+      "body": "Three massing approaches were presented for discussion."
+    },
+    {
+      "projectId": "cantilever-residence",
+      "date": "01 OCT 2026",
+      "title": "Drawing coordination complete",
+      "body": "The current architectural set has been coordinated for the next issue."
+    },
+    {
+      "projectId": "cantilever-residence",
+      "date": "22 SEP 2026",
+      "title": "Interior elevations reviewed",
+      "body": "Key joinery and material transitions have been incorporated."
+    }
+  ],
+  "milestones": [
+    { "projectId": "lake-house", "label": "Concept design", "status": "Complete" },
+    { "projectId": "lake-house", "label": "Design development", "status": "Current" },
+    { "projectId": "lake-house", "label": "Client design review", "status": "Upcoming" },
+    { "projectId": "lake-house", "label": "Documentation", "status": "Upcoming" },
+    { "projectId": "woodland-house", "label": "Brief and site study", "status": "Complete" },
+    { "projectId": "woodland-house", "label": "Concept design", "status": "Current" },
+    { "projectId": "woodland-house", "label": "Concept presentation", "status": "Upcoming" },
+    { "projectId": "woodland-house", "label": "Design development", "status": "Upcoming" },
+    { "projectId": "cantilever-residence", "label": "Concept design", "status": "Complete" },
+    { "projectId": "cantilever-residence", "label": "Design development", "status": "Complete" },
+    { "projectId": "cantilever-residence", "label": "Documentation", "status": "Current" },
+    { "projectId": "cantilever-residence", "label": "Documentation issue", "status": "Upcoming" }
+  ],
+  "documents": [
+    { "projectId": "lake-house", "name": "Design development set", "meta": "PDF · Updated 02 Oct 2026" },
+    { "projectId": "lake-house", "name": "Material palette", "meta": "PDF · Updated 02 Oct 2026" },
+    { "projectId": "lake-house", "name": "Client review notes", "meta": "PDF · Updated 24 Sep 2026" },
+    { "projectId": "woodland-house", "name": "Concept options", "meta": "PDF · Updated 30 Sep 2026" },
+    { "projectId": "woodland-house", "name": "Project brief", "meta": "PDF · Updated 12 Sep 2026" },
+    { "projectId": "cantilever-residence", "name": "Coordinated drawing set", "meta": "PDF · Updated 01 Oct 2026" },
+    { "projectId": "cantilever-residence", "name": "Interior elevations", "meta": "PDF · Updated 22 Sep 2026" },
+    { "projectId": "cantilever-residence", "name": "Finish schedule", "meta": "PDF · Updated 22 Sep 2026" }
+  ],
+  "approvals": [
+    { "projectId": "lake-house", "title": "Material palette", "status": "Pending" },
+    { "projectId": "woodland-house", "title": "Courtyard direction", "status": "Approved" },
+    { "projectId": "cantilever-residence", "title": "Documentation issue", "status": "Pending" }
+  ],
+  "notifications": [
+    { "userId": "demo-client", "projectId": "lake-house", "message": "Material study is ready for review.", "date": "02 OCT 2026" },
+    { "userId": "demo-client", "projectId": "cantilever-residence", "message": "Drawing coordination has been completed.", "date": "01 OCT 2026" }
+  ]
+}

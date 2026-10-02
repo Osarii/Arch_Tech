@@ -5,7 +5,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
     await page.goto('/?view=workspace');
 
     // Check title and brand
-    await expect(page).toHaveTitle(/BIM LAB/i);
+    await expect(page).toHaveTitle(/ARCH_TECH/i);
     await expect(page.getByText('BIM LAB')).toBeVisible();
 
     // Check header controls
@@ -445,26 +445,30 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
 });
 
 test.describe('Arch_Tech Architectural Landing Page E2E', () => {
-  test('landing page renders, navigates to workspace via primary CTA, and returns to landing', async ({ page }) => {
+  test('public projects lead through client login to the existing workspace', async ({ page }) => {
     await page.goto('/');
 
-    // 1. Landing renders with editorial brand and subtitle
+    // 1. Public architectural portfolio
     await expect(page.getByText('ARCH_TECH').first()).toBeVisible();
-    await expect(page.getByText('Design, inspect and modify IFC models in the browser.').first()).toBeVisible();
+    await expect(page.getByText(/Architecture,/i).first()).toBeVisible();
+    await expect(page.getByText('Selected projects', { exact: true })).toBeVisible();
 
-    // 2. Primary CTA works
-    const enterWorkspaceBtn = page.getByRole('button', { name: /ENTER WORKSPACE/i }).first();
-    await expect(enterWorkspaceBtn).toBeVisible();
-    await enterWorkspaceBtn.click();
+    // 2. Demo client access
+    await page.getByTestId('client-login-link').click();
+    await expect(page.getByRole('heading', { name: 'Client Login' })).toBeVisible();
+    await page.getByTestId('login-submit').click();
+    await expect(page.getByText('Projects in progress.')).toBeVisible();
 
-    // 3. Workspace becomes visible
+    // 3. Project model opens in the existing workspace
+    await page.getByTestId('dashboard-project-lake-house').click();
+    await page.getByTestId('project-tab-model').click();
+    await page.getByTestId('open-3d-model').click();
     await expect(page.getByRole('button', { name: /Open IFC/i })).toBeVisible();
     const backToLandingBtn = page.getByTestId('btn-back-to-landing');
     await expect(backToLandingBtn).toBeVisible();
 
-    // 4. Back to landing works
+    // 4. Return to the client dashboard
     await backToLandingBtn.click();
-    await expect(page.getByText('ARCH_TECH').first()).toBeVisible();
-    await expect(page.getByText('Design, inspect and modify IFC models in the browser.').first()).toBeVisible();
+    await expect(page.getByText('Projects in progress.')).toBeVisible();
   });
 });
