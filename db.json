@@ -6,7 +6,10 @@
       "email": "client@arch-tech.studio",
       "password": "studio-demo",
       "role": "client",
-      "projectIds": ["lake-house", "woodland-house", "cantilever-residence"],
+      "projectIds": [
+        "pacific-nexus-free-zone",
+        "mar-vista-hospitality-district"
+      ],
       "status": "active"
     },
     {
@@ -15,7 +18,10 @@
       "email": "architect@arch-tech.studio",
       "password": "architect-demo",
       "role": "architect",
-      "projectIds": ["lake-house", "cantilever-residence"],
+      "projectIds": [
+        "pacific-nexus-free-zone",
+        "summit-point-corporate-district"
+      ],
       "status": "active"
     },
     {
@@ -24,163 +30,18 @@
       "email": "admin@arch-tech.studio",
       "password": "admin-demo",
       "role": "admin",
-      "projectIds": ["lake-house", "woodland-house", "cantilever-residence"],
+      "projectIds": [
+        "caribbean-ai-compute-campus",
+        "summit-point-corporate-district",
+        "pacific-regional-medical-campus",
+        "mar-vista-hospitality-district",
+        "pacific-nexus-free-zone",
+        "guanacaste-renewable-compute-campus"
+      ],
       "status": "active"
     }
   ],
   "projects": [
-    {
-      "id": "lake-house",
-      "code": "AT / 01",
-      "title": "Lake House",
-      "category": "Residential · Concept Study",
-      "phase": "Design development",
-      "progress": 68,
-      "nextMilestone": "Client design review · 18 October",
-      "summary": "A quiet concrete pavilion shaped by water, horizon and the changing edge of the landscape.",
-      "statement": "The project is organized as a sequence of sheltered rooms opening toward the lake. A restrained material palette keeps attention on light, proportion and the landscape beyond.",
-      "image": "/arch_hero.jpg",
-      "market": "Costa Rica · Central Valley",
-      "developmentType": "Private residential development",
-      "publicStage": "In design development",
-      "published": false,
-      "context": "Hillside lake edge",
-      "scale": "Single residence",
-      "longView": "Durability, shade and a measured relationship to water."
-    },
-    {
-      "id": "woodland-house",
-      "code": "AT / 02",
-      "title": "Woodland House",
-      "category": "Residential · Spatial Study",
-      "phase": "Concept design",
-      "progress": 42,
-      "nextMilestone": "Concept presentation · 29 October",
-      "summary": "A compact house composed around a protected courtyard and a continuous relationship with the trees.",
-      "statement": "Deep thresholds frame the woodland and give each room a distinct degree of privacy. The courtyard becomes the center of daily life and the reference point for movement through the house.",
-      "image": "/arch_openhouse.jpg",
-      "market": "Costa Rica · Forest edge",
-      "developmentType": "Residential concept study",
-      "publicStage": "In concept design",
-      "published": false,
-      "context": "Protected woodland / courtyard site",
-      "scale": "Single residence",
-      "longView": "A compact footprint organized around light, privacy and daily life."
-    },
-    {
-      "id": "cantilever-residence",
-      "code": "AT / 03",
-      "title": "Cantilever Residence",
-      "category": "Residential · Architectural Study",
-      "phase": "Documentation",
-      "progress": 84,
-      "nextMilestone": "Documentation issue · 23 October",
-      "summary": "A layered residence where a precise upper volume creates shade, shelter and long framed views.",
-      "statement": "The upper level extends beyond the lower stone base to form a generous covered terrace. Interior spaces follow the same linear order, moving from enclosed service rooms to open living areas.",
-      "image": "/arch_cantilever.jpg",
-      "market": "Costa Rica · Pacific slope",
-      "developmentType": "Private residential development",
-      "publicStage": "In documentation",
-      "published": false,
-      "context": "Sloping site / Pacific exposure",
-      "scale": "Single residence",
-      "longView": "Deep shade and durable transitions for a changing coastal climate."
-    },
-    {
-      "id": "rio-segundo-commons",
-      "code": "AT / 04",
-      "title": "Río Segundo Commons",
-      "category": "Mixed-use · District Development",
-      "phase": "Brief and site study",
-      "progress": 18,
-      "nextMilestone": "Development brief · 12 November",
-      "summary": "A mixed-use district study that brings homes, work, hospitality and everyday services into a more connected urban edge.",
-      "statement": "The project begins with the relationship between a working street, a shaded public threshold and a flexible mix of uses. Its early framework asks how a district can grow in phases while keeping daily life connected.",
-      "image": "/arch_openhouse.jpg",
-      "market": "Costa Rica · Greater San José",
-      "developmentType": "Mixed-use urban district",
-      "publicStage": "In site and feasibility study",
-      "published": false,
-      "context": "Urban infill / transit edge",
-      "scale": "Mixed-use district",
-      "longView": "Adaptable uses, connected daily life and a clear public edge over time."
-    },
-    {
-      "id": "golfo-dulce-retreat",
-      "code": "AT / 05",
-      "title": "Golfo Dulce Retreat",
-      "category": "Hospitality · Destination Study",
-      "phase": "Concept design",
-      "progress": 31,
-      "nextMilestone": "Hospitality brief · 21 November",
-      "summary": "A hospitality destination shaped by arrival, rest and a close reading of the forested coast.",
-      "statement": "The destination is conceived as a sequence of sheltered rooms, shared spaces and landscape thresholds that keep the coast present without competing with it. Operations, seasonality and the character of the site guide the first development decisions.",
-      "image": "/arch_cantilever.jpg",
-      "market": "Costa Rica · Osa Peninsula",
-      "developmentType": "Hospitality destination development",
-      "publicStage": "In concept design",
-      "published": false,
-      "context": "Coastal forest / Osa Peninsula",
-      "scale": "Destination hospitality campus",
-      "longView": "A durable guest experience shaped by landscape, seasonality and stewardship."
-    },
-    {
-      "id": "coyol-free-zone",
-      "code": "AT / 06",
-      "title": "Coyol Free Zone Campus",
-      "category": "Free Zone · Industrial Campus",
-      "phase": "Brief and site study",
-      "progress": 22,
-      "nextMilestone": "Development brief · 06 November",
-      "summary": "A logistics and employment campus conceived around movement, adaptability and a clear relationship to the Alajuela corridor.",
-      "statement": "The campus is planned as an expandable framework rather than a single object: productive buildings, shared services and a landscape structure that keeps future phases legible.",
-      "image": "/arch_hero.jpg",
-      "market": "Costa Rica · Alajuela",
-      "developmentType": "Free zone and logistics development",
-      "publicStage": "In opportunity and site strategy",
-      "published": false,
-      "context": "Airport corridor / industrial edge",
-      "scale": "Multi-building campus",
-      "longView": "A flexible platform for investment, employment and long-term operations."
-    },
-    {
-      "id": "central-valley-campus",
-      "code": "AT / 07",
-      "title": "Central Valley Corporate Campus",
-      "category": "Corporate · Campus Development",
-      "phase": "Concept design",
-      "progress": 36,
-      "nextMilestone": "Program alignment · 14 November",
-      "summary": "A corporate campus study that brings work, landscape and shared services into a more adaptable daily setting.",
-      "statement": "The campus is structured as a sequence of shaded courtyards, shared amenities and flexible work buildings. Its framework supports changing teams and uses while keeping movement through the site clear.",
-      "image": "/arch_openhouse.jpg",
-      "market": "Costa Rica · Greater San José",
-      "developmentType": "Corporate campus development",
-      "publicStage": "In concept design",
-      "published": false,
-      "context": "Transit-connected urban edge",
-      "scale": "Corporate campus",
-      "longView": "A durable work setting with room for changing teams, uses and mobility."
-    },
-    {
-      "id": "guanacaste-coastal-district",
-      "code": "AT / 08",
-      "title": "Guanacaste Coastal District",
-      "category": "Masterplan · Mixed-use District",
-      "phase": "Brief and site study",
-      "progress": 14,
-      "nextMilestone": "Land and program framework · 28 November",
-      "summary": "A master-planned coastal district study balancing hospitality, services, landscape and the long horizon of a growing region.",
-      "statement": "The district begins with the relationship between dry forest, arrival routes and a sequence of shared civic and hospitality spaces. Early planning keeps the landscape structure visible as future phases take shape.",
-      "image": "/arch_cantilever.jpg",
-      "market": "Costa Rica · Guanacaste",
-      "developmentType": "Master-planned mixed-use development",
-      "publicStage": "In opportunity and land strategy",
-      "published": false,
-      "context": "Dry forest / coastal corridor",
-      "scale": "Master-planned district",
-      "longView": "A measured transition between landscape, hospitality, services and daily life."
-    },
     {
       "id": "pacific-nexus-free-zone",
       "code": "AT / 09",
@@ -352,106 +213,228 @@
   ],
   "updates": [
     {
-      "projectId": "lake-house",
+      "projectId": "pacific-nexus-free-zone",
       "date": "02 OCT 2026",
       "title": "Material study issued",
-      "body": "The concrete, timber and glazing palette is ready for client review."
+      "body": "The campus material and landscape palette is ready for client review."
     },
     {
-      "projectId": "lake-house",
+      "projectId": "pacific-nexus-free-zone",
       "date": "24 SEP 2026",
       "title": "Plan development complete",
-      "body": "Primary room relationships and circulation have been coordinated."
+      "body": "Primary movement, service and building relationships have been coordinated."
     },
     {
-      "projectId": "woodland-house",
-      "date": "30 SEP 2026",
-      "title": "Courtyard option selected",
-      "body": "The preferred plan establishes a central garden and a quieter arrival sequence."
-    },
-    {
-      "projectId": "woodland-house",
-      "date": "19 SEP 2026",
-      "title": "Initial studies shared",
-      "body": "Three massing approaches were presented for discussion."
-    },
-    {
-      "projectId": "cantilever-residence",
+      "projectId": "summit-point-corporate-district",
       "date": "01 OCT 2026",
-      "title": "Drawing coordination complete",
-      "body": "The current architectural set has been coordinated for the next issue."
+      "title": "Mobility framework issued",
+      "body": "The district circulation and public realm framework is ready for coordination."
     },
     {
-      "projectId": "cantilever-residence",
-      "date": "22 SEP 2026",
-      "title": "Interior elevations reviewed",
-      "body": "Key joinery and material transitions have been incorporated."
+      "projectId": "mar-vista-hospitality-district",
+      "date": "28 SEP 2026",
+      "title": "Destination brief shared",
+      "body": "Arrival, landscape and shared amenity principles are ready for review."
+    },
+    {
+      "projectId": "caribbean-ai-compute-campus",
+      "date": "26 SEP 2026",
+      "title": "Utility study initiated",
+      "body": "The site and shared infrastructure framework has entered coordination."
+    },
+    {
+      "projectId": "guanacaste-renewable-compute-campus",
+      "date": "21 SEP 2026",
+      "title": "Energy landscape review",
+      "body": "The first landscape and energy relationships have been documented."
+    },
+    {
+      "projectId": "pacific-regional-medical-campus",
+      "date": "18 SEP 2026",
+      "title": "Care program aligned",
+      "body": "The regional care program has been organized for the next planning phase."
     }
   ],
   "milestones": [
-    { "projectId": "lake-house", "label": "Concept design", "status": "Complete" },
-    { "projectId": "lake-house", "label": "Design development", "status": "Current" },
-    { "projectId": "lake-house", "label": "Client design review", "status": "Upcoming" },
-    { "projectId": "lake-house", "label": "Documentation", "status": "Upcoming" },
-    { "projectId": "woodland-house", "label": "Brief and site study", "status": "Complete" },
-    { "projectId": "woodland-house", "label": "Concept design", "status": "Current" },
-    { "projectId": "woodland-house", "label": "Concept presentation", "status": "Upcoming" },
-    { "projectId": "woodland-house", "label": "Design development", "status": "Upcoming" },
-    { "projectId": "cantilever-residence", "label": "Concept design", "status": "Complete" },
-    { "projectId": "cantilever-residence", "label": "Design development", "status": "Complete" },
-    { "projectId": "cantilever-residence", "label": "Documentation", "status": "Current" },
-    { "projectId": "cantilever-residence", "label": "Documentation issue", "status": "Upcoming" },
-    { "projectId": "rio-segundo-commons", "label": "Context and feasibility", "status": "Complete" },
-    { "projectId": "rio-segundo-commons", "label": "Development brief", "status": "Current" },
-    { "projectId": "rio-segundo-commons", "label": "Program and massing", "status": "Upcoming" },
-    { "projectId": "golfo-dulce-retreat", "label": "Site and operations study", "status": "Complete" },
-    { "projectId": "golfo-dulce-retreat", "label": "Concept design", "status": "Current" },
-    { "projectId": "golfo-dulce-retreat", "label": "Hospitality brief", "status": "Upcoming" },
-    { "projectId": "coyol-free-zone", "label": "Opportunity and site strategy", "status": "Current" },
-    { "projectId": "coyol-free-zone", "label": "Development brief", "status": "Upcoming" },
-    { "projectId": "coyol-free-zone", "label": "Campus framework", "status": "Upcoming" },
-    { "projectId": "central-valley-campus", "label": "Opportunity and program", "status": "Complete" },
-    { "projectId": "central-valley-campus", "label": "Concept design", "status": "Current" },
-    { "projectId": "central-valley-campus", "label": "Program alignment", "status": "Upcoming" },
-    { "projectId": "guanacaste-coastal-district", "label": "Land and context study", "status": "Current" },
-    { "projectId": "guanacaste-coastal-district", "label": "Land and program framework", "status": "Upcoming" },
-    { "projectId": "guanacaste-coastal-district", "label": "District structure", "status": "Upcoming" },
-    { "projectId": "pacific-nexus-free-zone", "label": "Opportunity and site strategy", "status": "Complete" },
-    { "projectId": "pacific-nexus-free-zone", "label": "Concept design", "status": "Current" },
-    { "projectId": "pacific-nexus-free-zone", "label": "Investor program alignment", "status": "Upcoming" },
-    { "projectId": "summit-point-corporate-district", "label": "Context and mobility study", "status": "Complete" },
-    { "projectId": "summit-point-corporate-district", "label": "Concept design", "status": "Current" },
-    { "projectId": "summit-point-corporate-district", "label": "Program alignment", "status": "Upcoming" },
-    { "projectId": "mar-vista-hospitality-district", "label": "Site and destination study", "status": "Current" },
-    { "projectId": "mar-vista-hospitality-district", "label": "Destination brief", "status": "Upcoming" },
-    { "projectId": "mar-vista-hospitality-district", "label": "Phasing framework", "status": "Upcoming" },
-    { "projectId": "caribbean-ai-compute-campus", "label": "Opportunity and site strategy", "status": "Current" },
-    { "projectId": "caribbean-ai-compute-campus", "label": "Utility and site framework", "status": "Upcoming" },
-    { "projectId": "caribbean-ai-compute-campus", "label": "Campus phasing", "status": "Upcoming" },
-    { "projectId": "guanacaste-renewable-compute-campus", "label": "Energy and landscape study", "status": "Complete" },
-    { "projectId": "guanacaste-renewable-compute-campus", "label": "Concept design", "status": "Current" },
-    { "projectId": "guanacaste-renewable-compute-campus", "label": "Energy and phasing review", "status": "Upcoming" },
-    { "projectId": "pacific-regional-medical-campus", "label": "Regional context study", "status": "Complete" },
-    { "projectId": "pacific-regional-medical-campus", "label": "Concept design", "status": "Current" },
-    { "projectId": "pacific-regional-medical-campus", "label": "Care program alignment", "status": "Upcoming" }
+    {
+      "projectId": "pacific-nexus-free-zone",
+      "label": "Opportunity and site strategy",
+      "status": "Complete"
+    },
+    {
+      "projectId": "pacific-nexus-free-zone",
+      "label": "Concept design",
+      "status": "Current"
+    },
+    {
+      "projectId": "pacific-nexus-free-zone",
+      "label": "Client design review",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "pacific-nexus-free-zone",
+      "label": "Documentation",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "summit-point-corporate-district",
+      "label": "Context and mobility study",
+      "status": "Complete"
+    },
+    {
+      "projectId": "summit-point-corporate-district",
+      "label": "Concept design",
+      "status": "Current"
+    },
+    {
+      "projectId": "summit-point-corporate-district",
+      "label": "Program alignment",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "mar-vista-hospitality-district",
+      "label": "Site and destination study",
+      "status": "Current"
+    },
+    {
+      "projectId": "mar-vista-hospitality-district",
+      "label": "Destination brief",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "mar-vista-hospitality-district",
+      "label": "Phasing framework",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "caribbean-ai-compute-campus",
+      "label": "Opportunity and site strategy",
+      "status": "Current"
+    },
+    {
+      "projectId": "caribbean-ai-compute-campus",
+      "label": "Utility and site framework",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "caribbean-ai-compute-campus",
+      "label": "Campus phasing",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "guanacaste-renewable-compute-campus",
+      "label": "Energy and landscape study",
+      "status": "Complete"
+    },
+    {
+      "projectId": "guanacaste-renewable-compute-campus",
+      "label": "Concept design",
+      "status": "Current"
+    },
+    {
+      "projectId": "guanacaste-renewable-compute-campus",
+      "label": "Energy and phasing review",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "pacific-regional-medical-campus",
+      "label": "Regional context study",
+      "status": "Complete"
+    },
+    {
+      "projectId": "pacific-regional-medical-campus",
+      "label": "Concept design",
+      "status": "Current"
+    },
+    {
+      "projectId": "pacific-regional-medical-campus",
+      "label": "Care program alignment",
+      "status": "Upcoming"
+    }
   ],
   "documents": [
-    { "projectId": "lake-house", "name": "Design development set", "meta": "PDF · Updated 02 Oct 2026" },
-    { "projectId": "lake-house", "name": "Material palette", "meta": "PDF · Updated 02 Oct 2026" },
-    { "projectId": "lake-house", "name": "Client review notes", "meta": "PDF · Updated 24 Sep 2026" },
-    { "projectId": "woodland-house", "name": "Concept options", "meta": "PDF · Updated 30 Sep 2026" },
-    { "projectId": "woodland-house", "name": "Project brief", "meta": "PDF · Updated 12 Sep 2026" },
-    { "projectId": "cantilever-residence", "name": "Coordinated drawing set", "meta": "PDF · Updated 01 Oct 2026" },
-    { "projectId": "cantilever-residence", "name": "Interior elevations", "meta": "PDF · Updated 22 Sep 2026" },
-    { "projectId": "cantilever-residence", "name": "Finish schedule", "meta": "PDF · Updated 22 Sep 2026" }
+    {
+      "projectId": "pacific-nexus-free-zone",
+      "name": "Design development set",
+      "meta": "PDF · Updated 02 Oct 2026"
+    },
+    {
+      "projectId": "pacific-nexus-free-zone",
+      "name": "Material palette",
+      "meta": "PDF · Updated 02 Oct 2026"
+    },
+    {
+      "projectId": "pacific-nexus-free-zone",
+      "name": "Client review notes",
+      "meta": "PDF · Updated 30 Sep 2026"
+    },
+    {
+      "projectId": "summit-point-corporate-district",
+      "name": "Mobility framework",
+      "meta": "PDF · Updated 01 Oct 2026"
+    },
+    {
+      "projectId": "summit-point-corporate-district",
+      "name": "Program alignment set",
+      "meta": "PDF · Updated 28 Sep 2026"
+    },
+    {
+      "projectId": "mar-vista-hospitality-district",
+      "name": "Destination brief",
+      "meta": "PDF · Updated 28 Sep 2026"
+    },
+    {
+      "projectId": "caribbean-ai-compute-campus",
+      "name": "Utility framework",
+      "meta": "PDF · Updated 26 Sep 2026"
+    },
+    {
+      "projectId": "pacific-regional-medical-campus",
+      "name": "Care program",
+      "meta": "PDF · Updated 18 Sep 2026"
+    }
   ],
   "approvals": [
-    { "projectId": "lake-house", "title": "Material palette", "status": "Pending" },
-    { "projectId": "woodland-house", "title": "Courtyard direction", "status": "Approved" },
-    { "projectId": "cantilever-residence", "title": "Documentation issue", "status": "Pending" }
+    {
+      "projectId": "pacific-nexus-free-zone",
+      "title": "Material palette",
+      "status": "Pending"
+    },
+    {
+      "projectId": "summit-point-corporate-district",
+      "title": "Mobility framework",
+      "status": "Approved"
+    },
+    {
+      "projectId": "mar-vista-hospitality-district",
+      "title": "Destination brief",
+      "status": "Pending"
+    }
   ],
   "notifications": [
-    { "userId": "demo-client", "projectId": "lake-house", "message": "Material study is ready for review.", "date": "02 OCT 2026" },
-    { "userId": "demo-client", "projectId": "cantilever-residence", "message": "Drawing coordination has been completed.", "date": "01 OCT 2026" }
+    {
+      "userId": "demo-client",
+      "projectId": "pacific-nexus-free-zone",
+      "message": "Material study is ready for review.",
+      "date": "02 OCT 2026"
+    },
+    {
+      "userId": "demo-client",
+      "projectId": "mar-vista-hospitality-district",
+      "message": "Destination brief is ready for review.",
+      "date": "28 SEP 2026"
+    },
+    {
+      "userId": "demo-architect",
+      "projectId": "pacific-nexus-free-zone",
+      "message": "Client review is scheduled for the current phase.",
+      "date": "02 OCT 2026"
+    },
+    {
+      "userId": "demo-architect",
+      "projectId": "summit-point-corporate-district",
+      "message": "Mobility framework is ready for coordination.",
+      "date": "01 OCT 2026"
+    }
   ]
 }

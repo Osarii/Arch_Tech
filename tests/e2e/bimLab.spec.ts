@@ -460,7 +460,7 @@ test.describe('Arch_Tech Architectural Landing Page E2E', () => {
     await expect(page.getByText('Projects in progress.')).toBeVisible();
 
     // 3. Project model opens in the existing workspace
-    await page.getByTestId('dashboard-project-lake-house').click();
+    await page.getByTestId('dashboard-project-pacific-nexus-free-zone').click();
     await page.getByTestId('project-tab-model').click();
     await page.getByTestId('open-3d-model').click();
     await expect(page.getByRole('button', { name: /Open IFC/i })).toBeVisible();

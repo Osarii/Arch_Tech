@@ -285,7 +285,7 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
   const createProject = () => {
     if (!newProject.title.trim()) return;
     const id = `admin-project-${Date.now()}`;
-    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title: newProject.title.trim(), category: newProject.category, phase: newProject.phase, progress: Number(newProject.progress), nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/arch_hero.jpg', published: false }] }));
+    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title: newProject.title.trim(), category: newProject.category, phase: newProject.phase, progress: Number(newProject.progress), nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/projects/pacific-nexus-free-zone/hero-exterior.jpg', published: false }] }));
     setNewProject({ title: '', category: 'Residential · New project', phase: 'Brief and site study', progress: '0' });
     setCreateOpen(false);
     refresh();

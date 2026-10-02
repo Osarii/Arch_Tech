@@ -307,33 +307,21 @@ tests/landingPage.test.tsx
 
 Landing assets:
 ```text
-public/arch_hero.jpg
-public/arch_openhouse.jpg
-public/arch_cantilever.jpg
+public/projects/<project-slug>/{hero-exterior,aerial-overview,campus-overview,
+masterplan,site-plan,floor-plan,lobby-interior,concept-board}.jpg
 ```
 
-Decorative architecture imagery must be labeled `Concept` when it does not represent the actual IFC geometry.
+The public portfolio contains six fictional Costa Rica-oriented development concepts:
 
-### Public project data
-Use grounded names and existing seed data only:
+- Pacific Nexus Free Zone Campus
+- Summit Point Corporate District
+- Mar Vista Hospitality District
+- Caribbean AI Compute Campus
+- Guanacaste Renewable Compute Campus
+- Pacific Regional Medical Campus
 
-**Lake House**
-- Residential · Concept Study
-- In design development
-- Costa Rica · Central Valley
-- decorative image = `Concept`
-
-**Woodland House**
-- Residential · Spatial Study
-- In concept design
-- Costa Rica · Forest edge
-- decorative image = `Concept`
-
-**Cantilever Residence**
-- Residential · Architectural Study
-- In documentation
-- Costa Rica · Pacific slope
-- decorative image = `Concept`
+Residential project data remains private to the portal. Public listings are driven by
+published projects in `db.json` and use the local project image packs above.
 
 Do not invent architects, locations, areas, endorsements or certifications.
 

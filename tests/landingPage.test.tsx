@@ -43,7 +43,6 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Guanacaste Renewable Compute Campus')).toBeDefined();
     expect(screen.getByText('Pacific Regional Medical Campus')).toBeDefined();
     expect(screen.getAllByTestId(/^public-project-/)).toHaveLength(6);
-    expect(screen.queryByText('Lake House')).toBeNull();
     expect(screen.getByText('Private project portal')).toBeDefined();
     expect(screen.queryByText(/OpenBIM|IFC|engineering pipeline/i)).toBeNull();
 
@@ -137,20 +136,20 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<ArchitectDashboardPage onNavigate={architectNavigate} onSignOut={vi.fn()} />);
     expect(screen.getByText('Assigned projects')).toBeDefined();
     expect(screen.getByRole('region', { name: 'Architect workload' })).toBeDefined();
-    expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Cantilever Residence').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Woodland House')).toBeNull();
+    expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Summit Point Corporate District').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Pacific Regional Medical Campus')).toBeNull();
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
     expect(document.querySelectorAll('.portal-overview-tile')).toHaveLength(4);
-    fireEvent.click(screen.getByTestId('architect-approval-lake-house'));
-    expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/lake-house');
+    fireEvent.click(screen.getByTestId('architect-approval-pacific-nexus-free-zone'));
+    expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/pacific-nexus-free-zone');
 
     cleanup();
     demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
     render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     expect(screen.getByText('All projects / assignments')).toBeDefined();
-    expect(screen.getAllByText('Woodland House').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Pacific Regional Medical Campus').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Demo Architect').length).toBeGreaterThan(0);
     expect(screen.getByText('Material palette')).toBeDefined();
   });
@@ -167,7 +166,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('average progress across active work')).toBeDefined();
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
-    fireEvent.click(screen.getByTestId('admin-open-model-lake-house'));
+    fireEvent.click(screen.getByTestId('admin-open-model-pacific-nexus-free-zone'));
     expect(adminNavigate).toHaveBeenCalledWith('/workspace');
     fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
     expect(screen.getByRole('dialog', { name: 'New project.' })).toBeDefined();
@@ -228,7 +227,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('quick login reads role users from the current portal snapshot', () => {
-    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-architect', name: 'Runtime Architect', email: 'runtime@arch-tech.studio', password: 'runtime-demo', role: 'architect', projectIds: ['lake-house'], status: 'active' }] }));
+    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-architect', name: 'Runtime Architect', email: 'runtime@arch-tech.studio', password: 'runtime-demo', role: 'architect', projectIds: ['pacific-nexus-free-zone'], status: 'active' }] }));
     render(<LoginOverlay open onClose={vi.fn()} onSuccess={vi.fn()} />);
     fireEvent.click(screen.getByTestId('quick-login-architect'));
     expect(demoAuth.getSession()?.email).toBe('runtime@arch-tech.studio');
@@ -272,22 +271,22 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('protects unassigned architect project details', async () => {
     demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
-    window.history.replaceState({}, '', '/architect/projects/woodland-house');
+    window.history.replaceState({}, '', '/architect/projects/pacific-regional-medical-campus');
     render(<App />);
     await waitFor(() => expect(window.location.pathname).toBe('/architect'));
     expect(screen.getByText('Assigned projects')).toBeDefined();
-    expect(screen.queryByText('Woodland House')).toBeNull();
+    expect(screen.queryByText('Pacific Regional Medical Campus')).toBeNull();
   });
 
   it('allows assigned client project details and blocks unassigned direct URLs', async () => {
-    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-client', name: 'Runtime Client', email: 'runtime-client@arch-tech.studio', password: 'runtime-demo', role: 'client', projectIds: ['lake-house'], status: 'active' }] }));
+    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-client', name: 'Runtime Client', email: 'runtime-client@arch-tech.studio', password: 'runtime-demo', role: 'client', projectIds: ['pacific-nexus-free-zone'], status: 'active' }] }));
     demoAuth.signIn('runtime-client@arch-tech.studio', 'runtime-demo');
-    window.history.replaceState({}, '', '/dashboard/projects/lake-house');
+    window.history.replaceState({}, '', '/dashboard/projects/pacific-nexus-free-zone');
     render(<App />);
     expect(screen.getByText('Current phase')).toBeDefined();
 
     cleanup();
-    window.history.replaceState({}, '', '/dashboard/projects/woodland-house');
+    window.history.replaceState({}, '', '/dashboard/projects/pacific-regional-medical-campus');
     render(<App />);
     await waitFor(() => expect(window.location.pathname).toBe('/dashboard'));
     expect(screen.getByText('Projects in progress.')).toBeDefined();
@@ -295,10 +294,10 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('provides all project detail sections and opens the existing workspace', () => {
     const onOpenWorkspace = vi.fn();
-    expect(getPortalProject('lake-house')?.approvals[0].title).toBe('Material palette');
+    expect(getPortalProject('pacific-nexus-free-zone')?.approvals[0].title).toBe('Material palette');
     render(
       <DashboardProjectPage
-        projectId="lake-house"
+        projectId="pacific-nexus-free-zone"
         onNavigate={vi.fn()}
         onSignOut={vi.fn()}
         onOpenWorkspace={onOpenWorkspace}
@@ -318,13 +317,13 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('keeps client approvals actionable and gives staff management controls', () => {
-    render(<DashboardProjectPage projectId="lake-house" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="client" />);
+    render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="client" />);
     fireEvent.click(screen.getByTestId('project-tab-approvals'));
     fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
     expect(screen.getByText('Approved')).toBeDefined();
 
     cleanup();
-    render(<DashboardProjectPage projectId="lake-house" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
+    render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
     expect(screen.getByTestId('role-management-panel')).toBeDefined();
     expect(screen.queryByTestId('toggle-publication')).toBeNull();
     fireEvent.change(screen.getByLabelText('Update title'), { target: { value: 'Coordination note' } });
@@ -347,12 +346,12 @@ describe('ARCH_TECH client architecture portal', () => {
 
     cleanup();
     demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
-    render(<DashboardProjectPage projectId="lake-house" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="admin" homePath="/admin" />);
-    const beforeTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'lake-house');
-    fireEvent.change(screen.getByLabelText('Project title'), { target: { value: 'Lake House Updated' } });
+    render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="admin" homePath="/admin" />);
+    const beforeTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone');
+    fireEvent.change(screen.getByLabelText('Project title'), { target: { value: 'Pacific Nexus Free Zone Campus Updated' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save status' }));
-    const afterTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'lake-house');
-    expect(afterTitleOnlySave?.title).toBe('Lake House Updated');
+    const afterTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone');
+    expect(afterTitleOnlySave?.title).toBe('Pacific Nexus Free Zone Campus Updated');
     expect(afterTitleOnlySave?.progress).toBe(beforeTitleOnlySave?.progress);
     expect(afterTitleOnlySave?.phase).toBe(beforeTitleOnlySave?.phase);
     expect(afterTitleOnlySave?.published).toBe(beforeTitleOnlySave?.published);
@@ -376,8 +375,8 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(window.location.pathname).toBe('/dashboard');
     expect(screen.getByText('Projects in progress.')).toBeDefined();
 
-    fireEvent.click(screen.getByTestId('dashboard-project-lake-house'));
-    expect(window.location.pathname).toBe('/dashboard/projects/lake-house');
+    fireEvent.click(screen.getByTestId('dashboard-project-pacific-nexus-free-zone'));
+    expect(window.location.pathname).toBe('/dashboard/projects/pacific-nexus-free-zone');
     fireEvent.click(screen.getByTestId('project-tab-model'));
     fireEvent.click(screen.getByTestId('open-3d-model'));
     expect(window.location.pathname).toBe('/workspace');
