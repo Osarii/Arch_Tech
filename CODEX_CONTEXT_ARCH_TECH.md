@@ -45,12 +45,13 @@
 Latest verified remote commit:
 
 ```text
-8901ec49dc584e7fa3361259491e407e3693ebdb
-feat(landing): refocus public experience for real estate development
+b47e5c9cc0271d02a86a8236239c04ff7b481818
+fix(portal): harden workspace and role navigation
 ```
 
 Previous:
 ```text
+8901ec49 feat(landing): refocus public experience for real estate development
 c8f5b539 feat(samples): replace fast IFC with IfcOpenHouse
 3956538 fix(phase-6b2): harden persistence semantics and reload safety
 31125a4 feat(phase-6b2): add detached IFC persistence round-trip
@@ -220,7 +221,7 @@ Treat this as a **known issue to investigate separately**. Do not silently alter
 
 ## 6. LANDING PAGE — CURRENT MAIN
 
-The landing is now aligned with `main @ 8901ec49` and carries the ARCH_TECH real-estate development concept.
+The synchronized main baseline is `b47e5c9`; the public experience carries the ARCH_TECH real-estate development concept.
 
 ### Routing
 - `/` => landing
@@ -258,27 +259,30 @@ Portfolio of places in formation, from possibility through design and delivery.
 EXPLORE THE PORTFOLIO →
 ```
 
-Current public structure:
-1. Hero / Costa Rica development portfolio
-2. Selected projects / current development stages
-3. Development approach / Position, Shape, Advance
-4. Public project detail / market, stage, intent and development path
-
 Portal integrity baseline:
 - `/workspace` requires a portal session in production builds.
 - Legacy workspace query/hash entry is available only in Vite dev/test modes.
 - Role navigation maps explicitly to existing dashboard sections.
 - Quick demo login reads role users from the current `db.json` + localStorage snapshot.
 
-Current main sections:
-1. Hero
-2. Product / real BIM workspace screenshot
-3. Capabilities
-4. Workflow
-5. Selected Models
-6. Technology strip
-7. Final CTA
-8. Footer
+Current public structure:
+1. Fixed landing navigation / Projects / Client Login
+2. Hero / Costa Rica development portfolio
+3. Selected projects / current development stages
+4. Development approach / Position, Shape, Advance
+5. Footer / Client Login
+
+Current public routes:
+- `/` landing with the login overlay
+- `/projects/:id` public project detail
+- `/dashboard`, `/architect`, `/admin` protected role dashboards
+- `/workspace` protected production portal entry, with dev/test legacy query/hash entry
+
+Current portal structure:
+- `db.json` is the demo seed; localStorage holds simulated runtime mutations.
+- Client, architect and admin roles use the existing session and role guards.
+- Dashboard role navigation targets explicit rendered sections.
+- Quick demo login resolves users from the current portal snapshot.
 
 ### Landing components
 
@@ -286,52 +290,49 @@ Current main sections:
 src/components/landing/
   LandingNavbar.tsx
   Hero.tsx
-  ProductPreview.tsx
-  Capabilities.tsx
-  Workflow.tsx
   ProjectShowcase.tsx
   DevelopmentFrame.tsx
-  TechnologyStrip.tsx
-  FinalCTA.tsx
   Footer.tsx
   LandingPage.tsx
 ```
 
-Also touched locally:
+Relevant application files:
 ```text
 src/App.tsx
-src/index.css
+src/portal/data.ts
+src/portal/demoAuth.ts
+src/components/portal/PortalPages.tsx
 tests/landingPage.test.tsx
-tests/e2e/bimLab.spec.ts
-tests/e2e/phase5-ai-assistant.spec.ts
-tests/e2e/phase6-generation.spec.ts
 ```
 
 Landing assets:
 ```text
 public/arch_hero.jpg
-public/workspace_preview.png
 public/arch_openhouse.jpg
 public/arch_cantilever.jpg
 ```
 
 Decorative architecture imagery must be labeled `Concept` when it does not represent the actual IFC geometry.
 
-### Selected Models copy
-Use grounded names only:
+### Public project data
+Use grounded names and existing seed data only:
 
-**IfcOpenHouse**
-- OpenBIM Sample Model
-- IFC4 / ISO 16739
-- 111 KB
-- 1 Storey
-- 13 physical elements
+**Lake House**
+- Residential · Concept Study
+- In design development
+- Costa Rica · Central Valley
 - decorative image = `Concept`
 
-**Arch_Tech Generated Building**
-- Parametric Multi-Storey Model
-- IFC4 / ISO 16739
-- Authored via Generation Service
+**Woodland House**
+- Residential · Spatial Study
+- In concept design
+- Costa Rica · Forest edge
+- decorative image = `Concept`
+
+**Cantilever Residence**
+- Residential · Architectural Study
+- In documentation
+- Costa Rica · Pacific slope
 - decorative image = `Concept`
 
 Do not invent architects, locations, areas, endorsements or certifications.
@@ -340,15 +341,14 @@ Do not invent architects, locations, areas, endorsements or certifications.
 
 ## 7. CURRENT VISUAL OBSERVATIONS
 
-Current landing screenshots show:
+The public experience currently shows:
 - strong dark architecture editorial look
 - large `ARCH_TECH` hero typography
 - architectural hero photograph
-- real BIM workspace screenshot
-- capabilities presented as large editorial rows
-- horizontal engineering workflow
-- two-image curated model library
-- minimal technical strip and final CTA
+- selected project register sourced from portal data
+- development lifecycle framing
+- public project detail with market, stage, intent and milestones
+- minimal footer and portal access entry
 
 Do not reintroduce:
 - symmetric SaaS feature-card grids
@@ -357,44 +357,20 @@ Do not reintroduce:
 - verbose AI marketing
 - unsupported “certified”, guaranteed FPS, zero-latency or air-gap claims
 
-Current design is usable as a base; future work should be **polish**, not another full rewrite.
+The BIM workspace remains separate and authoritative; public landing changes must not create a second viewer or alter BIM internals.
 
 ---
 
 ## 8. LAST VERIFIED TEST STATE
 
-Before the final static model-copy cleanup:
+Documentation refresh checkpoint (`b47e5c9`):
 
 ```text
-Vitest:      110 / 110 PASS
-Playwright:   14 / 14 PASS
+Targeted portal Vitest: 22 / 22 PASS
 Build:        PASS
 diff check:   PASS
 ```
-
-Full Playwright included:
-- core BIM workflows
-- lifecycle
-- advanced inspection
-- editing
-- persistence
-- landing navigation
-- AI assistant
-- quantity tool
-- spatial search
-- generation proposal
-- Phase 6A preview/discard
-- camera fitting
-- Phase 6B.1 real IFC4 generation/reopen
-
-After the final static ProjectShowcase text correction:
-```text
-Vitest:    110 / 110 PASS
-Build:      PASS
-diff check: PASS
-```
-
-Full Playwright was not rerun after that text-only change because no runtime behavior changed.
+Full BIM Playwright was not rerun for the portal integrity cleanup because BIM/shared core code did not change.
 
 ---
 
