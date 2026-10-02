@@ -338,6 +338,18 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Coordination set')).toBeDefined();
     fireEvent.click(screen.getByTestId('project-tab-approvals'));
     expect(screen.getByText('Client coordination review')).toBeDefined();
+
+    cleanup();
+    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    render(<DashboardProjectPage projectId="lake-house" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="admin" homePath="/admin" />);
+    const beforeTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'lake-house');
+    fireEvent.change(screen.getByLabelText('Project title'), { target: { value: 'Lake House Updated' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save status' }));
+    const afterTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'lake-house');
+    expect(afterTitleOnlySave?.title).toBe('Lake House Updated');
+    expect(afterTitleOnlySave?.progress).toBe(beforeTitleOnlySave?.progress);
+    expect(afterTitleOnlySave?.phase).toBe(beforeTitleOnlySave?.phase);
+    expect(afterTitleOnlySave?.published).toBe(beforeTitleOnlySave?.published);
   });
 
   it('provides a persistent portal theme switch', () => {

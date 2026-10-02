@@ -339,7 +339,15 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
   const project = snapshot.projects.find((candidate) => candidate.id === projectId);
   const canManage = role === 'architect' || role === 'admin';
   const refresh = () => setSnapshot(getPortalSnapshot());
-  const saveStatus = () => { updatePortalProject(projectId, { progress: Number(progress), phase, ...(role === 'admin' && projectTitle ? { title: projectTitle } : {}) }); refresh(); };
+  const saveStatus = () => {
+    const changes = {
+      ...(progress !== '' ? { progress: Number(progress) } : {}),
+      ...(phase !== '' ? { phase } : {}),
+      ...(role === 'admin' && projectTitle.trim() ? { title: projectTitle.trim() } : {}),
+    };
+    if (Object.keys(changes).length) updatePortalProject(projectId, changes);
+    refresh();
+  };
   const addUpdate = () => { if (!updateTitle || !updateBody) return; addPortalUpdate({ projectId, date: '02 OCT 2026', title: updateTitle, body: updateBody }); setUpdateTitle(''); setUpdateBody(''); refresh(); };
   const addMilestone = () => { if (!milestone) return; addPortalMilestone({ projectId, label: milestone, status: 'Upcoming' }); setMilestone(''); refresh(); };
   const addDocument = () => { if (!documentName) return; addPortalDocument({ projectId, name: documentName, meta: 'PDF · Added in portal' }); setDocumentName(''); refresh(); };
