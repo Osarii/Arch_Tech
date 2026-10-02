@@ -45,8 +45,8 @@
 Latest verified remote commit:
 
 ```text
-8dfeb347ccc6027c89af0ed25f4ab7f46344e5d1
-fix(samples): sync empty-state fast sample loader
+8901ec49dc584e7fa3361259491e407e3693ebdb
+feat(landing): refocus public experience for real estate development
 ```
 
 Previous:
@@ -218,9 +218,9 @@ Treat this as a **known issue to investigate separately**. Do not silently alter
 
 ---
 
-## 6. LANDING PAGE — CURRENT LOCAL WORKTREE
+## 6. LANDING PAGE — CURRENT MAIN
 
-The landing is currently **LOCAL / UNCOMMITTED** relative to remote `main @ 8dfeb34`.
+The landing is now aligned with `main @ 8901ec49` and carries the ARCH_TECH real-estate development concept.
 
 ### Routing
 - `/` => landing
@@ -252,11 +252,23 @@ Current hero:
 ```text
 ARCH_TECH
 
-Design, inspect and modify IFC models in the browser.
-OpenBIM tools for architectural workflows.
+Architecture, with a longer view.
+Portfolio of places in formation, from possibility through design and delivery.
 
-ENTER WORKSPACE →
+EXPLORE THE PORTFOLIO →
 ```
+
+Current public structure:
+1. Hero / Costa Rica development portfolio
+2. Selected projects / current development stages
+3. Development approach / Position, Shape, Advance
+4. Public project detail / market, stage, intent and development path
+
+Portal integrity baseline:
+- `/workspace` requires a portal session in production builds.
+- Legacy workspace query/hash entry is available only in Vite dev/test modes.
+- Role navigation maps explicitly to existing dashboard sections.
+- Quick demo login reads role users from the current `db.json` + localStorage snapshot.
 
 Current main sections:
 1. Hero
@@ -278,6 +290,7 @@ src/components/landing/
   Capabilities.tsx
   Workflow.tsx
   ProjectShowcase.tsx
+  DevelopmentFrame.tsx
   TechnologyStrip.tsx
   FinalCTA.tsx
   Footer.tsx

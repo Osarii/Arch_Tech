@@ -174,6 +174,39 @@ describe('ARCH_TECH client architecture portal', () => {
     }
   });
 
+  it('quick login reads role users from the current portal snapshot', () => {
+    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-architect', name: 'Runtime Architect', email: 'runtime@arch-tech.studio', password: 'runtime-demo', role: 'architect', projectIds: ['lake-house'], status: 'active' }] }));
+    render(<LoginOverlay open onClose={vi.fn()} onSuccess={vi.fn()} />);
+    fireEvent.click(screen.getByTestId('quick-login-architect'));
+    expect(demoAuth.getSession()?.email).toBe('runtime@arch-tech.studio');
+    expect(demoAuth.getSession()?.role).toBe('architect');
+  });
+
+  it('role navigation controls point to real dashboard sections', () => {
+    const cases = [
+      { role: 'client' as const, renderPage: () => <DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />, sections: ['projects', 'updates', 'documents', 'notifications'] },
+      { role: 'architect' as const, renderPage: () => <ArchitectDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />, sections: ['projects', 'activity', 'milestones', 'documents', 'approvals'] },
+      { role: 'admin' as const, renderPage: () => <AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />, sections: ['projects', 'people', 'approvals', 'activity'] },
+    ];
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    for (const item of cases) {
+      cleanup();
+      window.localStorage.clear();
+      demoAuth.signIn(`${item.role}@arch-tech.studio`, item.role === 'client' ? 'studio-demo' : item.role === 'architect' ? 'architect-demo' : 'admin-demo');
+      render(item.renderPage());
+      for (const section of item.sections) {
+        const button = screen.getByTestId(`portal-nav-${section === 'projects' ? 'projects' : section}`);
+        const target = button.getAttribute('aria-controls');
+        expect(target && document.getElementById(target)).toBeDefined();
+        fireEvent.click(button);
+      }
+    }
+    expect(scrollIntoView).toHaveBeenCalled();
+    HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  });
+
   it('redirects an authenticated role away from another role route', async () => {
     demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
     window.history.replaceState({}, '', '/admin');

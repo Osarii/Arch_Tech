@@ -15,6 +15,7 @@ import { getPortalUser, PortalRole } from './portal/data';
 const Workspace = React.lazy(() => import('./components/layout/Workspace').then((module) => ({ default: module.Workspace })));
 
 const legacyWorkspaceRequested = () => {
+  if (!import.meta.env.DEV && import.meta.env.MODE !== 'test') return false;
   const params = new URLSearchParams(window.location.search);
   return params.get('view') === 'workspace'
     || params.get('app') === 'true'
