@@ -241,6 +241,20 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.queryByText('Woodland House')).toBeNull();
   });
 
+  it('allows assigned client project details and blocks unassigned direct URLs', async () => {
+    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-client', name: 'Runtime Client', email: 'runtime-client@arch-tech.studio', password: 'runtime-demo', role: 'client', projectIds: ['lake-house'], status: 'active' }] }));
+    demoAuth.signIn('runtime-client@arch-tech.studio', 'runtime-demo');
+    window.history.replaceState({}, '', '/dashboard/projects/lake-house');
+    render(<App />);
+    expect(screen.getByText('Current phase')).toBeDefined();
+
+    cleanup();
+    window.history.replaceState({}, '', '/dashboard/projects/woodland-house');
+    render(<App />);
+    await waitFor(() => expect(window.location.pathname).toBe('/dashboard'));
+    expect(screen.getByText('Projects in progress.')).toBeDefined();
+  });
+
   it('provides all project detail sections and opens the existing workspace', () => {
     const onOpenWorkspace = vi.fn();
     expect(getPortalProject('lake-house')?.approvals[0].title).toBe('Material palette');

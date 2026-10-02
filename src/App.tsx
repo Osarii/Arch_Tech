@@ -10,7 +10,7 @@ import {
   PublicProjectPage,
 } from './components/portal/PortalPages';
 import { demoAuth } from './portal/demoAuth';
-import { getPortalUser, PortalRole } from './portal/data';
+import { getPortalUser, getProjectsForUser, PortalRole } from './portal/data';
 
 const Workspace = React.lazy(() => import('./components/layout/Workspace').then((module) => ({ default: module.Workspace })));
 
@@ -117,9 +117,10 @@ export const App: React.FC = () => {
   }
 
   const protectedRole = route === '/admin' || adminProjectMatch ? 'admin' : route === '/architect' || architectProjectMatch ? 'architect' : route === '/dashboard' || dashboardProjectMatch ? 'client' : undefined;
-  const architectProjectForbidden = architectProjectMatch && session?.role === 'architect'
-    && !getPortalUser(session.email)?.projectIds.includes(architectProjectMatch[1]);
-  const roleMismatch = Boolean((protectedRole && session && session.role !== protectedRole) || architectProjectForbidden);
+  const assignedProjectMatch = dashboardProjectMatch || architectProjectMatch;
+  const assignedProjectForbidden = assignedProjectMatch && (session?.role === 'client' || session?.role === 'architect')
+    && !getProjectsForUser(getPortalUser(session?.email ?? '')?.id ?? '').some((project) => project.id === assignedProjectMatch[1]);
+  const roleMismatch = Boolean((protectedRole && session && session.role !== protectedRole) || assignedProjectForbidden);
   if (roleMismatch && session) return <RoleRedirect path={roleHome(session.role)} onRedirect={setRoute} />;
 
   if (route === '/dashboard') return <DashboardPage onNavigate={navigate} onSignOut={signOut} />;
