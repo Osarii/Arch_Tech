@@ -234,6 +234,30 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(demoAuth.getSession()?.role).toBe('architect');
   });
 
+  it('migrates stale portal storage to the current portfolio', () => {
+    const staleIds = ['lake' + '-house', 'woodland' + '-house', 'cantilever' + '-residence'];
+    const staleAssets = ['/arch_' + 'hero.jpg', '/arch_' + 'openhouse.jpg', '/arch_' + 'cantilever.jpg'];
+    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({
+      projects: staleIds.map((id, index) => ({ id, title: ['Lake', 'Woodland', 'Cantilever'][index] + (index === 2 ? ' Residence' : ' House'), image: staleAssets[index] })),
+      users: [{ id: 'demo-client', projectIds: staleIds }],
+      updates: staleIds.map((projectId) => ({ projectId, date: '01 JAN 2026', title: 'Stale update', body: 'Removed project data.' })),
+    }));
+
+    const snapshot = getPortalSnapshot();
+    expect(snapshot.projects.map((project) => project.id)).toEqual([
+      'pacific-nexus-free-zone',
+      'summit-point-corporate-district',
+      'mar-vista-hospitality-district',
+      'caribbean-ai-compute-campus',
+      'guanacaste-renewable-compute-campus',
+      'pacific-regional-medical-campus',
+    ]);
+    expect(snapshot.db.users.find((user) => user.id === 'demo-client')?.projectIds).toEqual(['pacific-nexus-free-zone', 'mar-vista-hospitality-district']);
+    const migratedStorage = window.localStorage.getItem('arch-tech-portal-state') ?? '';
+    expect(staleIds.every((id) => !migratedStorage.includes(id))).toBe(true);
+    expect(staleAssets.every((asset) => !migratedStorage.includes(asset))).toBe(true);
+  });
+
   it('role navigation controls point to real dashboard sections', () => {
     const cases = [
       { role: 'client' as const, renderPage: () => <DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />, sections: ['projects', 'updates', 'documents', 'notifications'] },

@@ -75,6 +75,7 @@ export type PortalProject = PortalProjectRecord & {
 };
 
 export type PortalDatabase = {
+  schemaVersion?: number;
   users: PortalUser[];
   projects: PortalProjectRecord[];
   updates: ProjectUpdate[];
@@ -90,14 +91,68 @@ export type PortalDatabase = {
 };
 
 const PORTAL_STATE_KEY = 'arch-tech-portal-state';
+const PORTAL_SCHEMA_VERSION = 2;
 export const portalDb = db as PortalDatabase;
 export const demoPortalUser = portalDb.users[0];
+
+const isRuntimeProjectId = (id: string) => id.startsWith('admin-project-');
+const isSafeAssetPath = (asset: unknown): asset is string => typeof asset === 'string' && asset.startsWith('/projects/') && !asset.includes('/arch_');
+
+const mergeRecords = <T extends { projectId: string }>(seed: T[], stored: unknown, key: (record: T) => string, projectIds: Set<string>) => {
+  const records = new Map(seed.map((record) => [key(record), record]));
+  if (Array.isArray(stored)) {
+    stored.filter((record): record is T => Boolean(record) && projectIds.has(record.projectId)).forEach((record) => records.set(key(record), record));
+  }
+  return [...records.values()];
+};
+
+const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase => {
+  const seedProjects = portalDb.projects;
+  const storedProjects = Array.isArray(stored.projects) ? stored.projects : [];
+  const projects = seedProjects.map((seedProject) => {
+    const saved = storedProjects.find((project) => project?.id === seedProject.id);
+    return saved ? { ...seedProject, ...saved, image: seedProject.image, media: seedProject.media } : seedProject;
+  });
+
+  storedProjects.filter((project) => isRuntimeProjectId(project?.id)).forEach((project) => {
+    projects.push({
+      ...project,
+      image: isSafeAssetPath(project.image) ? project.image : seedProjects[0].image,
+      media: project.media && Object.values(project.media).every(isSafeAssetPath) ? project.media : undefined,
+      published: project.published === true,
+    });
+  });
+
+  const projectIds = new Set(projects.map((project) => project.id));
+  const users = portalDb.users.map((seedUser) => {
+    const saved = Array.isArray(stored.users) ? stored.users.find((user) => user?.id === seedUser.id) : undefined;
+    const projectAssignments = saved?.projectIds?.filter((id) => projectIds.has(id)) ?? [];
+    return { ...seedUser, ...saved, projectIds: projectAssignments.length || stored.schemaVersion === PORTAL_SCHEMA_VERSION ? projectAssignments : seedUser.projectIds };
+  });
+  const customUsers: PortalUser[] = [];
+  if (Array.isArray(stored.users)) {
+    stored.users.filter((user) => user?.id && !users.some((current) => current.id === user.id)).forEach((user) => customUsers.push({ ...user, projectIds: user.projectIds?.filter((id) => projectIds.has(id)) ?? [] }));
+  }
+
+  return {
+    schemaVersion: PORTAL_SCHEMA_VERSION,
+    users: [...customUsers, ...users],
+    projects,
+    updates: mergeRecords(portalDb.updates, stored.updates, (record) => `${record.projectId}:${record.date}:${record.title}`, projectIds),
+    milestones: mergeRecords(portalDb.milestones, stored.milestones, (record) => `${record.projectId}:${record.label}`, projectIds),
+    documents: mergeRecords(portalDb.documents, stored.documents, (record) => `${record.projectId}:${record.name}`, projectIds),
+    approvals: mergeRecords(portalDb.approvals, stored.approvals, (record) => `${record.projectId}:${record.title}`, projectIds),
+    notifications: mergeRecords(portalDb.notifications, stored.notifications, (record) => `${record.userId}:${record.projectId}:${record.message}:${record.date}`, projectIds),
+  };
+};
 
 const readPortalDatabase = (): PortalDatabase => {
   if (typeof window === 'undefined') return portalDb;
   try {
     const stored = window.localStorage.getItem(PORTAL_STATE_KEY);
-    return stored ? { ...portalDb, ...JSON.parse(stored) } : portalDb;
+    const next = migratePortalDatabase(stored ? JSON.parse(stored) : {});
+    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(next));
+    return next;
   } catch {
     return portalDb;
   }
