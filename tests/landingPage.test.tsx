@@ -127,11 +127,15 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('limits architect data and exposes the admin register', () => {
     demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
-    render(<ArchitectDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    const architectNavigate = vi.fn();
+    render(<ArchitectDashboardPage onNavigate={architectNavigate} onSignOut={vi.fn()} />);
     expect(screen.getByText('Assigned projects')).toBeDefined();
+    expect(screen.getByRole('region', { name: 'Architect workload' })).toBeDefined();
     expect(screen.getAllByText('Lake House').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Cantilever Residence').length).toBeGreaterThan(0);
     expect(screen.queryByText('Woodland House')).toBeNull();
+    fireEvent.click(screen.getByTestId('architect-approval-lake-house'));
+    expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/lake-house');
 
     cleanup();
     demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
@@ -313,11 +317,24 @@ describe('ARCH_TECH client architecture portal', () => {
     cleanup();
     render(<DashboardProjectPage projectId="lake-house" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
     expect(screen.getByTestId('role-management-panel')).toBeDefined();
+    expect(screen.queryByTestId('toggle-publication')).toBeNull();
     fireEvent.change(screen.getByLabelText('Update title'), { target: { value: 'Coordination note' } });
     fireEvent.change(screen.getByLabelText('Update body'), { target: { value: 'Team review completed.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Publish update' }));
     fireEvent.click(screen.getByTestId('project-tab-updates'));
     expect(screen.getByText('Coordination note')).toBeDefined();
+    fireEvent.change(screen.getByLabelText('New milestone'), { target: { value: 'Coordination issue' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    fireEvent.change(screen.getByLabelText('New document'), { target: { value: 'Coordination set' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add document' }));
+    fireEvent.change(screen.getByLabelText('New approval'), { target: { value: 'Client coordination review' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Request approval' }));
+    fireEvent.click(screen.getByTestId('project-tab-milestones'));
+    expect(screen.getByText('Coordination issue')).toBeDefined();
+    fireEvent.click(screen.getByTestId('project-tab-documents'));
+    expect(screen.getByText('Coordination set')).toBeDefined();
+    fireEvent.click(screen.getByTestId('project-tab-approvals'));
+    expect(screen.getByText('Client coordination review')).toBeDefined();
   });
 
   it('provides a persistent portal theme switch', () => {
