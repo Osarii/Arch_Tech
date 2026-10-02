@@ -2,8 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Phase 5: AI BIM Assistant & Tool Safety Execution E2E', () => {
   test.beforeEach(async ({ page }) => {
-    // Navigate to root
-    await page.goto('/');
+    // Navigate to workspace
+    await page.goto('/?view=workspace');
 
     // Load sample IFC model
     const loadSampleBtn = page.getByRole('button', { name: /Load Sample \(Fast/i });

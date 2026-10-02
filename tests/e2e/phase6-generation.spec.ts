@@ -15,7 +15,7 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
       criticalErrors.push(`[Page Error] ${err.message}`);
     });
 
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // 1. Open AI Assistant Tab
     const aiTab = page.getByTestId('tab-ai');
@@ -115,7 +115,7 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
       criticalErrors.push(`[Page Error] ${err.message}`);
     });
 
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // 1. Load Sample House IFC
     const loadSampleBtn = page.getByRole('button', { name: /Load Sample \(Fast/i });
@@ -225,7 +225,7 @@ test.describe('Phase 6A: Deterministic BIM Generation Plan & Safe 3D Preview', (
       criticalErrors.push(`[Page Error] ${err.message}`);
     });
 
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // 1. Open AI Assistant Tab
     const aiTab = page.getByTestId('tab-ai');

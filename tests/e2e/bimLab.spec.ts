@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
   test('renders base application shell, panels, and diagnostics', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // Check title and brand
     await expect(page).toHaveTitle(/BIM LAB/i);
@@ -38,7 +38,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
       criticalErrors.push(`[Page Error] ${err.message}`);
     });
 
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // 1. IFC Load
     const loadSampleBtn = page.getByTestId('header-btn-sample-fast');
@@ -123,7 +123,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
       criticalErrors.push(`[Page Error] ${err.message}`);
     });
 
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // --- CYCLE 1: First Load ---
     const sampleBtn = page.getByTestId('header-btn-sample-fast');
@@ -191,7 +191,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
       criticalErrors.push(`[Page Error] ${err.message}`);
     });
 
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // Load Model
     await page.getByTestId('header-btn-sample-fast').click();
@@ -296,7 +296,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
       criticalErrors.push(`[Page Error] ${err.message}`);
     });
 
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // 1. Load Model
     await page.getByTestId('header-btn-sample-fast').click();
@@ -389,7 +389,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
       criticalErrors.push(`[Page Error] ${err.message}`);
     });
 
-    await page.goto('/');
+    await page.goto('/?view=workspace');
 
     // 1. Load initial model
     await page.getByTestId('header-btn-sample-fast').click();
@@ -441,5 +441,30 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
     await page.getByTestId('mode-inspect').click();
 
     expect(criticalErrors).toEqual([]);
+  });
+});
+
+test.describe('Arch_Tech Architectural Landing Page E2E', () => {
+  test('landing page renders, navigates to workspace via primary CTA, and returns to landing', async ({ page }) => {
+    await page.goto('/');
+
+    // 1. Landing renders with editorial brand and subtitle
+    await expect(page.getByText('ARCH_TECH').first()).toBeVisible();
+    await expect(page.getByText('Design, inspect and modify IFC models in the browser.').first()).toBeVisible();
+
+    // 2. Primary CTA works
+    const enterWorkspaceBtn = page.getByRole('button', { name: /ENTER WORKSPACE/i }).first();
+    await expect(enterWorkspaceBtn).toBeVisible();
+    await enterWorkspaceBtn.click();
+
+    // 3. Workspace becomes visible
+    await expect(page.getByRole('button', { name: /Open IFC/i })).toBeVisible();
+    const backToLandingBtn = page.getByTestId('btn-back-to-landing');
+    await expect(backToLandingBtn).toBeVisible();
+
+    // 4. Back to landing works
+    await backToLandingBtn.click();
+    await expect(page.getByText('ARCH_TECH').first()).toBeVisible();
+    await expect(page.getByText('Design, inspect and modify IFC models in the browser.').first()).toBeVisible();
   });
 });
