@@ -43,6 +43,7 @@
       "market": "Costa Rica · Central Valley",
       "developmentType": "Private residential development",
       "publicStage": "In design development",
+      "published": true,
       "context": "Hillside lake edge",
       "scale": "Single residence",
       "longView": "Durability, shade and a measured relationship to water."
@@ -61,6 +62,7 @@
       "market": "Costa Rica · Forest edge",
       "developmentType": "Residential concept study",
       "publicStage": "In concept design",
+      "published": true,
       "context": "Protected woodland / courtyard site",
       "scale": "Single residence",
       "longView": "A compact footprint organized around light, privacy and daily life."
@@ -79,6 +81,7 @@
       "market": "Costa Rica · Pacific slope",
       "developmentType": "Private residential development",
       "publicStage": "In documentation",
+      "published": true,
       "context": "Sloping site / Pacific exposure",
       "scale": "Single residence",
       "longView": "Deep shade and durable transitions for a changing coastal climate."
@@ -97,6 +100,7 @@
       "market": "Costa Rica · Greater San José",
       "developmentType": "Mixed-use neighborhood development",
       "publicStage": "In site and feasibility study",
+      "published": true,
       "context": "Urban infill / transit edge",
       "scale": "Neighbourhood block",
       "longView": "Adaptable uses, connected daily life and a clear public edge."
@@ -115,6 +119,7 @@
       "market": "Costa Rica · Osa Peninsula",
       "developmentType": "Small hospitality development",
       "publicStage": "In concept design",
+      "published": true,
       "context": "Coastal forest / Osa Peninsula",
       "scale": "Boutique retreat",
       "longView": "A durable guest experience shaped by landscape, seasonality and stewardship."

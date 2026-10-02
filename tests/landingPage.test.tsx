@@ -5,7 +5,7 @@ import { Hero } from '../src/components/landing/Hero';
 import { LandingPage } from '../src/components/landing/LandingPage';
 import { LandingNavbar } from '../src/components/landing/LandingNavbar';
 import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
-import { getPortalProject } from '../src/portal/data';
+import { getPortalProject, getPortalSnapshot } from '../src/portal/data';
 import { demoAuth } from '../src/portal/demoAuth';
 import {
   DashboardPage,
@@ -162,6 +162,20 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '24' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Create project' }).at(-1)!);
     expect(screen.getAllByText('Portal Annex').length).toBeGreaterThan(0);
+    const createdProject = getPortalSnapshot().projects.find((project) => project.title === 'Portal Annex');
+    expect(createdProject?.published).toBe(false);
+    cleanup();
+    render(<ProjectShowcase onOpenProject={vi.fn()} />);
+    expect(screen.queryByText('Portal Annex')).toBeNull();
+
+    cleanup();
+    render(<PublicProjectPage projectId={createdProject!.id} onNavigate={vi.fn()} />);
+    expect(screen.getByText('Project not found.')).toBeDefined();
+
+    cleanup();
+    render(<DashboardProjectPage projectId={createdProject!.id} onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="admin" homePath="/admin" />);
+    fireEvent.click(screen.getByTestId('toggle-publication'));
+    expect(getPortalSnapshot().projects.find((project) => project.id === createdProject!.id)?.published).toBe(true);
     cleanup();
     render(<ProjectShowcase onOpenProject={vi.fn()} />);
     expect(screen.getByText('Portal Annex')).toBeDefined();

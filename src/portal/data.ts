@@ -51,6 +51,7 @@ type PortalProjectRecord = {
   market?: string;
   developmentType?: string;
   publicStage?: string;
+  published?: boolean;
   context?: string;
   scale?: string;
   longView?: string;
@@ -120,13 +121,16 @@ export const addPortalMilestone = (milestone: ProjectMilestone) => updatePortalD
 export const addPortalDocument = (document: ProjectDocument) => updatePortalDatabase((current) => ({ ...current, documents: [...current.documents, document] }));
 export const addPortalApproval = (approval: ProjectApproval) => updatePortalDatabase((current) => ({ ...current, approvals: [...current.approvals, approval] }));
 export const updatePortalUser = (id: string, changes: Partial<PortalUser>) => updatePortalDatabase((current) => ({ ...current, users: current.users.map((user) => user.id === id ? { ...user, ...changes } : user) }));
-export const createPortalProject = (project: PortalProjectRecord) => updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, project] }));
+export const createPortalProject = (project: PortalProjectRecord) => updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { ...project, published: project.published === true }] }));
 
 export const getPortalUser = (email: string) => readPortalDatabase().users.find((user) => user.email === email);
 
 export const portalProjects: PortalProject[] = getPortalSnapshot().projects;
 
 export const getPortalProject = (id: string) => getPortalSnapshot().projects.find((project) => project.id === id);
+
+export const getPublicProjects = () => getPortalSnapshot().projects.filter((project) => project.published === true && !project.archived);
+export const getPublicProject = (id: string) => getPublicProjects().find((project) => project.id === id);
 
 export const getProjectsForUser = (userId: string) => {
   const snapshot = getPortalSnapshot();

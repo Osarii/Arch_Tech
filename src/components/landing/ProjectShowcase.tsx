@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
-import { getPortalSnapshot } from '../../portal/data';
+import { getPublicProjects } from '../../portal/data';
 
 interface ProjectShowcaseProps {
   onOpenProject: (id: string) => void;
 }
 
 export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject }) => {
-  const [projects] = useState(() => getPortalSnapshot().projects.filter((project) => !project.archived));
+  const [projects] = useState(getPublicProjects);
   return (
   <section id="projects" className="bg-[#e9e5dc] px-6 py-24 text-[#171714] sm:px-8 lg:px-12 lg:py-32">
     <div className="mx-auto max-w-7xl">
