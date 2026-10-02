@@ -52,7 +52,9 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
   const mobilePanelStepRef = useRef(0);
   const desktopFrameRef = useRef<number | null>(null);
   const mobileFrameRef = useRef<number | null>(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [scrollIndex, setScrollIndex] = useState(0);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const displayedIndex = hoverIndex ?? scrollIndex;
 
   useEffect(() => {
     const section = sequenceRef.current;
@@ -68,7 +70,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
       const progress = Math.min(1, Math.max(0, -top / scrollRange));
       const nextIndex = Math.min(sequence.length - 1, Math.floor(progress * sequence.length));
 
-      setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
+      setScrollIndex((current) => (current === nextIndex ? current : nextIndex));
     };
 
     const scheduleUpdate = () => {
@@ -113,16 +115,42 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
         sequence.length - 1,
         Math.max(0, Math.round(track.scrollLeft / step)),
       );
-      setActiveIndex((current) => (current === nextIndex ? current : nextIndex));
+      setScrollIndex((current) => (current === nextIndex ? current : nextIndex));
     });
   };
 
-  const selectPanel = (index: number) => {
-    setActiveIndex(index);
+  const scrollToPanel = (index: number) => {
+    const section = sequenceRef.current;
+    const scrollContainer = section?.closest<HTMLElement>('[data-landing-scroll-container]');
+    if (!section || !scrollContainer) return;
+
+    if (window.innerWidth < 768) {
+      const track = panelTrackRef.current;
+      const step = mobilePanelStepRef.current;
+      if (!track || !step) return;
+      if (typeof track.scrollTo === 'function') {
+        track.scrollTo({ left: step * index, behavior: 'smooth' });
+      } else {
+        track.scrollLeft = step * index;
+      }
+      return;
+    }
+
+    const sectionRect = section.getBoundingClientRect();
+    const scrollRange = Math.max(1, sectionRect.height - scrollContainer.clientHeight);
+    const targetTop = Math.min(
+      scrollContainer.scrollHeight - scrollContainer.clientHeight,
+      Math.max(0, scrollContainer.scrollTop + sectionRect.top + (index / sequence.length) * scrollRange),
+    );
+    if (typeof scrollContainer.scrollTo === 'function') {
+      scrollContainer.scrollTo({ top: targetTop, behavior: 'smooth' });
+    } else {
+      scrollContainer.scrollTop = targetTop;
+    }
   };
 
   const movePanel = (direction: -1 | 1) => {
-    selectPanel((activeIndex + direction + sequence.length) % sequence.length);
+    scrollToPanel((scrollIndex + direction + sequence.length) % sequence.length);
   };
 
   return (
@@ -171,7 +199,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
           </div>
         </div>
 
-        <div ref={sequenceRef} data-testid="hero-sequence" className="relative mt-12 md:min-h-[200vh]">
+        <div ref={sequenceRef} data-testid="hero-sequence" className="relative mt-12 md:min-h-[180vh]">
           <div className="md:sticky md:top-0 md:flex md:h-screen md:max-h-[780px] md:min-h-[640px] md:items-center">
             <div className="w-full">
               <div
@@ -180,30 +208,29 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
                 onScroll={handleMobileScroll}
               >
                 {sequence.map((panel, index) => {
-                  const isActive = activeIndex === index;
+                  const isActive = displayedIndex === index;
                   return (
                     <button
                       key={panel.index}
                       type="button"
                       data-testid={`hero-sequence-panel-${index}`}
                       aria-label={`Show ${panel.index} / ${panel.title}`}
-                      onMouseEnter={() => selectPanel(index)}
-                      onFocus={() => selectPanel(index)}
-                      onClick={() => selectPanel(index)}
+                      onMouseEnter={() => setHoverIndex(index)}
+                      onMouseLeave={() => setHoverIndex(null)}
+                      onFocus={() => setHoverIndex(index)}
+                      onBlur={() => setHoverIndex(null)}
+                      onClick={() => scrollToPanel(index)}
                       className={`group relative h-[68svh] min-h-[460px] min-w-[82vw] snap-center overflow-hidden border border-white/[0.12] bg-[#0c0d11] text-left md:h-full md:min-h-0 md:min-w-0 md:basis-0 md:transition-[flex-grow] md:duration-300 md:ease-out ${isActive ? 'md:flex-[4]' : 'md:flex-1'}`}
                     >
                       <img
                         src={panel.image}
                         alt={panel.alt}
-                        className={`absolute inset-0 h-full w-full object-cover grayscale-[12%] contrast-[1.05] transition-transform duration-500 ease-out ${isActive ? 'scale-[1.04]' : 'scale-[1.01]'}`}
+                        className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out ${isActive ? 'scale-[1.02]' : 'scale-[1.01]'}`}
                         style={{ objectPosition: panel.position }}
                         loading={index === 0 ? 'eager' : 'lazy'}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#060709] via-[#060709]/10 to-[#060709]/20" />
-                      <div
-                        className="absolute inset-0 bg-[#08090b]/65 transition-[clip-path] duration-300 ease-out"
-                        style={{ clipPath: isActive ? 'inset(100% 0 0 0)' : 'inset(0 0 0 0)' }}
-                      />
+                      <div className={`absolute inset-0 bg-[#08090b]/65 transition-[opacity,transform] duration-300 ease-out ${isActive ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`} />
                       <div className={`absolute inset-x-0 bottom-0 p-5 sm:p-6 transition-[opacity,transform] duration-250 ease-out ${isActive ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-80 md:opacity-0'}`}>
                         <div className="mb-3 font-mono text-[10px] tracking-[0.2em] text-stone-300">
                           {panel.index} / {panel.title}
@@ -219,7 +246,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
 
               <div className="mt-4 flex items-center justify-between gap-6 border-t border-white/[0.12] pt-4 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">
                 <span data-testid="hero-sequence-counter" className="shrink-0 text-stone-300">
-                  {sequence[activeIndex].index} / 03
+                  {sequence[displayedIndex].index} / 03
                 </span>
                 <div className="flex flex-1 items-center gap-1.5" aria-label="Architectural sequence progress">
                   {sequence.map((panel, index) => (
@@ -227,8 +254,8 @@ export const Hero: React.FC<HeroProps> = ({ onOpenWorkspace }) => {
                       key={panel.index}
                       type="button"
                       aria-label={`Go to ${panel.index} / ${panel.title}`}
-                      onClick={() => selectPanel(index)}
-                      className={`h-px flex-1 transition-colors duration-300 ${activeIndex === index ? 'bg-stone-200' : 'bg-white/20 hover:bg-white/50'}`}
+                      onClick={() => scrollToPanel(index)}
+                      className={`h-px flex-1 transition-colors duration-300 ${displayedIndex === index ? 'bg-stone-200' : 'bg-white/20 hover:bg-white/50'}`}
                     />
                   ))}
                 </div>

@@ -49,6 +49,9 @@ describe('Phase LANDING-1: Architectural Studio Editorial Landing Page', () => {
 
     fireEvent.mouseEnter(screen.getByTestId('hero-sequence-panel-1'));
     expect(screen.getByTestId('hero-sequence-counter').textContent).toContain('02 / 03');
+
+    fireEvent.mouseLeave(screen.getByTestId('hero-sequence-panel-1'));
+    expect(screen.getByTestId('hero-sequence-counter').textContent).toContain('01 / 03');
   });
 
   it('renders Product section with workspace screenshot and minimal caption', () => {
@@ -109,6 +112,7 @@ describe('Phase LANDING-1: Architectural Studio Editorial Landing Page', () => {
     expect(screen.getByText('The engineering pipeline.')).toBeDefined();
     expect(screen.getByText('Curated model library.')).toBeDefined();
     expect(screen.getByText('Open your model.')).toBeDefined();
+    expect(screen.getByTestId('hero-sequence').closest('[data-landing-scroll-container]')).not.toBeNull();
   });
 
   it('App defaults to LandingPage and switches to Workspace when CTA clicked', () => {
