@@ -108,3 +108,20 @@ html.portal-dark .portal-surface .hover\:text-stone-500:hover {
 html.portal-dark .portal-surface .admin-action:hover {
   color: #f4efe8 !important;
 }
+
+/* Utilities for minimal Spatial Rail */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
