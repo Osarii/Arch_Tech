@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Box, FileText, LogOut, Moon, Sun, X } from 'lucide-react';
 import { demoAuth } from '../../portal/demoAuth';
-import { ProjectGallery } from '../gallery/ProjectGallery';
 import {
   addPortalApproval,
   addPortalDocument,
@@ -445,9 +444,6 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
             <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Context</dt><dd className="mt-2 text-stone-200">{project.context ?? 'Costa Rica'}</dd></div>
             <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Scale</dt><dd className="mt-2 text-stone-200">{project.scale ?? 'Project study'}</dd></div>
           </dl>
-        </div>
-        <div className="mx-auto max-w-7xl px-6 py-10 sm:px-8 lg:px-12 lg:py-16">
-          <ProjectGallery project={project} />
         </div>
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Project intent</p>
