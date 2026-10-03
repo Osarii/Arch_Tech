@@ -6,7 +6,7 @@ interface HeroProps {
 }
 
 const heroProjects = [
-  { image: '/projects/pacific-nexus-free-zone/aerial-overview.jpg', title: 'Pacific Nexus Free Zone Campus', label: 'Free zone / Central Pacific', className: 'md:col-span-2 md:row-span-2' },
+  { image: '/projects/pacific-nexus-free-zone/aerial-overview.png', title: 'Pacific Nexus Free Zone Campus', label: 'Free zone / Central Pacific', className: 'md:col-span-2 md:row-span-2' },
   { image: '/projects/summit-point-corporate-district/campus-overview.jpg', title: 'Summit Point Corporate District', label: 'Corporate / Central Valley', className: '' },
   { image: '/projects/mar-vista-hospitality-district/aerial-overview.jpg', title: 'Mar Vista Hospitality District', label: 'Hospitality / Pacific Coast', className: '' },
 ];

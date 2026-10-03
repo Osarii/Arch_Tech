@@ -52,7 +52,7 @@
       "nextMilestone": "Investor program alignment · 18 November",
       "summary": "A free-zone campus concept organized around logistics, shared utilities, adaptable production space and a clear movement network.",
       "statement": "Pacific Nexus is planned as a phased employment and logistics campus: a framework of buildings, roads, landscape and shared infrastructure that can expand without losing clarity.",
-      "image": "/projects/pacific-nexus-free-zone/hero-exterior.jpg",
+      "image": "/projects/pacific-nexus-free-zone/hero-exterior.png",
       "market": "Costa Rica · Central Pacific",
       "developmentType": "Free zone and logistics campus",
       "publicStage": "In concept design",
@@ -61,13 +61,13 @@
       "scale": "Regional employment campus",
       "longView": "A flexible platform for industry, logistics and long-term regional value.",
       "media": {
-        "aerial": "/projects/pacific-nexus-free-zone/aerial-overview.jpg",
-        "masterplan": "/projects/pacific-nexus-free-zone/masterplan.jpg",
-        "sitePlan": "/projects/pacific-nexus-free-zone/site-plan.jpg",
-        "floorPlan": "/projects/pacific-nexus-free-zone/floor-plan.jpg",
-        "interior": "/projects/pacific-nexus-free-zone/lobby-interior.jpg",
-        "campusOverview": "/projects/pacific-nexus-free-zone/campus-overview.jpg",
-        "conceptBoard": "/projects/pacific-nexus-free-zone/concept-board.jpg"
+        "aerial": "/projects/pacific-nexus-free-zone/aerial-overview.png",
+        "masterplan": "/projects/pacific-nexus-free-zone/masterplan.png",
+        "sitePlan": "/projects/pacific-nexus-free-zone/site-plan.png",
+        "floorPlan": "/projects/pacific-nexus-free-zone/floor-plan.png",
+        "interior": "/projects/pacific-nexus-free-zone/lobby-interior.png",
+        "campusOverview": "/projects/pacific-nexus-free-zone/campus-overview.png",
+        "conceptBoard": "/projects/pacific-nexus-free-zone/concept-board.png"
       }
     },
     {
@@ -136,7 +136,7 @@
       "nextMilestone": "Utility and site framework · 09 December",
       "summary": "A fictional digital-infrastructure campus concept organized around resilient utilities, secure movement and phased expansion.",
       "statement": "The campus is structured as a series of serviceable building fields with clear utility corridors, controlled access and landscape buffers. Its first phase establishes the framework for future capacity.",
-      "image": "/projects/caribbean-ai-compute-campus/hero-exterior.jpg",
+      "image": "/projects/caribbean-ai-compute-campus/hero-exterior.png",
       "market": "Costa Rica · Caribbean corridor",
       "developmentType": "Digital infrastructure campus",
       "publicStage": "In opportunity and site strategy",
@@ -145,13 +145,13 @@
       "scale": "Utility-served compute campus",
       "longView": "A resilient infrastructure setting designed to adapt as technology and capacity change.",
       "media": {
-        "aerial": "/projects/caribbean-ai-compute-campus/aerial-overview.jpg",
-        "masterplan": "/projects/caribbean-ai-compute-campus/masterplan.jpg",
-        "sitePlan": "/projects/caribbean-ai-compute-campus/site-plan.jpg",
-        "floorPlan": "/projects/caribbean-ai-compute-campus/floor-plan.jpg",
-        "interior": "/projects/caribbean-ai-compute-campus/lobby-interior.jpg",
-        "campusOverview": "/projects/caribbean-ai-compute-campus/campus-overview.jpg",
-        "conceptBoard": "/projects/caribbean-ai-compute-campus/concept-board.jpg"
+        "aerial": "/projects/caribbean-ai-compute-campus/aerial-overview.png",
+        "masterplan": "/projects/caribbean-ai-compute-campus/masterplan.png",
+        "sitePlan": "/projects/caribbean-ai-compute-campus/site-plan.png",
+        "floorPlan": "/projects/caribbean-ai-compute-campus/floor-plan.png",
+        "interior": "/projects/caribbean-ai-compute-campus/lobby-interior.png",
+        "campusOverview": "/projects/caribbean-ai-compute-campus/campus-overview.png",
+        "conceptBoard": "/projects/caribbean-ai-compute-campus/concept-board.png"
       }
     },
     {
@@ -164,7 +164,7 @@
       "nextMilestone": "Energy and phasing review · 16 December",
       "summary": "A fictional renewable-infrastructure campus concept pairing utility planning, compute buildings, solar fields and a dry-forest landscape strategy.",
       "statement": "The campus makes infrastructure visible: energy fields, service roads, cooling systems and building phases are organized as one development framework for a dry coastal region.",
-      "image": "/projects/guanacaste-renewable-compute-campus/hero-exterior.jpg",
+      "image": "/projects/guanacaste-renewable-compute-campus/hero-exterior.png",
       "market": "Costa Rica · Guanacaste",
       "developmentType": "Renewable energy and digital infrastructure campus",
       "publicStage": "In concept design",
@@ -173,13 +173,13 @@
       "scale": "Renewable compute campus",
       "longView": "A measured relationship between renewable infrastructure, technology and the regional landscape.",
       "media": {
-        "aerial": "/projects/guanacaste-renewable-compute-campus/aerial-overview.jpg",
-        "masterplan": "/projects/guanacaste-renewable-compute-campus/masterplan.jpg",
-        "sitePlan": "/projects/guanacaste-renewable-compute-campus/site-plan.jpg",
-        "floorPlan": "/projects/guanacaste-renewable-compute-campus/floor-plan.jpg",
-        "interior": "/projects/guanacaste-renewable-compute-campus/lobby-interior.jpg",
-        "campusOverview": "/projects/guanacaste-renewable-compute-campus/campus-overview.jpg",
-        "conceptBoard": "/projects/guanacaste-renewable-compute-campus/concept-board.jpg"
+        "aerial": "/projects/guanacaste-renewable-compute-campus/aerial-overview.png",
+        "masterplan": "/projects/guanacaste-renewable-compute-campus/masterplan.png",
+        "sitePlan": "/projects/guanacaste-renewable-compute-campus/site-plan.png",
+        "floorPlan": "/projects/guanacaste-renewable-compute-campus/floor-plan.png",
+        "interior": "/projects/guanacaste-renewable-compute-campus/lobby-interior.png",
+        "campusOverview": "/projects/guanacaste-renewable-compute-campus/campus-overview.png",
+        "conceptBoard": "/projects/guanacaste-renewable-compute-campus/concept-board.png"
       }
     },
     {
@@ -192,7 +192,7 @@
       "nextMilestone": "Care program alignment · 20 December",
       "summary": "A fictional regional care campus concept bringing clinical buildings, public arrival, landscape and future expansion into one clear framework.",
       "statement": "The campus is planned around legible arrival, connected care settings and a landscape structure that can receive future phases. Its scale is regional, but its daily experience remains clear and humane.",
-      "image": "/projects/pacific-regional-medical-campus/hero-exterior.jpg",
+      "image": "/projects/pacific-regional-medical-campus/hero-exterior.png",
       "market": "Costa Rica · Pacific region",
       "developmentType": "Regional medical campus",
       "publicStage": "In concept design",
@@ -201,13 +201,13 @@
       "scale": "Regional care campus",
       "longView": "A resilient care setting designed to grow with the region it serves.",
       "media": {
-        "aerial": "/projects/pacific-regional-medical-campus/aerial-overview.jpg",
-        "masterplan": "/projects/pacific-regional-medical-campus/masterplan.jpg",
-        "sitePlan": "/projects/pacific-regional-medical-campus/site-plan.jpg",
-        "floorPlan": "/projects/pacific-regional-medical-campus/floor-plan.jpg",
-        "interior": "/projects/pacific-regional-medical-campus/lobby-interior.jpg",
-        "campusOverview": "/projects/pacific-regional-medical-campus/campus-overview.jpg",
-        "conceptBoard": "/projects/pacific-regional-medical-campus/concept-board.jpg"
+        "aerial": "/projects/pacific-regional-medical-campus/aerial-overview.png",
+        "masterplan": "/projects/pacific-regional-medical-campus/masterplan.png",
+        "sitePlan": "/projects/pacific-regional-medical-campus/site-plan.png",
+        "floorPlan": "/projects/pacific-regional-medical-campus/floor-plan.png",
+        "interior": "/projects/pacific-regional-medical-campus/lobby-interior.png",
+        "campusOverview": "/projects/pacific-regional-medical-campus/campus-overview.png",
+        "conceptBoard": "/projects/pacific-regional-medical-campus/concept-board.png"
       }
     }
   ],

@@ -308,7 +308,7 @@ tests/landingPage.test.tsx
 Landing assets:
 ```text
 public/projects/<project-slug>/{hero-exterior,aerial-overview,campus-overview,
-masterplan,site-plan,floor-plan,lobby-interior,concept-board}.jpg
+masterplan,site-plan,floor-plan,lobby-interior,concept-board}.{png,jpg}
 ```
 
 The public portfolio contains six fictional Costa Rica-oriented development concepts:
