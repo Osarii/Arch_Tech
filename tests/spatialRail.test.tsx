@@ -69,6 +69,9 @@ describe('ARCH_TECH SpatialRail Carousel', () => {
     expect(images[0].getAttribute('loading')).toBe('eager');
     expect(images[1].getAttribute('loading')).toBe('lazy');
     expect(images[0].getAttribute('decoding')).toBe('async');
+    expect(images[0].getAttribute('src')).toContain('/projects/');
+    expect(images[1].getAttribute('src')).toContain('/projects/');
+    expect(images[2].getAttribute('src')).toBeNull();
   });
 
   it('navigates next and prev slides using rail controls', () => {

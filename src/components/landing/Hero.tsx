@@ -6,9 +6,9 @@ interface HeroProps {
 }
 
 const heroProjects = [
-  { image: '/projects/pacific-nexus-free-zone/aerial-overview.png', title: 'Pacific Nexus Free Zone Campus', label: 'Free zone / Central Pacific', className: 'md:col-span-2 md:row-span-2' },
-  { image: '/projects/summit-point-corporate-district/campus-overview.jpg', title: 'Summit Point Corporate District', label: 'Corporate / Central Valley', className: '' },
-  { image: '/projects/mar-vista-hospitality-district/aerial-overview.jpg', title: 'Mar Vista Hospitality District', label: 'Hospitality / Pacific Coast', className: '' },
+  { image: '/projects/pacific-nexus-free-zone/aerial-overview.webp', title: 'Pacific Nexus Free Zone Campus', label: 'Free zone / Central Pacific', className: 'md:col-span-2 md:row-span-2' },
+  { image: '/projects/summit-point-corporate-district/campus-overview.webp', title: 'Summit Point Corporate District', label: 'Corporate / Central Valley', className: '' },
+  { image: '/projects/mar-vista-hospitality-district/aerial-overview.webp', title: 'Mar Vista Hospitality District', label: 'Hospitality / Pacific Coast', className: '' },
 ];
 
 const sectors = ['Free zones', 'Industrial / logistics', 'Corporate campuses', 'Mixed-use districts', 'Hospitality destinations', 'Masterplans'];
@@ -54,6 +54,8 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects }) => (
               src={project.image}
               alt={project.title}
               loading={index === 0 ? 'eager' : 'lazy'}
+              fetchPriority={index === 0 ? 'high' : 'low'}
+              decoding="async"
               className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-black/20" />

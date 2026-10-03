@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { ArrowLeft, ArrowRight, Maximize2, X } from 'lucide-react';
 import type { PortalProject } from '../../portal/data';
 
@@ -95,9 +95,8 @@ interface SpatialRailProps {
 }
 
 export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
-  const slides = buildSpatialRailSlides(project);
+  const slides = useMemo(() => buildSpatialRailSlides(project), [project]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const railContainerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
 
@@ -239,7 +238,6 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
 
   return (
     <section
-      ref={railContainerRef}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       data-testid="spatial-rail"
@@ -324,6 +322,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
           const isInitial = idx === 0;
           const isNext = idx === 1;
           const isActive = idx === activeIndex;
+          const shouldLoadImage = Math.abs(idx - activeIndex) <= 1;
 
           return (
             <div
@@ -343,11 +342,10 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                 aria-label={`Open fullscreen view of ${slide.label}`}
               >
                 <img
-                  src={slide.src}
+                  src={shouldLoadImage ? slide.src : undefined}
                   alt={`${project.title} - ${slide.label}`}
                   loading={isInitial ? 'eager' : 'lazy'}
-                  // @ts-expect-error fetchpriority is valid HTML attribute in modern browsers
-                  fetchpriority={isInitial ? 'high' : isNext ? 'auto' : 'low'}
+                  fetchPriority={isInitial ? 'high' : isNext ? 'auto' : 'low'}
                   decoding="async"
                   className={`h-full w-full select-none transition-transform duration-500 ease-out will-change-transform group-hover:scale-[1.01] ${
                     slide.fit === 'contain'

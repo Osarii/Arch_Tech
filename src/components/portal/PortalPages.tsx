@@ -286,7 +286,7 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
   const createProject = () => {
     if (!newProject.title.trim()) return;
     const id = `admin-project-${Date.now()}`;
-    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title: newProject.title.trim(), category: newProject.category, phase: newProject.phase, progress: Number(newProject.progress), nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/projects/pacific-nexus-free-zone/hero-exterior.png', published: false }] }));
+    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title: newProject.title.trim(), category: newProject.category, phase: newProject.phase, progress: Number(newProject.progress), nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/projects/pacific-nexus-free-zone/hero-exterior.webp', published: false }] }));
     setNewProject({ title: '', category: 'Residential · New project', phase: 'Brief and site study', progress: '0' });
     setCreateOpen(false);
     refresh();
@@ -314,7 +314,7 @@ const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project }) => (
   <div className="grid gap-12 lg:grid-cols-[1.3fr_0.7fr]">
     <div>
       <p className="font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>
-      <img src={project.image} alt={project.title} className="mt-10 aspect-[16/9] w-full object-cover" />
+      <img src={project.image} alt={project.title} loading="lazy" decoding="async" className="mt-10 aspect-[16/9] w-full object-cover" />
     </div>
     <dl className="divide-y divide-black/15 border-y border-black/15 text-sm">
       <div className="grid grid-cols-2 py-5"><dt className="text-stone-500">Current phase</dt><dd>{project.phase}</dd></div>
