@@ -433,23 +433,23 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
         <button onClick={() => onNavigate('/login')} className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white">Client Login</button>
       </header>
       <main>
-        <div className="mx-auto max-w-7xl px-6 pb-10 pt-14 sm:px-8 lg:px-12 lg:pb-16 lg:pt-24">
+        <div className="mx-auto max-w-7xl px-6 pb-6 pt-10 sm:px-8 lg:px-12 lg:pb-8 lg:pt-14">
           <button onClick={() => onNavigate('/')} className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Development portfolio</button>
-          <p className="mt-14 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
-          <h1 className="mt-5 max-w-5xl font-serif text-6xl font-light tracking-tight sm:text-8xl">{project.title}</h1>
-          <p className="mt-8 max-w-2xl text-lg leading-8 text-stone-300">{project.summary}</p>
-          <dl className="mt-12 grid max-w-5xl gap-6 border-y border-white/[0.12] py-6 text-sm sm:grid-cols-2 lg:grid-cols-5">
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Market</dt><dd className="mt-2 text-stone-200">{project.market ?? 'Costa Rica'}</dd></div>
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Development</dt><dd className="mt-2 text-stone-200">{project.developmentType ?? project.category}</dd></div>
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Current stage</dt><dd className="mt-2 text-stone-200">{project.publicStage ?? project.phase}</dd></div>
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Context</dt><dd className="mt-2 text-stone-200">{project.context ?? 'Costa Rica'}</dd></div>
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Scale</dt><dd className="mt-2 text-stone-200">{project.scale ?? 'Project study'}</dd></div>
+          <p className="mt-10 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
+          <h1 className="mt-4 max-w-5xl font-serif text-5xl font-light tracking-tight sm:text-7xl lg:text-8xl">{project.title}</h1>
+          <p className="mt-6 max-w-2xl text-base leading-7 text-stone-300 sm:text-lg sm:leading-8">{project.summary}</p>
+          <dl className="mt-8 grid max-w-5xl gap-4 border-y border-white/[0.12] py-5 text-sm sm:grid-cols-2 lg:grid-cols-5">
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Market</dt><dd className="mt-1.5 text-stone-200">{project.market ?? 'Costa Rica'}</dd></div>
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Development</dt><dd className="mt-1.5 text-stone-200">{project.developmentType ?? project.category}</dd></div>
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Current stage</dt><dd className="mt-1.5 text-stone-200">{project.publicStage ?? project.phase}</dd></div>
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Context</dt><dd className="mt-1.5 text-stone-200">{project.context ?? 'Costa Rica'}</dd></div>
+            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Scale</dt><dd className="mt-1.5 text-stone-200">{project.scale ?? 'Project study'}</dd></div>
           </dl>
         </div>
-        <div className="mx-auto max-w-7xl px-6 py-8 sm:px-8 lg:px-12 lg:py-14">
+        <div className="mx-auto max-w-7xl px-6 pb-12 pt-2 sm:px-8 lg:px-12 lg:pb-16 lg:pt-4">
           <SpatialRail project={project} />
         </div>
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
+        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-24">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Project intent</p>
           <p className="max-w-3xl font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>
         </div>

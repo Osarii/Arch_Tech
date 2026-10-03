@@ -139,7 +139,63 @@ describe('ARCH_TECH SpatialRail Carousel', () => {
     });
   });
 
-  it('renders all 6 published public projects correctly with valid media arrays', () => {
+  it('assigns wide aspect ratio for visual media and technical aspect ratio for architectural sheets', () => {
+    const slides = buildSpatialRailSlides(sampleProject);
+    // Visual media: wide
+    expect(slides.find((s) => s.id === 'hero')?.aspect).toBe('wide');
+    expect(slides.find((s) => s.id === 'aerial')?.aspect).toBe('wide');
+    expect(slides.find((s) => s.id === 'campusOverview')?.aspect).toBe('wide');
+    expect(slides.find((s) => s.id === 'interior')?.aspect).toBe('wide');
+
+    // Technical media: technical
+    expect(slides.find((s) => s.id === 'masterplan')?.aspect).toBe('technical');
+    expect(slides.find((s) => s.id === 'sitePlan')?.aspect).toBe('technical');
+    expect(slides.find((s) => s.id === 'floorPlan')?.aspect).toBe('technical');
+    expect(slides.find((s) => s.id === 'conceptBoard')?.aspect).toBe('technical');
+  });
+
+  it('handles rapid next clicks smoothly without desynchronizing bounds', () => {
+    render(<SpatialRail project={sampleProject} />);
+
+    const nextBtn = screen.getByTestId('rail-next-btn');
+    const prevBtn = screen.getByTestId('rail-prev-btn');
+
+    // Click 7 times rapidly to reach the last slide (index 08)
+    for (let i = 0; i < 7; i++) {
+      fireEvent.click(nextBtn);
+    }
+
+    expect(screen.getByTestId('rail-index').textContent).toBe('08');
+    expect(nextBtn).toHaveProperty('disabled', true);
+    expect(prevBtn).toHaveProperty('disabled', false);
+
+    // One more click should not advance past boundary
+    fireEvent.click(nextBtn);
+    expect(screen.getByTestId('rail-index').textContent).toBe('08');
+  });
+
+  it('navigates next and prev slides inside fullscreen viewer', async () => {
+    render(<SpatialRail project={sampleProject} />);
+
+    // Open fullscreen
+    const heroBtn = screen.getByRole('button', { name: /Open fullscreen view of Facility Overview/i });
+    fireEvent.click(heroBtn);
+
+    const fsNextBtn = screen.getByTestId('rail-fullscreen-next');
+    const fsPrevBtn = screen.getByTestId('rail-fullscreen-prev');
+
+    expect(fsPrevBtn).toHaveProperty('disabled', true);
+    expect(fsNextBtn).toHaveProperty('disabled', false);
+
+    fireEvent.click(fsNextBtn);
+    expect(screen.getByText(/02 \/ 08/i)).toBeDefined();
+    expect(fsPrevBtn).toHaveProperty('disabled', false);
+
+    fireEvent.click(fsPrevBtn);
+    expect(screen.getByText(/01 \/ 08/i)).toBeDefined();
+  });
+
+  it('renders all 6 published public projects correctly with valid media arrays and aspect ratios', () => {
     const projectIds = [
       'pacific-nexus-free-zone',
       'summit-point-corporate-district',

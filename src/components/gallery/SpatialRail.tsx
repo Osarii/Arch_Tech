@@ -9,6 +9,7 @@ export type SpatialRailSlide = {
   category: string;
   src: string;
   fit: 'cover' | 'contain';
+  aspect: 'wide' | 'technical';
 };
 
 export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide[] => {
@@ -21,6 +22,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       category: 'Campus / Infrastructure Overview',
       src: project.image,
       fit: 'cover',
+      aspect: 'wide',
     },
     {
       id: 'aerial',
@@ -29,6 +31,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       category: 'Regional Context & Siting',
       src: media?.aerial || project.image,
       fit: 'cover',
+      aspect: 'wide',
     },
     {
       id: 'campusOverview',
@@ -37,6 +40,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       category: 'Campus Infrastructure',
       src: media?.campusOverview || media?.aerial || project.image,
       fit: 'cover',
+      aspect: 'wide',
     },
     {
       id: 'masterplan',
@@ -45,6 +49,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       category: 'Master Planning & Phasing',
       src: media?.masterplan || project.image,
       fit: 'contain',
+      aspect: 'technical',
     },
     {
       id: 'sitePlan',
@@ -53,6 +58,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       category: 'Site Strategy & Logistics',
       src: media?.sitePlan || project.image,
       fit: 'contain',
+      aspect: 'technical',
     },
     {
       id: 'floorPlan',
@@ -61,6 +67,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       category: 'Spatial Programming & Layout',
       src: media?.floorPlan || project.image,
       fit: 'contain',
+      aspect: 'technical',
     },
     {
       id: 'interior',
@@ -69,6 +76,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       category: 'Operations & Interior Volume',
       src: media?.interior || project.image,
       fit: 'cover',
+      aspect: 'wide',
     },
     {
       id: 'conceptBoard',
@@ -77,6 +85,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       category: 'Systems & Technical Specifications',
       src: media?.conceptBoard || project.image,
       fit: 'contain',
+      aspect: 'technical',
     },
   ];
 };
@@ -92,34 +101,54 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
 
-  // Scroll to slide smoothly without re-rendering JS per frame
-  const scrollToSlide = useCallback((index: number) => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-    const clamped = Math.max(0, Math.min(index, slides.length - 1));
-    const targetChild = container.children[clamped] as HTMLElement | undefined;
-    if (targetChild) {
-      if (typeof container.scrollTo === 'function') {
-        container.scrollTo({
-          left: targetChild.offsetLeft,
-          behavior: 'smooth',
-        });
-      } else {
-        container.scrollLeft = targetChild.offsetLeft;
+  // Guard against IntersectionObserver fighting intentional button/keyboard programmatic scrolling
+  const isProgrammaticScrollRef = useRef(false);
+  const unlockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const activeIndexRef = useRef(0);
+  activeIndexRef.current = activeIndex;
+
+  // Scroll to slide smoothly and update active index atomically
+  const scrollToSlide = useCallback(
+    (index: number) => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      const clamped = Math.max(0, Math.min(index, slides.length - 1));
+
+      isProgrammaticScrollRef.current = true;
+      if (unlockTimeoutRef.current) {
+        clearTimeout(unlockTimeoutRef.current);
       }
+      // Re-enable observer sync after smooth scroll settles
+      unlockTimeoutRef.current = setTimeout(() => {
+        isProgrammaticScrollRef.current = false;
+      }, 500);
+
       setActiveIndex(clamped);
-    }
-  }, [slides.length]);
+
+      const targetChild = container.children[clamped] as HTMLElement | undefined;
+      if (targetChild) {
+        if (typeof container.scrollTo === 'function') {
+          container.scrollTo({
+            left: targetChild.offsetLeft,
+            behavior: 'smooth',
+          });
+        } else {
+          container.scrollLeft = targetChild.offsetLeft;
+        }
+      }
+    },
+    [slides.length]
+  );
 
   const handlePrev = useCallback(() => {
-    scrollToSlide(activeIndex - 1);
-  }, [activeIndex, scrollToSlide]);
+    scrollToSlide(activeIndexRef.current - 1);
+  }, [scrollToSlide]);
 
   const handleNext = useCallback(() => {
-    scrollToSlide(activeIndex + 1);
-  }, [activeIndex, scrollToSlide]);
+    scrollToSlide(activeIndexRef.current + 1);
+  }, [scrollToSlide]);
 
-  // Observer to track active slide as native scroll snaps
+  // Observer to track active slide as user manually drags or trackpad scrolls
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
@@ -128,23 +157,38 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
 
     const observer = new IntersectionObserver(
       (entries) => {
+        if (isProgrammaticScrollRef.current) return;
+
+        // Pick entry with largest intersection ratio
+        let bestEntry: IntersectionObserverEntry | null = null;
         for (const entry of entries) {
           if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            const index = Number(entry.target.getAttribute('data-index'));
-            if (!Number.isNaN(index)) {
-              setActiveIndex(index);
+            if (!bestEntry || entry.intersectionRatio > bestEntry.intersectionRatio) {
+              bestEntry = entry;
             }
+          }
+        }
+
+        if (bestEntry) {
+          const index = Number(bestEntry.target.getAttribute('data-index'));
+          if (!Number.isNaN(index) && index !== activeIndexRef.current) {
+            setActiveIndex(index);
           }
         }
       },
       {
         root: container,
-        threshold: 0.5,
+        threshold: [0.5, 0.75, 0.9],
       }
     );
 
     Array.from(container.children).forEach((child) => observer.observe(child));
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (unlockTimeoutRef.current) {
+        clearTimeout(unlockTimeoutRef.current);
+      }
+    };
   }, [slides]);
 
   // Scoped keyboard navigation: only when rail or fullscreen is focused
@@ -175,7 +219,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
     [fullscreenIndex, handleNext, handlePrev, slides.length]
   );
 
-  // Global escape key handler when fullscreen viewer is open
+  // Global escape key and arrow handler when fullscreen viewer is open
   useEffect(() => {
     if (fullscreenIndex === null) return;
     const onGlobalKey = (e: KeyboardEvent) => {
@@ -203,33 +247,33 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
       className="relative outline-none focus-visible:ring-1 focus-visible:ring-stone-600"
     >
       {/* Editorial Header / Metadata & Progress Rail */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-baseline gap-3">
             <span
               data-testid="rail-index"
-              className="font-mono text-3xl font-light tracking-tight text-white sm:text-4xl"
+              className="font-mono text-2xl font-light tracking-tight text-white sm:text-3xl"
             >
               {String(activeIndex + 1).padStart(2, '0')}
             </span>
             <span className="font-mono text-xs text-stone-500">
               / {String(slides.length).padStart(2, '0')}
             </span>
-            <span className="ml-4 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-400">
+            <span className="ml-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-300">
               {activeSlide.label}
             </span>
           </div>
-          <p className="mt-1 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">
+          <p className="mt-0.5 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">
             {activeSlide.category} · {activeSlide.caption}
           </p>
         </div>
 
         {/* Minimal Controls & Rail Progress */}
-        <div className="flex items-center gap-6 self-start sm:self-end">
+        <div className="flex items-center gap-5 self-start sm:self-end">
           {/* Thin Progress Rail */}
           <div
             data-testid="rail-progress"
-            className="hidden h-[2px] w-32 overflow-hidden bg-white/[0.08] sm:block md:w-48"
+            className="hidden h-[2px] w-28 overflow-hidden bg-white/[0.08] sm:block md:w-40"
             aria-hidden="true"
           >
             <div
@@ -248,9 +292,9 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
               disabled={activeIndex === 0}
               data-testid="rail-prev-btn"
               aria-label="Previous slide"
-              className="flex h-9 w-9 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white/[0.3] hover:text-white disabled:pointer-events-none disabled:opacity-20"
+              className="flex h-8 w-8 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white/[0.3] hover:text-white disabled:pointer-events-none disabled:opacity-20"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
@@ -258,9 +302,9 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
               disabled={activeIndex === slides.length - 1}
               data-testid="rail-next-btn"
               aria-label="Next slide"
-              className="flex h-9 w-9 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white/[0.3] hover:text-white disabled:pointer-events-none disabled:opacity-20"
+              className="flex h-8 w-8 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white/[0.3] hover:text-white disabled:pointer-events-none disabled:opacity-20"
             >
-              <ArrowRight className="h-4 w-4" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
@@ -270,7 +314,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
       <div
         ref={scrollContainerRef}
         data-testid="rail-track"
-        className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto overflow-y-hidden pb-4 pt-1 touch-pan-x"
+        className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto overflow-y-hidden pb-2 pt-1 touch-pan-x"
         style={{
           scrollbarWidth: 'none',
           WebkitOverflowScrolling: 'touch',
@@ -286,11 +330,11 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
               key={slide.id}
               data-index={idx}
               data-testid={`rail-slide-${slide.id}`}
-              className="group relative flex-none snap-start overflow-hidden bg-[#0d0d0c] border border-white/[0.08] transition-opacity duration-300"
-              style={{
-                width: 'clamp(280px, 84vw, 86%)',
-                aspectRatio: '16 / 9',
-              }}
+              className={`group relative flex-none snap-start overflow-hidden border border-white/[0.08] transition-opacity duration-300 ${
+                slide.aspect === 'wide'
+                  ? 'w-[84vw] max-w-5xl aspect-[16/10] sm:aspect-[16/9] max-h-[58vh] bg-[#0d0d0c]'
+                  : 'w-[75vw] max-w-4xl aspect-[4/3] max-h-[58vh] bg-[#090908]'
+              }`}
             >
               <button
                 type="button"
@@ -307,14 +351,14 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                   decoding="async"
                   className={`h-full w-full select-none transition-transform duration-500 ease-out will-change-transform group-hover:scale-[1.01] ${
                     slide.fit === 'contain'
-                      ? 'object-contain p-4 md:p-8 bg-[#0a0a09]'
+                      ? 'object-contain p-2 sm:p-5 md:p-6'
                       : 'object-cover'
-                  } ${isActive ? 'opacity-100' : 'opacity-85'}`}
+                  } ${isActive ? 'opacity-100' : 'opacity-80'}`}
                 />
 
                 {/* Subtle Hover Action overlay */}
-                <div className="pointer-events-none absolute bottom-4 right-4 flex items-center gap-2 rounded bg-black/60 px-2.5 py-1 text-[9px] font-mono uppercase tracking-[0.16em] text-stone-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                  <Maximize2 className="h-3 w-3" />
+                <div className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded bg-black/70 px-2 py-0.5 text-[8px] font-mono uppercase tracking-[0.16em] text-stone-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                  <Maximize2 className="h-2.5 w-2.5" />
                   <span>Inspect</span>
                 </div>
               </button>
@@ -344,15 +388,15 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
           role="dialog"
           aria-modal="true"
           aria-label="Fullscreen viewer"
-          className="fixed inset-0 z-50 flex flex-col justify-between bg-black/95 p-4 sm:p-8 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex flex-col justify-between bg-black/95 p-4 sm:p-6 backdrop-blur-sm"
         >
           {/* Top Bar */}
-          <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+          <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
             <div className="flex items-center gap-3">
               <span className="font-mono text-sm tracking-tight text-white">
                 {String(fullscreenIndex + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
               </span>
-              <span className="font-mono text-xs uppercase tracking-[0.18em] text-stone-400">
+              <span className="font-mono text-xs uppercase tracking-[0.18em] text-stone-300">
                 {slides[fullscreenIndex].label}
               </span>
             </div>
@@ -361,27 +405,25 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
               onClick={() => setFullscreenIndex(null)}
               data-testid="rail-fullscreen-close"
               aria-label="Close fullscreen view"
-              className="flex h-9 w-9 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white hover:text-white"
+              className="flex h-8 w-8 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white hover:text-white"
             >
               <X className="h-4 w-4" />
             </button>
           </div>
 
           {/* Large Image Area */}
-          <div className="relative flex flex-1 items-center justify-center py-4">
+          <div className="relative flex flex-1 items-center justify-center py-2">
             <img
               src={slides[fullscreenIndex].src}
               alt={`${project.title} - ${slides[fullscreenIndex].label}`}
               decoding="async"
-              className={`max-h-[82vh] max-w-full select-none ${
-                slides[fullscreenIndex].fit === 'contain' ? 'object-contain' : 'object-contain'
-              }`}
+              className="max-h-[82vh] max-w-full select-none object-contain"
             />
           </div>
 
           {/* Footer Controls & Caption */}
-          <div className="flex items-center justify-between border-t border-white/[0.08] pt-4">
-            <p className="max-w-xl font-mono text-[10px] uppercase tracking-[0.16em] text-stone-400">
+          <div className="flex items-center justify-between border-t border-white/[0.08] pt-3">
+            <p className="max-w-xl font-mono text-[9px] uppercase tracking-[0.16em] text-stone-400 sm:text-[10px]">
               {slides[fullscreenIndex].category} · {slides[fullscreenIndex].caption}
             </p>
             <div className="flex items-center gap-2">
@@ -391,9 +433,9 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                 disabled={fullscreenIndex === 0}
                 data-testid="rail-fullscreen-prev"
                 aria-label="Previous fullscreen image"
-                className="flex h-8 w-8 items-center justify-center border border-white/[0.1] text-stone-400 hover:text-white disabled:pointer-events-none disabled:opacity-20"
+                className="flex h-7 w-7 items-center justify-center border border-white/[0.1] text-stone-400 hover:text-white disabled:pointer-events-none disabled:opacity-20"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
@@ -401,9 +443,9 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                 disabled={fullscreenIndex === slides.length - 1}
                 data-testid="rail-fullscreen-next"
                 aria-label="Next fullscreen image"
-                className="flex h-8 w-8 items-center justify-center border border-white/[0.1] text-stone-400 hover:text-white disabled:pointer-events-none disabled:opacity-20"
+                className="flex h-7 w-7 items-center justify-center border border-white/[0.1] text-stone-400 hover:text-white disabled:pointer-events-none disabled:opacity-20"
               >
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>
