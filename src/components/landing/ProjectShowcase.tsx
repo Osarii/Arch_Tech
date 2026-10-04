@@ -17,7 +17,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
   const [projects] = useState(getPublicProjects);
   const [featured, ...register] = projects;
   return (
-    <section id="projects" className="bg-[#e9e5dc] px-6 py-24 text-[#171714] sm:px-8 lg:px-12 lg:py-32">
+    <section id="projects" className="bg-[#E6DED2] px-6 py-24 text-[#171714] sm:px-8 lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
