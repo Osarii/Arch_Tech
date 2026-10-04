@@ -59,11 +59,35 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('uses a simple three-image architectural hero without sticky scroll state', () => {
-    render(<Hero onViewProjects={vi.fn()} />);
+    const onViewProjects = vi.fn();
+    const onOpenProject = vi.fn();
+    render(<Hero onViewProjects={onViewProjects} onOpenProject={onOpenProject} />);
 
     expect(screen.getByTestId('hero-gallery').querySelectorAll('img')).toHaveLength(3);
     expect(screen.getByTestId('hero-gallery').className).not.toContain('sticky');
     expect(screen.getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
+    fireEvent.click(screen.getByTestId('hero-view-projects'));
+    expect(onViewProjects).toHaveBeenCalledTimes(1);
+
+    for (const project of [
+      ['Pacific Nexus Free Zone Campus', 'pacific-nexus-free-zone'],
+      ['Summit Point Corporate District', 'summit-point-corporate-district'],
+      ['Mar Vista Hospitality District', 'mar-vista-hospitality-district'],
+    ]) {
+      const [title, id] = project;
+      const panel = screen.getByRole('button', { name: `Open ${title} project` });
+      expect(panel).toBeDefined();
+      fireEvent.click(panel);
+      expect(onOpenProject).toHaveBeenLastCalledWith(id);
+    }
+  });
+
+  it('routes hero development panels to their public project dossiers', () => {
+    const onNavigate = vi.fn();
+    render(<LandingPage onNavigate={onNavigate} onLogin={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Pacific Nexus Free Zone Campus project' }));
+    expect(onNavigate).toHaveBeenCalledWith('/projects/pacific-nexus-free-zone');
   });
 
   it('opens public project details from the selected projects list', () => {

@@ -18,7 +18,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
     <div data-landing-scroll-container className="h-screen w-full overflow-y-auto overflow-x-hidden scroll-smooth bg-[#0a0b0d] font-sans text-[#f4efe8] selection:bg-stone-300 selection:text-black">
       <LandingNavbar onLogin={onLogin} />
       <main>
-        <Hero onViewProjects={viewProjects} />
+        <Hero onViewProjects={viewProjects} onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
         <ProjectShowcase onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
         <CapabilityRegister />
         <DevelopmentFrame onLogin={onLogin} />
