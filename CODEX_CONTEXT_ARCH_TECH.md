@@ -45,19 +45,18 @@
 Latest verified remote commit:
 
 ```text
-b47e5c9cc0271d02a86a8236239c04ff7b481818
-fix(portal): harden workspace and role navigation
+1f2c4322 perf: optimize public portfolio media
 ```
 
 Previous:
 ```text
+d6278f0f feat(media): replace project image packs with new canonical zip assets
+d453bbf6 fix(gallery): polish SpatialRail layout, aspect ratio, and navigation sync
+67922de7 feat(gallery): add original high-performance SpatialRail carousel
+790fbaa4 refactor(gallery): remove ProjectGallery and embla carousel implementation
+b47e5c9c fix(portal): harden workspace and role navigation
 8901ec49 feat(landing): refocus public experience for real estate development
-c8f5b539 feat(samples): replace fast IFC with IfcOpenHouse
-3956538 fix(phase-6b2): harden persistence semantics and reload safety
-31125a4 feat(phase-6b2): add detached IFC persistence round-trip
-62e22f5 fix(phase-6b1): harden post-commit cleanup boundary
-9d05df0 fix(phase-6b1): finalize storey semantics and atomic model swap
-d6cbe2a feat(phase-6b1): add transactional IFC4 generation
+3956538a fix(phase-6b2): harden persistence semantics and reload safety
 ```
 
 **Always verify remote main before a new implementation task.**
@@ -351,14 +350,14 @@ The BIM workspace remains separate and authoritative; public landing changes mus
 
 ## 8. LAST VERIFIED TEST STATE
 
-Documentation refresh checkpoint (`b47e5c9`):
+Documentation refresh checkpoint (`1f2c4322`):
 
 ```text
-Targeted portal Vitest: 22 / 22 PASS
-Build:        PASS
-diff check:   PASS
+Vitest (Unit/Domain): 134 / 134 PASS across 13 test files
+Build:                PASS (tsc -b && vite build clean exit code 0)
+Playwright (E2E):     14 / 14 PASS
+git diff --check:     PASS
 ```
-Full BIM Playwright was not rerun for the portal integrity cleanup because BIM/shared core code did not change.
 
 ---
 
