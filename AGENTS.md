@@ -33,9 +33,9 @@ Persistent knowledge belongs in small repository files. Current prompts remain s
 
 Public work should emphasize free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and infrastructure. ARCH_TECH must not visually read as a residential architecture or house-design studio. Garnier & Garnier is a conceptual reference for scale, positioning and enterprise perception only; do not copy its branding, website design or assets, and do not imply affiliation, partnership or endorsement. Landing/portal work must not modify BIM internals unless explicitly requested.
 
-## Parallel Development Policy
-- `agent/a-main` = visual agent / Claude / Antigravity.
-- `agent/b-main` = technical/functionality agent / VS Code.
+## Development Workflow Policy
+- Single-agent sequential execution is the default.
+- `agent/a-main` and `agent/b-main` are optional visual and technical lanes when explicitly requested; lane names do not imply a specific vendor or tool.
 - Both branches were initially created from workflow initialization checkpoint `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`; this does not permanently pin future work to that commit.
 - Every task must resolve its actual `BASE` from current remote `main` before execution.
 - Each task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.

@@ -5,7 +5,7 @@
 ---
 
 ## 1. Project Purpose & Scope
-**Verified application checkpoint:** `ecc9ff9c29a899cb48f58923c15fb10d9a07faee` (`docs: align handoff with current product direction`). This is not a persistent claim about the current `main` HEAD; every task must resolve its actual `BASE` from current remote `main` before execution.
+**Verified application checkpoint:** The current integrated checkpoint is the Git `HEAD` produced by the latest verified run. This reliability pass began from `948101b081f98c75218a130cf9a3252393bb5716`; every task must still resolve its actual `BASE` from current remote `main` before execution.
 
 **ARCH_TECH** is a dual-capability architecture & engineering platform with this product hierarchy:
 1. **Public Identity**: Large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites.
@@ -111,9 +111,9 @@ These six names and categories are the stable public portfolio unless explicitly
   - **Context Routing**: Read `AGENTS.md` + `PROJECT_STATE.md`, then consult `docs/context/CONTEXT.md` by line range.
   - **Fast Task Mode**: No intermediate narration; run targeted tests first; execute clean verification before reporting results.
 
-### Parallel Development Policy
-- `agent/a-main` is the visual agent branch for Claude / Antigravity work.
-- `agent/b-main` is the technical/functionality agent branch for VS Code work.
+### Development Workflow Policy
+- Single-agent sequential execution is the default.
+- `agent/a-main` and `agent/b-main` are optional visual and technical lanes when explicitly requested; lane names do not imply a specific vendor or tool.
 - Both branches were initially created from workflow initialization checkpoint `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`; this does not permanently pin future work to that commit.
 - Every task must resolve its actual `BASE` from current remote `main` before execution.
 - Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
@@ -136,6 +136,7 @@ These six names and categories are the stable public portfolio unless explicitly
 - **Public Experience & Portal**: Costa Rica development portfolio, multi-role access (Client/Architect/Admin), demo auth, dark architectural editorial design.
 - **SpatialRail Media Carousel**: High-performance scroll-snap media rail & lightbox.
 - **Portfolio Asset Pipeline**: Canonical zip image packs integrated & schema v2 migration completed.
+- **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient demo auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
 
 ---
 
@@ -173,7 +174,9 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 ---
 
 ## 16. Current Verification Status
-- **Vitest Unit/Domain Tests**: **134 / 134 PASSED** across 13 test files.
-- **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0).
+- **Lint / Type Check**: **SUCCESS** (`npm run lint`).
+- **Vitest Unit/Domain Tests**: **165 / 165 PASSED** across 15 test files.
+- **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED** (full browser verification suite).
-- **Git Diff**: Clean.
+- **Targeted portal suites**: `portalData` **9 / 9**, `demoAuth` **9 / 9**, and `landingPage` **29 / 29** passed.
+- **Git Diff**: Verified with `git diff --check` after the reliability changes.

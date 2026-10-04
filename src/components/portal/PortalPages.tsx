@@ -25,11 +25,24 @@ interface NavigationProps {
   onNavigate: Navigate;
 }
 
+const formatPortalDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+
 const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePath?: string; role?: PortalRole }> = ({ onNavigate, onSignOut, homePath = '/dashboard', role = 'client' }) => {
-  const [dark, setDark] = useState(() => typeof window !== 'undefined' && window.localStorage.getItem('arch-tech-portal-theme') === 'dark');
+  const [dark, setDark] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.localStorage.getItem('arch-tech-portal-theme') === 'dark';
+    } catch {
+      return false;
+    }
+  });
   useEffect(() => {
     document.documentElement.classList.toggle('portal-dark', dark);
-    window.localStorage.setItem('arch-tech-portal-theme', dark ? 'dark' : 'light');
+    try {
+      window.localStorage.setItem('arch-tech-portal-theme', dark ? 'dark' : 'light');
+    } catch {
+      // Theme preference is optional; the current mode remains usable in memory.
+    }
   }, [dark]);
   const navigation = role === 'admin' ? ['Projects', 'People', 'Approvals', 'Activity'] : role === 'architect' ? ['Projects', 'Activity', 'Milestones', 'Documents', 'Approvals'] : ['Projects', 'Updates', 'Documents', 'Notifications'];
   const sectionIds = role === 'admin' ? { Projects: 'projects', People: 'people', Approvals: 'approvals', Activity: 'activity' } : role === 'architect' ? { Projects: 'projects', Activity: 'activity', Milestones: 'milestones', Documents: 'documents', Approvals: 'approvals' } : { Projects: 'projects', Updates: 'updates', Documents: 'documents', Notifications: 'notifications' };
@@ -97,6 +110,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
       setError('Check the demo email and password.');
       return;
     }
+    setError('');
     onSuccess();
   };
 
@@ -106,6 +120,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
       setError('This demo account is unavailable.');
       return;
     }
+    setError('');
     onSuccess();
   };
 
@@ -174,7 +189,7 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
   const updates = projects.flatMap((project) => project.updates.map((update) => ({ ...update, projectTitle: project.title }))).slice(0, 5);
   const upcomingMilestones = projects.flatMap((project) => project.milestones.filter((milestone) => milestone.status === 'Upcoming').map((milestone) => ({ ...milestone, projectTitle: project.title })));
   const pendingApprovals = projects.flatMap((project) => project.approvals.filter((approval) => approval.status === 'Pending').map((approval) => ({ ...approval, projectTitle: project.title })));
-  const notifications = snapshot.db.notifications.filter((notification) => notification.userId === client?.id);
+  const notifications = snapshot.db.notifications.filter((notification) => notification.userId === client?.id && projects.some((project) => project.id === notification.projectId));
   const refresh = () => setSnapshot(getPortalSnapshot());
   const respondToApproval = (projectId: string, title: string, status: 'Approved' | 'Rejected') => {
     updatePortalApproval(projectId, title, status);
@@ -269,7 +284,10 @@ const DEFAULT_NEW_PROJECT_CATEGORY = 'Development · New project';
 export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [createOpen, setCreateOpen] = useState(false);
+  const [createError, setCreateError] = useState('');
   const [newProject, setNewProject] = useState({ title: '', category: DEFAULT_NEW_PROJECT_CATEGORY, phase: 'Brief and site study', progress: '0' });
+  const createTriggerRef = useRef<HTMLButtonElement>(null);
+  const createDialogRef = useRef<HTMLFormElement>(null);
   const { db, projects } = snapshot;
   const activeProjects = projects.filter((project) => !project.archived);
   const clients = db.users.filter((user) => user.role === 'client');
@@ -282,6 +300,38 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
   const stageCounts = activeProjects.reduce<Record<string, number>>((counts, project) => ({ ...counts, [project.phase]: (counts[project.phase] ?? 0) + 1 }), {});
   const averageProgress = activeProjects.length ? Math.round(activeProjects.reduce((total, project) => total + project.progress, 0) / activeProjects.length) : 0;
   const refresh = () => setSnapshot(getPortalSnapshot());
+  const closeCreateDialog = () => {
+    setCreateOpen(false);
+    setCreateError('');
+    createTriggerRef.current?.focus();
+  };
+  useEffect(() => {
+    if (!createOpen) return;
+    const dialog = createDialogRef.current;
+    const focusable = () => Array.from(dialog?.querySelectorAll<HTMLElement>('button, input, select, textarea') ?? []).filter((element) => !element.hasAttribute('disabled'));
+    focusable()[0]?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        closeCreateDialog();
+        return;
+      }
+      if (event.key !== 'Tab') return;
+      const items = focusable();
+      if (!items.length) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [createOpen]);
   const toggleAssignment = (userId: string, projectId: string) => {
     const current = getPortalSnapshot().db;
     const user = current.users.find((candidate) => candidate.id === userId);
@@ -294,18 +344,23 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
     const title = newProject.title.trim();
     const category = newProject.category.trim();
     const progress = Number(newProject.progress);
-    if (!title || !category || newProject.progress.trim() === '' || !Number.isFinite(progress) || progress < 0 || progress > 100) return;
+    if (!title || !category || newProject.progress.trim() === '' || !Number.isFinite(progress) || progress < 0 || progress > 100) {
+      setCreateError('Enter a project title, category, and a progress value from 0 to 100.');
+      return;
+    }
+    setCreateError('');
     const id = `admin-project-${Date.now()}`;
     updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title, category, phase: newProject.phase, progress, nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/projects/pacific-nexus-free-zone/hero-exterior.webp', published: false }] }));
     setNewProject({ title: '', category: DEFAULT_NEW_PROJECT_CATEGORY, phase: 'Brief and site study', progress: '0' });
     setCreateOpen(false);
+    createTriggerRef.current?.focus();
     refresh();
   };
   return (
     <div className="portal-surface h-screen overflow-y-auto bg-[#f2efe8] text-[#171714]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/admin" role="admin" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Administration / Portal overview</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">The project register.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">Projects, people, approvals and shared information across the ARCH_TECH portal.</p></div>
-        <section className="flex flex-wrap gap-3 py-10"><button onClick={() => setCreateOpen(true)} className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white">Create project</button><span className="border border-black/15 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Operational controls</span></section>
+        <section className="flex flex-wrap gap-3 py-10"><button ref={createTriggerRef} onClick={() => { setCreateOpen(true); setCreateError(''); }} className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white">Create project</button><span className="border border-black/15 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Operational controls</span></section>
         <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Portfolio overview"><div className="admin-overview-tile bg-[#f2efe8] p-6"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Portfolio overview</p><p className="mt-4 font-serif text-4xl">{activeProjects.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">active projects</p></div><div className="admin-overview-tile bg-[#f2efe8] p-6"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Portfolio progress</p><p className="mt-4 font-serif text-4xl">{averageProgress}%</p><p className="mt-1 text-xs text-stone-600">average progress across active work</p></div><div className="admin-overview-tile bg-[#f2efe8] p-6"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Project health</p><p className="mt-4 font-serif text-4xl">{attentionProjects.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">need attention</p></div><div className="admin-overview-tile bg-[#f2efe8] p-6"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Client decisions</p><p className="mt-4 font-serif text-4xl">{pendingApprovals.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">pending approvals</p></div></section>
         <section className="grid gap-10 border-b border-black/15 py-12 lg:grid-cols-[1fr_1.2fr]" aria-label="Development stages"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Development stages</p><h2 className="mt-4 font-serif text-4xl">Where the portfolio stands.</h2></div><div className="grid gap-4 sm:grid-cols-2">{Object.entries(stageCounts).map(([stage, count]) => <div key={stage} className="border-l border-black/20 pl-4"><p className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{stage}</p><p className="mt-3 font-serif text-3xl">{String(count).padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">active project{count === 1 ? '' : 's'}</p></div>)}</div></section>
         <section className="grid gap-12 border-b border-black/15 py-12 lg:grid-cols-2"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Project health / attention</p>{attentionProjects.map((project) => <button key={project.id} onClick={() => onNavigate(`/admin/projects/${project.id}`)} className="mt-5 flex w-full items-center justify-between border-b border-black/10 pb-4 text-left"><span><span className="block font-serif text-2xl">{project.title}</span><span className="mt-1 block text-xs text-stone-500">{project.phase} · {project.progress}%</span></span><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Review</span></button>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>{upcomingMilestones.slice(0, 5).map((milestone) => <p key={`${milestone.projectId}-${milestone.label}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{milestone.projectTitle} · {milestone.label}</span><span className="font-mono text-[9px] uppercase text-stone-500">Upcoming</span></p>)}</div></section>
@@ -315,7 +370,7 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
         <section id="portal-section-approvals" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Pending approvals</p>{pendingApprovals.map((approval) => <button key={`${approval.projectId}-${approval.title}`} onClick={() => onNavigate(`/admin/projects/${approval.projectId}`)} className="mt-5 flex w-full justify-between gap-4 border-b border-black/10 pb-4 text-left text-sm"><span>{approval.projectTitle} · {approval.title}</span><span className="font-mono text-[9px] uppercase text-stone-500">Review</span></button>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>{db.notifications.map((notification) => <p key={`${notification.userId}-${notification.date}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{notification.message}</span><span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</div></section>
         <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent activity</h2>{recentActivity.map((update) => <p key={`${update.projectId}-${update.date}-${update.title}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{update.projectTitle} · {update.title}</span><span className="font-mono text-[9px] text-stone-500">{update.date}</span></p>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Development controls</h2><p className="mt-5 text-sm leading-6 text-stone-600">Create, assign and advance projects from the register. Open any project or its model directly from the portfolio list.</p></div></section>
       </main>
-      {createOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-4 py-4 backdrop-blur-sm sm:items-center" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setCreateOpen(false)}><form role="dialog" aria-modal="true" aria-labelledby="create-project-title" onSubmit={(event) => { event.preventDefault(); createProject(); }} className="w-full max-w-xl border border-white/15 bg-[#11110f] p-7 text-[#f4efe8] shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Administration</p><h2 id="create-project-title" className="mt-4 font-serif text-4xl">New project.</h2></div><button type="button" onClick={() => setCreateOpen(false)} aria-label="Close create project" className="border border-white/20 p-2 text-stone-300"><X className="h-4 w-4" /></button></div><div className="mt-8 space-y-5"><label className="block font-mono text-[9px] uppercase text-stone-400">Title<input autoFocus required value={newProject.title} onChange={(event) => setNewProject({ ...newProject, title: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><label className="block font-mono text-[9px] uppercase text-stone-400">Category<input required value={newProject.category} onChange={(event) => setNewProject({ ...newProject, category: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><div className="grid gap-5 sm:grid-cols-2"><label className="block font-mono text-[9px] uppercase text-stone-400">Phase<select value={newProject.phase} onChange={(event) => setNewProject({ ...newProject, phase: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-[#11110f] py-3 text-sm text-white outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><label className="block font-mono text-[9px] uppercase text-stone-400">Initial progress<input required type="number" min="0" max="100" step="1" value={newProject.progress} onChange={(event) => setNewProject({ ...newProject, progress: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label></div></div><button type="submit" className="mt-8 w-full bg-[#f4efe8] px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-black">Create project</button></form></div>}
+      {createOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-4 py-4 backdrop-blur-sm sm:items-center" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeCreateDialog()}><form ref={createDialogRef} noValidate role="dialog" aria-modal="true" aria-labelledby="create-project-title" onSubmit={(event) => { event.preventDefault(); createProject(); }} className="w-full max-w-xl border border-white/15 bg-[#11110f] p-7 text-[#f4efe8] shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Administration</p><h2 id="create-project-title" className="mt-4 font-serif text-4xl">New project.</h2></div><button type="button" onClick={closeCreateDialog} aria-label="Close create project" className="border border-white/20 p-2 text-stone-300"><X className="h-4 w-4" /></button></div><div className="mt-8 space-y-5"><label className="block font-mono text-[9px] uppercase text-stone-400">Title<input required value={newProject.title} onChange={(event) => setNewProject({ ...newProject, title: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><label className="block font-mono text-[9px] uppercase text-stone-400">Category<input required value={newProject.category} onChange={(event) => setNewProject({ ...newProject, category: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><div className="grid gap-5 sm:grid-cols-2"><label className="block font-mono text-[9px] uppercase text-stone-400">Phase<select value={newProject.phase} onChange={(event) => setNewProject({ ...newProject, phase: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-[#11110f] py-3 text-sm text-white outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><label className="block font-mono text-[9px] uppercase text-stone-400">Initial progress<input required type="number" min="0" max="100" step="1" value={newProject.progress} onChange={(event) => setNewProject({ ...newProject, progress: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label></div></div>{createError && <p role="alert" className="mt-5 text-xs text-red-300">{createError}</p>}<button type="submit" className="mt-8 w-full bg-[#f4efe8] px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-black">Create project</button></form></div>}
     </div>
   );
 };
@@ -366,7 +421,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
     if (Object.keys(changes).length) updatePortalProject(projectId, changes);
     refresh();
   };
-  const addUpdate = () => { const title = updateTitle.trim(); const body = updateBody.trim(); if (!title || !body) return; addPortalUpdate({ projectId, date: '02 OCT 2026', title, body }); setUpdateTitle(''); setUpdateBody(''); refresh(); };
+  const addUpdate = () => { const title = updateTitle.trim(); const body = updateBody.trim(); if (!title || !body) return; addPortalUpdate({ projectId, date: formatPortalDate(new Date()), title, body }); setUpdateTitle(''); setUpdateBody(''); refresh(); };
   const addMilestone = () => { const label = milestone.trim(); if (!label) return; addPortalMilestone({ projectId, label, status: 'Upcoming' }); setMilestone(''); refresh(); };
   const addDocument = () => { const name = documentName.trim(); if (!name) return; addPortalDocument({ projectId, name, meta: 'PDF · Added in portal' }); setDocumentName(''); refresh(); };
   const requestApproval = () => { const title = approvalTitle.trim(); if (!title) return; addPortalApproval({ projectId, title, status: 'Pending' }); setApprovalTitle(''); refresh(); };

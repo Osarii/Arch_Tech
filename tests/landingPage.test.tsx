@@ -97,6 +97,7 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'studio-demo' } });
     fireEvent.click(screen.getByTestId('login-submit'));
     expect(onSuccess).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alert')).toBeNull();
     expect(window.localStorage.getItem('arch-tech-demo-session')).not.toBeNull();
   });
 
@@ -205,6 +206,11 @@ describe('ARCH_TECH client architecture portal', () => {
 
     openCreateProject();
     expect((screen.getByLabelText('Category') as HTMLInputElement).value).toBe('Development · New project');
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Close create project' }));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: 'New project.' })).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Create project' }));
+    openCreateProject();
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: '  Edge Development Campus  ' } });
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: '  Compute infrastructure  ' } });
     fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '0' } });
@@ -227,6 +233,7 @@ describe('ARCH_TECH client architecture portal', () => {
       fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: invalidProgress } });
       submitCreateProject();
       expect(getPortalSnapshot().projects).toHaveLength(projectCountBeforeInvalid);
+      expect(screen.getByRole('alert').textContent).toContain('progress value from 0 to 100');
       fireEvent.click(screen.getByRole('button', { name: 'Close create project' }));
     }
 
@@ -451,6 +458,7 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Publish update' }));
     fireEvent.click(screen.getByTestId('project-tab-updates'));
     expect(screen.getByText('Coordination note')).toBeDefined();
+    expect(getPortalSnapshot().db.updates.find((update) => update.title === 'Coordination note')?.date).toBe(new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase());
     fireEvent.change(screen.getByLabelText('New milestone'), { target: { value: 'Coordination issue' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
     fireEvent.change(screen.getByLabelText('New document'), { target: { value: 'Coordination set' } });
@@ -540,6 +548,31 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
     expect(window.localStorage.getItem('arch-tech-portal-theme')).toBe('dark');
+  });
+
+  it('keeps the portal usable when theme persistence fails', () => {
+    const setItem = vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('storage unavailable');
+    });
+    render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+
+    expect(() => fireEvent.click(screen.getByTestId('theme-toggle'))).not.toThrow();
+    expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
+    setItem.mockRestore();
+  });
+
+  it('does not expose notifications for missing or inaccessible projects', () => {
+    demoAuth.signIn('client@arch-tech.studio', 'studio-demo');
+    const client = getPortalSnapshot().db.users.find((user) => user.email === 'client@arch-tech.studio');
+    if (!client) throw new Error('Expected canonical client fixture');
+    updatePortalDatabase((current) => ({
+      ...current,
+      notifications: [...current.notifications, { userId: client.id, projectId: 'missing-project', message: 'Stale notification', date: '04 OCT 2026' }],
+    }));
+
+    render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+
+    expect(screen.queryByText('Stale notification')).toBeNull();
   });
 
   it('routes login to dashboard, project detail and workspace', async () => {

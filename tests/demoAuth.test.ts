@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../src/portal/data', () => ({
   getPortalUser: vi.fn(),
@@ -22,8 +22,16 @@ const mockedGetPortalUser = vi.mocked(getPortalUser);
 
 describe('demoAuth session integrity', () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
+    demoAuth.signOut();
     localStorage.clear();
     mockedGetPortalUser.mockReset();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    demoAuth.signOut();
+    localStorage.clear();
   });
 
   it('creates an authoritative session on valid sign-in', () => {
@@ -49,12 +57,41 @@ describe('demoAuth session integrity', () => {
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
   });
 
+  it('keeps a usable session when localStorage persistence fails', () => {
+    mockedGetPortalUser.mockReturnValue(activeUser);
+    vi.spyOn(window.localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('storage unavailable');
+    });
+
+    expect(demoAuth.signIn(activeUser.email, activeUser.password)).toEqual({
+      name: activeUser.name,
+      email: activeUser.email,
+      role: activeUser.role,
+    });
+    expect(demoAuth.getSession()).toEqual({
+      name: activeUser.name,
+      email: activeUser.email,
+      role: activeUser.role,
+    });
+  });
+
   it('clears malformed JSON without throwing', () => {
     localStorage.setItem(SESSION_KEY, '{invalid json');
 
     expect(() => demoAuth.getSession()).not.toThrow();
     expect(demoAuth.getSession()).toBeNull();
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
+  });
+
+  it('does not retry sign-out when storage removal fails', () => {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({ email: activeUser.email }));
+    const removeItem = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new Error('storage unavailable');
+    });
+
+    expect(() => demoAuth.signOut()).not.toThrow();
+    expect(demoAuth.getSession()).toBeNull();
+    expect(removeItem).toHaveBeenCalledTimes(1);
   });
 
   it('clears a session for a user that no longer exists', () => {

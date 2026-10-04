@@ -92,18 +92,104 @@ export type PortalDatabase = {
 
 const PORTAL_STATE_KEY = 'arch-tech-portal-state';
 const PORTAL_SCHEMA_VERSION = 2;
+let volatilePortalDatabase: PortalDatabase | null = null;
 export const portalDb = db as PortalDatabase;
 export const demoPortalUser = portalDb.users[0];
 
-const isRuntimeProjectId = (id: string) => id.startsWith('admin-project-');
+const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+const isString = (value: unknown): value is string => typeof value === 'string';
+const isValidProgress = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100;
+const isRuntimeProjectId = (id: unknown): id is string => isString(id) && id.startsWith('admin-project-');
 const isSafeAssetPath = (asset: unknown): asset is string => typeof asset === 'string' && asset.startsWith('/projects/') && !asset.includes('/arch_');
+const validRoles: PortalRole[] = ['client', 'architect', 'admin'];
+const validUserStatuses: PortalUser['status'][] = ['active', 'inactive'];
+const validMilestoneStatuses: ProjectMilestone['status'][] = ['Complete', 'Current', 'Upcoming'];
+const validApprovalStatuses: ProjectApproval['status'][] = ['Approved', 'Pending', 'Rejected'];
 
-const mergeRecords = <T extends { projectId: string }>(seed: T[], stored: unknown, key: (record: T) => string, projectIds: Set<string>) => {
+const normalizeMedia = (value: unknown): PortalProjectRecord['media'] | undefined => {
+  if (!isRecord(value)) return undefined;
+  const keys = ['aerial', 'masterplan', 'sitePlan', 'floorPlan', 'interior', 'campusOverview', 'conceptBoard'] as const;
+  if (!keys.every((key) => isSafeAssetPath(value[key]))) return undefined;
+  return Object.fromEntries(keys.map((key) => [key, value[key]])) as PortalProjectRecord['media'];
+};
+
+const normalizeProject = (candidate: unknown, fallback?: PortalProjectRecord): PortalProjectRecord | null => {
+  if (!isRecord(candidate)) return null;
+  if (!fallback && (!isString(candidate.id) || !isString(candidate.code) || !isString(candidate.title) || !isString(candidate.category) || !isString(candidate.phase) || !isValidProgress(candidate.progress) || !isString(candidate.nextMilestone) || !isString(candidate.summary) || !isString(candidate.statement))) return null;
+  if (fallback) {
+    return {
+      ...fallback,
+      code: isString(candidate.code) ? candidate.code : fallback.code,
+      title: isString(candidate.title) ? candidate.title : fallback.title,
+      category: isString(candidate.category) ? candidate.category : fallback.category,
+      phase: isString(candidate.phase) ? candidate.phase : fallback.phase,
+      progress: isValidProgress(candidate.progress) ? candidate.progress : fallback.progress,
+      nextMilestone: isString(candidate.nextMilestone) ? candidate.nextMilestone : fallback.nextMilestone,
+      summary: isString(candidate.summary) ? candidate.summary : fallback.summary,
+      statement: isString(candidate.statement) ? candidate.statement : fallback.statement,
+      published: typeof candidate.published === 'boolean' ? candidate.published : fallback.published,
+      archived: typeof candidate.archived === 'boolean' ? candidate.archived : fallback.archived,
+      market: isString(candidate.market) ? candidate.market : fallback.market,
+      developmentType: isString(candidate.developmentType) ? candidate.developmentType : fallback.developmentType,
+      publicStage: isString(candidate.publicStage) ? candidate.publicStage : fallback.publicStage,
+      context: isString(candidate.context) ? candidate.context : fallback.context,
+      scale: isString(candidate.scale) ? candidate.scale : fallback.scale,
+      longView: isString(candidate.longView) ? candidate.longView : fallback.longView,
+      image: fallback.image,
+      media: fallback.media,
+    };
+  }
+  const project: PortalProjectRecord = {
+    id: candidate.id as string,
+    code: candidate.code as string,
+    title: candidate.title as string,
+    category: candidate.category as string,
+    phase: candidate.phase as string,
+    progress: candidate.progress as number,
+    nextMilestone: candidate.nextMilestone as string,
+    summary: candidate.summary as string,
+    statement: candidate.statement as string,
+    image: isSafeAssetPath(candidate.image) ? candidate.image : portalDb.projects[0].image,
+    published: candidate.published === true,
+    media: normalizeMedia(candidate.media),
+  };
+  if (typeof candidate.archived === 'boolean') project.archived = candidate.archived;
+  if (isString(candidate.market)) project.market = candidate.market;
+  if (isString(candidate.developmentType)) project.developmentType = candidate.developmentType;
+  if (isString(candidate.publicStage)) project.publicStage = candidate.publicStage;
+  if (isString(candidate.context)) project.context = candidate.context;
+  if (isString(candidate.scale)) project.scale = candidate.scale;
+  if (isString(candidate.longView)) project.longView = candidate.longView;
+  return project;
+};
+
+const mergeRecords = <T>(seed: T[], stored: unknown, key: (record: T) => string, isValid: (record: unknown) => record is T) => {
   const records = new Map(seed.map((record) => [key(record), record]));
   if (Array.isArray(stored)) {
-    stored.filter((record): record is T => Boolean(record) && projectIds.has(record.projectId)).forEach((record) => records.set(key(record), record));
+    stored.filter(isValid).forEach((record) => records.set(key(record), record));
   }
   return [...records.values()];
+};
+
+const isValidProjectUpdate = (value: unknown, projectIds: Set<string>): value is ProjectUpdate => {
+  if (!isRecord(value)) return false;
+  return isString(value.projectId) && projectIds.has(value.projectId) && isString(value.date) && isString(value.title) && isString(value.body);
+};
+const isValidProjectMilestone = (value: unknown, projectIds: Set<string>): value is ProjectMilestone => {
+  if (!isRecord(value)) return false;
+  return isString(value.projectId) && projectIds.has(value.projectId) && isString(value.label) && validMilestoneStatuses.includes(value.status as ProjectMilestone['status']);
+};
+const isValidProjectDocument = (value: unknown, projectIds: Set<string>): value is ProjectDocument => {
+  if (!isRecord(value)) return false;
+  return isString(value.projectId) && projectIds.has(value.projectId) && isString(value.name) && isString(value.meta);
+};
+const isValidProjectApproval = (value: unknown, projectIds: Set<string>): value is ProjectApproval => {
+  if (!isRecord(value)) return false;
+  return isString(value.projectId) && projectIds.has(value.projectId) && isString(value.title) && validApprovalStatuses.includes(value.status as ProjectApproval['status']);
+};
+const isValidNotification = (value: unknown, projectIds: Set<string>, userIds: Set<string>): value is PortalDatabase['notifications'][number] => {
+  if (!isRecord(value)) return false;
+  return isString(value.userId) && userIds.has(value.userId) && isString(value.projectId) && projectIds.has(value.projectId) && isString(value.message) && isString(value.date);
 };
 
 const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase => {
@@ -111,38 +197,56 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
   const storedProjects = Array.isArray(stored.projects) ? stored.projects : [];
   const projects = seedProjects.map((seedProject) => {
     const saved = storedProjects.find((project) => project?.id === seedProject.id);
-    return saved ? { ...seedProject, ...saved, image: seedProject.image, media: seedProject.media } : seedProject;
+    return saved ? normalizeProject(saved, seedProject) ?? seedProject : seedProject;
   });
 
   storedProjects.filter((project) => isRuntimeProjectId(project?.id)).forEach((project) => {
-    projects.push({
-      ...project,
-      image: isSafeAssetPath(project.image) ? project.image : seedProjects[0].image,
-      media: project.media && Object.values(project.media).every(isSafeAssetPath) ? project.media : undefined,
-      published: project.published === true,
-    });
+    const normalized = normalizeProject(project);
+    if (normalized) projects.push(normalized);
   });
 
   const projectIds = new Set(projects.map((project) => project.id));
   const users = portalDb.users.map((seedUser) => {
     const saved = Array.isArray(stored.users) ? stored.users.find((user) => user?.id === seedUser.id) : undefined;
-    const projectAssignments = saved?.projectIds?.filter((id) => projectIds.has(id)) ?? [];
-    return { ...seedUser, ...saved, projectIds: projectAssignments.length || stored.schemaVersion === PORTAL_SCHEMA_VERSION ? projectAssignments : seedUser.projectIds };
+    const projectAssignments = Array.isArray(saved?.projectIds) ? saved.projectIds.filter((id): id is string => isString(id) && projectIds.has(id)) : [];
+    return {
+      ...seedUser,
+      ...(saved && isString(saved.name) ? { name: saved.name } : {}),
+      ...(saved && isString(saved.email) ? { email: saved.email } : {}),
+      ...(saved && isString(saved.password) ? { password: saved.password } : {}),
+      ...(saved && validRoles.includes(saved.role as PortalRole) ? { role: saved.role as PortalRole } : {}),
+      ...(saved && validUserStatuses.includes(saved.status as PortalUser['status']) ? { status: saved.status as PortalUser['status'] } : {}),
+      projectIds: projectAssignments.length || stored.schemaVersion === PORTAL_SCHEMA_VERSION ? projectAssignments : seedUser.projectIds.filter((id) => projectIds.has(id)),
+    };
   });
   const customUsers: PortalUser[] = [];
   if (Array.isArray(stored.users)) {
-    stored.users.filter((user) => user?.id && !users.some((current) => current.id === user.id)).forEach((user) => customUsers.push({ ...user, projectIds: user.projectIds?.filter((id) => projectIds.has(id)) ?? [] }));
+    stored.users.forEach((user) => {
+      if (!isRecord(user) || users.some((current) => current.id === user.id)) return;
+      if (!isString(user.id) || !isString(user.name) || !isString(user.email) || !isString(user.password) || !validRoles.includes(user.role as PortalRole) || !validUserStatuses.includes(user.status as PortalUser['status'])) return;
+      customUsers.push({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        password: user.password,
+        role: user.role as PortalRole,
+        status: user.status as PortalUser['status'],
+        projectIds: Array.isArray(user.projectIds) ? user.projectIds.filter((id): id is string => isString(id) && projectIds.has(id)) : [],
+      });
+    });
   }
+
+  const userIds = new Set([...customUsers, ...users].map((user) => user.id));
 
   return {
     schemaVersion: PORTAL_SCHEMA_VERSION,
     users: [...customUsers, ...users],
     projects,
-    updates: mergeRecords(portalDb.updates, stored.updates, (record) => `${record.projectId}:${record.date}:${record.title}`, projectIds),
-    milestones: mergeRecords(portalDb.milestones, stored.milestones, (record) => `${record.projectId}:${record.label}`, projectIds),
-    documents: mergeRecords(portalDb.documents, stored.documents, (record) => `${record.projectId}:${record.name}`, projectIds),
-    approvals: mergeRecords(portalDb.approvals, stored.approvals, (record) => `${record.projectId}:${record.title}`, projectIds),
-    notifications: mergeRecords(portalDb.notifications, stored.notifications, (record) => `${record.userId}:${record.projectId}:${record.message}:${record.date}`, projectIds),
+    updates: mergeRecords(portalDb.updates, stored.updates, (record) => `${record.projectId}:${record.date}:${record.title}`, (value): value is ProjectUpdate => isValidProjectUpdate(value, projectIds)),
+    milestones: mergeRecords(portalDb.milestones, stored.milestones, (record) => `${record.projectId}:${record.label}`, (value): value is ProjectMilestone => isValidProjectMilestone(value, projectIds)),
+    documents: mergeRecords(portalDb.documents, stored.documents, (record) => `${record.projectId}:${record.name}`, (value): value is ProjectDocument => isValidProjectDocument(value, projectIds)),
+    approvals: mergeRecords(portalDb.approvals, stored.approvals, (record) => `${record.projectId}:${record.title}`, (value): value is ProjectApproval => isValidProjectApproval(value, projectIds)),
+    notifications: mergeRecords(portalDb.notifications, stored.notifications, (record) => `${record.userId}:${record.projectId}:${record.message}:${record.date}`, (value): value is PortalDatabase['notifications'][number] => isValidNotification(value, projectIds, userIds)),
   };
 };
 
@@ -152,6 +256,17 @@ const isPortalStateRoot = (value: unknown): value is Partial<PortalDatabase> => 
 
 const readPortalDatabase = (): PortalDatabase => {
   if (typeof window === 'undefined') return portalDb;
+
+  if (volatilePortalDatabase) {
+    const current = volatilePortalDatabase;
+    try {
+      window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(current));
+      volatilePortalDatabase = null;
+    } catch {
+      return current;
+    }
+    return current;
+  }
 
   let stored: Partial<PortalDatabase> = {};
   try {
@@ -172,13 +287,19 @@ const readPortalDatabase = (): PortalDatabase => {
   try {
     window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(next));
   } catch {
-    // Storage can be unavailable; the in-memory recovery remains usable.
+    volatilePortalDatabase = next;
   }
   return next;
 };
 
 const writePortalDatabase = (next: PortalDatabase) => {
-  if (typeof window !== 'undefined') window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(next));
+  if (typeof window === 'undefined') return next;
+  try {
+    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(next));
+    volatilePortalDatabase = null;
+  } catch {
+    volatilePortalDatabase = next;
+  }
   return next;
 };
 
