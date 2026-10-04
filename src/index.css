@@ -66,29 +66,38 @@ body {
 }
 
 html.portal-dark .portal-surface {
-  background-color: #11110f !important;
+  background-color: #0a0b0d !important;
   color: #f4efe8 !important;
 }
 html.portal-dark .portal-surface .portal-header {
-  background-color: #171714 !important;
+  background-color: #0b0c10 !important;
   border-color: rgb(255 255 255 / 0.14);
 }
 html.portal-dark .portal-surface .text-stone-600,
 html.portal-dark .portal-surface .text-stone-500,
-html.portal-dark .portal-surface .text-stone-400 {
+html.portal-dark .portal-surface .text-stone-400,
+html.portal-dark .portal-surface .text-stone-300,
+html.portal-dark .portal-surface .text-stone-200 {
   color: #a8a29e !important;
 }
 html.portal-dark .portal-surface .border-black\/15,
-html.portal-dark .portal-surface .border-black\/10 {
+html.portal-dark .portal-surface .border-black\/10,
+html.portal-dark .portal-surface .border-black\/20,
+html.portal-dark .portal-surface .border-black {
   border-color: rgb(255 255 255 / 0.14) !important;
 }
 html.portal-dark .portal-surface .portal-header button:first-child,
-html.portal-dark .portal-surface .portal-header button:hover {
+html.portal-dark .portal-surface .portal-header button:hover,
+html.portal-dark .portal-surface .hover\:text-black:hover,
+html.portal-dark .portal-surface .hover\:text-stone-700:hover {
+  color: #f4efe8 !important;
+}
+html.portal-dark .portal-surface .text-black {
   color: #f4efe8 !important;
 }
 html.portal-dark .portal-surface .bg-black {
   background-color: #f4efe8 !important;
-  color: #171714 !important;
+  color: #0a0b0d !important;
 }
 html.portal-dark .portal-surface .bg-black\/15 {
   background-color: rgb(255 255 255 / 0.18) !important;
@@ -97,16 +106,104 @@ html.portal-dark .portal-surface .hover\:bg-white\/35:hover {
   background-color: rgb(255 255 255 / 0.08) !important;
 }
 html.portal-dark .portal-surface .admin-overview-tile {
-  background-color: #171714 !important;
+  background-color: #111216 !important;
 }
 html.portal-dark .portal-surface .portal-overview-tile {
-  background-color: #171714 !important;
+  background-color: #111216 !important;
 }
 html.portal-dark .portal-surface .hover\:text-stone-500:hover {
   color: #f4efe8 !important;
 }
 html.portal-dark .portal-surface .admin-action:hover {
   color: #f4efe8 !important;
+}
+
+html:not(.portal-dark) .portal-surface {
+  background-color: #E6DED2 !important;
+  color: #171714 !important;
+}
+html:not(.portal-dark) .portal-surface .portal-header {
+  background-color: #E6DED2 !important;
+}
+[class~="bg-[#11110f]"] {
+  background-color: #111216 !important;
+}
+html.portal-dark .portal-surface [class~="bg-[#171714]"] {
+  background-color: #f4efe8 !important;
+  color: #0a0b0d !important;
+}
+
+/* Admin keeps the editorial register while giving operational information a usable reading scale. */
+.portal-admin > main {
+  max-width: 92rem !important;
+  padding-bottom: 4.5rem !important;
+  padding-top: 3.5rem !important;
+}
+.portal-admin > main > div:first-child {
+  padding-bottom: 2.75rem !important;
+}
+.portal-admin > main > section {
+  padding-bottom: 2.5rem !important;
+  padding-top: 2.5rem !important;
+}
+.portal-admin > main > section.flex {
+  padding-bottom: 1.75rem !important;
+  padding-top: 1.75rem !important;
+}
+.portal-admin > main > section[aria-label="Portfolio overview"] {
+  padding-bottom: 0 !important;
+  padding-top: 0 !important;
+}
+.portal-admin .admin-overview-tile > p:first-child,
+.portal-admin [class~="text-[9px]"] {
+  font-size: 0.6875rem !important;
+}
+.portal-admin .admin-overview-tile .font-serif {
+  font-size: 3rem !important;
+  line-height: 0.95 !important;
+}
+.portal-admin .admin-overview-tile > p:last-child {
+  font-size: 0.875rem !important;
+  line-height: 1.4 !important;
+}
+.portal-admin [class~="text-xs"] {
+  font-size: 0.8125rem !important;
+}
+.portal-admin [class~="text-sm"] {
+  font-size: 0.9375rem !important;
+  line-height: 1.5 !important;
+}
+.portal-admin [class~="text-2xl"] {
+  font-size: 1.75rem !important;
+  line-height: 1.1 !important;
+}
+.portal-admin [class~="admin-action"] {
+  font-size: 0.6875rem !important;
+  line-height: 1.3 !important;
+}
+.portal-admin #portal-section-people button {
+  font-size: 0.6875rem !important;
+  line-height: 1.3 !important;
+  padding-bottom: 0.35rem;
+  padding-top: 0.35rem;
+}
+.portal-admin #portal-section-activity [data-testid^="admin-assignment-"] {
+  font-size: 0.6875rem !important;
+  line-height: 1.3 !important;
+  padding: 0.5rem 0.75rem;
+}
+
+@media (max-width: 639px) {
+  .portal-header > div {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .portal-header > div > div {
+    gap: 0.75rem !important;
+  }
+  .portal-header > div > div > button {
+    white-space: nowrap;
+  }
 }
 
 /* Utilities for minimal Spatial Rail */

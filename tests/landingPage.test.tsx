@@ -181,6 +181,11 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getAllByText('Pacific Regional Medical Campus').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Demo Architect').length).toBeGreaterThan(0);
     expect(screen.getByText('Material palette')).toBeDefined();
+    const adminSurface = screen.getByText('All projects / assignments').closest('.portal-surface');
+    expect(adminSurface?.className).toContain('portal-admin');
+    expect(adminSurface?.className).toContain('bg-[#E6DED2]');
+    expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelector('.font-serif')?.className).toContain('text-5xl');
+    expect(screen.getByTestId('admin-open-model-pacific-nexus-free-zone').className).toContain('admin-action');
   });
 
   it('creates projects through the admin portal form', () => {
