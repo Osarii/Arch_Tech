@@ -45,11 +45,12 @@
 Latest verified remote commit:
 
 ```text
-ed69f2b97a7982eba9dba3d5e00a40d8f26b522c docs: update PROJECT_STATE and README handoff documentation
+ecc9ff9c29a899cb48f58923c15fb10d9a07faee docs: align handoff with current product direction
 ```
 
 Previous:
 ```text
+ed69f2b97a7982eba9dba3d5e00a40d8f26b522c docs: update PROJECT_STATE and README handoff documentation
 d6278f0f feat(media): replace project image packs with new canonical zip assets
 d453bbf6 fix(gallery): polish SpatialRail layout, aspect ratio, and navigation sync
 67922de7 feat(gallery): add original high-performance SpatialRail carousel
@@ -220,7 +221,7 @@ Treat this as a **known issue to investigate separately**. Do not silently alter
 
 ## 6. LANDING PAGE — CURRENT MAIN
 
-The current main baseline is `ed69f2b9`; the public experience carries the ARCH_TECH large-scale real-estate development concept.
+The current main baseline is `ecc9ff9c`; the public experience carries the ARCH_TECH large-scale real-estate development concept.
 
 ARCH_TECH's public identity is large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites. It must not visually read as a residential architecture/house-design studio. OpenBIM/IFC remains a fundamental capability inside the platform/portal, especially for Architect/Admin workflows, but must not dominate the public landing. The portal and Workspace demonstrate that deeper technical capability. Garnier & Garnier is only a conceptual reference for scale and enterprise perception; do not copy its branding, website or assets or imply affiliation. Residential/traditional architectural identity belongs to a separate architecture project.
 
@@ -507,22 +508,36 @@ No long implementation narrative unless requested.
 
 ## 13. PRODUCT IDENTITY
 
-Arch_Tech is an **OpenBIM engineering workspace**, not a generic architecture portfolio.
+ARCH_TECH's product hierarchy is:
 
-Primary product promise:
-```text
-Design, inspect and modify IFC models in the browser.
-```
+1. Public identity: large-scale developments and infrastructure.
+2. Portal: project/client/architect/admin experience.
+3. OpenBIM/IFC: fundamental technical capability demonstrated inside the platform/workspace, not the dominant landing identity.
 
 The landing should communicate:
-- architectural credibility
-- IFC/OpenBIM workflow
-- direct manipulation
-- deterministic generation
-- export/persistence
-- technical restraint
+- free zones, corporate districts, hospitality, healthcare, compute campuses and institutional infrastructure
+- large project scale, site context, lifecycle, phasing and operational confidence
+- long-term developer-grade stewardship without unsupported claims
+- a path into the private portal, where the deeper OpenBIM capability becomes visible
 
-The BIM workspace remains the core product.
+The public experience must not visually read as a residential architecture or house-design studio. The BIM workspace remains authoritative for IFC workflows, but landing/portal work must not modify BIM internals unless explicitly requested.
+
+## PARALLEL DEVELOPMENT POLICY
+
+- `agent/a-main` = visual agent / Claude / Antigravity.
+- `agent/b-main` = technical/functionality agent / VS Code.
+- Both branches currently originate from `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`.
+- Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
+- `TARGET` is exclusive write ownership. An agent must never modify a file outside `TARGET`.
+- If another file becomes necessary, stop and report the dependency before editing it.
+- Concurrent task scopes must satisfy:
+  - `WRITE(A) ∩ WRITE(B) = ∅`
+  - `WRITE(A) ∩ READ(B) = ∅`
+  - `WRITE(B) ∩ READ(A) = ∅`
+- Shared or hot files such as `src/App.tsx`, `src/index.css`, `src/portal/data.ts`, `db.json`, package/config files and canonical docs cannot be assigned to both agents concurrently.
+- During parallel work, agents commit and push only to their assigned branch, never directly to `main`.
+- Integration to `main` is sequential. The second branch must rebase or update against the newly integrated `main` and reverify before merge.
+
 ## TOOL POLICY
 
 - Serena: use for targeted symbol/reference navigation. Never scan the whole repo.

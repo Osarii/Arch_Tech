@@ -26,6 +26,28 @@ Persistent knowledge belongs in small repository files. Current prompts remain s
    - `FULL`: lint + test + build + app verification
 6. **Hardware Target**: MacBook Pro 2019 / Intel UHD Graphics 630. DPR <= 1.25, Shadows OFF, bloom/SSAO/postprocessing OFF. Performance over decorative graphics.
 
+## Product Identity Hierarchy
+1. **Public identity**: ARCH_TECH presents large-scale developments and infrastructure.
+2. **Portal**: Client, Architect and Admin experiences coordinate projects, documents, approvals, milestones and activity.
+3. **OpenBIM / IFC**: Fundamental technical capability demonstrated inside the platform/workspace, not the dominant public landing identity.
+
+Public work should emphasize free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and infrastructure. ARCH_TECH must not visually read as a residential architecture or house-design studio. Garnier & Garnier is a conceptual reference for scale, positioning and enterprise perception only; do not copy its branding, website design or assets, and do not imply affiliation, partnership or endorsement. Landing/portal work must not modify BIM internals unless explicitly requested.
+
+## Parallel Development Policy
+- `agent/a-main` = visual agent / Claude / Antigravity.
+- `agent/b-main` = technical/functionality agent / VS Code.
+- Both branches currently originate from `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`.
+- Each task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
+- `TARGET` is exclusive write ownership. An agent must never modify a file outside `TARGET`.
+- If another file becomes necessary, stop and report the dependency before editing.
+- Concurrent tasks must satisfy:
+  - `WRITE(A) ∩ WRITE(B) = ∅`
+  - `WRITE(A) ∩ READ(B) = ∅`
+  - `WRITE(B) ∩ READ(A) = ∅`
+- Shared or hot files such as `src/App.tsx`, `src/index.css`, `src/portal/data.ts`, `db.json`, package/config files and canonical docs cannot be assigned to both agents concurrently.
+- During parallel work, agents commit and push only to their assigned branch, never directly to `main`.
+- Integration to `main` is sequential. The second branch must rebase or update against the newly integrated `main` and reverify before merge.
+
 ## Project Structure
 - `src/bim/`: Engine, loaders, selection, properties, tree, visibility, camera, clipping, measurement, edit, persistence, analysis, ai (AIAgent, ToolRegistry, providers)
 - `src/components/`: Viewport, layout, overlays, panels (Tree, Properties, ChangeSet, AI Assistant), diagnostics

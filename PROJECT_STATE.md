@@ -5,11 +5,12 @@
 ---
 
 ## 1. Project Purpose & Scope
-**Current `main` baseline:** `ed69f2b97a7982eba9dba3d5e00a40d8f26b522c` (`docs: update PROJECT_STATE and README handoff documentation`).
+**Current `main` baseline:** `ecc9ff9c29a899cb48f58923c15fb10d9a07faee` (`docs: align handoff with current product direction`).
 
-**ARCH_TECH** is a dual-capability architecture & engineering platform:
-1. **Public Development Portfolio & Portal**: A premium Costa Rica-oriented real-estate development concept focused on free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and infrastructure. Features a client portal with role-based access for Clients, Architects, and Admins.
-2. **Authoritative OpenBIM Engineering Workspace**: Desktop-first browser-based CAD environment capable of loading, visualizing, inspecting, editing, generating, and persisting authentic ISO STEP-21 `.ifc` files directly in WebGL using That Open Components, Fragments, and `web-ifc` WASM.
+**ARCH_TECH** is a dual-capability architecture & engineering platform with this product hierarchy:
+1. **Public Identity**: Large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites.
+2. **Portal Experience**: Project/client/architect/admin workflows for tracking portfolio progress, milestones, documents, approvals and project activity.
+3. **OpenBIM / IFC Capability**: A fundamental technical capability demonstrated inside the platform/workspace, not the dominant public landing identity. The Workspace can load, visualize, inspect, edit, generate and persist authentic ISO STEP-21 `.ifc` files directly in WebGL using That Open Components, Fragments and `web-ifc` WASM.
 
 ---
 
@@ -109,6 +110,21 @@ These six names and categories are the stable public portfolio unless explicitly
   - **Diff-First**: Run `git status` and `git diff` before loading files.
   - **Context Routing**: Read `AGENTS.md` + `PROJECT_STATE.md`, then consult `docs/context/CONTEXT.md` by line range.
   - **Fast Task Mode**: No intermediate narration; run targeted tests first; execute clean verification before reporting results.
+
+### Parallel Development Policy
+- `agent/a-main` is the visual agent branch for Claude / Antigravity work.
+- `agent/b-main` is the technical/functionality agent branch for VS Code work.
+- Both branches currently originate from `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`.
+- Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
+- `TARGET` is exclusive write ownership. An agent must never modify a file outside `TARGET`.
+- If another file becomes necessary, stop and report the dependency before editing.
+- Concurrent task scopes must satisfy:
+  - `WRITE(A) ∩ WRITE(B) = ∅`
+  - `WRITE(A) ∩ READ(B) = ∅`
+  - `WRITE(B) ∩ READ(A) = ∅`
+- Shared or hot files such as `src/App.tsx`, `src/index.css`, `src/portal/data.ts`, `db.json`, package/config files and canonical docs cannot be assigned to both agents concurrently.
+- During parallel work, agents commit and push only to their assigned branch, never directly to `main`.
+- Integration to `main` is sequential. The second branch must rebase or update against the newly integrated `main` and reverify before merge.
 
 ---
 
