@@ -470,20 +470,42 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
             <SpatialRail project={project} />
           </div>
         </div>
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-24">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Project intent</p>
-          <p className="max-w-3xl font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>
-        </div>
-        <div className="mx-auto grid max-w-7xl gap-10 border-t border-white/[0.08] px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Long view</p>
-          <p className="max-w-3xl font-serif text-3xl font-light leading-snug text-stone-200 sm:text-4xl">{project.longView ?? 'Clear decisions, durable materials and a place that can remain useful over time.'}</p>
-        </div>
-        <div className="mx-auto grid max-w-7xl gap-10 border-t border-white/[0.08] px-6 py-20 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-28">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Development path</p>
-          <ol className="divide-y divide-white/[0.1] border-y border-white/[0.1]">
-            {project.milestones.map((milestone, index) => <li key={milestone.label} className="grid gap-4 py-5 sm:grid-cols-[50px_1fr_auto] sm:items-center"><span className="font-mono text-[10px] text-stone-500">{String(index + 1).padStart(2, '0')}</span><span className="font-serif text-2xl font-light">{milestone.label}</span><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{milestone.status}</span></li>)}
-          </ol>
-        </div>
+        <section aria-labelledby="project-intent" className="mx-auto max-w-7xl border-t border-white/[0.12] px-6 py-12 sm:px-8 lg:grid lg:grid-cols-[0.35fr_1fr] lg:gap-10 lg:px-12 lg:py-16">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">01 / Brief</p>
+            <h2 id="project-intent" className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300">Project intent</h2>
+          </div>
+          <div className="mt-8 border-l border-white/[0.18] pl-5 sm:pl-7 lg:mt-0">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Development mandate</p>
+            <p className="mt-4 max-w-3xl text-xl leading-8 text-stone-200 sm:text-2xl sm:leading-9">{project.statement}</p>
+          </div>
+        </section>
+        <section aria-labelledby="long-view" className="border-y border-white/[0.08] bg-[#101215]">
+          <div className="mx-auto grid max-w-7xl gap-8 px-6 py-12 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:gap-10 lg:px-12 lg:py-16">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">02 / Horizon</p>
+              <h2 id="long-view" className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300">Long view</h2>
+            </div>
+            <div className="grid gap-6 border-l border-white/[0.18] pl-5 sm:pl-7 lg:grid-cols-[10rem_1fr] lg:gap-10">
+              <p className="font-mono text-[10px] uppercase leading-5 tracking-[0.16em] text-stone-500">Long-term development strategy</p>
+              <p className="max-w-3xl font-serif text-3xl font-light leading-tight text-stone-100 sm:text-4xl">{project.longView ?? 'Clear decisions, durable materials and a place that can remain useful over time.'}</p>
+            </div>
+          </div>
+        </section>
+        <section aria-labelledby="development-path" className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:grid lg:grid-cols-[0.35fr_1fr] lg:gap-10 lg:px-12 lg:py-16">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">03 / Register</p>
+            <h2 id="development-path" className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300">Development path</h2>
+          </div>
+          <div className="mt-8 lg:mt-0">
+            <div className="grid grid-cols-[3rem_minmax(0,1fr)_auto] gap-4 border-y border-white/[0.12] px-3 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500 sm:grid-cols-[4rem_minmax(0,1fr)_8rem] sm:gap-6 sm:px-4">
+              <span>Seq.</span><span>Milestone</span><span className="text-right">Status</span>
+            </div>
+            <ol>
+              {project.milestones.map((milestone, index) => <li key={milestone.label} className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-baseline gap-4 border-b border-white/[0.1] px-3 py-5 sm:grid-cols-[4rem_minmax(0,1fr)_8rem] sm:gap-6 sm:px-4"><span className="font-mono text-sm text-stone-400">{String(index + 1).padStart(2, '0')}</span><span className="font-serif text-xl font-light text-stone-100 sm:text-2xl">{milestone.label}</span><span className="text-right font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{milestone.status}</span></li>)}
+            </ol>
+          </div>
+        </section>
       </main>
     </div>
   );
