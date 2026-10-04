@@ -6,8 +6,16 @@ interface ProjectShowcaseProps {
   onOpenProject: (id: string) => void;
 }
 
+const Field: React.FC<{ label: string; value: string; labelAlways?: boolean }> = ({ label, value, labelAlways }) => (
+  <span className="block">
+    <span className={`block font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500 ${labelAlways ? '' : 'lg:hidden'}`}>{label}</span>
+    <span className={`mt-1 block text-sm leading-5 text-stone-700 ${labelAlways ? '' : 'lg:mt-0'}`}>{value}</span>
+  </span>
+);
+
 export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject }) => {
   const [projects] = useState(getPublicProjects);
+  const [featured, ...register] = projects;
   return (
     <section id="projects" className="bg-[#e9e5dc] px-6 py-24 text-[#171714] sm:px-8 lg:px-12 lg:py-32">
       <div className="mx-auto max-w-7xl">
@@ -19,29 +27,66 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
           <p className="max-w-sm text-sm leading-6 text-stone-600">Free zones, logistics campuses, corporate developments, mixed-use districts, hospitality destinations and masterplans across Costa Rica.</p>
         </div>
 
-        <div className="mt-14 grid gap-px bg-black/15 md:grid-cols-2">
-          {projects.map((project, index) => (
+        {featured && (
+          <button
+            key={featured.id}
+            data-testid={`public-project-${featured.id}`}
+            onClick={() => onOpenProject(featured.id)}
+            className="group mt-12 block w-full text-left"
+          >
+            <span className="relative block aspect-[16/9] overflow-hidden bg-stone-300 md:aspect-[21/9]">
+              <img src={featured.media?.aerial ?? featured.image} alt="" loading="lazy" fetchPriority="low" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
+            </span>
+            <span className="mt-6 block border-b border-black/15 pb-10">
+              <span className="flex items-start justify-between gap-6">
+                <span className="block">
+                  <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">01 · Principal development · {featured.category}</span>
+                  <span className="mt-3 block max-w-4xl font-serif text-4xl font-light leading-[1.02] sm:text-6xl lg:text-7xl">{featured.title}</span>
+                </span>
+                <ArrowUpRight className="mt-1 hidden h-6 w-6 shrink-0 text-stone-700 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 lg:block" />
+              </span>
+              <span className="mt-8 grid gap-5 border-t border-black/15 pt-5 sm:grid-cols-3">
+                <Field labelAlways label="Market" value={featured.market ?? 'Costa Rica'} />
+                <Field labelAlways label="Stage" value={featured.publicStage ?? featured.phase} />
+                <Field labelAlways label="Scale" value={featured.scale ?? 'Development study'} />
+              </span>
+            </span>
+          </button>
+        )}
+
+        <div className="hidden grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] gap-8 border-b border-black/15 py-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500 lg:grid">
+          <span>No.</span>
+          <span>Site</span>
+          <span>Development</span>
+          <span>Market</span>
+          <span>Stage</span>
+          <span>Scale</span>
+          <span />
+        </div>
+        <div>
+          {register.map((project, i) => (
             <button
               key={project.id}
               data-testid={`public-project-${project.id}`}
               onClick={() => onOpenProject(project.id)}
-              className={`group bg-[#e9e5dc] p-5 text-left transition-colors hover:bg-[#ded9cf] sm:p-7 ${index === 0 ? 'md:col-span-2 md:grid md:grid-cols-[1fr_1.25fr] md:gap-8' : ''}`}
+              className="group grid w-full gap-5 border-b border-black/15 py-6 text-left transition-colors hover:bg-[#ded9cf] sm:grid-cols-[14rem_1fr] lg:grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] lg:items-center lg:gap-8"
             >
-              <span className={`flex items-center justify-between font-mono text-[10px] text-stone-500 ${index === 0 ? 'md:col-span-2' : ''}`}><span>{String(index + 1).padStart(2, '0')}</span><span>{project.market ?? 'Costa Rica'}</span></span>
-              <span className={index === 0 ? 'mt-5 block md:mt-0' : 'mt-5 block'}>
-                <span className="relative block aspect-[16/9] overflow-hidden bg-stone-300">
-                  <img src={project.media?.aerial ?? project.image} alt="" loading="lazy" fetchPriority="low" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
+              <span className="hidden font-mono text-[10px] text-stone-500 lg:block">{String(i + 2).padStart(2, '0')}</span>
+              <span className="relative block aspect-[16/10] overflow-hidden bg-stone-300">
+                <img src={project.media?.aerial ?? project.image} alt="" loading="lazy" fetchPriority="low" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+              </span>
+              <span className="grid gap-5 sm:contents">
+                <span className="block sm:col-start-2 lg:col-start-auto">
+                  <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{project.category}</span>
+                  <span className="mt-2 block font-serif text-2xl font-light leading-tight sm:text-3xl">{project.title}</span>
+                </span>
+                <span className="grid gap-4 sm:col-start-2 sm:grid-cols-3 lg:contents">
+                  <Field label="Market" value={project.market ?? 'Costa Rica'} />
+                  <Field label="Stage" value={project.publicStage ?? project.phase} />
+                  <Field label="Scale" value={project.scale ?? 'Development study'} />
                 </span>
               </span>
-              <span className={index === 0 ? 'mt-6 block md:mt-0' : 'mt-6 block'}>
-                <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{project.category}</span>
-                <span className="mt-3 block font-serif text-3xl font-light sm:text-4xl">{project.title}</span>
-                <span className="mt-5 grid gap-3 border-t border-black/15 pt-4 text-xs leading-5 text-stone-600 sm:grid-cols-2">
-                  <span><span className="block font-mono text-[9px] uppercase tracking-[0.12em] text-stone-500">Stage</span><span className="mt-1 block">{project.publicStage ?? project.phase}</span></span>
-                  <span><span className="block font-mono text-[9px] uppercase tracking-[0.12em] text-stone-500">Scale</span><span className="mt-1 block">{project.scale ?? 'Development study'}</span></span>
-                </span>
-                <span className="mt-7 inline-flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-600">View development <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></span>
-              </span>
+              <ArrowUpRight className="hidden h-4 w-4 text-stone-600 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 lg:block" />
             </button>
           ))}
         </div>
