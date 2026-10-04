@@ -40,13 +40,15 @@
 **Owner:** Jared Prendas Ramirez (Osari)
 **Machine target:** MacBook Pro 2019, Intel i7, 16 GB RAM, Intel UHD 630 + Radeon 5300M.
 
-### Current `main` baseline
+### Verified application checkpoint
 
-Latest verified remote commit:
+Last verified application checkpoint:
 
 ```text
 ecc9ff9c29a899cb48f58923c15fb10d9a07faee docs: align handoff with current product direction
 ```
+
+This checkpoint is historical context, not a persistent claim about the current `main` HEAD. Every task must resolve its actual `BASE` from current remote `main` before execution.
 
 Previous:
 ```text
@@ -219,9 +221,9 @@ Treat this as a **known issue to investigate separately**. Do not silently alter
 
 ---
 
-## 6. LANDING PAGE — CURRENT MAIN
+## 6. LANDING PAGE
 
-The current main baseline is `ecc9ff9c`; the public experience carries the ARCH_TECH large-scale real-estate development concept.
+At the verified application checkpoint, the public experience carries the ARCH_TECH large-scale real-estate development concept.
 
 ARCH_TECH's public identity is large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites. It must not visually read as a residential architecture/house-design studio. OpenBIM/IFC remains a fundamental capability inside the platform/portal, especially for Architect/Admin workflows, but must not dominate the public landing. The portal and Workspace demonstrate that deeper technical capability. Garnier & Garnier is only a conceptual reference for scale and enterprise perception; do not copy its branding, website or assets or imply affiliation. Residential/traditional architectural identity belongs to a separate architecture project.
 
@@ -526,7 +528,8 @@ The public experience must not visually read as a residential architecture or ho
 
 - `agent/a-main` = visual agent / Claude / Antigravity.
 - `agent/b-main` = technical/functionality agent / VS Code.
-- Both branches currently originate from `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`.
+- Both branches were initially created from workflow initialization checkpoint `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`; this does not permanently pin future work to that commit.
+- Every task must resolve its actual `BASE` from current remote `main` before execution.
 - Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
 - `TARGET` is exclusive write ownership. An agent must never modify a file outside `TARGET`.
 - If another file becomes necessary, stop and report the dependency before editing it.

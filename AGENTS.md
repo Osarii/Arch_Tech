@@ -36,7 +36,8 @@ Public work should emphasize free zones, corporate districts, hospitality, healt
 ## Parallel Development Policy
 - `agent/a-main` = visual agent / Claude / Antigravity.
 - `agent/b-main` = technical/functionality agent / VS Code.
-- Both branches currently originate from `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`.
+- Both branches were initially created from workflow initialization checkpoint `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`; this does not permanently pin future work to that commit.
+- Every task must resolve its actual `BASE` from current remote `main` before execution.
 - Each task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
 - `TARGET` is exclusive write ownership. An agent must never modify a file outside `TARGET`.
 - If another file becomes necessary, stop and report the dependency before editing.

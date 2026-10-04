@@ -5,7 +5,7 @@
 ---
 
 ## 1. Project Purpose & Scope
-**Current `main` baseline:** `ecc9ff9c29a899cb48f58923c15fb10d9a07faee` (`docs: align handoff with current product direction`).
+**Verified application checkpoint:** `ecc9ff9c29a899cb48f58923c15fb10d9a07faee` (`docs: align handoff with current product direction`). This is not a persistent claim about the current `main` HEAD; every task must resolve its actual `BASE` from current remote `main` before execution.
 
 **ARCH_TECH** is a dual-capability architecture & engineering platform with this product hierarchy:
 1. **Public Identity**: Large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites.
@@ -114,7 +114,8 @@ These six names and categories are the stable public portfolio unless explicitly
 ### Parallel Development Policy
 - `agent/a-main` is the visual agent branch for Claude / Antigravity work.
 - `agent/b-main` is the technical/functionality agent branch for VS Code work.
-- Both branches currently originate from `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`.
+- Both branches were initially created from workflow initialization checkpoint `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`; this does not permanently pin future work to that commit.
+- Every task must resolve its actual `BASE` from current remote `main` before execution.
 - Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
 - `TARGET` is exclusive write ownership. An agent must never modify a file outside `TARGET`.
 - If another file becomes necessary, stop and report the dependency before editing.
