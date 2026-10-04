@@ -5,8 +5,10 @@
 ---
 
 ## 1. Project Purpose & Scope
+**Current `main` baseline:** `ed69f2b97a7982eba9dba3d5e00a40d8f26b522c` (`docs: update PROJECT_STATE and README handoff documentation`).
+
 **ARCH_TECH** is a dual-capability architecture & engineering platform:
-1. **Public Development Portfolio & Portal**: Sourced from real-estate development concepts in Costa Rica (free zones, corporate districts, hospitality, AI compute campuses, medical facilities). Features a client portal with role-based access for Clients, Architects, and Admins.
+1. **Public Development Portfolio & Portal**: A premium Costa Rica-oriented real-estate development concept focused on free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and infrastructure. Features a client portal with role-based access for Clients, Architects, and Admins.
 2. **Authoritative OpenBIM Engineering Workspace**: Desktop-first browser-based CAD environment capable of loading, visualizing, inspecting, editing, generating, and persisting authentic ISO STEP-21 `.ifc` files directly in WebGL using That Open Components, Fragments, and `web-ifc` WASM.
 
 ---
@@ -20,8 +22,12 @@
 
 ---
 
-## 3. Application Routing Model
-- `/` — Public Editorial Landing Page with hero showcase, project register, development approach, and Client Login modal.
+## 3. Product Direction and Application Routing Model
+
+ARCH_TECH's primary public identity is large-scale development and infrastructure. The public experience should communicate campuses, districts, utilities, complex delivery and long-term value; it must not read as a residential architecture or house-design studio. OpenBIM/IFC remains a fundamental technical capability inside the platform and portal, especially for Architect/Admin workflows, but is intentionally secondary to the public landing identity. The desired first impression is: “This organization works on large, complex developments, campuses and infrastructure.” The portal and Workspace then demonstrate the deeper OpenBIM capability.
+
+Garnier & Garnier is only a conceptual reference for scale, positioning and enterprise perception. ARCH_TECH must not copy its branding, website design or assets, and must not imply affiliation, partnership or endorsement. Residential/traditional architectural identity belongs to a separate architecture project.
+- `/` — Public Editorial Landing Page with large-scale development hero, project register, development approach, and Portal Access modal.
 - `/projects/:id` — Public Project Detail view featuring the SpatialRail media carousel, project specifications, scope statement, and milestone roadmap.
 - `/dashboard` — Protected Client Portal Dashboard (project progress, milestone tracking, project updates, document vault, approval actions).
 - `/architect` — Protected Architect Portal Dashboard (curated architectural designs, technical specifications, and submission approval queues).
@@ -57,17 +63,18 @@
 
 ## 6. Current 6 Public Projects
 The public portfolio features six Costa Rica commercial and technological development projects:
-1. **Pacific Nexus Free Zone Campus** (`pacific-nexus`)
-2. **Summit Point Corporate District** (`summit-point`)
-3. **Mar Vista Hospitality District** (`mar-vista`)
-4. **Caribbean AI Compute Campus** (`caribbean-compute`)
-5. **Guanacaste Renewable Compute Campus** (`guanacaste-compute`)
-6. **Pacific Regional Medical Campus** (`pacific-medical`)
+These six names and categories are the stable public portfolio unless explicitly changed later:
+1. **Pacific Nexus Free Zone Campus** (`pacific-nexus-free-zone`)
+2. **Summit Point Corporate District** (`summit-point-corporate-district`)
+3. **Mar Vista Hospitality District** (`mar-vista-hospitality-district`)
+4. **Caribbean AI Compute Campus** (`caribbean-ai-compute-campus`)
+5. **Guanacaste Renewable Compute Campus** (`guanacaste-renewable-compute-campus`)
+6. **Pacific Regional Medical Campus** (`pacific-regional-medical-campus`)
 
 ---
 
 ## 7. Project Image System & Migration Status
-- **Asset Storage**: Canonical project image packs stored as zip archives under `src/imgs/` and unpacked to `public/projects/<project-slug>/`.
+- **Asset Storage**: Runtime project media lives under `public/projects/<project-slug>/` and currently uses `.webp` files. Source archives are not the runtime asset location.
 - **Media Schema**: Standardized media structure (`image` for primary hero, plus `media.aerial`, `media.campusOverview`, `media.masterplan`, `media.sitePlan`, `media.floorPlan`, `media.interior`, `media.conceptBoard`).
 - **Migration Status**: **CLOSED / COMPLETE**. Legacy placeholder assets removed; schema version 2 automatically migrates runtime storage, sanitizing legacy asset paths and preserving safe `/projects/...` paths.
 
@@ -81,7 +88,7 @@ The public portfolio features six Costa Rica commercial and technological develo
   - Aspect ratio handling: `wide` (16:9/16:10, cover) for exterior/aerial shots; `technical` (4:3, contain) for masterplans and floor plans.
   - Thin editorial progress bar and active slide indicators (`01 / 08`).
   - Scoped keyboard navigation (Left/Right arrows, Escape key).
-  - Fullscreen Lightbox viewer (`rail-fullscreen`) with zoom inspection and keyboard controls.
+  - Fullscreen/lightbox inspection viewer (`rail-fullscreen`) with keyboard controls. Interactive image zoom is not part of the current implementation.
   - Replaced prior Motion and Embla carousel dependencies, reducing bundle size.
 
 ---
@@ -115,8 +122,14 @@ The public portfolio features six Costa Rica commercial and technological develo
 
 ---
 
-## 12. What Is Currently Being Worked On
-- Handoff documentation consolidation and verification across `PROJECT_STATE.md`, `README.md`, `CODEX_CONTEXT_ARCH_TECH.md`, and `docs/context/CONTEXT.md`.
+## 12. Current Priorities
+- Landing and public portfolio experience.
+- Portfolio project presentation and current project assets.
+- Client, Architect and Admin portal quality and access integrity.
+- Performance and visual experience.
+- Landing/portal work must not modify BIM internals unless explicitly requested.
+
+Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until explicitly reactivated. It is not the current next development priority.
 
 ---
 
@@ -126,9 +139,9 @@ The public portfolio features six Costa Rica commercial and technological develo
 
 ---
 
-## 14. Next Recommended Tasks
-1. **Phase 6B.3**: OpenBIM authoring extensions (Doors, Windows, Openings, Material relations).
-2. **Phase 6C**: Advanced spatial analytics & automated compliance rules.
+## 14. Future Work
+- Reactivate Phase 6B.3 only through an explicit request.
+- Consider Phase 6C only after the current landing, portfolio, portal, asset, performance and visual priorities are intentionally complete.
 
 ---
 

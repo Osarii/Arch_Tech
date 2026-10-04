@@ -40,12 +40,12 @@
 **Owner:** Jared Prendas Ramirez (Osari)
 **Machine target:** MacBook Pro 2019, Intel i7, 16 GB RAM, Intel UHD 630 + Radeon 5300M.
 
-### Remote `main` baseline
+### Current `main` baseline
 
 Latest verified remote commit:
 
 ```text
-1f2c4322 perf: optimize public portfolio media
+ed69f2b97a7982eba9dba3d5e00a40d8f26b522c docs: update PROJECT_STATE and README handoff documentation
 ```
 
 Previous:
@@ -165,7 +165,7 @@ Important semantics:
 - failed Save & Reload preserves active model/edit state
 - edit state resets only after successful model commit
 
-### Phase 6B.3 — NOT STARTED
+### Phase 6B.3 — FROZEN / NOT STARTED
 Planned scope later:
 - doors
 - windows
@@ -220,7 +220,9 @@ Treat this as a **known issue to investigate separately**. Do not silently alter
 
 ## 6. LANDING PAGE — CURRENT MAIN
 
-The synchronized main baseline is `b47e5c9`; the public experience carries the ARCH_TECH real-estate development concept.
+The current main baseline is `ed69f2b9`; the public experience carries the ARCH_TECH large-scale real-estate development concept.
+
+ARCH_TECH's public identity is large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites. It must not visually read as a residential architecture/house-design studio. OpenBIM/IFC remains a fundamental capability inside the platform/portal, especially for Architect/Admin workflows, but must not dominate the public landing. The portal and Workspace demonstrate that deeper technical capability. Garnier & Garnier is only a conceptual reference for scale and enterprise perception; do not copy its branding, website or assets or imply affiliation. Residential/traditional architectural identity belongs to a separate architecture project.
 
 ### Routing
 - `/` => landing
@@ -248,12 +250,12 @@ Design language:
 - no fake certification / fake performance claims
 - AI is secondary, not the identity of the product
 
-Current hero:
+Current hero uses a large-scale development composition with aerial and campus imagery:
 ```text
 ARCH_TECH
 
-Architecture, with a longer view.
-Portfolio of places in formation, from possibility through design and delivery.
+Development at a larger scale.
+Places in formation, from opportunity and site strategy through delivery and operation.
 
 EXPLORE THE PORTFOLIO →
 ```
@@ -307,22 +309,24 @@ tests/landingPage.test.tsx
 Landing assets:
 ```text
 public/projects/<project-slug>/{hero-exterior,aerial-overview,campus-overview,
-masterplan,site-plan,floor-plan,lobby-interior,concept-board}.{png,jpg}
+masterplan,site-plan,floor-plan,lobby-interior,concept-board}.webp
 ```
 
 The public portfolio contains six fictional Costa Rica-oriented development concepts:
 
-- Pacific Nexus Free Zone Campus
-- Summit Point Corporate District
-- Mar Vista Hospitality District
-- Caribbean AI Compute Campus
-- Guanacaste Renewable Compute Campus
-- Pacific Regional Medical Campus
+- Pacific Nexus Free Zone Campus (`pacific-nexus-free-zone`)
+- Summit Point Corporate District (`summit-point-corporate-district`)
+- Mar Vista Hospitality District (`mar-vista-hospitality-district`)
+- Caribbean AI Compute Campus (`caribbean-ai-compute-campus`)
+- Guanacaste Renewable Compute Campus (`guanacaste-renewable-compute-campus`)
+- Pacific Regional Medical Campus (`pacific-regional-medical-campus`)
 
 Residential project data remains private to the portal. Public listings are driven by
 published projects in `db.json` and use the local project image packs above.
 
 Do not invent architects, locations, areas, endorsements or certifications.
+
+Current priorities are landing, portfolio, portal, project assets, performance and visual experience. Phase 6B.3 is intentionally **FROZEN** until explicitly reactivated; it is not the current next priority. Landing/portal work must not modify BIM internals unless explicitly requested.
 
 ---
 
@@ -350,7 +354,7 @@ The BIM workspace remains separate and authoritative; public landing changes mus
 
 ## 8. LAST VERIFIED TEST STATE
 
-Documentation refresh checkpoint (`1f2c4322`):
+Latest verified application checkpoint (`1f2c4322`, before this documentation-only update):
 
 ```text
 Vitest (Unit/Domain): 134 / 134 PASS across 13 test files

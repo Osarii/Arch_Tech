@@ -1,12 +1,14 @@
 # ARCH_TECH — Architecture & OpenBIM Engineering Platform
 
-**ARCH_TECH** is a dual-capability architecture & engineering platform combining a Costa Rica real-estate development portfolio and multi-role client portal with an authoritative, browser-based OpenBIM engineering workspace.
+**ARCH_TECH** is a dual-capability architecture & engineering platform combining a large-scale Costa Rica-oriented real-estate development portfolio and multi-role client portal with an authoritative, browser-based OpenBIM engineering workspace.
+
+Its primary identity is large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites. ARCH_TECH must not read as a residential architecture studio. OpenBIM/IFC remains a core capability inside the portal/workspace, especially for Architect/Admin workflows, while the public experience leads with development scale and lifecycle. Garnier & Garnier is only a conceptual reference for enterprise perception; ARCH_TECH does not copy its branding, website or assets and does not imply affiliation.
 
 ---
 
 ## Main Feature Areas
 
-1. **Public Development Portfolio**: Costa Rica commercial & technology development concepts showcase (Free Zone, Compute Campuses, Medical & Corporate Districts) with dark architectural editorial design.
+1. **Public Development Portfolio**: Six fictional Costa Rica-oriented development concepts (Free Zone, Corporate, Hospitality, Compute, Renewable and Medical campuses) with dark architectural editorial design.
 2. **Multi-Role Client Portal**: Secure role-based portal (`Client`, `Architect`, `Admin`) backed by local snapshot state for tracking project milestones, document vaults, design approvals, and project updates.
 3. **OpenBIM Engineering Workspace**: Desktop-first web CAD environment for real `.ifc` files:
    - **Visualization & Inspection**: Spatial BIM tree, property sets (Psets, Qto), 2D floor plans, 3D section planes (X/Y/Z clipping), length measurement.
@@ -78,4 +80,4 @@ npm run build
 ## Current Development Status & Handoff Context
 
 - **Current Status**: All Phase 6A (Viewport), Phase 6B.1 (IFC4 Generation), Phase 6B.2 (Detached IFC Persistence), Landing/Portal Redesign, and SpatialRail Media Integration phases are **COMPLETE**.
-- **Detailed Handoff**: For complete handoff details, architecture invariants, known issues, and next tasks, refer to [PROJECT_STATE.md](file:///Users/osariii/Documents/arch_tech/PROJECT_STATE.md).
+- **Detailed Handoff**: For complete handoff details, architecture invariants, known issues, and current priorities, refer to [PROJECT_STATE.md](PROJECT_STATE.md).
