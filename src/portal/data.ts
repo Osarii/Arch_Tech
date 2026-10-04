@@ -94,7 +94,13 @@ const PORTAL_STATE_KEY = 'arch-tech-portal-state';
 const PORTAL_SCHEMA_VERSION = 2;
 let volatilePortalDatabase: PortalDatabase | null = null;
 export const portalDb = db as PortalDatabase;
-export const demoPortalUser = portalDb.users[0];
+export const portalUser = portalDb.users[0];
+
+const legacyUserIdMap: Record<string, string> = {
+  'demo-client': 'portal-client',
+  'demo-architect': 'portal-architect',
+  'demo-admin': 'portal-admin',
+};
 
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 const isString = (value: unknown): value is string => typeof value === 'string';
@@ -207,15 +213,16 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
 
   const projectIds = new Set(projects.map((project) => project.id));
   const users = portalDb.users.map((seedUser) => {
-    const saved = Array.isArray(stored.users) ? stored.users.find((user) => user?.id === seedUser.id) : undefined;
+    const saved = Array.isArray(stored.users) ? stored.users.find((user) => user?.id === seedUser.id || legacyUserIdMap[user?.id ?? ''] === seedUser.id) : undefined;
+    const isLegacySavedUser = saved?.id !== seedUser.id;
     const projectAssignments = Array.isArray(saved?.projectIds) ? saved.projectIds.filter((id): id is string => isString(id) && projectIds.has(id)) : [];
     return {
       ...seedUser,
-      ...(saved && isString(saved.name) ? { name: saved.name } : {}),
-      ...(saved && isString(saved.email) ? { email: saved.email } : {}),
-      ...(saved && isString(saved.password) ? { password: saved.password } : {}),
-      ...(saved && validRoles.includes(saved.role as PortalRole) ? { role: saved.role as PortalRole } : {}),
-      ...(saved && validUserStatuses.includes(saved.status as PortalUser['status']) ? { status: saved.status as PortalUser['status'] } : {}),
+      ...(saved && !isLegacySavedUser && isString(saved.name) ? { name: saved.name } : {}),
+      ...(saved && !isLegacySavedUser && isString(saved.email) ? { email: saved.email } : {}),
+      ...(saved && !isLegacySavedUser && isString(saved.password) ? { password: saved.password } : {}),
+      ...(saved && !isLegacySavedUser && validRoles.includes(saved.role as PortalRole) ? { role: saved.role as PortalRole } : {}),
+      ...(saved && !isLegacySavedUser && validUserStatuses.includes(saved.status as PortalUser['status']) ? { status: saved.status as PortalUser['status'] } : {}),
       projectIds: projectAssignments.length || stored.schemaVersion === PORTAL_SCHEMA_VERSION ? projectAssignments : seedUser.projectIds.filter((id) => projectIds.has(id)),
     };
   });
@@ -223,6 +230,7 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
   if (Array.isArray(stored.users)) {
     stored.users.forEach((user) => {
       if (!isRecord(user) || users.some((current) => current.id === user.id)) return;
+      if (isString(user.id) && legacyUserIdMap[user.id]) return;
       if (!isString(user.id) || !isString(user.name) || !isString(user.email) || !isString(user.password) || !validRoles.includes(user.role as PortalRole) || !validUserStatuses.includes(user.status as PortalUser['status'])) return;
       customUsers.push({
         id: user.id,
@@ -237,6 +245,9 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
   }
 
   const userIds = new Set([...customUsers, ...users].map((user) => user.id));
+  const storedNotifications = Array.isArray(stored.notifications)
+    ? stored.notifications.map((notification) => isRecord(notification) && isString(notification.userId) ? { ...notification, userId: legacyUserIdMap[notification.userId] ?? notification.userId } : notification)
+    : stored.notifications;
 
   return {
     schemaVersion: PORTAL_SCHEMA_VERSION,
@@ -246,7 +257,7 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
     milestones: mergeRecords(portalDb.milestones, stored.milestones, (record) => `${record.projectId}:${record.label}`, (value): value is ProjectMilestone => isValidProjectMilestone(value, projectIds)),
     documents: mergeRecords(portalDb.documents, stored.documents, (record) => `${record.projectId}:${record.name}`, (value): value is ProjectDocument => isValidProjectDocument(value, projectIds)),
     approvals: mergeRecords(portalDb.approvals, stored.approvals, (record) => `${record.projectId}:${record.title}`, (value): value is ProjectApproval => isValidProjectApproval(value, projectIds)),
-    notifications: mergeRecords(portalDb.notifications, stored.notifications, (record) => `${record.userId}:${record.projectId}:${record.message}:${record.date}`, (value): value is PortalDatabase['notifications'][number] => isValidNotification(value, projectIds, userIds)),
+    notifications: mergeRecords(portalDb.notifications, storedNotifications, (record) => `${record.userId}:${record.projectId}:${record.message}:${record.date}`, (value): value is PortalDatabase['notifications'][number] => isValidNotification(value, projectIds, userIds)),
   };
 };
 

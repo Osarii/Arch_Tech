@@ -1,6 +1,7 @@
 import { getPortalUser, PortalRole } from './data';
 
-const SESSION_KEY = 'arch-tech-demo-session';
+const SESSION_KEY = 'arch-tech-portal-session';
+const LEGACY_SESSION_KEY = 'arch-tech-demo-session';
 let volatileSession: ClientSession | null = null;
 let volatileSignedOut = false;
 
@@ -13,6 +14,7 @@ export type ClientSession = {
 const clearStoredSession = () => {
   try {
     window.localStorage.removeItem(SESSION_KEY);
+    window.localStorage.removeItem(LEGACY_SESSION_KEY);
     volatileSignedOut = false;
     return true;
   } catch {
@@ -28,7 +30,7 @@ const getAuthoritativeSession = (candidate: Partial<ClientSession> | null): Clie
   return { name: user.name, email: user.email, role: user.role };
 };
 
-export const demoAuth = {
+export const portalAuth = {
   getSession(): ClientSession | null {
     if (typeof window === 'undefined') return null;
     if (volatileSignedOut) return null;
@@ -43,8 +45,13 @@ export const demoAuth = {
       return getAuthoritativeSession(current);
     }
     let value: string | null;
+    let storageKey = SESSION_KEY;
     try {
       value = window.localStorage.getItem(SESSION_KEY);
+      if (!value) {
+        value = window.localStorage.getItem(LEGACY_SESSION_KEY);
+        storageKey = LEGACY_SESSION_KEY;
+      }
     } catch {
       return null;
     }
@@ -53,6 +60,14 @@ export const demoAuth = {
       const session = JSON.parse(value) as Partial<ClientSession> | null;
       const authoritative = getAuthoritativeSession(session);
       if (!authoritative) clearStoredSession();
+      else if (storageKey === LEGACY_SESSION_KEY) {
+        try {
+          window.localStorage.setItem(SESSION_KEY, JSON.stringify(authoritative));
+          window.localStorage.removeItem(LEGACY_SESSION_KEY);
+        } catch {
+          // The authoritative session remains usable in memory for this read.
+        }
+      }
       return authoritative;
     } catch {
       clearStoredSession();

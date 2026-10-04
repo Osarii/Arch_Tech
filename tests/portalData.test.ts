@@ -10,6 +10,27 @@ describe('portal persistence recovery', () => {
     window.localStorage.clear();
   });
 
+  it('uses professional seed identities and preserves their assignments', () => {
+    const users = getPortalSnapshot().db.users;
+    expect(users).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'portal-client', name: 'Mariana Solano', email: 'mariana.solano@arch-tech.studio', role: 'client', projectIds: ['pacific-nexus-free-zone', 'mar-vista-hospitality-district'] }),
+      expect.objectContaining({ id: 'portal-architect', name: 'Sebastián Araya', email: 'sebastian.araya@arch-tech.studio', role: 'architect', projectIds: ['pacific-nexus-free-zone', 'summit-point-corporate-district'] }),
+      expect.objectContaining({ id: 'portal-admin', name: 'Andrea Quesada', email: 'andrea.quesada@arch-tech.studio', role: 'admin' }),
+    ]));
+  });
+
+  it('migrates legacy user IDs and notification ownership to professional identities', () => {
+    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify({
+      users: [{ id: 'demo-client', name: 'Demo Client', email: 'client@arch-tech.studio', password: 'studio-demo', role: 'client', projectIds: ['pacific-nexus-free-zone'], status: 'active' }],
+      notifications: [{ userId: 'demo-client', projectId: 'pacific-nexus-free-zone', message: 'Legacy notice', date: '01 OCT 2026' }],
+    }));
+
+    const snapshot = getPortalSnapshot();
+    expect(snapshot.db.users.find((user) => user.id === 'portal-client')).toMatchObject({ name: 'Mariana Solano', email: 'mariana.solano@arch-tech.studio', projectIds: ['pacific-nexus-free-zone'] });
+    expect(snapshot.db.users.some((user) => user.id === 'demo-client' || user.name === 'Demo Client')).toBe(false);
+    expect(snapshot.db.notifications).toContainEqual(expect.objectContaining({ userId: 'portal-client', message: 'Legacy notice' }));
+  });
+
   it.each([
     ['malformed JSON', '{not-json}'],
     ['null root', 'null'],

@@ -453,7 +453,7 @@ test.describe('Arch_Tech Architectural Landing Page E2E', () => {
     await expect(page.getByRole('heading', { name: /Development at a larger scale/ })).toBeVisible();
     await expect(page.getByText('Development portfolio', { exact: true })).toBeVisible();
 
-    // 2. Demo client access
+    // 2. Client access
     await page.getByTestId('client-login-link').click();
     await expect(page.getByRole('heading', { name: 'Portal Access' })).toBeVisible();
     await page.getByTestId('login-submit').click();

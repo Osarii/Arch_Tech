@@ -1,10 +1,10 @@
 {
   "users": [
     {
-      "id": "demo-client",
-      "name": "Demo Client",
-      "email": "client@arch-tech.studio",
-      "password": "studio-demo",
+      "id": "portal-client",
+      "name": "Mariana Solano",
+      "email": "mariana.solano@arch-tech.studio",
+      "password": "client-access",
       "role": "client",
       "projectIds": [
         "pacific-nexus-free-zone",
@@ -13,10 +13,10 @@
       "status": "active"
     },
     {
-      "id": "demo-architect",
-      "name": "Demo Architect",
-      "email": "architect@arch-tech.studio",
-      "password": "architect-demo",
+      "id": "portal-architect",
+      "name": "Sebastián Araya",
+      "email": "sebastian.araya@arch-tech.studio",
+      "password": "architect-access",
       "role": "architect",
       "projectIds": [
         "pacific-nexus-free-zone",
@@ -25,10 +25,10 @@
       "status": "active"
     },
     {
-      "id": "demo-admin",
-      "name": "Demo Admin",
-      "email": "admin@arch-tech.studio",
-      "password": "admin-demo",
+      "id": "portal-admin",
+      "name": "Andrea Quesada",
+      "email": "andrea.quesada@arch-tech.studio",
+      "password": "admin-access",
       "role": "admin",
       "projectIds": [
         "caribbean-ai-compute-campus",
@@ -413,25 +413,25 @@
   ],
   "notifications": [
     {
-      "userId": "demo-client",
+      "userId": "portal-client",
       "projectId": "pacific-nexus-free-zone",
       "message": "Material study is ready for review.",
       "date": "02 OCT 2026"
     },
     {
-      "userId": "demo-client",
+      "userId": "portal-client",
       "projectId": "mar-vista-hospitality-district",
       "message": "Destination brief is ready for review.",
       "date": "28 SEP 2026"
     },
     {
-      "userId": "demo-architect",
+      "userId": "portal-architect",
       "projectId": "pacific-nexus-free-zone",
       "message": "Client review is scheduled for the current phase.",
       "date": "02 OCT 2026"
     },
     {
-      "userId": "demo-architect",
+      "userId": "portal-architect",
       "projectId": "summit-point-corporate-district",
       "message": "Mobility framework is ready for coordination.",
       "date": "01 OCT 2026"

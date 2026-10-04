@@ -9,7 +9,7 @@ import {
   NotFoundPage,
   PublicProjectPage,
 } from './components/portal/PortalPages';
-import { demoAuth } from './portal/demoAuth';
+import { portalAuth } from './portal/demoAuth';
 import { getPortalUser, getProjectsForUser, PortalRole } from './portal/data';
 
 const Workspace = React.lazy(() => import('./components/layout/Workspace').then((module) => ({ default: module.Workspace })));
@@ -83,13 +83,13 @@ export const App: React.FC = () => {
   };
 
   const signOut = () => {
-    demoAuth.signOut();
+    portalAuth.signOut();
     navigate('/');
   };
 
-  const handleLoginSuccess = () => navigate(roleHome(demoAuth.getSession()?.role));
+  const handleLoginSuccess = () => navigate(roleHome(portalAuth.getSession()?.role));
 
-  const session = demoAuth.getSession();
+  const session = portalAuth.getSession();
   const dashboardProjectMatch = route.match(/^\/dashboard\/projects\/([^/]+)$/);
   const architectProjectMatch = route.match(/^\/architect\/projects\/([^/]+)$/);
   const adminProjectMatch = route.match(/^\/admin\/projects\/([^/]+)$/);

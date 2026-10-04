@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Box, FileText, LogOut, Moon, Sun, X } from 'lucide-react';
-import { demoAuth } from '../../portal/demoAuth';
+import { portalAuth } from '../../portal/demoAuth';
 import {
   addPortalApproval,
   addPortalDocument,
@@ -72,9 +72,9 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
 };
 
 export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSuccess: () => void }> = ({ open, onClose, onSuccess }) => {
-  const demoClient = getPortalSnapshot().db.users[0];
-  const [email, setEmail] = useState(demoClient?.email ?? '');
-  const [password, setPassword] = useState(demoClient?.password ?? '');
+  const portalClient = getPortalSnapshot().db.users[0];
+  const [email, setEmail] = useState(portalClient?.email ?? '');
+  const [password, setPassword] = useState(portalClient?.password ?? '');
   const [error, setError] = useState('');
   const dialogRef = useRef<HTMLDivElement>(null);
 
@@ -106,8 +106,8 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!demoAuth.signIn(email, password)) {
-      setError('Check the demo email and password.');
+    if (!portalAuth.signIn(email, password)) {
+      setError('Check the email and password.');
       return;
     }
     setError('');
@@ -116,8 +116,8 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 
   const handleQuickLogin = (role: PortalRole) => {
     const user = getPortalSnapshot().db.users.find((candidate) => candidate.role === role);
-    if (!user || !demoAuth.signIn(user.email, user.password)) {
-      setError('This demo account is unavailable.');
+    if (!user || !portalAuth.signIn(user.email, user.password)) {
+      setError('This access is unavailable.');
       return;
     }
     setError('');
@@ -143,7 +143,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
           <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">Portal Access</h1>
           <p className="mt-4 max-w-sm text-sm leading-6 text-stone-400">Review project progress, updates, documents and the current model.</p>
 
-          <div className="mt-8 border-y border-white/10 py-5"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Quick access</p><div className="mt-4 grid grid-cols-3 gap-2">{(['client', 'architect', 'admin'] as PortalRole[]).map((role) => <button key={role} type="button" data-testid={`quick-login-${role}`} onClick={() => handleQuickLogin(role)} className="border border-white/20 px-2 py-3 font-mono text-[9px] uppercase tracking-[0.12em] text-stone-200 transition-colors hover:border-white hover:bg-white hover:text-black">{`Login as ${role[0].toUpperCase()}${role.slice(1)}`}</button>)}</div><p className="mt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">— or use credentials manually —</p></div>
+          <div className="mt-8 border-y border-white/10 py-5"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Quick access</p><div className="mt-4 grid grid-cols-3 gap-2">{(['client', 'architect', 'admin'] as PortalRole[]).map((role) => <button key={role} type="button" data-testid={`quick-login-${role}`} onClick={() => handleQuickLogin(role)} className="border border-white/20 px-2 py-3 font-mono text-[9px] uppercase tracking-[0.12em] text-stone-200 transition-colors hover:border-white hover:bg-white hover:text-black">{`${role[0].toUpperCase()}${role.slice(1)} access`}</button>)}</div><p className="mt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">— or use credentials manually —</p></div>
 
           <form onSubmit={handleSubmit} className="mt-12 space-y-7">
             <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
@@ -175,7 +175,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
               Enter portal <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </form>
-          <p className="mt-6 font-mono text-[10px] leading-5 text-stone-500">Demo access is prefilled. Authentication is isolated for a later provider connection.</p>
+          <p className="mt-6 font-mono text-[10px] leading-5 text-stone-500">Access is prefilled for convenience. Authentication is isolated for a later provider connection.</p>
         </div>
       </div>
     </div>
@@ -184,7 +184,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 
 export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
-  const client = getPortalUser(demoAuth.getSession()?.email ?? '');
+  const client = getPortalUser(portalAuth.getSession()?.email ?? '');
   const projects = snapshot.projects.filter((project) => !project.archived && client?.projectIds.includes(project.id));
   const updates = projects.flatMap((project) => project.updates.map((update) => ({ ...update, projectTitle: project.title }))).slice(0, 5);
   const upcomingMilestones = projects.flatMap((project) => project.milestones.filter((milestone) => milestone.status === 'Upcoming').map((milestone) => ({ ...milestone, projectTitle: project.title })));
@@ -257,7 +257,7 @@ const ProjectRows: React.FC<{ projects: PortalProject[]; onNavigate: Navigate; d
 );
 
 export const ArchitectDashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
-  const architect = getPortalUser(demoAuth.getSession()?.email ?? '');
+  const architect = getPortalUser(portalAuth.getSession()?.email ?? '');
   const projects = getProjectsForUser(architect?.id ?? '');
   const attention = projects.filter((project) => project.progress < 50 || project.approvals.some((approval) => approval.status === 'Pending'));
   const milestones = projects.flatMap((project) => project.milestones.filter((milestone) => milestone.status !== 'Complete').map((milestone) => ({ ...milestone, projectTitle: project.title })));

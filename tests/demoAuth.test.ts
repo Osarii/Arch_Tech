@@ -5,9 +5,9 @@ vi.mock('../src/portal/data', () => ({
 }));
 
 import { getPortalUser } from '../src/portal/data';
-import { demoAuth } from '../src/portal/demoAuth';
+import { portalAuth } from '../src/portal/demoAuth';
 
-const SESSION_KEY = 'arch-tech-demo-session';
+const SESSION_KEY = 'arch-tech-portal-session';
 const activeUser = {
   id: 'user-1',
   name: 'Current User',
@@ -20,24 +20,24 @@ const activeUser = {
 
 const mockedGetPortalUser = vi.mocked(getPortalUser);
 
-describe('demoAuth session integrity', () => {
+describe('portalAuth session integrity', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    demoAuth.signOut();
+    portalAuth.signOut();
     localStorage.clear();
     mockedGetPortalUser.mockReset();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    demoAuth.signOut();
+    portalAuth.signOut();
     localStorage.clear();
   });
 
   it('creates an authoritative session on valid sign-in', () => {
     mockedGetPortalUser.mockReturnValue(activeUser);
 
-    expect(demoAuth.signIn(' user@example.com ', 'correct-password')).toEqual({
+    expect(portalAuth.signIn(' user@example.com ', 'correct-password')).toEqual({
       name: activeUser.name,
       email: activeUser.email,
       role: activeUser.role,
@@ -53,7 +53,7 @@ describe('demoAuth session integrity', () => {
   it('does not create a session for an incorrect password', () => {
     mockedGetPortalUser.mockReturnValue(activeUser);
 
-    expect(demoAuth.signIn(activeUser.email, 'wrong-password')).toBeNull();
+    expect(portalAuth.signIn(activeUser.email, 'wrong-password')).toBeNull();
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
   });
 
@@ -63,12 +63,12 @@ describe('demoAuth session integrity', () => {
       throw new Error('storage unavailable');
     });
 
-    expect(demoAuth.signIn(activeUser.email, activeUser.password)).toEqual({
+    expect(portalAuth.signIn(activeUser.email, activeUser.password)).toEqual({
       name: activeUser.name,
       email: activeUser.email,
       role: activeUser.role,
     });
-    expect(demoAuth.getSession()).toEqual({
+    expect(portalAuth.getSession()).toEqual({
       name: activeUser.name,
       email: activeUser.email,
       role: activeUser.role,
@@ -78,9 +78,22 @@ describe('demoAuth session integrity', () => {
   it('clears malformed JSON without throwing', () => {
     localStorage.setItem(SESSION_KEY, '{invalid json');
 
-    expect(() => demoAuth.getSession()).not.toThrow();
-    expect(demoAuth.getSession()).toBeNull();
+    expect(() => portalAuth.getSession()).not.toThrow();
+    expect(portalAuth.getSession()).toBeNull();
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
+  });
+
+  it('migrates a legacy session key to the portal session key', () => {
+    mockedGetPortalUser.mockReturnValue(activeUser);
+    localStorage.setItem('arch-tech-demo-session', JSON.stringify({ email: activeUser.email }));
+
+    expect(portalAuth.getSession()).toEqual({
+      name: activeUser.name,
+      email: activeUser.email,
+      role: activeUser.role,
+    });
+    expect(localStorage.getItem(SESSION_KEY)).not.toBeNull();
+    expect(localStorage.getItem('arch-tech-demo-session')).toBeNull();
   });
 
   it('does not retry sign-out when storage removal fails', () => {
@@ -89,8 +102,8 @@ describe('demoAuth session integrity', () => {
       throw new Error('storage unavailable');
     });
 
-    expect(() => demoAuth.signOut()).not.toThrow();
-    expect(demoAuth.getSession()).toBeNull();
+    expect(() => portalAuth.signOut()).not.toThrow();
+    expect(portalAuth.getSession()).toBeNull();
     expect(removeItem).toHaveBeenCalledTimes(1);
   });
 
@@ -98,7 +111,7 @@ describe('demoAuth session integrity', () => {
     mockedGetPortalUser.mockReturnValue(undefined);
     localStorage.setItem(SESSION_KEY, JSON.stringify({ email: activeUser.email }));
 
-    expect(demoAuth.getSession()).toBeNull();
+    expect(portalAuth.getSession()).toBeNull();
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
   });
 
@@ -106,7 +119,7 @@ describe('demoAuth session integrity', () => {
     mockedGetPortalUser.mockReturnValue({ ...activeUser, status: 'inactive' });
     localStorage.setItem(SESSION_KEY, JSON.stringify({ email: activeUser.email }));
 
-    expect(demoAuth.getSession()).toBeNull();
+    expect(portalAuth.getSession()).toBeNull();
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
   });
 
@@ -117,7 +130,7 @@ describe('demoAuth session integrity', () => {
       JSON.stringify({ email: activeUser.email, name: 'Tampered', role: 'admin' })
     );
 
-    expect(demoAuth.getSession()).toEqual({
+    expect(portalAuth.getSession()).toEqual({
       name: activeUser.name,
       email: activeUser.email,
       role: activeUser.role,
@@ -127,9 +140,9 @@ describe('demoAuth session integrity', () => {
   it('removes the session on sign-out and remains idempotent', () => {
     localStorage.setItem(SESSION_KEY, JSON.stringify({ email: activeUser.email }));
 
-    expect(() => demoAuth.signOut()).not.toThrow();
+    expect(() => portalAuth.signOut()).not.toThrow();
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
-    expect(() => demoAuth.signOut()).not.toThrow();
+    expect(() => portalAuth.signOut()).not.toThrow();
     expect(localStorage.getItem(SESSION_KEY)).toBeNull();
   });
 });

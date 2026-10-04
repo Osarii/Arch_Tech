@@ -6,7 +6,7 @@ import { LandingPage } from '../src/components/landing/LandingPage';
 import { LandingNavbar } from '../src/components/landing/LandingNavbar';
 import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
 import { getPortalProject, getPortalSnapshot, updatePortalDatabase } from '../src/portal/data';
-import { demoAuth } from '../src/portal/demoAuth';
+import { portalAuth } from '../src/portal/demoAuth';
 import {
   DashboardPage,
   DashboardProjectPage,
@@ -111,7 +111,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Long view')).toBeDefined();
   });
 
-  it('keeps demo authentication isolated inside the login overlay', () => {
+  it('keeps portal authentication isolated inside the login overlay', () => {
     const onSuccess = vi.fn();
     const onClose = vi.fn();
     render(<LoginOverlay open onClose={onClose} onSuccess={onSuccess} />);
@@ -119,14 +119,14 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByRole('dialog')).toBeDefined();
     fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'incorrect' } });
     fireEvent.click(screen.getByTestId('login-submit'));
-    expect(screen.getByRole('alert').textContent).toContain('Check the demo email');
+    expect(screen.getByRole('alert').textContent).toContain('Check the email');
     expect(onSuccess).not.toHaveBeenCalled();
 
-    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'studio-demo' } });
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'client-access' } });
     fireEvent.click(screen.getByTestId('login-submit'));
     expect(onSuccess).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(window.localStorage.getItem('arch-tech-demo-session')).not.toBeNull();
+    expect(window.localStorage.getItem('arch-tech-portal-session')).not.toBeNull();
   });
 
   it('closes the login overlay with escape and backdrop, and traps focus', () => {
@@ -145,7 +145,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('shows client projects, progress, phase, milestone and latest updates', () => {
-    demoAuth.signIn('client@arch-tech.studio', 'studio-demo');
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
     expect(screen.getByText('Your projects')).toBeDefined();
@@ -160,7 +160,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('limits architect data and exposes the admin register', () => {
-    demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
+    portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
     const architectNavigate = vi.fn();
     render(<ArchitectDashboardPage onNavigate={architectNavigate} onSignOut={vi.fn()} />);
     expect(screen.getByText('Assigned projects')).toBeDefined();
@@ -175,11 +175,11 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/pacific-nexus-free-zone');
 
     cleanup();
-    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     expect(screen.getByText('All projects / assignments')).toBeDefined();
     expect(screen.getAllByText('Pacific Regional Medical Campus').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Demo Architect').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Sebastián Araya').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Material palette').length).toBeGreaterThan(0);
     const adminSurface = screen.getByText('All projects / assignments').closest('.portal-surface');
     expect(adminSurface?.className).toContain('portal-admin');
@@ -189,7 +189,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('uses objective admin signals and reviews only projects with pending approvals', () => {
-    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     updatePortalDatabase((current) => ({
       ...current,
       projects: current.projects.map((project) => project.id === 'caribbean-ai-compute-campus' ? { ...project, progress: 1 } : project),
@@ -233,7 +233,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('creates projects through the admin portal form', () => {
-    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     const adminNavigate = vi.fn();
     render(<AdminDashboardPage onNavigate={adminNavigate} onSignOut={vi.fn()} />);
     expect(screen.getByText('Active projects')).toBeDefined();
@@ -272,7 +272,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('validates admin project creation inputs', () => {
-    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
     const openCreateProject = () => {
@@ -326,7 +326,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('limits admin assignments to active users and active projects', () => {
-    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     const initial = getPortalSnapshot().db;
     const activeProject = initial.projects.find((project) => project.id === 'pacific-nexus-free-zone');
     const activeClient = initial.users.find((user) => user.role === 'client' && user.status === 'active');
@@ -373,11 +373,11 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText(activeClient.name)).toBeDefined();
   });
 
-  it('redirects each demo role to its protected dashboard', () => {
+  it('redirects each portal role to its protected dashboard', () => {
     render(<App />);
     fireEvent.click(screen.getByTestId('client-login-link'));
-    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'architect@arch-tech.studio' } });
-    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'architect-demo' } });
+    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'sebastian.araya@arch-tech.studio' } });
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'architect-access' } });
     fireEvent.click(screen.getByTestId('login-submit'));
     expect(window.location.pathname).toBe('/architect');
     expect(screen.getByText('Assigned projects')).toBeDefined();
@@ -387,20 +387,21 @@ describe('ARCH_TECH client architecture portal', () => {
     window.history.replaceState({}, '', '/');
     render(<App />);
     fireEvent.click(screen.getByTestId('client-login-link'));
-    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'admin@arch-tech.studio' } });
-    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'admin-demo' } });
+    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'andrea.quesada@arch-tech.studio' } });
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'admin-access' } });
     fireEvent.click(screen.getByTestId('login-submit'));
     expect(window.location.pathname).toBe('/admin');
     expect(screen.getByText('The project register.')).toBeDefined();
   });
 
-  it('quick logs into each demo role from Portal Access', () => {
+  it('quick logs into each role from Portal Access', () => {
     for (const [role, path] of [['client', '/dashboard'], ['architect', '/architect'], ['admin', '/admin']] as const) {
       cleanup();
       window.localStorage.clear();
       window.history.replaceState({}, '', '/');
       render(<App />);
       fireEvent.click(screen.getByTestId('client-login-link'));
+      expect(screen.getByRole('button', { name: `${role[0].toUpperCase()}${role.slice(1)} access` })).toBeDefined();
       fireEvent.click(screen.getByTestId(`quick-login-${role}`));
       expect(window.location.pathname).toBe(path);
     }
@@ -410,8 +411,8 @@ describe('ARCH_TECH client architecture portal', () => {
     window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-architect', name: 'Runtime Architect', email: 'runtime@arch-tech.studio', password: 'runtime-demo', role: 'architect', projectIds: ['pacific-nexus-free-zone'], status: 'active' }] }));
     render(<LoginOverlay open onClose={vi.fn()} onSuccess={vi.fn()} />);
     fireEvent.click(screen.getByTestId('quick-login-architect'));
-    expect(demoAuth.getSession()?.email).toBe('runtime@arch-tech.studio');
-    expect(demoAuth.getSession()?.role).toBe('architect');
+    expect(portalAuth.getSession()?.email).toBe('runtime@arch-tech.studio');
+    expect(portalAuth.getSession()?.role).toBe('architect');
   });
 
   it('migrates stale portal storage to the current portfolio', () => {
@@ -419,7 +420,7 @@ describe('ARCH_TECH client architecture portal', () => {
     const staleAssets = ['/arch_' + 'hero.jpg', '/arch_' + 'openhouse.jpg', '/arch_' + 'cantilever.jpg'];
     window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({
       projects: staleIds.map((id, index) => ({ id, title: ['Lake', 'Woodland', 'Cantilever'][index] + (index === 2 ? ' Residence' : ' House'), image: staleAssets[index] })),
-      users: [{ id: 'demo-client', projectIds: staleIds }],
+      users: [{ id: 'portal-client', projectIds: staleIds }],
       updates: staleIds.map((projectId) => ({ projectId, date: '01 JAN 2026', title: 'Stale update', body: 'Removed project data.' })),
     }));
 
@@ -432,7 +433,7 @@ describe('ARCH_TECH client architecture portal', () => {
       'guanacaste-renewable-compute-campus',
       'pacific-regional-medical-campus',
     ]);
-    expect(snapshot.db.users.find((user) => user.id === 'demo-client')?.projectIds).toEqual(['pacific-nexus-free-zone', 'mar-vista-hospitality-district']);
+    expect(snapshot.db.users.find((user) => user.id === 'portal-client')?.projectIds).toEqual(['pacific-nexus-free-zone', 'mar-vista-hospitality-district']);
     const migratedStorage = window.localStorage.getItem('arch-tech-portal-state') ?? '';
     expect(staleIds.every((id) => !migratedStorage.includes(id))).toBe(true);
     expect(staleAssets.every((asset) => !migratedStorage.includes(asset))).toBe(true);
@@ -450,7 +451,7 @@ describe('ARCH_TECH client architecture portal', () => {
     for (const item of cases) {
       cleanup();
       window.localStorage.clear();
-      demoAuth.signIn(`${item.role}@arch-tech.studio`, item.role === 'client' ? 'studio-demo' : item.role === 'architect' ? 'architect-demo' : 'admin-demo');
+      portalAuth.signIn(item.role === 'client' ? 'mariana.solano@arch-tech.studio' : item.role === 'architect' ? 'sebastian.araya@arch-tech.studio' : 'andrea.quesada@arch-tech.studio', item.role === 'client' ? 'client-access' : item.role === 'architect' ? 'architect-access' : 'admin-access');
       render(item.renderPage());
       for (const section of item.sections) {
         const button = screen.getByTestId(`portal-nav-${section === 'projects' ? 'projects' : section}`);
@@ -464,7 +465,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('redirects an authenticated role away from another role route', async () => {
-    demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
+    portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
     window.history.replaceState({}, '', '/admin');
     render(<App />);
     await waitFor(() => {
@@ -474,7 +475,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('protects unassigned architect project details', async () => {
-    demoAuth.signIn('architect@arch-tech.studio', 'architect-demo');
+    portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
     window.history.replaceState({}, '', '/architect/projects/pacific-regional-medical-campus');
     render(<App />);
     await waitFor(() => expect(window.location.pathname).toBe('/architect'));
@@ -484,7 +485,7 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('allows assigned client project details and blocks unassigned direct URLs', async () => {
     window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-client', name: 'Runtime Client', email: 'runtime-client@arch-tech.studio', password: 'runtime-demo', role: 'client', projectIds: ['pacific-nexus-free-zone'], status: 'active' }] }));
-    demoAuth.signIn('runtime-client@arch-tech.studio', 'runtime-demo');
+    portalAuth.signIn('runtime-client@arch-tech.studio', 'runtime-demo');
     window.history.replaceState({}, '', '/dashboard/projects/pacific-nexus-free-zone');
     render(<App />);
     expect(screen.getByText('Current phase')).toBeDefined();
@@ -550,7 +551,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Client coordination review')).toBeDefined();
 
     cleanup();
-    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="admin" homePath="/admin" />);
     const beforeTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone');
     fireEvent.change(screen.getByLabelText('Project title'), { target: { value: 'Pacific Nexus Free Zone Campus Updated' } });
@@ -620,7 +621,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('provides a persistent portal theme switch', () => {
-    demoAuth.signIn('client@arch-tech.studio', 'studio-demo');
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
@@ -639,8 +640,8 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('does not expose notifications for missing or inaccessible projects', () => {
-    demoAuth.signIn('client@arch-tech.studio', 'studio-demo');
-    const client = getPortalSnapshot().db.users.find((user) => user.email === 'client@arch-tech.studio');
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+    const client = getPortalSnapshot().db.users.find((user) => user.email === 'mariana.solano@arch-tech.studio');
     if (!client) throw new Error('Expected canonical client fixture');
     updatePortalDatabase((current) => ({
       ...current,
@@ -699,7 +700,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
-  it('guards private routes with the isolated demo login', () => {
+  it('guards private routes with the isolated portal login', () => {
     window.history.replaceState({}, '', '/dashboard');
     render(<App />);
 
