@@ -381,6 +381,63 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(afterTitleOnlySave?.published).toBe(beforeTitleOnlySave?.published);
   });
 
+  it('validates project progress and trims management inputs', () => {
+    render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
+    const progressInput = screen.getByLabelText('Project progress');
+    const saveStatus = screen.getByRole('button', { name: 'Save status' });
+
+    fireEvent.change(progressInput, { target: { value: '0' } });
+    fireEvent.click(saveStatus);
+    expect(getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone')?.progress).toBe(0);
+
+    fireEvent.change(progressInput, { target: { value: '100' } });
+    fireEvent.click(saveStatus);
+    expect(getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone')?.progress).toBe(100);
+
+    for (const invalidValue of ['-1', '101']) {
+      fireEvent.change(progressInput, { target: { value: invalidValue } });
+      fireEvent.click(saveStatus);
+      expect(getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone')?.progress).toBe(100);
+      expect(screen.getByRole('alert').textContent).toBe('Progress must be a number from 0 to 100.');
+    }
+    fireEvent.change(progressInput, { target: { value: 'not-a-number' } });
+    fireEvent.click(saveStatus);
+    expect(getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone')?.progress).toBe(100);
+
+    fireEvent.change(screen.getByLabelText('Update title'), { target: { value: '  Coordination note  ' } });
+    fireEvent.change(screen.getByLabelText('Update body'), { target: { value: '  Team review completed.  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Publish update' }));
+    const snapshotAfterUpdate = getPortalSnapshot();
+    expect(snapshotAfterUpdate.db.updates.find((update) => update.title === 'Coordination note')).toMatchObject({ title: 'Coordination note', body: 'Team review completed.' });
+
+    fireEvent.change(screen.getByLabelText('New milestone'), { target: { value: '  Coordination issue  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    fireEvent.change(screen.getByLabelText('New document'), { target: { value: '  Coordination set  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add document' }));
+    fireEvent.change(screen.getByLabelText('New approval'), { target: { value: '  Client coordination review  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Request approval' }));
+    const snapshotAfterText = getPortalSnapshot();
+    expect(snapshotAfterText.db.milestones.some((milestone) => milestone.label === 'Coordination issue')).toBe(true);
+    expect(snapshotAfterText.db.documents.some((document) => document.name === 'Coordination set')).toBe(true);
+    expect(snapshotAfterText.db.approvals.some((approval) => approval.title === 'Client coordination review')).toBe(true);
+
+    const beforeWhitespaceOnly = getPortalSnapshot().db;
+    fireEvent.change(screen.getByLabelText('Update title'), { target: { value: '   ' } });
+    fireEvent.change(screen.getByLabelText('Update body'), { target: { value: '   ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Publish update' }));
+    fireEvent.change(screen.getByLabelText('New milestone'), { target: { value: '   ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    fireEvent.change(screen.getByLabelText('New document'), { target: { value: '   ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Add document' }));
+    fireEvent.change(screen.getByLabelText('New approval'), { target: { value: '   ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Request approval' }));
+    const afterWhitespaceOnly = getPortalSnapshot().db;
+    expect(afterWhitespaceOnly.updates).toHaveLength(beforeWhitespaceOnly.updates.length);
+    expect(afterWhitespaceOnly.milestones).toHaveLength(beforeWhitespaceOnly.milestones.length);
+    expect(afterWhitespaceOnly.documents).toHaveLength(beforeWhitespaceOnly.documents.length);
+    expect(afterWhitespaceOnly.approvals).toHaveLength(beforeWhitespaceOnly.approvals.length);
+  });
+
   it('provides a persistent portal theme switch', () => {
     demoAuth.signIn('client@arch-tech.studio', 'studio-demo');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
