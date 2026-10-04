@@ -97,8 +97,12 @@ interface SpatialRailProps {
 export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
   const slides = useMemo(() => buildSpatialRailSlides(project), [project]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const fullscreenRef = useRef<HTMLDivElement>(null);
+  const fullscreenCloseRef = useRef<HTMLButtonElement>(null);
+  const fullscreenTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
+  const isFullscreenOpen = fullscreenIndex !== null;
 
   // Guard against IntersectionObserver fighting intentional button/keyboard programmatic scrolling
   const isProgrammaticScrollRef = useRef(false);
@@ -190,22 +194,10 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
     };
   }, [slides]);
 
-  // Scoped keyboard navigation: only when rail or fullscreen is focused
+  // Fullscreen keys belong exclusively to the global listener, even when they bubble through the rail.
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (fullscreenIndex !== null) {
-        if (e.key === 'Escape') {
-          e.preventDefault();
-          setFullscreenIndex(null);
-        } else if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          setFullscreenIndex((prev) => (prev !== null ? Math.min(prev + 1, slides.length - 1) : null));
-        } else if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          setFullscreenIndex((prev) => (prev !== null ? Math.max(prev - 1, 0) : null));
-        }
-        return;
-      }
+      if (isFullscreenOpen) return;
 
       if (e.key === 'ArrowRight') {
         e.preventDefault();
@@ -215,24 +207,48 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
         handlePrev();
       }
     },
-    [fullscreenIndex, handleNext, handlePrev, slides.length]
+    [isFullscreenOpen, handleNext, handlePrev]
   );
 
-  // Global escape key and arrow handler when fullscreen viewer is open
+  // Keep focus, scroll locking, and keyboard ownership active for the entire fullscreen session.
   useEffect(() => {
-    if (fullscreenIndex === null) return;
+    if (!isFullscreenOpen) return;
+    const openingTrigger = fullscreenTriggerRef.current;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    fullscreenCloseRef.current?.focus({ preventScroll: true });
+
     const onGlobalKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
         setFullscreenIndex(null);
       } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
         setFullscreenIndex((prev) => (prev !== null ? Math.min(prev + 1, slides.length - 1) : null));
       } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
         setFullscreenIndex((prev) => (prev !== null ? Math.max(prev - 1, 0) : null));
+      } else if (e.key === 'Tab') {
+        const controls = fullscreenRef.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+        if (!controls?.length) return;
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        const focused = document.activeElement;
+        if (!fullscreenRef.current?.contains(focused) || (e.shiftKey ? focused === first : focused === last)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+        }
       }
     };
     window.addEventListener('keydown', onGlobalKey);
-    return () => window.removeEventListener('keydown', onGlobalKey);
-  }, [fullscreenIndex, slides.length]);
+    return () => {
+      window.removeEventListener('keydown', onGlobalKey);
+      document.body.style.overflow = previousOverflow;
+      if (openingTrigger?.isConnected) {
+        openingTrigger.focus({ preventScroll: true });
+      }
+    };
+  }, [isFullscreenOpen, slides.length]);
 
   const activeSlide = slides[activeIndex] || slides[0];
 
@@ -337,7 +353,10 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
             >
               <button
                 type="button"
-                onClick={() => setFullscreenIndex(idx)}
+                onClick={(event) => {
+                  fullscreenTriggerRef.current = event.currentTarget;
+                  setFullscreenIndex(idx);
+                }}
                 className="relative block h-full w-full cursor-zoom-in text-left focus:outline-none"
                 aria-label={`Open fullscreen view of ${slide.label}`}
               >
@@ -382,6 +401,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
       {/* Simple Fullscreen Viewer */}
       {fullscreenIndex !== null && (
         <div
+          ref={fullscreenRef}
           data-testid="rail-fullscreen"
           role="dialog"
           aria-modal="true"
@@ -399,6 +419,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
               </span>
             </div>
             <button
+              ref={fullscreenCloseRef}
               type="button"
               onClick={() => setFullscreenIndex(null)}
               data-testid="rail-fullscreen-close"

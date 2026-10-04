@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { SpatialRail, buildSpatialRailSlides } from '../src/components/gallery/SpatialRail';
 import { getPublicProject } from '../src/portal/data';
 
@@ -196,6 +196,110 @@ describe('ARCH_TECH SpatialRail Carousel', () => {
 
     fireEvent.click(fsPrevBtn);
     expect(screen.getByText(/01 \/ 08/i)).toBeDefined();
+  });
+
+  it('handles each fullscreen arrow exactly once without navigating the underlying rail', () => {
+    render(<SpatialRail project={sampleProject} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open fullscreen view of Campus Structure' }));
+
+    const closeBtn = screen.getByTestId('rail-fullscreen-close');
+    closeBtn.focus();
+
+    expect(fireEvent.keyDown(closeBtn, { key: 'ArrowRight' })).toBe(false);
+    expect(screen.getByText('04 / 08')).toBeDefined();
+    expect(screen.getByRole('dialog').querySelector('img')?.getAttribute('src')).toBe(sampleProject.media?.masterplan);
+
+    expect(fireEvent.keyDown(closeBtn, { key: 'ArrowLeft' })).toBe(false);
+    expect(screen.getByText('03 / 08')).toBeDefined();
+    expect(screen.getByRole('dialog').querySelector('img')?.getAttribute('src')).toBe(sampleProject.media?.campusOverview);
+    expect(screen.getByTestId('rail-index').textContent).toBe('01');
+  });
+
+  it('keeps fullscreen keyboard navigation within the first and last images', () => {
+    render(<SpatialRail project={sampleProject} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open fullscreen view of Facility Overview' }));
+
+    const closeBtn = screen.getByTestId('rail-fullscreen-close');
+    fireEvent.keyDown(closeBtn, { key: 'ArrowLeft' });
+    expect(screen.getByText('01 / 08')).toBeDefined();
+    expect(screen.getByTestId('rail-fullscreen-prev')).toHaveProperty('disabled', true);
+
+    for (let i = 0; i < 7; i++) {
+      fireEvent.keyDown(closeBtn, { key: 'ArrowRight' });
+    }
+    expect(screen.getByText('08 / 08')).toBeDefined();
+    expect(screen.getByTestId('rail-fullscreen-next')).toHaveProperty('disabled', true);
+    fireEvent.keyDown(closeBtn, { key: 'ArrowRight' });
+    expect(screen.getByText('08 / 08')).toBeDefined();
+  });
+
+  it.each(['button', 'Escape'])('focuses fullscreen and restores the exact opening trigger once after %s close', (method) => {
+    render(<SpatialRail project={sampleProject} />);
+    const trigger = screen.getByRole('button', { name: 'Open fullscreen view of Regional Context' });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    const closeBtn = screen.getByTestId('rail-fullscreen-close');
+    expect(document.activeElement).toBe(closeBtn);
+    fireEvent.keyDown(closeBtn, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(closeBtn);
+    const restoreFocus = vi.spyOn(trigger, 'focus');
+
+    if (method === 'Escape') {
+      expect(fireEvent.keyDown(closeBtn, { key: 'Escape' })).toBe(false);
+    } else {
+      fireEvent.click(closeBtn);
+    }
+
+    expect(screen.queryByTestId('rail-fullscreen')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    expect(restoreFocus).toHaveBeenCalledTimes(1);
+    restoreFocus.mockRestore();
+
+    fireEvent.keyDown(trigger, { key: 'ArrowRight' });
+    expect(screen.getByTestId('rail-index').textContent).toBe('02');
+  });
+
+  it('contains Tab focus in fullscreen and skips disabled navigation controls', () => {
+    render(<SpatialRail project={sampleProject} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open fullscreen view of Facility Overview' }));
+
+    const closeBtn = screen.getByTestId('rail-fullscreen-close');
+    const nextBtn = screen.getByTestId('rail-fullscreen-next');
+    fireEvent.keyDown(closeBtn, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(nextBtn);
+    fireEvent.keyDown(nextBtn, { key: 'Tab' });
+    expect(document.activeElement).toBe(closeBtn);
+
+    fireEvent.keyDown(closeBtn, { key: 'ArrowRight' });
+    const prevBtn = screen.getByTestId('rail-fullscreen-prev');
+    prevBtn.focus();
+    expect(fireEvent.keyDown(prevBtn, { key: 'Tab' })).toBe(true);
+    fireEvent.click(screen.getByTestId('rail-fullscreen-close'));
+  });
+
+  it.each(['', 'scroll', 'hidden'])('locks body scrolling and restores previous overflow %j on close and unmount', (overflow) => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = overflow;
+    const { unmount } = render(<SpatialRail project={sampleProject} />);
+
+    try {
+      const trigger = screen.getByRole('button', { name: 'Open fullscreen view of Facility Overview' });
+      fireEvent.click(trigger);
+      expect(document.body.style.overflow).toBe('hidden');
+      fireEvent.click(screen.getByTestId('rail-fullscreen-next'));
+      expect(document.body.style.overflow).toBe('hidden');
+
+      fireEvent.click(screen.getByTestId('rail-fullscreen-close'));
+      expect(document.body.style.overflow).toBe(overflow);
+      fireEvent.click(trigger);
+      expect(document.body.style.overflow).toBe('hidden');
+      unmount();
+      expect(document.body.style.overflow).toBe(overflow);
+    } finally {
+      unmount();
+      document.body.style.overflow = previousOverflow;
+    }
   });
 
   it('renders all 6 published public projects correctly with valid media arrays and aspect ratios', () => {
