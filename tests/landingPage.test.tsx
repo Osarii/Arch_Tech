@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { Hero } from '../src/components/landing/Hero';
@@ -180,7 +180,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('All projects / assignments')).toBeDefined();
     expect(screen.getAllByText('Pacific Regional Medical Campus').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Demo Architect').length).toBeGreaterThan(0);
-    expect(screen.getByText('Material palette')).toBeDefined();
+    expect(screen.getAllByText('Material palette').length).toBeGreaterThan(0);
     const adminSurface = screen.getByText('All projects / assignments').closest('.portal-surface');
     expect(adminSurface?.className).toContain('portal-admin');
     expect(adminSurface?.className).toContain('bg-[#E6DED2]');
@@ -188,16 +188,60 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByTestId('admin-open-model-pacific-nexus-free-zone').className).toContain('admin-action');
   });
 
+  it('uses objective admin signals and reviews only projects with pending approvals', () => {
+    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    updatePortalDatabase((current) => ({
+      ...current,
+      projects: current.projects.map((project) => project.id === 'caribbean-ai-compute-campus' ? { ...project, progress: 1 } : project),
+      approvals: current.approvals.filter((approval) => approval.projectId !== 'caribbean-ai-compute-campus'),
+    }));
+    const { db, projects } = getPortalSnapshot();
+    const activeProjects = projects.filter((project) => !project.archived);
+    const expectedAverage = Math.round(activeProjects.reduce((total, project) => total + project.progress, 0) / activeProjects.length);
+    const expectedPending = db.approvals.filter((approval) => approval.status === 'Pending' && activeProjects.some((project) => project.id === approval.projectId)).length;
+    const expectedUpcoming = db.milestones.filter((milestone) => milestone.status === 'Upcoming' && activeProjects.some((project) => project.id === milestone.projectId)).length;
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+
+    const portfolioOverview = screen.getByRole('region', { name: 'Portfolio overview' });
+    expect(within(portfolioOverview).getByText('Active projects')).toBeDefined();
+    expect(within(portfolioOverview).getByText(activeProjects.length.toString().padStart(2, '0'))).toBeDefined();
+    expect(within(portfolioOverview).getByText('Average progress')).toBeDefined();
+    expect(within(portfolioOverview).getByText(`${expectedAverage}%`)).toBeDefined();
+    expect(within(portfolioOverview).getByText('Pending approvals')).toBeDefined();
+    expect(within(portfolioOverview).getByText(expectedPending.toString().padStart(2, '0'))).toBeDefined();
+    expect(within(portfolioOverview).getByText('Upcoming milestones')).toBeDefined();
+    expect(within(portfolioOverview).getByText(expectedUpcoming.toString().padStart(2, '0'))).toBeDefined();
+    expect(screen.queryByText('Project health')).toBeNull();
+    expect(screen.queryByText('Operational controls')).toBeNull();
+    expect(screen.getByText('Create projects, manage people, assignments and approvals.')).toBeDefined();
+
+    const reviewSignals = screen.getByRole('region', { name: 'Review and delivery signals' });
+    expect(within(reviewSignals).getByText('Decisions requiring review')).toBeDefined();
+    expect(within(reviewSignals).getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
+    expect(within(reviewSignals).getByText('Material palette')).toBeDefined();
+    expect(within(reviewSignals).queryByText('Caribbean AI Compute Campus')).toBeNull();
+
+    updatePortalDatabase((current) => ({
+      ...current,
+      approvals: current.approvals.map((approval) => ({ ...approval, status: 'Approved' as const })),
+    }));
+    cleanup();
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    const emptyReviewSignals = screen.getByRole('region', { name: 'Review and delivery signals' });
+    expect(within(emptyReviewSignals).getByText('No project decisions are waiting for review.')).toBeDefined();
+    expect(within(emptyReviewSignals).getByText('Upcoming milestones')).toBeDefined();
+  });
+
   it('creates projects through the admin portal form', () => {
     demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
     const adminNavigate = vi.fn();
     render(<AdminDashboardPage onNavigate={adminNavigate} onSignOut={vi.fn()} />);
-    expect(screen.getByText('Portfolio overview')).toBeDefined();
-    expect(screen.getByText('Project health / attention')).toBeDefined();
+    expect(screen.getByText('Active projects')).toBeDefined();
+    expect(screen.getByText('Decisions requiring review')).toBeDefined();
     expect(screen.getByText('Development stages')).toBeDefined();
-    expect(screen.getByText('Pending approvals')).toBeDefined();
+    expect(screen.getAllByText('Pending approvals').length).toBeGreaterThan(0);
     expect(screen.getByText('Recent activity')).toBeDefined();
-    expect(screen.getByText('average progress across active work')).toBeDefined();
+    expect(screen.getByText('across active work')).toBeDefined();
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
     fireEvent.click(screen.getByTestId('admin-open-model-pacific-nexus-free-zone'));
