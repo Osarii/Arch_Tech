@@ -428,26 +428,47 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
 
   return (
     <div className="h-screen overflow-y-auto bg-[#0a0b0d] text-[#f4efe8]">
-      <header className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-        <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em]">ARCH_TECH</button>
-        <button onClick={() => onNavigate('/login')} className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white">Client Login</button>
+      <header className="border-b border-white/[0.12]">
+        <div className="mx-auto grid h-14 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-8 lg:px-12">
+          <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em]">ARCH_TECH</button>
+          <p className="hidden items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500 sm:flex">
+            <span className="h-px w-8 bg-white/25" aria-hidden="true" />
+            <span>Project dossier</span>
+            <span className="text-stone-700">/</span>
+            <span className="text-stone-300">{project.code}</span>
+          </p>
+          <button onClick={() => onNavigate('/login')} className="col-start-3 justify-self-end font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white">Client Login</button>
+        </div>
       </header>
       <main>
-        <div className="mx-auto max-w-7xl px-6 pb-6 pt-10 sm:px-8 lg:px-12 lg:pb-8 lg:pt-14">
+        <div className="mx-auto max-w-7xl px-6 pb-8 pt-8 sm:px-8 lg:px-12 lg:pb-10 lg:pt-10">
           <button onClick={() => onNavigate('/')} className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-white"><ArrowLeft className="h-3.5 w-3.5" /> Development portfolio</button>
-          <p className="mt-10 font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
-          <h1 className="mt-4 max-w-5xl font-serif text-5xl font-light tracking-tight sm:text-7xl lg:text-8xl">{project.title}</h1>
-          <p className="mt-6 max-w-2xl text-base leading-7 text-stone-300 sm:text-lg sm:leading-8">{project.summary}</p>
-          <dl className="mt-8 grid max-w-5xl gap-4 border-y border-white/[0.12] py-5 text-sm sm:grid-cols-2 lg:grid-cols-5">
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Market</dt><dd className="mt-1.5 text-stone-200">{project.market ?? 'Costa Rica'}</dd></div>
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Development</dt><dd className="mt-1.5 text-stone-200">{project.developmentType ?? project.category}</dd></div>
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Current stage</dt><dd className="mt-1.5 text-stone-200">{project.publicStage ?? project.phase}</dd></div>
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Context</dt><dd className="mt-1.5 text-stone-200">{project.context ?? 'Costa Rica'}</dd></div>
-            <div><dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Scale</dt><dd className="mt-1.5 text-stone-200">{project.scale ?? 'Project study'}</dd></div>
-          </dl>
+          <div className="mt-6 grid gap-8 border-t border-white/[0.12] pt-6 lg:grid-cols-[1.45fr_1fr] lg:gap-0 lg:pt-0">
+            <div className="lg:py-8 lg:pr-12">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{project.code} / {project.category}</p>
+              <h1 className="mt-4 max-w-3xl font-serif text-4xl font-light leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">{project.title}</h1>
+              <p className="mt-6 max-w-xl border-l border-white/[0.15] pl-5 text-base leading-7 text-stone-300">{project.summary}</p>
+            </div>
+            <dl className="grid grid-cols-2 gap-x-6 text-sm lg:grid-cols-1 lg:gap-x-0 lg:border-l lg:border-white/[0.12] lg:pl-8">
+              {[
+                ['Market', project.market ?? 'Costa Rica'],
+                ['Development', project.developmentType ?? project.category],
+                ['Current stage', project.publicStage ?? project.phase],
+                ['Context', project.context ?? 'Costa Rica'],
+                ['Scale', project.scale ?? 'Project study'],
+              ].map(([label, value], index) => (
+                <div key={label} className="grid gap-1.5 border-t border-white/[0.1] py-3.5 lg:grid-cols-[7rem_1fr] lg:gap-4 lg:border-t-0 lg:border-b lg:py-4 lg:first:pt-8 lg:last:border-b-0">
+                  <dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500"><span className="mr-2 text-stone-600">{String(index + 1).padStart(2, '0')}</span>{label}</dt>
+                  <dd className="text-stone-200">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         </div>
-        <div className="mx-auto max-w-7xl px-6 pb-12 pt-2 sm:px-8 lg:px-12 lg:pb-16 lg:pt-4">
-          <SpatialRail project={project} />
+        <div className="mx-auto max-w-7xl px-6 pb-12 sm:px-8 lg:px-12 lg:pb-16">
+          <div className="border-t border-white/[0.12] pt-5">
+            <SpatialRail project={project} />
+          </div>
         </div>
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 sm:px-8 lg:grid-cols-[0.35fr_1fr] lg:px-12 lg:py-24">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Project intent</p>
