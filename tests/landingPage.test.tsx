@@ -5,7 +5,7 @@ import { Hero } from '../src/components/landing/Hero';
 import { LandingPage } from '../src/components/landing/LandingPage';
 import { LandingNavbar } from '../src/components/landing/LandingNavbar';
 import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
-import { getPortalProject, getPortalSnapshot } from '../src/portal/data';
+import { getPortalProject, getPortalSnapshot, updatePortalDatabase } from '../src/portal/data';
 import { demoAuth } from '../src/portal/demoAuth';
 import {
   DashboardPage,
@@ -239,6 +239,54 @@ describe('ARCH_TECH client architecture portal', () => {
       expect(getPortalSnapshot().projects).toHaveLength(projectCountBeforeInvalid);
       fireEvent.click(screen.getByRole('button', { name: 'Close create project' }));
     }
+  });
+
+  it('limits admin assignments to active users and active projects', () => {
+    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    const initial = getPortalSnapshot().db;
+    const activeProject = initial.projects.find((project) => project.id === 'pacific-nexus-free-zone');
+    const activeClient = initial.users.find((user) => user.role === 'client' && user.status === 'active');
+    const activeArchitect = initial.users.find((user) => user.role === 'architect' && user.status === 'active');
+    if (!activeProject || !activeClient || !activeArchitect) throw new Error('Expected canonical assignment fixtures');
+
+    updatePortalDatabase((current) => ({
+      ...current,
+      users: current.users.map((user) => user.id === activeClient.id || user.id === activeArchitect.id ? { ...user, projectIds: [] } : user),
+    }));
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+
+    const clientAssignment = screen.getByTestId(`admin-assignment-${activeProject.id}-${activeClient.id}`);
+    const architectAssignment = screen.getByTestId(`admin-assignment-${activeProject.id}-${activeArchitect.id}`);
+    fireEvent.click(clientAssignment);
+    expect(getPortalSnapshot().db.users.find((user) => user.id === activeClient.id)?.projectIds).toContain(activeProject.id);
+    fireEvent.click(clientAssignment);
+    expect(getPortalSnapshot().db.users.find((user) => user.id === activeClient.id)?.projectIds).not.toContain(activeProject.id);
+    fireEvent.click(architectAssignment);
+    expect(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds).toContain(activeProject.id);
+    fireEvent.click(architectAssignment);
+    expect(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds).not.toContain(activeProject.id);
+
+    updatePortalDatabase((current) => ({
+      ...current,
+      users: current.users.map((user) => user.id === activeClient.id ? { ...user, status: 'inactive' } : user),
+    }));
+    const beforeInactiveAttempt = [...(getPortalSnapshot().db.users.find((user) => user.id === activeClient.id)?.projectIds ?? [])];
+    fireEvent.click(clientAssignment);
+    expect(getPortalSnapshot().db.users.find((user) => user.id === activeClient.id)?.projectIds).toEqual(beforeInactiveAttempt);
+
+    updatePortalDatabase((current) => ({
+      ...current,
+      projects: current.projects.map((project) => project.id === activeProject.id ? { ...project, archived: true } : project),
+    }));
+    const beforeArchivedAttempt = [...(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds ?? [])];
+    fireEvent.click(architectAssignment);
+    expect(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds).toEqual(beforeArchivedAttempt);
+
+    cleanup();
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    expect(screen.queryByTestId(`admin-assignment-project-${activeProject.id}`)).toBeNull();
+    expect(screen.queryByTestId(`admin-assignment-${activeProject.id}-${activeClient.id}`)).toBeNull();
+    expect(screen.getByText(activeClient.name)).toBeDefined();
   });
 
   it('redirects each demo role to its protected dashboard', () => {
