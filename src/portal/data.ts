@@ -146,16 +146,35 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
   };
 };
 
+const isPortalStateRoot = (value: unknown): value is Partial<PortalDatabase> => (
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+);
+
 const readPortalDatabase = (): PortalDatabase => {
   if (typeof window === 'undefined') return portalDb;
+
+  let stored: Partial<PortalDatabase> = {};
   try {
-    const stored = window.localStorage.getItem(PORTAL_STATE_KEY);
-    const next = migratePortalDatabase(stored ? JSON.parse(stored) : {});
-    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(next));
-    return next;
+    const raw = window.localStorage.getItem(PORTAL_STATE_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : {};
+    if (isPortalStateRoot(parsed)) stored = parsed;
   } catch {
-    return portalDb;
+    stored = {};
   }
+
+  let next: PortalDatabase;
+  try {
+    next = migratePortalDatabase(stored);
+  } catch {
+    next = migratePortalDatabase({});
+  }
+
+  try {
+    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(next));
+  } catch {
+    // Storage can be unavailable; the in-memory recovery remains usable.
+  }
+  return next;
 };
 
 const writePortalDatabase = (next: PortalDatabase) => {
