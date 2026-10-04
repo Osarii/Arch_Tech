@@ -193,6 +193,54 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Portal Annex')).toBeDefined();
   });
 
+  it('validates admin project creation inputs', () => {
+    demoAuth.signIn('admin@arch-tech.studio', 'admin-demo');
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+
+    const openCreateProject = () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
+      return screen.getByRole('dialog', { name: 'New project.' });
+    };
+    const submitCreateProject = () => fireEvent.click(screen.getAllByRole('button', { name: 'Create project' }).at(-1)!);
+
+    openCreateProject();
+    expect((screen.getByLabelText('Category') as HTMLInputElement).value).toBe('Development · New project');
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: '  Edge Development Campus  ' } });
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '  Compute infrastructure  ' } });
+    fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '0' } });
+    submitCreateProject();
+    const zeroProject = getPortalSnapshot().projects.find((project) => project.title === 'Edge Development Campus');
+    expect(zeroProject).toMatchObject({ title: 'Edge Development Campus', category: 'Compute infrastructure', progress: 0, published: false });
+
+    openCreateProject();
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Full Delivery Campus' } });
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '  Regional development  ' } });
+    fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '100' } });
+    submitCreateProject();
+    expect(getPortalSnapshot().projects.find((project) => project.title === 'Full Delivery Campus')).toMatchObject({ category: 'Regional development', progress: 100 });
+
+    const projectCountBeforeInvalid = getPortalSnapshot().projects.length;
+    for (const invalidProgress of ['-1', '101', 'not-a-number', '']) {
+      openCreateProject();
+      fireEvent.change(screen.getByLabelText('Title'), { target: { value: `Invalid ${invalidProgress || 'blank'}` } });
+      fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Development' } });
+      fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: invalidProgress } });
+      submitCreateProject();
+      expect(getPortalSnapshot().projects).toHaveLength(projectCountBeforeInvalid);
+      fireEvent.click(screen.getByRole('button', { name: 'Close create project' }));
+    }
+
+    for (const invalidField of ['title', 'category'] as const) {
+      openCreateProject();
+      fireEvent.change(screen.getByLabelText('Title'), { target: { value: invalidField === 'title' ? '   ' : 'Valid title' } });
+      fireEvent.change(screen.getByLabelText('Category'), { target: { value: invalidField === 'category' ? '   ' : 'Development' } });
+      fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '24' } });
+      submitCreateProject();
+      expect(getPortalSnapshot().projects).toHaveLength(projectCountBeforeInvalid);
+      fireEvent.click(screen.getByRole('button', { name: 'Close create project' }));
+    }
+  });
+
   it('redirects each demo role to its protected dashboard', () => {
     render(<App />);
     fireEvent.click(screen.getByTestId('client-login-link'));
