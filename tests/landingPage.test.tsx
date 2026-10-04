@@ -42,9 +42,13 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Caribbean AI Compute Campus')).toBeDefined();
     expect(screen.getByText('Guanacaste Renewable Compute Campus')).toBeDefined();
     expect(screen.getByText('Pacific Regional Medical Campus')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Structure for complex development.' })).toBeDefined();
+    for (const label of ['SITE + LAND STRATEGY', 'MASTERPLANNING', 'INFRASTRUCTURE FRAMEWORK', 'DEVELOPMENT COORDINATION', 'DIGITAL PROJECT DELIVERY', 'OPERATIONAL CONTINUITY']) {
+      expect(screen.getByText(label)).toBeDefined();
+    }
     expect(screen.getAllByTestId(/^public-project-/)).toHaveLength(6);
     expect(screen.getByText('Private project portal')).toBeDefined();
-    expect(screen.queryByText(/OpenBIM|IFC|engineering pipeline/i)).toBeNull();
+    expect(screen.getByText('Structured project information and OpenBIM coordination where useful.')).toBeDefined();
 
     fireEvent.click(screen.getByTestId('client-login-link'));
     expect(onLogin).toHaveBeenCalledTimes(1);
@@ -634,6 +638,24 @@ describe('ARCH_TECH client architecture portal', () => {
   it('keeps the public navigation compact', () => {
     render(<LandingNavbar onLogin={vi.fn()} />);
     expect(screen.getByText('Projects')).toBeDefined();
+    expect(screen.getByTestId('capabilities-link')).toBeDefined();
     expect(screen.getByTestId('client-login-link').textContent).toContain('Client Login');
+  });
+
+  it('scrolls to the capability register from desktop and mobile navigation', () => {
+    render(<LandingPage onNavigate={vi.fn()} onLogin={vi.fn()} />);
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    const scrollIntoView = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+    fireEvent.click(screen.getByTestId('capabilities-link'));
+    expect(document.getElementById('capabilities')).toBeDefined();
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle menu' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'Capabilities' }).at(-1)!);
+    expect(scrollIntoView).toHaveBeenCalledTimes(2);
+
+    HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
   });
 });

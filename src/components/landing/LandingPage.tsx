@@ -3,6 +3,7 @@ import { Footer } from './Footer';
 import { Hero } from './Hero';
 import { LandingNavbar } from './LandingNavbar';
 import { ProjectShowcase } from './ProjectShowcase';
+import { CapabilityRegister } from './CapabilityRegister';
 import { DevelopmentFrame } from './DevelopmentFrame';
 
 interface LandingPageProps {
@@ -19,6 +20,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
       <main>
         <Hero onViewProjects={viewProjects} />
         <ProjectShowcase onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
+        <CapabilityRegister />
         <DevelopmentFrame onLogin={onLogin} />
       </main>
       <Footer onLogin={onLogin} />
