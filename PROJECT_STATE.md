@@ -18,7 +18,7 @@
 - **Core Engine & BIM**: That Open Components (`3.4.8`), Fragments (`3.4.7`), `web-ifc` (`0.0.78`), Three.js (`0.182.0`)
 - **Frontend & App Framework**: React 19, TypeScript, Vite 6, Tailwind CSS, Lucide React icons
 - **State Management**: Lightweight Zustand (`src/stores/bimStore.ts` for BIM state; `src/portal/data.ts` for portal state snapshot)
-- **Database & Persistence**: `db.json` (demo seed), `localStorage` (`arch-tech-portal-state`, schema version 2), native STEP-21 IFC persistence
+- **Database & Persistence**: `db.json` (showcase seed), `localStorage` (`arch-tech-portal-state`, schema version 3), native STEP-21 IFC persistence
 - **Testing & Tooling**: Vitest 3.x (unit/domain), Playwright (E2E browser workflows)
 
 ---
@@ -38,7 +38,7 @@ Garnier & Garnier remains a reference for development scale and enterprise posit
 ---
 
 ## 4. Multi-Role Portal & User Access Structure
-- **Data Source**: `db.json` serves as the initial seed; runtime mutations persist in `localStorage` under `arch-tech-portal-state` (Schema Version 2).
+- **Data Source**: `db.json` serves as the initial seed; runtime mutations persist in `localStorage` under `arch-tech-portal-state` (Schema Version 3).
 - **Client Role**: Accesses assigned projects, project status, milestones, documents, updates, and pending approvals.
 - **Architect Role**: Accesses architectural drawings, technical specs, and design approval workflows.
 - **Admin Role**: Full portal control—publishes projects, creates new development projects, assigns user roles, and modifies project metadata.
@@ -144,7 +144,8 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - **Public Experience & Portal**: Garnier showcase portfolio, multi-role access (Client/Architect/Admin), presentation auth, dark architectural editorial design.
 - **SpatialRail Media Carousel**: High-performance scroll-snap media rail & lightbox.
 - **Landing Media Carousel**: Six-project featured carousel with locally stored official Garnier portfolio photography for the explicitly authorized presentation/showcase prototype, public dossier links, indicators, keyboard navigation, autoplay pause behavior, reduced-motion support and fixed slide dimensions. ARCH_TECH remains clearly presented as the concept/prototype identity.
-- **Portfolio Asset Pipeline**: Canonical zip image packs integrated & schema v2 migration completed.
+- **Landing About + Leadership**: Editorial About section with verified public Garnier company context, one local official About image, and a stable eight-person leadership grid using one-to-one local official portraits and current public titles.
+- **Portfolio Asset Pipeline**: Canonical image packs and official Garnier showcase media integrated; schema v3 migration completed.
 - **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient presentation auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
 
 ---
@@ -184,8 +185,8 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint`).
-- **Vitest Unit/Domain Tests**: **175 / 175 PASSED** across 15 test files.
+- **Vitest Unit/Domain Tests**: **166 / 166 PASSED** across 15 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED** (full browser verification suite).
-- **Targeted portal/landing suites**: `portalData` **11 / 11**, `demoAuth` **10 / 10**, `landingPage` **36 / 36**, and `spatialRail` **17 / 17** passed after the showcase-media update.
+- **Targeted portal/landing suites**: `portalData` **11 / 11**, `demoAuth` **10 / 10**, `landingPage` **38 / 38**, and `spatialRail` **6 / 6** passed after the About and leadership update.
 - **Git Diff**: Verified with `git diff --check` after the landing media/carousel changes.

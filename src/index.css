@@ -11,6 +11,24 @@
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+.landing-about-media {
+  aspect-ratio: 4 / 3;
+}
+
+.landing-team-portrait {
+  aspect-ratio: 4 / 5;
+}
+
+.landing-team-card {
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .landing-team-portrait {
+    aspect-ratio: 4 / 5;
+  }
+}
+
 
 :root {
   --background: 224 15% 7%;

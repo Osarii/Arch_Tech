@@ -5,6 +5,8 @@ import { LandingNavbar } from './LandingNavbar';
 import { ProjectShowcase } from './ProjectShowcase';
 import { CapabilityRegister } from './CapabilityRegister';
 import { DevelopmentFrame } from './DevelopmentFrame';
+import { AboutSection } from './AboutSection';
+import { TeamSection } from './TeamSection';
 
 interface LandingPageProps {
   onNavigate: (path: string) => void;
@@ -20,7 +22,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
       <main>
         <Hero onViewProjects={viewProjects} onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
         <ProjectShowcase onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
+        <AboutSection />
         <CapabilityRegister />
+        <TeamSection />
         <DevelopmentFrame onLogin={onLogin} />
       </main>
       <Footer onLogin={onLogin} />

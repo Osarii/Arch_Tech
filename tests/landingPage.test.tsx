@@ -5,6 +5,8 @@ import { Hero } from '../src/components/landing/Hero';
 import { LandingPage } from '../src/components/landing/LandingPage';
 import { LandingNavbar } from '../src/components/landing/LandingNavbar';
 import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
+import { AboutSection, aboutFacts } from '../src/components/landing/AboutSection';
+import { TeamSection, teamMembers } from '../src/components/landing/TeamSection';
 import { getPortalProject, getPortalSnapshot, updatePortalDatabase } from '../src/portal/data';
 import { portalAuth } from '../src/portal/demoAuth';
 import {
@@ -56,6 +58,34 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(onLogin).toHaveBeenCalledTimes(2);
     fireEvent.click(screen.getByTestId('development-portal-link'));
     expect(onLogin).toHaveBeenCalledTimes(3);
+  });
+
+  it('renders the About section with verified company positioning facts', () => {
+    render(<AboutSection />);
+
+    expect(screen.getByRole('heading', { name: 'Development is more than the building.' })).toBeDefined();
+    expect(screen.getByText(/30 years of real-estate development experience in Costa Rica/)).toBeDefined();
+    for (const fact of aboutFacts) {
+      expect(screen.getByText(fact.value)).toBeDefined();
+      expect(screen.getByText(fact.label)).toBeDefined();
+    }
+    expect(screen.getByRole('img', { name: /official Garnier public portfolio/i }).getAttribute('src')).toBe('/about/garnier-values.webp');
+    expect(screen.getByRole('img').parentElement?.className).toContain('landing-about-media');
+  });
+
+  it('renders the eight current public team members with unique local portraits', () => {
+    render(<TeamSection />);
+
+    expect(screen.getByRole('heading', { name: 'The people behind the development.' })).toBeDefined();
+    expect(teamMembers).toHaveLength(8);
+    const portraitPaths = teamMembers.map((member) => member.portrait);
+    expect(new Set(portraitPaths).size).toBe(teamMembers.length);
+    expect(portraitPaths.every((path) => path.startsWith('/team/'))).toBe(true);
+    for (const member of teamMembers) {
+      expect(screen.getByRole('img', { name: `${member.name}, ${member.role}` })).toBeDefined();
+    }
+    expect(document.querySelectorAll('.landing-team-portrait')).toHaveLength(8);
+    expect([...document.querySelectorAll('.landing-team-portrait')].every((frame) => frame.className.includes('landing-team-portrait'))).toBe(true);
   });
 
   it('renders a six-project featured carousel with stable frames, controls and Garnier portfolio imagery', () => {

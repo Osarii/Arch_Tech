@@ -17,7 +17,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
    - **Real IFC Persistence**: Detached STEP-21 exports with coordinate remapping (UI X->IFC X, UI Y->IFC Z, UI Z->IFC Y) and relative rotation composition.
    - **Parametric Building Generation**: Authentic IFC4 STEP-21 model authoring directly from parametric massing plans.
    - **AI Assistant**: Deterministic offline AI agent with explicit human confirmation gates for WRITE operations.
-4. **Landing + SpatialRail Media**: The public landing uses a keyboard-accessible, reduced-motion-aware featured-project carousel. Project dossiers retain the custom scroll-snap gallery rail and fullscreen lightbox inspection viewer for technical project media.
+4. **Landing + SpatialRail Media**: The public landing uses a keyboard-accessible, reduced-motion-aware featured-project carousel, an editorial About section and a stable leadership grid. Project dossiers retain the custom scroll-snap gallery rail and fullscreen lightbox inspection viewer for technical project media.
 
 ---
 
@@ -43,6 +43,10 @@ Official portfolio source mapping:
 - Universidad Latina (`universidad-latina`) — educational campus.
 
 The source portfolio is [Garnier & Garnier's official portfolio](https://www.garnier.cr/#/portfolio#top), with media retrieved from its official project API and stored locally under `public/projects/<project-slug>/garnier-cover.*` and `garnier-01.*` / `garnier-02.*`. This authorized prototype uses project photography only; it does not claim official ARCH_TECH/Garnier status, affiliation or endorsement.
+
+### About and leadership sections
+
+The landing About section presents concise public company context sourced from [garnier.cr](https://www.garnier.cr/) and uses a locally stored official workplace image at `public/about/garnier-values.webp`. The Team section represents the eight current public leadership profiles with their official titles and one-to-one local portraits under `public/team/`. The compositions are ARCH_TECH editorial work; the 21st.dev About and Team references were used only as structural inspiration, not copied as UI or branding.
 
 ---
 
