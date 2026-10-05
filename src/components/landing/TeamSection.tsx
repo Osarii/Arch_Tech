@@ -1,14 +1,14 @@
 import React from 'react';
 
 export const teamMembers = [
-  { name: 'Philippe Garnier', role: 'Garnier & Garnier President and CEO', portrait: '/team/philippe-garnier.png' },
+  { name: 'Philippe Garnier', role: 'Executive Director', portrait: '/team/philippe-garnier.png' },
   { name: 'Alberto Bonilla', role: 'Garnier & Garnier General Manager', portrait: '/team/alberto-bonilla.png' },
   { name: 'Fernando Carazo', role: 'General Manager, La Lima Free Trade Zone', portrait: '/team/fernando-carazo.png' },
   { name: 'Andrea Hidalgo', role: 'Corporate Finance Manager', portrait: '/team/andrea-hidalgo.png' },
   { name: 'Alvaro Ramírez', role: 'Engineering Manager', portrait: '/team/alvaro-ramirez.png' },
   { name: 'Andrés Gómez', role: 'New Business Manager', portrait: '/team/andres-gomez.png' },
   { name: 'Marvin Mora', role: 'Human Resource Manager', portrait: '/team/marvin-mora.png' },
-  { name: 'Kembly Brenes', role: 'Sustainability and Corporate Relations Manager', portrait: '/team/kembly-brenes.png' },
+  { name: 'Kembly Brenes', role: 'Head of Sustainability and Corporate Relations', portrait: '/team/kembly-brenes.png' },
 ] as const;
 
 export const TeamSection: React.FC = () => (
