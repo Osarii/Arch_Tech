@@ -4,6 +4,7 @@ import { LandingPage } from '../components/landing/LandingPage';
 import { LoginOverlay, NotFoundPage } from '../components/portal/PortalPages';
 import { getPortalUser, getProjectsForUser, PortalRole } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
+import { authService } from '../services/authService';
 import { userService } from '../services/userService';
 
 export const roleHome = (role?: PortalRole) => role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard';
@@ -24,8 +25,30 @@ const AuthGate: React.FC = () => {
 };
 
 export const ProtectedRoute: React.FC = () => {
+  if (legacyWorkspaceRequested()) return <Outlet />;
+
+  const [validating, setValidating] = React.useState(() => {
+    return authService.isRemote() && !portalAuth.getSession() && Boolean(portalAuth.getCandidateSession());
+  });
+
+  React.useEffect(() => {
+    if (!validating) return;
+    let active = true;
+    void authService
+      .validateSession()
+      .finally(() => {
+        if (!active) return;
+        setValidating(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [validating]);
+
+  if (validating) return null;
+
   const session = portalAuth.getSession();
-  if (session || legacyWorkspaceRequested()) return <Outlet />;
+  if (session) return <Outlet />;
   return <AuthGate />;
 };
 

@@ -1,22 +1,61 @@
-import { type CreatePortalUserInput, type PortalUser } from '../portal/data';
+import { type CreatePortalUserInput } from '../portal/data';
 import { portalAuth, type ClientSession } from '../portal/demoAuth';
 import { getApiBaseUrl } from './apiClient';
 import { userService } from './userService';
+
+let activeValidationPromise: Promise<ClientSession | null> | null = null;
 
 export const authService = {
   isRemote: () => Boolean(getApiBaseUrl()),
   getSession: (): ClientSession | null => portalAuth.getSession(),
 
+  async validateSession(): Promise<ClientSession | null> {
+    if (!this.isRemote()) {
+      return portalAuth.getSession();
+    }
+
+    const current = portalAuth.getSession();
+    if (current) return current;
+
+    if (activeValidationPromise) {
+      return activeValidationPromise;
+    }
+
+    activeValidationPromise = (async () => {
+      const candidate = portalAuth.getCandidateSession();
+      if (!candidate?.email) {
+        portalAuth.signOut();
+        return null;
+      }
+
+      try {
+        const user = await userService.findByEmail(candidate.email);
+        if (!portalAuth.getCandidateSession() || !user || user.status !== 'active') {
+          portalAuth.signOut();
+          return null;
+        }
+
+        return portalAuth.setSession({
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        });
+      } catch {
+        portalAuth.signOut();
+        return null;
+      }
+    })().finally(() => {
+      activeValidationPromise = null;
+    });
+
+    return activeValidationPromise;
+  },
+
   async signIn(email: string, password: string): Promise<ClientSession | null> {
     const normalized = email.trim();
     if (!normalized || !password) return null;
 
-    let user: PortalUser | undefined;
-    if (getApiBaseUrl()) {
-      user = await userService.findByEmail(normalized);
-    } else {
-      user = await userService.findByEmail(normalized);
-    }
+    const user = await userService.findByEmail(normalized);
 
     if (!user || user.password !== password || user.status !== 'active') {
       return null;

@@ -56,14 +56,19 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
       onSuccess();
       return;
     }
-    void authService.signIn(email, password).then((session) => {
-      if (!session) {
-        setError('Check the email and password.');
-        return;
-      }
-      setError('');
-      onSuccess();
-    });
+    void authService
+      .signIn(email, password)
+      .then((session) => {
+        if (!session) {
+          setError('Check the email and password.');
+          return;
+        }
+        setError('');
+        onSuccess();
+      })
+      .catch((err) => {
+        setError(err instanceof Error && err.message ? err.message : 'Check the email and password.');
+      });
   };
 
   const handleRegister = async (event: React.FormEvent) => {
@@ -106,14 +111,19 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
       onSuccess();
       return;
     }
-    void authService.signIn(user.email, user.password).then((session) => {
-      if (!session) {
-        setError('This access is unavailable.');
-        return;
-      }
-      setError('');
-      onSuccess();
-    });
+    void authService
+      .signIn(user.email, user.password)
+      .then((session) => {
+        if (!session) {
+          setError('This access is unavailable.');
+          return;
+        }
+        setError('');
+        onSuccess();
+      })
+      .catch((err) => {
+        setError(err instanceof Error && err.message ? err.message : 'This access is unavailable.');
+      });
   };
 
   if (!open) return null;

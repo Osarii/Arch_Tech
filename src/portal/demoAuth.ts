@@ -5,6 +5,7 @@ const SESSION_KEY = 'arch-tech-portal-session';
 const LEGACY_SESSION_KEY = 'arch-tech-demo-session';
 let volatileSession: ClientSession | null = null;
 let volatileSignedOut = false;
+let validatedRemoteSession: ClientSession | null = null;
 
 export type ClientSession = {
   name: string;
@@ -31,18 +32,69 @@ const getAuthoritativeSession = (candidate: Partial<ClientSession> | null): Clie
     if (user.status !== 'active') return null;
     return { name: user.name, email: user.email, role: user.role };
   }
-  // In remote HTTP mode, users might not yet be loaded into inMemoryUsers on immediate reload.
-  // We keep the candidate session intact if it has valid session shape.
-  if (getApiBaseUrl() && candidate.name && candidate.role && ['client', 'architect', 'admin'].includes(candidate.role)) {
-    return { name: candidate.name, email: candidate.email, role: candidate.role as PortalRole };
-  }
   return null;
 };
 
 export const portalAuth = {
+  getCandidateSession(): ClientSession | null {
+    if (typeof window === 'undefined') return null;
+    if (volatileSignedOut) return null;
+    if (volatileSession) return volatileSession;
+    let value: string | null;
+    try {
+      value = window.localStorage.getItem(SESSION_KEY);
+      if (!value) {
+        value = window.localStorage.getItem(LEGACY_SESSION_KEY);
+      }
+    } catch {
+      return null;
+    }
+    if (!value) return null;
+    try {
+      const session = JSON.parse(value) as Partial<ClientSession> | null;
+      if (
+        session &&
+        typeof session.email === 'string' &&
+        typeof session.name === 'string' &&
+        ['client', 'architect', 'admin'].includes(session.role as string)
+      ) {
+        return {
+          name: session.name,
+          email: session.email,
+          role: session.role as PortalRole,
+        };
+      }
+      return null;
+    } catch {
+      clearStoredSession();
+      return null;
+    }
+  },
+
   getSession(): ClientSession | null {
     if (typeof window === 'undefined') return null;
     if (volatileSignedOut) return null;
+
+    if (getApiBaseUrl()) {
+      if (!validatedRemoteSession) return null;
+      const user = getPortalUser(validatedRemoteSession.email);
+      if (user) {
+        if (user.status !== 'active') {
+          this.signOut();
+          return null;
+        }
+        if (user.role !== validatedRemoteSession.role || user.name !== validatedRemoteSession.name) {
+          validatedRemoteSession = { name: user.name, email: user.email, role: user.role };
+          try {
+            window.localStorage.setItem(SESSION_KEY, JSON.stringify(validatedRemoteSession));
+          } catch {
+            // Keep memory copy
+          }
+        }
+      }
+      return validatedRemoteSession;
+    }
+
     if (volatileSession) {
       const current = volatileSession;
       try {
@@ -98,11 +150,13 @@ export const portalAuth = {
       volatileSession = session;
     }
     volatileSignedOut = false;
+    validatedRemoteSession = session;
     return session;
   },
 
   signOut() {
     volatileSession = null;
+    validatedRemoteSession = null;
     clearStoredSession();
   },
 };

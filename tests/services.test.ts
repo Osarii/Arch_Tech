@@ -3,9 +3,12 @@ import { externalContextService } from '../src/services/externalContextService';
 import { projectService } from '../src/services/projectService';
 import { projectWorkflowService } from '../src/services/projectWorkflowService';
 import { createPortalUser, getPortalSnapshot } from '../src/portal/data';
+import { portalAuth } from '../src/portal/demoAuth';
+import { authService } from '../src/services/authService';
 
 describe('portal service layer', () => {
   afterEach(() => {
+    portalAuth.signOut();
     window.localStorage.clear();
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
@@ -267,5 +270,145 @@ describe('portal service layer', () => {
     vi.stubGlobal('fetch', duplicateMock);
 
     await expect(authService.register(newUser)).rejects.toThrow('An account with this email already exists.');
+  });
+
+  it('validates active user on reload in remote mode and avoids repeated network validation', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    const candidate = {
+      email: 'active@arch-tech.studio',
+      name: 'Active User',
+      role: 'client' as const,
+    };
+    window.localStorage.setItem('arch-tech-portal-session', JSON.stringify(candidate));
+
+    expect(portalAuth.getSession()).toBeNull();
+    expect(portalAuth.getCandidateSession()).toEqual(candidate);
+
+    const serverUser = {
+      id: 'user-active-1',
+      name: 'Active User Confirmed',
+      email: candidate.email,
+      password: 'password',
+      role: 'client' as const,
+      status: 'active' as const,
+      projectIds: [],
+    };
+
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.pathname === '/users' && parsedUrl.searchParams.get('email') === candidate.email) {
+        return new Response(JSON.stringify([serverUser]), { status: 200 });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const validated = await authService.validateSession();
+    expect(validated).toEqual({
+      name: 'Active User Confirmed',
+      email: candidate.email,
+      role: 'client',
+    });
+    expect(portalAuth.getSession()).toEqual(validated);
+    expect(JSON.parse(window.localStorage.getItem('arch-tech-portal-session')!)).toEqual(validated);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    // Subsequent check does not call network again
+    expect(await authService.validateSession()).toEqual(validated);
+    expect(portalAuth.getSession()).toEqual(validated);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects reload of inactive user and clears session in remote mode', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    const candidate = {
+      email: 'inactive@arch-tech.studio',
+      name: 'Inactive User',
+      role: 'client' as const,
+    };
+    window.localStorage.setItem('arch-tech-portal-session', JSON.stringify(candidate));
+
+    const serverUser = {
+      id: 'user-inactive-1',
+      name: candidate.name,
+      email: candidate.email,
+      password: 'password',
+      role: 'client' as const,
+      status: 'inactive' as const,
+      projectIds: [],
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify([serverUser]), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const validated = await authService.validateSession();
+    expect(validated).toBeNull();
+    expect(portalAuth.getSession()).toBeNull();
+    expect(portalAuth.getCandidateSession()).toBeNull();
+    expect(window.localStorage.getItem('arch-tech-portal-session')).toBeNull();
+  });
+
+  it('rejects reload of deleted user and clears session in remote mode', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    window.localStorage.setItem('arch-tech-portal-session', JSON.stringify({
+      email: 'deleted@arch-tech.studio',
+      name: 'Deleted User',
+      role: 'admin',
+    }));
+
+    const fetchMock = vi.fn().mockResolvedValue(new Response('[]', { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const validated = await authService.validateSession();
+    expect(validated).toBeNull();
+    expect(portalAuth.getSession()).toBeNull();
+    expect(window.localStorage.getItem('arch-tech-portal-session')).toBeNull();
+  });
+
+  it('refreshes session and prevents stale admin access when server role changed to client', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    window.localStorage.setItem('arch-tech-portal-session', JSON.stringify({
+      email: 'demoted@arch-tech.studio',
+      name: 'Demoted Admin',
+      role: 'admin',
+    }));
+
+    const serverUser = {
+      id: 'user-demoted-1',
+      name: 'Demoted Admin',
+      email: 'demoted@arch-tech.studio',
+      password: 'password',
+      role: 'client' as const,
+      status: 'active' as const,
+      projectIds: [],
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify([serverUser]), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const validated = await authService.validateSession();
+    expect(validated).toEqual({
+      name: 'Demoted Admin',
+      email: 'demoted@arch-tech.studio',
+      role: 'client',
+    });
+    expect(portalAuth.getSession()?.role).toBe('client');
+    expect(JSON.parse(window.localStorage.getItem('arch-tech-portal-session')!).role).toBe('client');
+  });
+
+  it('clears session when remote validation fails with network error', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    window.localStorage.setItem('arch-tech-portal-session', JSON.stringify({
+      email: 'user@arch-tech.studio',
+      name: 'User',
+      role: 'client',
+    }));
+
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
+
+    const validated = await authService.validateSession();
+    expect(validated).toBeNull();
+    expect(portalAuth.getSession()).toBeNull();
+    expect(window.localStorage.getItem('arch-tech-portal-session')).toBeNull();
   });
 });

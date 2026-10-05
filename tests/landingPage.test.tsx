@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { Hero } from '../src/components/landing/Hero';
 import { LandingPage } from '../src/components/landing/LandingPage';
@@ -33,6 +33,14 @@ describe('ARCH_TECH client architecture portal', () => {
     resetPortalUsers();
     window.history.replaceState({}, '', '/');
     document.documentElement.classList.remove('portal-dark');
+  });
+
+  afterEach(() => {
+    portalAuth.signOut();
+    window.localStorage.clear();
+    vi.restoreAllMocks();
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
   });
 
   it('renders a projects-only public landing with project portal access', () => {
@@ -250,6 +258,29 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(onSuccess).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('alert')).toBeNull();
     expect(window.localStorage.getItem('arch-tech-portal-session')).not.toBeNull();
+  });
+
+  it('displays user-facing error on remote login network failure without unhandled rejection', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network offline')));
+    const onSuccess = vi.fn();
+    render(<LoginOverlay open onClose={vi.fn()} onSuccess={onSuccess} />);
+
+    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'client@arch-tech.studio' } });
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'password-123' } });
+    fireEvent.click(screen.getByTestId('login-submit'));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toContain('Network offline');
+    });
+    expect(onSuccess).not.toHaveBeenCalled();
+
+    // Also test quick-login error handling
+    fireEvent.click(screen.getByTestId('quick-login-admin'));
+    await waitFor(() => {
+      expect(screen.getByRole('alert').textContent).toContain('Network offline');
+    });
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 
   it('closes the login overlay with escape and backdrop, and traps focus', () => {
@@ -721,6 +752,77 @@ describe('ARCH_TECH client architecture portal', () => {
       expect(window.location.pathname).toBe('/architect');
       expect(screen.getByText('Assigned projects')).toBeDefined();
     });
+  });
+
+  it('validates persisted remote session on reload before granting access and rejects stale roles', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    window.localStorage.setItem('arch-tech-portal-session', JSON.stringify({
+      email: 'stale-admin@arch-tech.studio',
+      name: 'Stale Admin',
+      role: 'admin',
+    }));
+
+    const serverUser = {
+      id: 'portal-user-demoted',
+      name: 'Stale Admin',
+      email: 'stale-admin@arch-tech.studio',
+      password: 'password',
+      role: 'client' as const,
+      status: 'active' as const,
+      projectIds: [],
+    };
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/users') {
+        return new Response(JSON.stringify([serverUser]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', '/admin');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/dashboard');
+    });
+    expect(portalAuth.getSession()?.role).toBe('client');
+  });
+
+  it('rejects remote reload for deactivated user and displays login gate', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    window.localStorage.setItem('arch-tech-portal-session', JSON.stringify({
+      email: 'deactivated@arch-tech.studio',
+      name: 'Deactivated User',
+      role: 'admin',
+    }));
+
+    const serverUser = {
+      id: 'portal-user-deactivated',
+      name: 'Deactivated User',
+      email: 'deactivated@arch-tech.studio',
+      password: 'password',
+      role: 'admin' as const,
+      status: 'inactive' as const,
+      projectIds: [],
+    };
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/users') {
+        return new Response(JSON.stringify([serverUser]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', '/admin');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeDefined();
+    });
+    expect(portalAuth.getSession()).toBeNull();
+    expect(window.localStorage.getItem('arch-tech-portal-session')).toBeNull();
   });
 
   it('protects unassigned architect project details', async () => {
