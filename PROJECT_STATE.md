@@ -75,9 +75,9 @@ These six names and categories are the stable public portfolio unless explicitly
 ---
 
 ## 7. Project Image System & Migration Status
-- **Asset Storage**: Runtime project media lives under `public/projects/<project-slug>/`. Technical/dossier packs use `.webp` files; preferred public landing images use local `.jpg` reference photographs. Source archives are not the runtime asset location.
+- **Asset Storage**: Runtime project media lives under `public/projects/<project-slug>/`. Technical/dossier packs use `.webp` files; the authorized featured landing showcase uses locally stored Garnier portfolio `.webp`/`.jpg` files. Source archives are not the runtime asset location.
 - **Media Schema**: Standardized media structure (`image` for primary hero, plus `media.aerial`, `media.campusOverview`, `media.masterplan`, `media.sitePlan`, `media.floorPlan`, `media.interior`, `media.conceptBoard`).
-- **Landing Media Mapping**: `src/components/gallery/projectMedia.tsx` maps each of the six canonical fictional projects to a local real-world reference photograph. The photographs are used for public scale/context only and do not represent the fictional projects; the existing concept/render packs remain available for technical/private dossier context. Sources and licenses are recorded in `README.md`.
+- **Landing Media Mapping**: `src/components/gallery/projectMedia.tsx` maps each of the six canonical fictional projects to one locally stored official Garnier portfolio image. The photographs are used for this explicitly authorized ARCH_TECH presentation/showcase prototype only; they do not represent the fictional projects, and the existing concept/render packs remain available for technical/private dossier context. Source project names and the official portfolio link are recorded in `README.md`.
 - **Migration Status**: **CLOSED / COMPLETE**. Legacy placeholder assets removed; schema version 2 automatically migrates runtime storage, sanitizing legacy asset paths and preserving safe `/projects/...` paths.
 
 ---
@@ -96,6 +96,8 @@ These six names and categories are the stable public portfolio unless explicitly
 ### 8.1 Featured landing carousel
 - **Implementation**: `src/components/gallery/FeaturedProjectCarousel.tsx`, mounted by `src/components/landing/Hero.tsx`.
 - **Behavior**: Uses all six canonical public projects, links each slide to its public dossier, supports previous/next controls, indicators, Arrow/Home/End keyboard navigation, hover/focus pause, restrained autoplay, and `prefers-reduced-motion` autoplay suppression.
+- **Media stability**: Every slide uses the same fixed 16:9 media shell with an overflow-hidden object-cover image viewport and a stable content region, so the outer card does not resize between projects.
+- **Showcase media**: The six local images are official Garnier portfolio photographs selected for campus, district, hospitality and institutional scale. This is an explicitly authorized ARCH_TECH concept/prototype use and does not imply official status or affiliation.
 - **Fallbacks**: `ProjectImage` renders a neutral ARCH_TECH development placeholder when a preferred local image is unavailable or fails to decode.
 
 ---
@@ -141,7 +143,7 @@ These six names and categories are the stable public portfolio unless explicitly
 - **Phase 6B.2**: Detached & idempotent real IFC persistence round-trip (UI X->IFC X, UI Y->IFC Z, UI Z->IFC Y coordinate mapping; relative rotation delta composition; delete/restore containment unlinking reconciliation; transactional reload rollback boundary).
 - **Public Experience & Portal**: Costa Rica development portfolio, multi-role access (Client/Architect/Admin), demo auth, dark architectural editorial design.
 - **SpatialRail Media Carousel**: High-performance scroll-snap media rail & lightbox.
-- **Landing Media Carousel**: Six-project featured carousel with local reusable real-world reference photography, public dossier links, indicators, keyboard navigation, autoplay pause behavior and reduced-motion support. Canonical project names/categories are preserved; Garnier & Garnier remains a conceptual scale reference unless an explicitly authorized presentation/showcase prototype uses approved Garnier project information or photography.
+- **Landing Media Carousel**: Six-project featured carousel with locally stored official Garnier portfolio photography for the explicitly authorized presentation/showcase prototype, public dossier links, indicators, keyboard navigation, autoplay pause behavior, reduced-motion support and fixed slide dimensions. Canonical project names/categories are preserved; ARCH_TECH remains clearly presented as the concept/prototype identity.
 - **Portfolio Asset Pipeline**: Canonical zip image packs integrated & schema v2 migration completed.
 - **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient demo auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
 
@@ -185,5 +187,5 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 - **Vitest Unit/Domain Tests**: **175 / 175 PASSED** across 15 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED** (full browser verification suite).
-- **Targeted portal/landing suites**: `portalData` **11 / 11**, `demoAuth` **10 / 10**, `landingPage` **36 / 36**, and `spatialRail` **17 / 17** passed.
+- **Targeted portal/landing suites**: `portalData` **11 / 11**, `demoAuth` **10 / 10**, `landingPage` **36 / 36**, and `spatialRail` **17 / 17** passed after the showcase-media update.
 - **Git Diff**: Verified with `git diff --check` after the landing media/carousel changes.

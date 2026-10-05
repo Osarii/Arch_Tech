@@ -2,13 +2,13 @@
 
 **ARCH_TECH** is a dual-capability architecture & engineering platform combining a large-scale Costa Rica-oriented real-estate development portfolio and multi-role client portal with an authoritative, browser-based OpenBIM engineering workspace.
 
-Its primary identity is large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites. ARCH_TECH must not read as a residential architecture studio. OpenBIM/IFC remains a core capability inside the portal/workspace, especially for Architect/Admin workflows, while the public experience leads with development scale and lifecycle. Garnier & Garnier is only a conceptual reference for enterprise perception; ARCH_TECH does not copy its branding, website or assets and does not imply affiliation.
+Its primary identity is large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites. ARCH_TECH must not read as a residential architecture studio. OpenBIM/IFC remains a core capability inside the portal/workspace, especially for Architect/Admin workflows, while the public experience leads with development scale and lifecycle. Garnier & Garnier remains a reference for enterprise perception; ARCH_TECH does not copy its UI, layouts, branding system, logos or visual identity and does not imply affiliation.
 
 ---
 
 ## Main Feature Areas
 
-1. **Public Development Portfolio**: Six fictional Costa Rica-oriented development concepts (Free Zone, Corporate, Hospitality, Compute, Renewable and Medical campuses) with a featured six-project carousel, local real-world reference photography, and dark architectural editorial design. Canonical project identities remain unchanged.
+1. **Public Development Portfolio**: Six fictional Costa Rica-oriented development concepts (Free Zone, Corporate, Hospitality, Compute, Renewable and Medical campuses) with a featured six-project carousel using locally stored official Garnier portfolio photography for this authorized ARCH_TECH presentation/showcase prototype. Canonical project identities remain unchanged.
 2. **Multi-Role Client Portal**: Secure role-based portal (`Client`, `Architect`, `Admin`) backed by local snapshot state for tracking project milestones, document vaults, design approvals, and project updates.
 3. **OpenBIM Engineering Workspace**: Desktop-first web CAD environment for real `.ifc` files:
    - **Visualization & Inspection**: Spatial BIM tree, property sets (Psets, Qto), 2D floor plans, 3D section planes (X/Y/Z clipping), length measurement.
@@ -31,18 +31,18 @@ Its primary identity is large-scale developments and infrastructure: free zones,
 
 ### Landing reference photography
 
-The six canonical projects keep their fictional names, categories, statements and dossier media. Their preferred public-facing primary images now use local copies of reusable real-world aerial/reference photographs, mapped in `src/components/gallery/projectMedia.tsx`; the existing concept/render packs remain available for technical and private dossier context. These photographs are visual references only and do not depict the fictional ARCH_TECH projects.
+The six canonical projects keep their fictional names, categories, statements and dossier media. Their preferred public-facing primary images now use local copies of official Garnier portfolio photographs, mapped explicitly in `src/components/gallery/projectMedia.tsx`; the existing concept/render packs remain available for technical and private dossier context. These photographs are presentation references only and do not depict the fictional ARCH_TECH projects. The featured media viewport uses a fixed 16:9 shell so slide changes cannot resize the outer card.
 
-Sources and licenses:
+Official portfolio source mapping:
 
-- Pacific Nexus / industrial campus: [Fenton Industrial complex](https://commons.wikimedia.org/wiki/File:Aerial_view_of_Fenton_Industrial_complex_as_September_2024.jpg), Gkbediako, CC BY-SA 4.0.
-- Summit Point / corporate district: [Foster City office park](https://commons.wikimedia.org/wiki/File:Aerial_view_of_office_park_in_Foster_City,_September_2019.JPG), Pi.1415926535, CC BY-SA 3.0.
-- Mar Vista / hospitality district: [Gran Hotel Bahía del Duque Resort](https://commons.wikimedia.org/wiki/File:A0411_Tenerife,_Gran_Hotel_Bahia_del_Duque_Resort_in_Adeje_aerial_view.jpg), Wouter Hagens, CC BY-SA 4.0.
-- Caribbean AI / compute campus: [Data centers in Ashburn](https://commons.wikimedia.org/wiki/File:Data_centers_in_Ashburn.jpg), Theodore Christopher, CC0.
-- Guanacaste Renewable / infrastructure campus: [CCAFS Industrial Area](https://commons.wikimedia.org/wiki/File:Aerial_view_of_CCAFS_Industrial_Area_(KSC-2009-5007).jpg), NASA/Troy Cryder, public domain.
-- Pacific Regional Medical / healthcare campus: [Yale-New Haven Hospital campus](https://commons.wikimedia.org/wiki/File:Aerial_closeup_YNHH_2010.jpg), YNHHEditor, CC BY-SA 3.0.
+- Pacific Nexus / industrial campus: Zona Franca La Lima.
+- Summit Point / corporate district: Centro Corporativo La Sabana.
+- Mar Vista / hospitality district: Waldorf Astoria.
+- Caribbean AI / compute campus: CCL / Centro Corporativo Indora.
+- Guanacaste Renewable / infrastructure campus: El Cafetal.
+- Pacific Regional Medical / healthcare campus: Universidad Latina.
 
-Garnier & Garnier remains only a conceptual reference for scale and enterprise perception; it is not a source of branding, imagery, affiliation or claims.
+The source portfolio is [Garnier & Garnier's official portfolio](https://www.garnier.cr/#/portfolio#top), with media retrieved from its official project API and stored locally under `public/projects/<project-slug>/garnier-portfolio.*`. This authorized prototype uses project photography only; it does not claim official ARCH_TECH/Garnier status, affiliation or endorsement.
 
 ---
 
@@ -94,5 +94,5 @@ npm run build
 
 ## Current Development Status & Handoff Context
 
-- **Current Status**: All Phase 6A (Viewport), Phase 6B.1 (IFC4 Generation), Phase 6B.2 (Detached IFC Persistence), Landing/Portal Redesign, real-image landing carousel, and SpatialRail Media Integration phases are **COMPLETE**.
+- **Current Status**: All Phase 6A (Viewport), Phase 6B.1 (IFC4 Generation), Phase 6B.2 (Detached IFC Persistence), Landing/Portal Redesign, official Garnier showcase carousel, and SpatialRail Media Integration phases are **COMPLETE**.
 - **Detailed Handoff**: For complete handoff details, architecture invariants, known issues, and current priorities, refer to [PROJECT_STATE.md](PROJECT_STATE.md).

@@ -434,6 +434,17 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
 .featured-project-carousel [hidden] {
   display: none;
 }
+.featured-project-media-shell {
+  aspect-ratio: 16 / 9;
+  min-height: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.featured-project-media-shell > button {
+  height: 100%;
+  min-height: 0;
+}
 .featured-project-carousel button:focus-visible {
   outline: 2px solid #f4efe8;
   outline-offset: 3px;

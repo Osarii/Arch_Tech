@@ -58,7 +58,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(onLogin).toHaveBeenCalledTimes(3);
   });
 
-  it('renders a six-project featured carousel with controls, keyboard navigation and real reference imagery', () => {
+  it('renders a six-project featured carousel with stable frames, controls and Garnier portfolio imagery', () => {
     const onViewProjects = vi.fn();
     const onOpenProject = vi.fn();
     render(<Hero onViewProjects={onViewProjects} onOpenProject={onOpenProject} />);
@@ -68,10 +68,13 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(carousel.className).not.toContain('sticky');
     expect(screen.getAllByTestId(/^featured-indicator-/)).toHaveLength(6);
     expect(screen.getAllByTestId(/^featured-project-/)).toHaveLength(6);
-    expect(carousel.querySelector('img')?.getAttribute('src')).toContain('/landing-real.jpg');
+    expect(carousel.querySelector('img')?.getAttribute('src')).toContain('/garnier-portfolio.');
     const featuredImageSources = [...carousel.querySelectorAll('img[data-project-image]')].map((image) => image.getAttribute('src'));
     expect(featuredImageSources).toHaveLength(6);
     expect(new Set(featuredImageSources).size).toBe(6);
+    const featuredShells = [...carousel.querySelectorAll('.featured-project-media-shell')];
+    expect(featuredShells).toHaveLength(6);
+    expect(featuredShells.every((shell) => shell.className.includes('featured-project-media-shell'))).toBe(true);
     expect(screen.getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
     fireEvent.click(screen.getByTestId('hero-view-projects'));
     expect(onViewProjects).toHaveBeenCalledTimes(1);
@@ -125,7 +128,7 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByTestId('public-project-pacific-nexus-free-zone'));
     expect(onOpenProject).toHaveBeenCalledWith('pacific-nexus-free-zone');
     const projectImage = screen.getByTestId('public-project-pacific-nexus-free-zone').querySelector('img');
-    expect(projectImage?.getAttribute('src')).toContain('/landing-real.jpg');
+    expect(projectImage?.getAttribute('src')).toContain('/garnier-portfolio.');
     fireEvent.error(projectImage!);
     expect(screen.getByTestId('project-image-fallback-pacific-nexus-free-zone')).toBeDefined();
 
