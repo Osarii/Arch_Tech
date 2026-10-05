@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { ArrowLeft, ArrowRight, Maximize2, X } from 'lucide-react';
 import type { PortalProject } from '../../portal/data';
+import { getPreferredProjectImage } from './projectMedia';
 
 export type SpatialRailSlide = {
   id: string;
@@ -14,13 +15,14 @@ export type SpatialRailSlide = {
 
 export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide[] => {
   const media = project.media;
+  const preferredImage = getPreferredProjectImage(project);
   return [
     {
       id: 'hero',
       label: 'Facility Overview',
       caption: 'Primary operational facility and landscape integration.',
       category: 'Campus / Infrastructure Overview',
-      src: project.image,
+      src: preferredImage,
       fit: 'cover',
       aspect: 'wide',
     },
@@ -29,7 +31,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       label: 'Regional Context',
       caption: 'Topographic alignment, corridor access, and site boundaries.',
       category: 'Regional Context & Siting',
-      src: media?.aerial || project.image,
+      src: media?.aerial || preferredImage,
       fit: 'cover',
       aspect: 'wide',
     },
@@ -38,7 +40,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       label: 'Campus Structure',
       caption: 'Infrastructure framework, arterial connectors, and massing.',
       category: 'Campus Infrastructure',
-      src: media?.campusOverview || media?.aerial || project.image,
+      src: media?.campusOverview || media?.aerial || preferredImage,
       fit: 'cover',
       aspect: 'wide',
     },
@@ -47,7 +49,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       label: 'Masterplan',
       caption: 'Phased development plots, easements, and buffer zoning.',
       category: 'Master Planning & Phasing',
-      src: media?.masterplan || project.image,
+      src: media?.masterplan || preferredImage,
       fit: 'contain',
       aspect: 'technical',
     },
@@ -56,7 +58,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       label: 'Site Strategy',
       caption: 'Circulation geometry, loading bays, and utility corridors.',
       category: 'Site Strategy & Logistics',
-      src: media?.sitePlan || project.image,
+      src: media?.sitePlan || preferredImage,
       fit: 'contain',
       aspect: 'technical',
     },
@@ -65,7 +67,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       label: 'Program Study',
       caption: 'Structural grids, core placement, and modular layout zones.',
       category: 'Spatial Programming & Layout',
-      src: media?.floorPlan || project.image,
+      src: media?.floorPlan || preferredImage,
       fit: 'contain',
       aspect: 'technical',
     },
@@ -74,7 +76,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       label: 'Operations',
       caption: 'Operational environment, high-span volume, and envelope daylighting.',
       category: 'Operations & Interior Volume',
-      src: media?.interior || project.image,
+      src: media?.interior || preferredImage,
       fit: 'cover',
       aspect: 'wide',
     },
@@ -83,7 +85,7 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
       label: 'Systems',
       caption: 'Technical assemblies, materials, MEP strategies, and structural specs.',
       category: 'Systems & Technical Specifications',
-      src: media?.conceptBoard || project.image,
+      src: media?.conceptBoard || preferredImage,
       fit: 'contain',
       aspect: 'technical',
     },

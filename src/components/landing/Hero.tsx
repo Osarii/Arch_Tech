@@ -1,40 +1,11 @@
 import React from 'react';
-import { ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { ArrowDownRight } from 'lucide-react';
+import { FeaturedProjectCarousel } from '../gallery/FeaturedProjectCarousel';
 
 interface HeroProps {
   onViewProjects: () => void;
   onOpenProject: (id: string) => void;
 }
-
-const heroProjects = [
-  {
-    image: '/projects/pacific-nexus-free-zone/aerial-overview.webp',
-    title: 'Pacific Nexus Free Zone Campus',
-    label: 'Free zone / Central Pacific',
-    scale: 'Regional employment campus',
-    index: '01',
-    id: 'pacific-nexus-free-zone',
-    className: 'md:row-span-2',
-  },
-  {
-    image: '/projects/summit-point-corporate-district/campus-overview.webp',
-    title: 'Summit Point Corporate District',
-    label: 'Corporate / Greater San José',
-    scale: 'Corporate district',
-    index: '02',
-    id: 'summit-point-corporate-district',
-    className: '',
-  },
-  {
-    image: '/projects/mar-vista-hospitality-district/aerial-overview.webp',
-    title: 'Mar Vista Hospitality District',
-    label: 'Hospitality / Pacific Coast',
-    scale: 'Hospitality district',
-    index: '03',
-    id: 'mar-vista-hospitality-district',
-    className: '',
-  },
-];
 
 const sectors = ['Free zones', 'Industrial / logistics', 'Compute + energy infrastructure', 'Corporate districts', 'Healthcare campuses', 'Masterplans'];
 
@@ -72,45 +43,8 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => 
         </div>
       </div>
 
-      <div data-testid="hero-gallery" className="mt-5 grid gap-px bg-white/[0.08] md:h-[78vh] md:min-h-[600px] md:grid-cols-[1.9fr_1fr] md:grid-rows-2">
-        {heroProjects.map((project, index) => {
-          const principal = index === 0;
-          return (
-            <button
-              key={project.title}
-              type="button"
-              aria-label={`Open ${project.title} project`}
-              onClick={() => onOpenProject(project.id)}
-              className={`group relative block min-h-[300px] w-full overflow-hidden border-0 bg-[#111216] p-0 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-white ${project.className}`}
-            >
-              <img
-                src={project.image}
-                alt={project.title}
-                loading={principal ? 'eager' : 'lazy'}
-                fetchPriority={principal ? 'high' : 'low'}
-                decoding="async"
-                className={`h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02] ${principal ? '' : 'brightness-[0.82]'}`}
-              />
-              <span className={`absolute inset-0 bg-gradient-to-t ${principal ? 'from-black/80 via-black/5 to-black/25' : 'from-black/80 via-black/10 to-black/25'}`} />
-              <span className="absolute inset-x-0 top-0 flex items-center gap-3 p-4 font-mono text-[9px] uppercase tracking-[0.2em] text-white/70 sm:p-5">
-                <span>{project.index}</span>
-                <span className="h-px w-8 bg-white/40" aria-hidden="true" />
-                <span>{principal ? 'Principal development' : 'Portfolio'}</span>
-              </span>
-              <span className={`absolute inset-x-0 bottom-0 flex items-end justify-between gap-5 text-white/90 ${principal ? 'p-6 sm:p-8' : 'p-5'}`}>
-                <span>
-                  <span className={`block font-serif font-light leading-tight ${principal ? 'text-3xl sm:text-5xl' : 'text-xl sm:text-2xl'}`}>{project.title}</span>
-                  <span className="mt-3 block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-300">{project.label}</span>
-                  <span className="mt-1 block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-400">{project.scale}</span>
-                </span>
-                <span className="mb-1 flex shrink-0 items-center gap-2 font-mono text-[8px] uppercase tracking-[0.16em] text-stone-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-visible:opacity-100">
-                  <span>View project</span>
-                  <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </span>
-              </span>
-            </button>
-          );
-        })}
+      <div className="mt-5">
+        <FeaturedProjectCarousel onOpenProject={onOpenProject} />
       </div>
     </div>
   </section>

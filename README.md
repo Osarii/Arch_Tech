@@ -8,7 +8,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
 
 ## Main Feature Areas
 
-1. **Public Development Portfolio**: Six fictional Costa Rica-oriented development concepts (Free Zone, Corporate, Hospitality, Compute, Renewable and Medical campuses) with dark architectural editorial design.
+1. **Public Development Portfolio**: Six fictional Costa Rica-oriented development concepts (Free Zone, Corporate, Hospitality, Compute, Renewable and Medical campuses) with a featured six-project carousel, local real-world reference photography, and dark architectural editorial design. Canonical project identities remain unchanged.
 2. **Multi-Role Client Portal**: Secure role-based portal (`Client`, `Architect`, `Admin`) backed by local snapshot state for tracking project milestones, document vaults, design approvals, and project updates.
 3. **OpenBIM Engineering Workspace**: Desktop-first web CAD environment for real `.ifc` files:
    - **Visualization & Inspection**: Spatial BIM tree, property sets (Psets, Qto), 2D floor plans, 3D section planes (X/Y/Z clipping), length measurement.
@@ -17,7 +17,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
    - **Real IFC Persistence**: Detached STEP-21 exports with coordinate remapping (UI X->IFC X, UI Y->IFC Z, UI Z->IFC Y) and relative rotation composition.
    - **Parametric Building Generation**: Authentic IFC4 STEP-21 model authoring directly from parametric massing plans.
    - **AI Assistant**: Deterministic offline AI agent with explicit human confirmation gates for WRITE operations.
-4. **SpatialRail Media Carousel**: Custom scroll-snap gallery rail and fullscreen lightbox inspection viewer for technical project media.
+4. **Landing + SpatialRail Media**: The public landing uses a keyboard-accessible, reduced-motion-aware featured-project carousel. Project dossiers retain the custom scroll-snap gallery rail and fullscreen lightbox inspection viewer for technical project media.
 
 ---
 
@@ -28,6 +28,21 @@ Its primary identity is large-scale developments and infrastructure: free zones,
 - **State Management**: Zustand
 - **Testing**: Vitest, Playwright
 - **Hardware Target Baseline**: MacBook Pro 2019 / Intel UHD Graphics 630 (DPR <= 1.25, Shadows OFF, Postprocessing OFF)
+
+### Landing reference photography
+
+The six canonical projects keep their fictional names, categories, statements and dossier media. Their preferred public-facing primary images now use local copies of reusable real-world aerial/reference photographs, mapped in `src/components/gallery/projectMedia.tsx`; the existing concept/render packs remain available for technical and private dossier context. These photographs are visual references only and do not depict the fictional ARCH_TECH projects.
+
+Sources and licenses:
+
+- Pacific Nexus / industrial campus: [Fenton Industrial complex](https://commons.wikimedia.org/wiki/File:Aerial_view_of_Fenton_Industrial_complex_as_September_2024.jpg), Gkbediako, CC BY-SA 4.0.
+- Summit Point / corporate district: [Foster City office park](https://commons.wikimedia.org/wiki/File:Aerial_view_of_office_park_in_Foster_City,_September_2019.JPG), Pi.1415926535, CC BY-SA 3.0.
+- Mar Vista / hospitality district: [Gran Hotel Bahía del Duque Resort](https://commons.wikimedia.org/wiki/File:A0411_Tenerife,_Gran_Hotel_Bahia_del_Duque_Resort_in_Adeje_aerial_view.jpg), Wouter Hagens, CC BY-SA 4.0.
+- Caribbean AI / compute campus: [Data centers in Ashburn](https://commons.wikimedia.org/wiki/File:Data_centers_in_Ashburn.jpg), Theodore Christopher, CC0.
+- Guanacaste Renewable / infrastructure campus: [CCAFS Industrial Area](https://commons.wikimedia.org/wiki/File:Aerial_view_of_CCAFS_Industrial_Area_(KSC-2009-5007).jpg), NASA/Troy Cryder, public domain.
+- Pacific Regional Medical / healthcare campus: [Yale-New Haven Hospital campus](https://commons.wikimedia.org/wiki/File:Aerial_closeup_YNHH_2010.jpg), YNHHEditor, CC BY-SA 3.0.
+
+Garnier & Garnier remains only a conceptual reference for scale and enterprise perception; it is not a source of branding, imagery, affiliation or claims.
 
 ---
 
@@ -79,5 +94,5 @@ npm run build
 
 ## Current Development Status & Handoff Context
 
-- **Current Status**: All Phase 6A (Viewport), Phase 6B.1 (IFC4 Generation), Phase 6B.2 (Detached IFC Persistence), Landing/Portal Redesign, and SpatialRail Media Integration phases are **COMPLETE**.
+- **Current Status**: All Phase 6A (Viewport), Phase 6B.1 (IFC4 Generation), Phase 6B.2 (Detached IFC Persistence), Landing/Portal Redesign, real-image landing carousel, and SpatialRail Media Integration phases are **COMPLETE**.
 - **Detailed Handoff**: For complete handoff details, architecture invariants, known issues, and current priorities, refer to [PROJECT_STATE.md](PROJECT_STATE.md).

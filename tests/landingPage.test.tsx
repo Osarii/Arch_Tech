@@ -39,9 +39,9 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Summit Point Corporate District').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Mar Vista Hospitality District').length).toBeGreaterThan(0);
-    expect(screen.getByText('Caribbean AI Compute Campus')).toBeDefined();
-    expect(screen.getByText('Guanacaste Renewable Compute Campus')).toBeDefined();
-    expect(screen.getByText('Pacific Regional Medical Campus')).toBeDefined();
+    expect(screen.getAllByText('Caribbean AI Compute Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Guanacaste Renewable Compute Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Pacific Regional Medical Campus').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Structure for complex development.' })).toBeDefined();
     for (const label of ['SITE + LAND STRATEGY', 'MASTERPLANNING', 'INFRASTRUCTURE FRAMEWORK', 'DEVELOPMENT COORDINATION', 'DIGITAL PROJECT DELIVERY', 'OPERATIONAL CONTINUITY']) {
       expect(screen.getByText(label)).toBeDefined();
@@ -58,35 +58,63 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(onLogin).toHaveBeenCalledTimes(3);
   });
 
-  it('uses a simple three-image architectural hero without sticky scroll state', () => {
+  it('renders a six-project featured carousel with controls, keyboard navigation and real reference imagery', () => {
     const onViewProjects = vi.fn();
     const onOpenProject = vi.fn();
     render(<Hero onViewProjects={onViewProjects} onOpenProject={onOpenProject} />);
 
-    expect(screen.getByTestId('hero-gallery').querySelectorAll('img')).toHaveLength(3);
-    expect(screen.getByTestId('hero-gallery').className).not.toContain('sticky');
+    const carousel = screen.getByTestId('hero-gallery');
+    expect(carousel.getAttribute('aria-roledescription')).toBe('carousel');
+    expect(carousel.className).not.toContain('sticky');
+    expect(screen.getAllByTestId(/^featured-indicator-/)).toHaveLength(6);
+    expect(screen.getAllByTestId(/^featured-project-/)).toHaveLength(6);
+    expect(carousel.querySelector('img')?.getAttribute('src')).toContain('/landing-real.jpg');
+    const featuredImageSources = [...carousel.querySelectorAll('img[data-project-image]')].map((image) => image.getAttribute('src'));
+    expect(featuredImageSources).toHaveLength(6);
+    expect(new Set(featuredImageSources).size).toBe(6);
     expect(screen.getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
     fireEvent.click(screen.getByTestId('hero-view-projects'));
     expect(onViewProjects).toHaveBeenCalledTimes(1);
 
-    for (const project of [
-      ['Pacific Nexus Free Zone Campus', 'pacific-nexus-free-zone'],
-      ['Summit Point Corporate District', 'summit-point-corporate-district'],
-      ['Mar Vista Hospitality District', 'mar-vista-hospitality-district'],
-    ]) {
-      const [title, id] = project;
-      const panel = screen.getByRole('button', { name: `Open ${title} project` });
-      expect(panel).toBeDefined();
-      fireEvent.click(panel);
+    fireEvent.click(screen.getByTestId('featured-carousel-next'));
+    expect(screen.getByText('Summit Point Corporate District')).toBeDefined();
+    expect(screen.getByTestId('featured-indicator-summit-point-corporate-district').getAttribute('aria-current')).toBe('true');
+    fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
+    expect(screen.getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Pacific Nexus Free Zone Campus project dossier' }));
+    expect(onOpenProject).toHaveBeenLastCalledWith('pacific-nexus-free-zone');
+    for (const id of ['pacific-nexus-free-zone', 'summit-point-corporate-district', 'mar-vista-hospitality-district', 'caribbean-ai-compute-campus', 'guanacaste-renewable-compute-campus', 'pacific-regional-medical-campus']) {
+      fireEvent.click(screen.getByTestId(`featured-project-${id}`));
       expect(onOpenProject).toHaveBeenLastCalledWith(id);
     }
+    fireEvent.mouseEnter(carousel);
+    expect(carousel.getAttribute('data-paused')).toBe('true');
+    fireEvent.mouseLeave(carousel);
+    expect(carousel.getAttribute('data-paused')).toBe('false');
+  });
+
+  it('disables autoplay when reduced motion is preferred', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = vi.fn((query: string) => ({
+      matches: query.includes('prefers-reduced-motion'),
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
+    render(<Hero onViewProjects={vi.fn()} onOpenProject={vi.fn()} />);
+    expect(screen.getByTestId('hero-gallery').getAttribute('data-autoplay')).toBe('disabled');
+    window.matchMedia = originalMatchMedia;
   });
 
   it('routes hero development panels to their public project dossiers', () => {
     const onNavigate = vi.fn();
     render(<LandingPage onNavigate={onNavigate} onLogin={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Open Pacific Nexus Free Zone Campus project' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open Pacific Nexus Free Zone Campus project dossier' }));
     expect(onNavigate).toHaveBeenCalledWith('/projects/pacific-nexus-free-zone');
   });
 
@@ -96,6 +124,10 @@ describe('ARCH_TECH client architecture portal', () => {
 
     fireEvent.click(screen.getByTestId('public-project-pacific-nexus-free-zone'));
     expect(onOpenProject).toHaveBeenCalledWith('pacific-nexus-free-zone');
+    const projectImage = screen.getByTestId('public-project-pacific-nexus-free-zone').querySelector('img');
+    expect(projectImage?.getAttribute('src')).toContain('/landing-real.jpg');
+    fireEvent.error(projectImage!);
+    expect(screen.getByTestId('project-image-fallback-pacific-nexus-free-zone')).toBeDefined();
 
     const onNavigate = vi.fn();
     render(<PublicProjectPage projectId="pacific-nexus-free-zone" onNavigate={onNavigate} />);

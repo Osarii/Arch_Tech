@@ -411,6 +411,36 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
 }
 
 /* Utilities for minimal Spatial Rail */
+.landing-image-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(90deg, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    #111216;
+  background-size: 2.5rem 2.5rem;
+  color: rgb(244 239 232 / 0.55);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  line-height: 1.4;
+  text-align: center;
+}
+.landing-image-fallback > span {
+  border: 1px solid rgb(244 239 232 / 0.22);
+  padding: 0.7rem 0.85rem;
+}
+.featured-project-carousel [hidden] {
+  display: none;
+}
+.featured-project-carousel button:focus-visible {
+  outline: 2px solid #f4efe8;
+  outline-offset: 3px;
+}
+.featured-project-carousel [aria-current="true"] {
+  box-shadow: 0 0 0 1px rgb(244 239 232 / 0.25);
+}
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

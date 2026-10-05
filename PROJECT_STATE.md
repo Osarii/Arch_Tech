@@ -75,8 +75,9 @@ These six names and categories are the stable public portfolio unless explicitly
 ---
 
 ## 7. Project Image System & Migration Status
-- **Asset Storage**: Runtime project media lives under `public/projects/<project-slug>/` and currently uses `.webp` files. Source archives are not the runtime asset location.
+- **Asset Storage**: Runtime project media lives under `public/projects/<project-slug>/`. Technical/dossier packs use `.webp` files; preferred public landing images use local `.jpg` reference photographs. Source archives are not the runtime asset location.
 - **Media Schema**: Standardized media structure (`image` for primary hero, plus `media.aerial`, `media.campusOverview`, `media.masterplan`, `media.sitePlan`, `media.floorPlan`, `media.interior`, `media.conceptBoard`).
+- **Landing Media Mapping**: `src/components/gallery/projectMedia.tsx` maps each of the six canonical fictional projects to a local real-world reference photograph. The photographs are used for public scale/context only and do not represent the fictional projects; the existing concept/render packs remain available for technical/private dossier context. Sources and licenses are recorded in `README.md`.
 - **Migration Status**: **CLOSED / COMPLETE**. Legacy placeholder assets removed; schema version 2 automatically migrates runtime storage, sanitizing legacy asset paths and preserving safe `/projects/...` paths.
 
 ---
@@ -91,6 +92,11 @@ These six names and categories are the stable public portfolio unless explicitly
   - Scoped keyboard navigation (Left/Right arrows, Escape key).
   - Fullscreen/lightbox inspection viewer (`rail-fullscreen`) with keyboard controls. Interactive image zoom is not part of the current implementation.
   - Replaced prior Motion and Embla carousel dependencies, reducing bundle size.
+
+### 8.1 Featured landing carousel
+- **Implementation**: `src/components/gallery/FeaturedProjectCarousel.tsx`, mounted by `src/components/landing/Hero.tsx`.
+- **Behavior**: Uses all six canonical public projects, links each slide to its public dossier, supports previous/next controls, indicators, Arrow/Home/End keyboard navigation, hover/focus pause, restrained autoplay, and `prefers-reduced-motion` autoplay suppression.
+- **Fallbacks**: `ProjectImage` renders a neutral ARCH_TECH development placeholder when a preferred local image is unavailable or fails to decode.
 
 ---
 
@@ -135,6 +141,7 @@ These six names and categories are the stable public portfolio unless explicitly
 - **Phase 6B.2**: Detached & idempotent real IFC persistence round-trip (UI X->IFC X, UI Y->IFC Z, UI Z->IFC Y coordinate mapping; relative rotation delta composition; delete/restore containment unlinking reconciliation; transactional reload rollback boundary).
 - **Public Experience & Portal**: Costa Rica development portfolio, multi-role access (Client/Architect/Admin), demo auth, dark architectural editorial design.
 - **SpatialRail Media Carousel**: High-performance scroll-snap media rail & lightbox.
+- **Landing Media Carousel**: Six-project featured carousel with local reusable real-world reference photography, public dossier links, indicators, keyboard navigation, autoplay pause behavior and reduced-motion support. Canonical project names/categories are preserved; Garnier & Garnier remains only a conceptual scale reference.
 - **Portfolio Asset Pipeline**: Canonical zip image packs integrated & schema v2 migration completed.
 - **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient demo auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
 
@@ -175,8 +182,8 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint`).
-- **Vitest Unit/Domain Tests**: **165 / 165 PASSED** across 15 test files.
+- **Vitest Unit/Domain Tests**: **175 / 175 PASSED** across 15 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED** (full browser verification suite).
-- **Targeted portal suites**: `portalData` **9 / 9**, `demoAuth` **9 / 9**, and `landingPage` **29 / 29** passed.
-- **Git Diff**: Verified with `git diff --check` after the reliability changes.
+- **Targeted portal/landing suites**: `portalData` **11 / 11**, `demoAuth` **10 / 10**, `landingPage` **36 / 36**, and `spatialRail` **17 / 17** passed.
+- **Git Diff**: Verified with `git diff --check` after the landing media/carousel changes.

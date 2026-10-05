@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowUpRight } from 'lucide-react';
 import { getPublicProjects } from '../../portal/data';
+import { ProjectImage } from '../gallery/projectMedia';
 
 interface ProjectShowcaseProps {
   onOpenProject: (id: string) => void;
@@ -35,7 +36,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
             className="group mt-12 block w-full text-left"
           >
             <span className="relative block aspect-[16/9] overflow-hidden bg-stone-300 md:aspect-[21/9]">
-              <img src={featured.media?.aerial ?? featured.image} alt="" loading="lazy" fetchPriority="low" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
+              <ProjectImage project={featured} alt={`${featured.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
             </span>
             <span className="mt-6 block border-b border-black/15 pb-10">
               <span className="flex items-start justify-between gap-6">
@@ -73,7 +74,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
             >
               <span className="hidden font-mono text-[10px] text-stone-500 lg:block">{String(i + 2).padStart(2, '0')}</span>
               <span className="relative block aspect-[16/10] overflow-hidden bg-stone-300">
-                <img src={project.media?.aerial ?? project.image} alt="" loading="lazy" fetchPriority="low" decoding="async" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+                <ProjectImage project={project} alt={`${project.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
               </span>
               <span className="grid gap-5 sm:contents">
                 <span className="block sm:col-start-2 lg:col-start-auto">
