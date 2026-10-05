@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { LogOut, Moon, Sun } from 'lucide-react';
+import { LogOut, Moon, Sun, Play, Pause, Square, Palette } from 'lucide-react';
 import { useInRouterContext, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { PortalRole, getPortalUser } from '../../portal/data';
@@ -91,6 +91,23 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     }
   });
 
+  const [colorSafe, setColorSafe] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return window.localStorage.getItem('arch-tech-portal-color-safe') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [speechState, setSpeechState] = useState<'unsupported' | 'idle' | 'playing' | 'paused'>('idle');
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
+      setSpeechState('unsupported');
+    }
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.toggle('portal-dark', dark);
     try {
@@ -110,12 +127,94 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     }
   }, [textScale]);
 
+  useEffect(() => {
+    document.documentElement.classList.toggle('portal-color-safe', colorSafe);
+    try {
+      window.localStorage.setItem('arch-tech-portal-color-safe', colorSafe ? 'true' : 'false');
+    } catch {
+      // Color-safe preference remains active in memory.
+    }
+  }, [colorSafe]);
+
+  const stopSpeech = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setSpeechState('idle');
+    }
+  };
+
+  useEffect(() => {
+    stopSpeech();
+    return () => {
+      stopSpeech();
+    };
+  }, [currentPath]);
+
+  const extractAccessibleText = (node: Node): string => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return node.textContent || '';
+    }
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      const el = node as Element;
+      const tag = el.tagName.toLowerCase();
+      if (
+        el.hasAttribute('hidden') ||
+        el.getAttribute('aria-hidden') === 'true' ||
+        tag === 'nav' ||
+        tag === 'button' ||
+        tag === 'a' ||
+        tag === 'input' ||
+        tag === 'select' ||
+        tag === 'textarea' ||
+        tag === 'svg'
+      ) {
+        return '';
+      }
+      let text = '';
+      for (const child of Array.from(node.childNodes)) {
+        text += extractAccessibleText(child) + ' ';
+      }
+      return text;
+    }
+    return '';
+  };
+
+  const startSpeech = () => {
+    if (speechState === 'unsupported' || typeof window === 'undefined') return;
+    window.speechSynthesis.cancel();
+    
+    const mainNode = document.querySelector('main');
+    if (!mainNode) return;
+
+    const text = extractAccessibleText(mainNode).replace(/\s+/g, ' ').trim();
+    if (!text) return;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.onstart = () => setSpeechState('playing');
+    utterance.onend = () => setSpeechState('idle');
+    utterance.onerror = () => setSpeechState('idle');
+    utterance.onpause = () => setSpeechState('paused');
+    utterance.onresume = () => setSpeechState('playing');
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleSpeechPause = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+    if (speechState === 'playing') {
+      window.speechSynthesis.pause();
+    } else if (speechState === 'paused') {
+      window.speechSynthesis.resume();
+    }
+  };
+
   const navItems = PORTAL_NAV_ITEMS[role];
   const homePath = roleHome(role);
   const session = portalAuth.getSession();
   const currentUser = session ? getPortalUser(session.email) : null;
 
   const handleSignOut = () => {
+    stopSpeech();
     if (onSignOut) {
       onSignOut();
     } else {
@@ -172,6 +271,55 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}{' '}
                 {dark ? 'Light' : 'Dark'}
               </button>
+
+              <button
+                type="button"
+                onClick={() => setColorSafe((value) => !value)}
+                aria-pressed={colorSafe}
+                aria-label="Toggle color-safe mode"
+                data-testid="color-safe-toggle"
+                className={`inline-flex items-center gap-2 transition-colors hover:text-black ${colorSafe ? 'text-black font-semibold' : 'text-stone-500'}`}
+              >
+                <Palette className="h-3.5 w-3.5" /> Color-safe
+              </button>
+
+              {speechState !== 'unsupported' && (
+                <div className="hidden items-center gap-2 border-l border-black/15 pl-3 sm:flex" aria-label="Narrator controls">
+                  {speechState === 'idle' ? (
+                    <button
+                      type="button"
+                      onClick={startSpeech}
+                      aria-label="Start narrator"
+                      data-testid="narrator-start"
+                      className="inline-flex items-center gap-1.5 transition-colors hover:text-black text-stone-500"
+                    >
+                      <Play className="h-3.5 w-3.5" /> Read
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={toggleSpeechPause}
+                        aria-label={speechState === 'playing' ? 'Pause narrator' : 'Resume narrator'}
+                        data-testid="narrator-pause-resume"
+                        className="inline-flex items-center gap-1.5 transition-colors hover:text-black text-stone-500"
+                      >
+                        {speechState === 'playing' ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+                        {speechState === 'playing' ? 'Pause' : 'Resume'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={stopSpeech}
+                        aria-label="Stop narrator"
+                        data-testid="narrator-stop"
+                        className="inline-flex items-center gap-1.5 transition-colors hover:text-black text-stone-500"
+                      >
+                        <Square className="h-3.5 w-3.5" /> Stop
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
 
               <div className="hidden items-center gap-1 border-l border-black/15 pl-3 sm:flex" aria-label="Text size">
                 {(['100', '1125', '125'] as const).map((scale) => (
