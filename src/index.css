@@ -119,11 +119,11 @@ html.portal-dark .portal-surface .admin-action:hover {
 }
 
 html:not(.portal-dark) .portal-surface {
-  background-color: #D8C7AF !important;
+  background-color: #D6CBB9 !important;
   color: #211E1A !important;
 }
 html:not(.portal-dark) .portal-surface .portal-header {
-  background-color: #2B2A28 !important;
+  background-color: #2D2E2C !important;
   border-color: rgb(244 239 232 / 0.18) !important;
   color: #F4EFE8 !important;
 }
@@ -138,11 +138,26 @@ html:not(.portal-dark) .portal-surface .portal-header [class~="border-black/15"]
 html:not(.portal-dark) .portal-surface .admin-overview-tile,
 html:not(.portal-dark) .portal-surface .portal-overview-tile,
 html:not(.portal-dark) .portal-surface [class~="bg-[#E6DED2]"] {
-  background-color: #E8DDCB !important;
+  background-color: #E9E2D7 !important;
+}
+html:not(.portal-dark) .portal-surface .admin-kpi-strip {
+  background-color: #2D2E2C !important;
+  border-color: #2D2E2C !important;
+}
+html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile {
+  background-color: transparent !important;
+  color: #F4EFE8 !important;
+}
+html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile {
+  border-left: 1px solid rgb(244 239 232 / 0.18);
+}
+html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
+html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-600"] {
+  color: #B9B4AA !important;
 }
 html:not(.portal-dark) .portal-surface [class~="bg-[#171714]"],
 html:not(.portal-dark) .portal-surface [class~="bg-black"] {
-  background-color: #2B2A28 !important;
+  background-color: #2D2E2C !important;
   color: #F4EFE8 !important;
 }
 html:not(.portal-dark) .portal-surface [class~="bg-black/15"] {
@@ -162,16 +177,16 @@ html:not(.portal-dark) .portal-surface [class~="text-[#171714]"] {
   color: #211E1A !important;
 }
 html:not(.portal-dark) .portal-surface [class~="text-stone-600"] {
-  color: #62574B !important;
+  color: #68655F !important;
 }
 html:not(.portal-dark) .portal-surface [class~="text-stone-500"] {
-  color: #766653 !important;
+  color: #68655F !important;
 }
 html:not(.portal-dark) .portal-surface [class~="text-stone-400"] {
-  color: #897664 !important;
+  color: #807B73 !important;
 }
 html:not(.portal-dark) .portal-surface [class~="text-stone-300"] {
-  color: #62574B !important;
+  color: #68655F !important;
 }
 html:not(.portal-dark) .portal-surface [class~="hover:text-black"]:hover,
 html:not(.portal-dark) .portal-surface [class~="hover:text-stone-700"]:hover {
@@ -181,10 +196,10 @@ html:not(.portal-dark) .portal-surface .portal-header [class~="hover:text-black"
   color: #F4EFE8 !important;
 }
 html:not(.portal-dark) .portal-surface [class~="hover:bg-white/35"]:hover {
-  background-color: rgb(189 164 134 / 0.28) !important;
+  background-color: #E9E2D7 !important;
 }
 html:not(.portal-dark) .portal-surface [class~="bg-[#11110f]"] {
-  background-color: #E8DDCB !important;
+  background-color: #E9E2D7 !important;
   color: #211E1A !important;
 }
 html:not(.portal-dark) .portal-surface [class~="bg-[#11110f]"] [class~="text-white"] {
@@ -200,16 +215,8 @@ html:not(.portal-dark) .portal-surface .portal-status-complete {
 html:not(.portal-dark) .portal-surface .portal-status-current {
   color: #8B6C49 !important;
 }
-html:not(.portal-dark) .portal-surface .admin-overview-accent {
-  background-color: #343330 !important;
-  color: #F4EFE8 !important;
-}
-html:not(.portal-dark) .portal-surface .admin-overview-accent [class~="text-stone-500"],
-html:not(.portal-dark) .portal-surface .admin-overview-accent [class~="text-stone-600"] {
-  color: #D8C7AF !important;
-}
 html:not(.portal-dark) .portal-surface .portal-register-row:focus-within {
-  background-color: #343330 !important;
+  background-color: #393A37 !important;
   color: #F4EFE8 !important;
 }
 html:not(.portal-dark) .portal-surface .portal-register-row:focus-within [class~="text-stone-500"],
@@ -217,19 +224,28 @@ html:not(.portal-dark) .portal-surface .portal-register-row:focus-within [class~
   color: #E8DDCB !important;
 }
 html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action {
-  border: 1px solid rgb(43 42 40 / 0.3);
-  color: #2B2A28 !important;
+  border: 1px solid rgb(45 46 44 / 0.35);
+  color: #2D2E2C !important;
   padding: 0.4rem 0.55rem;
 }
 html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action:hover {
-  background-color: #2B2A28 !important;
+  background-color: #2D2E2C !important;
   color: #F4EFE8 !important;
 }
 html:not(.portal-dark) .portal-surface .portal-progress-track {
   background-color: #6B6258 !important;
 }
 html:not(.portal-dark) .portal-surface .portal-progress-fill {
-  background-color: #2B2A28 !important;
+  background-color: #2D2E2C !important;
+}
+html:not(.portal-dark) .portal-surface .portal-review-section {
+  background-color: #E9E2D7;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+html:not(.portal-dark) .portal-surface .portal-register-heading {
+  background-color: #E9E2D7;
+  padding: 0.75rem 1rem;
 }
 [class~="bg-[#11110f]"] {
   background-color: #111216 !important;
