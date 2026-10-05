@@ -186,7 +186,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getAllByText('Material palette').length).toBeGreaterThan(0);
     const adminSurface = screen.getByText('All projects / assignments').closest('.portal-surface');
     expect(adminSurface?.className).toContain('portal-admin');
-    expect(adminSurface?.className).toContain('bg-[#E6DED2]');
+    expect(adminSurface?.className).toContain('bg-[#D8C7AF]');
     expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelector('.font-serif')?.className).toContain('text-5xl');
     expect(screen.getByTestId('admin-open-model-pacific-nexus-free-zone').className).toContain('admin-action');
   });

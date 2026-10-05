@@ -26,6 +26,7 @@ interface NavigationProps {
 }
 
 const formatPortalDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+const portalStatusClass = (status: string) => status === 'Pending' ? 'portal-status-pending' : status === 'Approved' || status === 'Complete' ? 'portal-status-approved' : status === 'Current' ? 'portal-status-current' : '';
 
 const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePath?: string; role?: PortalRole }> = ({ onNavigate, onSignOut, homePath = '/dashboard', role = 'client' }) => {
   const [dark, setDark] = useState(() => {
@@ -47,9 +48,9 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
   const navigation = role === 'admin' ? ['Projects', 'People', 'Approvals', 'Activity'] : role === 'architect' ? ['Projects', 'Activity', 'Milestones', 'Documents', 'Approvals'] : ['Projects', 'Updates', 'Documents', 'Notifications'];
   const sectionIds = role === 'admin' ? { Projects: 'projects', People: 'people', Approvals: 'approvals', Activity: 'activity' } : role === 'architect' ? { Projects: 'projects', Activity: 'activity', Milestones: 'milestones', Documents: 'documents', Approvals: 'approvals' } : { Projects: 'projects', Updates: 'updates', Documents: 'documents', Notifications: 'notifications' };
   return (
-  <header className="portal-header border-b border-black/10 bg-[#E6DED2]">
+  <header className="portal-header border-b border-black/10 bg-[#E8DDCB]">
     <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-      <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em] text-[#171714]">
+      <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em] text-[#211E1A]">
         ARCH_TECH
       </button>
       <div className="flex items-center gap-5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600">
@@ -197,7 +198,7 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
   };
 
   return (
-    <div className="portal-surface h-screen overflow-y-auto bg-[#E6DED2] text-[#171714]">
+    <div className="portal-surface h-screen overflow-y-auto bg-[#D8C7AF] text-[#211E1A]">
       <PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} role="client" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -226,7 +227,7 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
         </section>
 
         <section className="grid gap-12 border-t border-black/15 py-12 lg:grid-cols-[1fr_1fr]" aria-label="Client decisions">
-          <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring your attention</p>{pendingApprovals.length ? pendingApprovals.map((approval) => <div key={`${approval.projectId}-${approval.title}`} className="mt-6 border-b border-black/10 pb-5"><div className="flex items-start justify-between gap-6"><div><p className="font-serif text-2xl">{approval.title}</p><p className="mt-1 text-xs text-stone-500">{approval.projectTitle}</p></div><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Pending</span></div><div className="mt-4 flex gap-2"><button onClick={() => respondToApproval(approval.projectId, approval.title, 'Approved')} className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white">Approve</button><button onClick={() => respondToApproval(approval.projectId, approval.title, 'Rejected')} className="border border-black/20 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]">Request changes</button></div></div>) : <p className="mt-6 text-sm leading-6 text-stone-600">No decisions are waiting for you.</p>}</div>
+          <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring your attention</p>{pendingApprovals.length ? pendingApprovals.map((approval) => <div key={`${approval.projectId}-${approval.title}`} className="mt-6 border-b border-black/10 pb-5"><div className="flex items-start justify-between gap-6"><div><p className="font-serif text-2xl">{approval.title}</p><p className="mt-1 text-xs text-stone-500">{approval.projectTitle}</p></div><span className="portal-status-pending font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Pending</span></div><div className="mt-4 flex gap-2"><button onClick={() => respondToApproval(approval.projectId, approval.title, 'Approved')} className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white">Approve</button><button onClick={() => respondToApproval(approval.projectId, approval.title, 'Rejected')} className="border border-black/20 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]">Request changes</button></div></div>) : <p className="mt-6 text-sm leading-6 text-stone-600">No decisions are waiting for you.</p>}</div>
           <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>{upcomingMilestones.length ? upcomingMilestones.map((milestone) => <p key={`${milestone.projectId}-${milestone.label}`} className="mt-6 flex justify-between gap-5 text-sm"><span>{milestone.projectTitle} · {milestone.label}</span><span className="font-mono text-[9px] uppercase text-stone-500">Upcoming</span></p>) : <p className="mt-6 text-sm text-stone-600">Milestones will appear here as projects advance.</p>}</div>
         </section>
 
@@ -264,7 +265,7 @@ export const ArchitectDashboardPage: React.FC<NavigationProps & { onSignOut: () 
   const approvals = projects.flatMap((project) => project.approvals.filter((approval) => approval.status === 'Pending').map((approval) => ({ ...approval, projectTitle: project.title })));
   const activity = projects.flatMap((project) => project.updates.map((update) => ({ ...update, projectTitle: project.title }))).slice(0, 5);
   return (
-    <div className="portal-surface h-screen overflow-y-auto bg-[#E6DED2] text-[#171714]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/architect" role="architect" />
+    <div className="portal-surface h-screen overflow-y-auto bg-[#D8C7AF] text-[#211E1A]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/architect" role="architect" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Architect workspace / Assigned projects</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Work in progress.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">A focused view of the projects, decisions and deliverables currently assigned to this studio.</p></div>
         <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Architect workload"><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Assigned workload</p><p className="mt-3 font-serif text-3xl">{projects.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">active projects</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Attention</p><p className="mt-3 font-serif text-3xl">{attention.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">projects to review</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Client decisions</p><p className="mt-3 font-serif text-3xl">{approvals.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">responses pending</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Next milestones</p><p className="mt-3 font-serif text-3xl">{milestones.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">in the active sequence</p></div></section>
@@ -357,7 +358,7 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
     refresh();
   };
   return (
-    <div className="portal-surface portal-admin h-screen overflow-y-auto bg-[#E6DED2] text-[#171714]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/admin" role="admin" />
+    <div className="portal-surface portal-admin h-screen overflow-y-auto bg-[#D8C7AF] text-[#211E1A]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/admin" role="admin" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Administration / Portal overview</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">The project register.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">Projects, people, approvals and shared information across the ARCH_TECH portal.</p></div>
         <section className="flex flex-wrap items-center gap-4 py-10"><button ref={createTriggerRef} onClick={() => { setCreateOpen(true); setCreateError(''); }} className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white">Create project</button><p className="text-sm text-stone-600">Create projects, manage people, assignments and approvals.</p></section>
@@ -429,7 +430,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
   if (!project) return <NotFoundPage onNavigate={onNavigate} />;
 
   return (
-    <div className="portal-surface h-screen overflow-y-auto bg-[#E6DED2] text-[#171714]">
+    <div className="portal-surface h-screen overflow-y-auto bg-[#D8C7AF] text-[#211E1A]">
       <PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath={homePath} role={role} />
       <main className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-12 lg:py-16">
         <button onClick={() => onNavigate(homePath)} className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-black">
@@ -468,7 +469,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
           )}
           {activeTab === 'Milestones' && (
             <ol className="divide-y divide-black/15 border-y border-black/15">
-              {project.milestones.map((milestone, index) => <li key={milestone.label} className="grid grid-cols-[60px_1fr_auto] items-center py-6"><span className="font-mono text-[10px] text-stone-500">{String(index + 1).padStart(2, '0')}</span><span className="font-serif text-2xl">{milestone.label}</span><span className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{milestone.status}</span></li>)}
+              {project.milestones.map((milestone, index) => <li key={milestone.label} className="grid grid-cols-[60px_1fr_auto] items-center py-6"><span className="font-mono text-[10px] text-stone-500">{String(index + 1).padStart(2, '0')}</span><span className="font-serif text-2xl">{milestone.label}</span><span className={`${portalStatusClass(milestone.status)} font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500`}>{milestone.status}</span></li>)}
             </ol>
           )}
           {activeTab === 'Documents' && (
@@ -478,7 +479,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
           )}
           {activeTab === 'Approvals' && (
             <div className="divide-y divide-black/15 border-y border-black/15">
-              {project.approvals.map((approval) => <div key={approval.title} className="flex items-center justify-between gap-6 py-6"><p className="font-serif text-2xl">{approval.title}</p><span className="flex items-center gap-3"><span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{approval.status}</span>{role === 'client' && approval.status === 'Pending' && <><button onClick={() => { updatePortalApproval(projectId, approval.title, 'Approved'); refresh(); }} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">Approve</button><button onClick={() => { updatePortalApproval(projectId, approval.title, 'Rejected'); refresh(); }} className="border border-black/15 px-3 py-2 font-mono text-[9px] uppercase text-stone-500">Reject</button></>}{canManage && <button onClick={() => { updatePortalApproval(projectId, approval.title, approval.status === 'Approved' ? 'Pending' : 'Approved'); refresh(); }} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">{approval.status === 'Approved' ? 'Reopen' : 'Resolve'}</button>}</span></div>)}
+              {project.approvals.map((approval) => <div key={approval.title} className="flex items-center justify-between gap-6 py-6"><p className="font-serif text-2xl">{approval.title}</p><span className="flex items-center gap-3"><span className={`${portalStatusClass(approval.status)} font-mono text-[9px] uppercase tracking-wider text-stone-500`}>{approval.status}</span>{role === 'client' && approval.status === 'Pending' && <><button onClick={() => { updatePortalApproval(projectId, approval.title, 'Approved'); refresh(); }} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">Approve</button><button onClick={() => { updatePortalApproval(projectId, approval.title, 'Rejected'); refresh(); }} className="border border-black/15 px-3 py-2 font-mono text-[9px] uppercase text-stone-500">Reject</button></>}{canManage && <button onClick={() => { updatePortalApproval(projectId, approval.title, approval.status === 'Approved' ? 'Pending' : 'Approved'); refresh(); }} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">{approval.status === 'Approved' ? 'Reopen' : 'Resolve'}</button>}</span></div>)}
             </div>
           )}
           {activeTab === 'Model' && (
@@ -584,7 +585,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
 };
 
 export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => (
-  <main className="flex h-screen flex-col items-center justify-center bg-[#E6DED2] px-6 text-center text-[#171714]">
+  <main className="flex h-screen flex-col items-center justify-center bg-[#D8C7AF] px-6 text-center text-[#211E1A]">
     <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">404</p>
     <h1 className="mt-5 font-serif text-5xl">Project not found.</h1>
     <button onClick={() => onNavigate('/')} className="mt-8 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em]"><ArrowLeft className="h-3.5 w-3.5" /> Return home</button>

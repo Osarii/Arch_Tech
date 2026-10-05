@@ -119,11 +119,74 @@ html.portal-dark .portal-surface .admin-action:hover {
 }
 
 html:not(.portal-dark) .portal-surface {
-  background-color: #E6DED2 !important;
-  color: #171714 !important;
+  background-color: #D8C7AF !important;
+  color: #211E1A !important;
 }
 html:not(.portal-dark) .portal-surface .portal-header {
-  background-color: #E6DED2 !important;
+  background-color: #E8DDCB !important;
+  border-color: rgb(33 30 26 / 0.16) !important;
+}
+html:not(.portal-dark) .portal-surface .admin-overview-tile,
+html:not(.portal-dark) .portal-surface .portal-overview-tile,
+html:not(.portal-dark) .portal-surface [class~="bg-[#E6DED2]"] {
+  background-color: #E8DDCB !important;
+}
+html:not(.portal-dark) .portal-surface [class~="bg-[#171714]"],
+html:not(.portal-dark) .portal-surface [class~="bg-black"] {
+  background-color: #211E1A !important;
+  color: #F4EFE8 !important;
+}
+html:not(.portal-dark) .portal-surface [class~="bg-black/15"] {
+  background-color: rgb(111 115 92 / 0.2) !important;
+}
+html:not(.portal-dark) .portal-surface [class~="border-black"],
+html:not(.portal-dark) .portal-surface [class~="border-black/10"],
+html:not(.portal-dark) .portal-surface [class~="border-black/15"],
+html:not(.portal-dark) .portal-surface [class~="border-black/20"] {
+  border-color: rgb(33 30 26 / 0.2) !important;
+}
+html:not(.portal-dark) .portal-surface [class~="divide-black/15"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(33 30 26 / 0.16) !important;
+}
+html:not(.portal-dark) .portal-surface [class~="text-black"],
+html:not(.portal-dark) .portal-surface [class~="text-[#171714]"] {
+  color: #211E1A !important;
+}
+html:not(.portal-dark) .portal-surface [class~="text-stone-600"] {
+  color: #62574B !important;
+}
+html:not(.portal-dark) .portal-surface [class~="text-stone-500"] {
+  color: #766653 !important;
+}
+html:not(.portal-dark) .portal-surface [class~="text-stone-400"] {
+  color: #897664 !important;
+}
+html:not(.portal-dark) .portal-surface [class~="text-stone-300"] {
+  color: #62574B !important;
+}
+html:not(.portal-dark) .portal-surface [class~="hover:text-black"]:hover,
+html:not(.portal-dark) .portal-surface [class~="hover:text-stone-700"]:hover {
+  color: #211E1A !important;
+}
+html:not(.portal-dark) .portal-surface [class~="hover:bg-white/35"]:hover {
+  background-color: rgb(189 164 134 / 0.28) !important;
+}
+html:not(.portal-dark) .portal-surface [class~="bg-[#11110f]"] {
+  background-color: #E8DDCB !important;
+  color: #211E1A !important;
+}
+html:not(.portal-dark) .portal-surface [class~="bg-[#11110f]"] [class~="text-white"] {
+  color: #211E1A !important;
+}
+html:not(.portal-dark) .portal-surface .portal-status-pending {
+  color: #A86449 !important;
+}
+html:not(.portal-dark) .portal-surface .portal-status-approved,
+html:not(.portal-dark) .portal-surface .portal-status-complete {
+  color: #6F735C !important;
+}
+html:not(.portal-dark) .portal-surface .portal-status-current {
+  color: #8B6C49 !important;
 }
 [class~="bg-[#11110f]"] {
   background-color: #111216 !important;
