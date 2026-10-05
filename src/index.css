@@ -140,21 +140,6 @@ html:not(.portal-dark) .portal-surface .portal-overview-tile,
 html:not(.portal-dark) .portal-surface [class~="bg-[#E6DED2]"] {
   background-color: #E9E2D7 !important;
 }
-html:not(.portal-dark) .portal-surface .admin-kpi-strip {
-  background-color: #2D2E2C !important;
-  border-color: #2D2E2C !important;
-}
-html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile {
-  background-color: transparent !important;
-  color: #F4EFE8 !important;
-}
-html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile {
-  border-left: 1px solid rgb(244 239 232 / 0.18);
-}
-html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
-html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-600"] {
-  color: #B9B4AA !important;
-}
 html:not(.portal-dark) .portal-surface [class~="bg-[#171714]"],
 html:not(.portal-dark) .portal-surface [class~="bg-black"] {
   background-color: #2D2E2C !important;
@@ -216,12 +201,12 @@ html:not(.portal-dark) .portal-surface .portal-status-current {
   color: #8B6C49 !important;
 }
 html:not(.portal-dark) .portal-surface .portal-register-row:focus-within {
-  background-color: #393A37 !important;
-  color: #F4EFE8 !important;
+  background-color: #E9E2D7 !important;
+  color: #211E1A !important;
 }
 html:not(.portal-dark) .portal-surface .portal-register-row:focus-within [class~="text-stone-500"],
 html:not(.portal-dark) .portal-surface .portal-register-row:focus-within [class~="text-stone-600"] {
-  color: #E8DDCB !important;
+  color: #68655F !important;
 }
 html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action {
   border: 1px solid rgb(45 46 44 / 0.35);
@@ -238,14 +223,21 @@ html:not(.portal-dark) .portal-surface .portal-progress-track {
 html:not(.portal-dark) .portal-surface .portal-progress-fill {
   background-color: #2D2E2C !important;
 }
-html:not(.portal-dark) .portal-surface .portal-review-section {
-  background-color: #E9E2D7;
-  padding-left: 1rem;
-  padding-right: 1rem;
+/* Keep the KPI register above generic utility overrides so its graphite band is authoritative. */
+html:not(.portal-dark) .portal-surface .admin-kpi-strip {
+  background-color: #2D2E2C !important;
+  border-color: #2D2E2C !important;
 }
-html:not(.portal-dark) .portal-surface .portal-register-heading {
-  background-color: #E9E2D7;
-  padding: 0.75rem 1rem;
+html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile {
+  background-color: transparent !important;
+  color: #F4EFE8 !important;
+}
+html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile {
+  border-left: 1px solid rgb(244 239 232 / 0.18) !important;
+}
+html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
+html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-600"] {
+  color: #B9B4AA !important;
 }
 [class~="bg-[#11110f]"] {
   background-color: #111216 !important;
