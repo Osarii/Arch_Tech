@@ -449,12 +449,31 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
   border: 1px solid rgb(244 239 232 / 0.22);
   padding: 0.7rem 0.85rem;
 }
-.featured-project-carousel [hidden] {
-  display: none;
-}
-.featured-project-media-shell {
+.featured-project-stage {
   aspect-ratio: 16 / 9;
   min-height: 0;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.featured-project-slide {
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  visibility: hidden;
+  transition: opacity 680ms cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s linear 680ms;
+  z-index: 0;
+}
+.featured-project-slide-active {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+  transition-delay: 0s, 0s;
+  z-index: 1;
+}
+.featured-project-media-shell {
+  height: 100%;
   overflow: hidden;
   position: relative;
   width: 100%;
@@ -462,6 +481,23 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
 .featured-project-media-shell > button {
   height: 100%;
   min-height: 0;
+}
+.featured-project-slide-image {
+  transform: scale(1.015);
+  transition: transform 700ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  will-change: transform;
+}
+.featured-project-slide-active .featured-project-slide-image {
+  transform: scale(1);
+}
+.featured-project-slide-content {
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 520ms ease 120ms, transform 520ms ease 120ms;
+}
+.featured-project-slide-active .featured-project-slide-content {
+  opacity: 1;
+  transform: translateY(0);
 }
 .featured-project-carousel button:focus-visible {
   outline: 2px solid #f4efe8;
@@ -483,5 +519,16 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+  .featured-project-slide {
+    transition: opacity 0.01ms linear, visibility 0s linear 0s !important;
+  }
+  .featured-project-slide-image {
+    transform: none !important;
+    transition: opacity 0.01ms linear !important;
+  }
+  .featured-project-slide-content {
+    transform: none !important;
+    transition: opacity 0.01ms linear !important;
   }
 }

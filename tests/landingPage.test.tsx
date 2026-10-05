@@ -102,9 +102,18 @@ describe('ARCH_TECH client architecture portal', () => {
     const featuredImageSources = [...carousel.querySelectorAll('img[data-project-image]')].map((image) => image.getAttribute('src'));
     expect(featuredImageSources).toHaveLength(6);
     expect(new Set(featuredImageSources).size).toBe(6);
+    const featuredSlides = [...carousel.querySelectorAll('[data-testid^="featured-slide-"]')];
+    expect(featuredSlides).toHaveLength(6);
+    expect(featuredSlides.every((slide) => !slide.hasAttribute('hidden'))).toBe(true);
+    expect(featuredSlides.filter((slide) => slide.getAttribute('data-active') === 'true')).toHaveLength(1);
+    expect(featuredSlides.filter((slide) => slide.getAttribute('aria-hidden') === 'true')).toHaveLength(5);
     const featuredShells = [...carousel.querySelectorAll('.featured-project-media-shell')];
     expect(featuredShells).toHaveLength(6);
     expect(featuredShells.every((shell) => shell.className.includes('featured-project-media-shell'))).toBe(true);
+    const featuredButtons = screen.getAllByTestId(/^featured-project-/) as HTMLButtonElement[];
+    expect(featuredButtons.filter((button) => !button.disabled)).toHaveLength(1);
+    expect((screen.getByTestId('featured-project-zona-franca-la-lima') as HTMLButtonElement).disabled).toBe(false);
+    expect((screen.getByTestId('featured-project-el-cafetal') as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByText('Zona Franca La Lima')).toBeDefined();
     fireEvent.click(screen.getByTestId('hero-view-projects'));
     expect(onViewProjects).toHaveBeenCalledTimes(1);
@@ -112,14 +121,12 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByTestId('featured-carousel-next'));
     expect(screen.getByText('El Cafetal')).toBeDefined();
     expect(screen.getByTestId('featured-indicator-el-cafetal').getAttribute('aria-current')).toBe('true');
+    expect((screen.getByTestId('featured-project-zona-franca-la-lima') as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByTestId('featured-project-el-cafetal') as HTMLButtonElement).disabled).toBe(false);
     fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
     expect(screen.getByText('Zona Franca La Lima')).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'Open Zona Franca La Lima project dossier' }));
     expect(onOpenProject).toHaveBeenLastCalledWith('zona-franca-la-lima');
-    for (const id of ['zona-franca-la-lima', 'el-cafetal', 'waldorf-astoria', 'centro-corporativo-sabana', 'santa-ana-country-club', 'universidad-latina']) {
-      fireEvent.click(screen.getByTestId(`featured-project-${id}`));
-      expect(onOpenProject).toHaveBeenLastCalledWith(id);
-    }
     fireEvent.mouseEnter(carousel);
     expect(carousel.getAttribute('data-paused')).toBe('true');
     fireEvent.mouseLeave(carousel);

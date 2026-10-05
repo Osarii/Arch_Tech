@@ -26,26 +26,29 @@ const useReducedMotion = () => {
 const FeaturedProjectSlide: React.FC<{ project: PortalProject; index: number; total: number; active: boolean; onOpenProject: (id: string) => void }> = ({ project, index, total, active, onOpenProject }) => (
   <article
     data-testid={`featured-slide-${project.id}`}
+    data-active={active ? 'true' : 'false'}
     aria-roledescription="slide"
     aria-label={`${index + 1} of ${total}: ${project.title}`}
-    hidden={!active}
-    className="featured-project-slide"
+    aria-hidden={!active}
+    className={`featured-project-slide ${active ? 'featured-project-slide-active' : 'featured-project-slide-inactive'}`}
   >
     <div className="featured-project-media-shell">
       <button
         type="button"
         data-testid={`featured-project-${project.id}`}
         aria-label={`Open ${project.title} project dossier`}
+        tabIndex={active ? 0 : -1}
+        disabled={!active}
         onClick={() => onOpenProject(project.id)}
         className="group relative block h-full w-full overflow-hidden border border-white/[0.12] bg-[#111216] text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-white"
       >
-        <ProjectImage project={project} alt={`${project.title} development context`} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'low'} className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.02]" />
+        <ProjectImage project={project} alt={`${project.title} development context`} loading={index === 0 ? 'eager' : 'lazy'} fetchPriority={index === 0 ? 'high' : 'low'} className="featured-project-slide-image absolute inset-0 h-full w-full object-cover group-hover:scale-[1.02]" />
         <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0a0b0d]/95 via-[#0a0b0d]/15 to-[#0a0b0d]/10" aria-hidden="true" />
         <span className="pointer-events-none absolute inset-x-0 top-0 flex items-center justify-between gap-4 p-5 font-mono text-[9px] uppercase tracking-[0.2em] text-white/70 sm:p-7">
           <span>{project.code}</span>
           <span>{String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}</span>
         </span>
-        <span className="pointer-events-none absolute inset-x-0 bottom-0 grid min-h-[9.5rem] gap-4 p-5 text-white sm:min-h-[12rem] sm:gap-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end lg:p-10">
+        <span className="featured-project-slide-content pointer-events-none absolute inset-x-0 bottom-0 grid min-h-[9.5rem] gap-4 p-5 text-white sm:min-h-[12rem] sm:gap-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end lg:p-10">
           <span>
             <span className="block max-w-3xl font-serif text-3xl font-light leading-[0.98] sm:text-6xl lg:text-7xl">{project.title}</span>
             <span className="mt-3 block font-mono text-[10px] uppercase tracking-[0.16em] text-stone-300 sm:mt-4">{project.category}</span>
@@ -120,7 +123,7 @@ export const FeaturedProjectCarousel: React.FC<FeaturedProjectCarouselProps> = (
       }}
       className="featured-project-carousel outline-none focus-visible:ring-1 focus-visible:ring-white/60"
     >
-      <div className="relative" aria-live="polite">
+      <div className="featured-project-stage" aria-live="polite">
         {projects.map((project, index) => <FeaturedProjectSlide key={project.id} project={project} index={index} total={projects.length} active={index === activeIndex} onOpenProject={onOpenProject} />)}
       </div>
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.12] pt-4">
