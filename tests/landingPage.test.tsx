@@ -27,7 +27,7 @@ describe('ARCH_TECH client architecture portal', () => {
     document.documentElement.classList.remove('portal-dark');
   });
 
-  it('renders a projects-only public landing with client login', () => {
+  it('renders a projects-only public landing with project portal access', () => {
     const onNavigate = vi.fn();
     const onLogin = vi.fn();
     render(<LandingPage onNavigate={onNavigate} onLogin={onLogin} />);
@@ -52,7 +52,7 @@ describe('ARCH_TECH client architecture portal', () => {
 
     fireEvent.click(screen.getByTestId('client-login-link'));
     expect(onLogin).toHaveBeenCalledTimes(1);
-    fireEvent.click(screen.getAllByRole('button', { name: /Client Login/i }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: /Project Portal/i }).at(-1)!);
     expect(onLogin).toHaveBeenCalledTimes(2);
     fireEvent.click(screen.getByTestId('development-portal-link'));
     expect(onLogin).toHaveBeenCalledTimes(3);
@@ -117,6 +117,9 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<LoginOverlay open onClose={onClose} onSuccess={onSuccess} />);
 
     expect(screen.getByRole('dialog')).toBeDefined();
+    expect((screen.getByTestId('login-email') as HTMLInputElement).value).toBe('');
+    expect((screen.getByTestId('login-password') as HTMLInputElement).value).toBe('');
+    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'mariana.solano@arch-tech.studio' } });
     fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'incorrect' } });
     fireEvent.click(screen.getByTestId('login-submit'));
     expect(screen.getByRole('alert').textContent).toContain('Check the email');
@@ -659,6 +662,8 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByTestId('client-login-link'));
     expect(window.location.pathname).toBe('/');
     expect(screen.getByRole('dialog')).toBeDefined();
+    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'mariana.solano@arch-tech.studio' } });
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'client-access' } });
     fireEvent.click(screen.getByTestId('login-submit'));
     expect(window.location.pathname).toBe('/dashboard');
     expect(screen.getByText('Projects in progress.')).toBeDefined();
@@ -694,7 +699,7 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByLabelText('Close login'));
     await waitFor(() => expect(document.activeElement).toBe(navLogin));
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Client Login/i }).at(-1)!);
+    fireEvent.click(screen.getAllByRole('button', { name: /Project Portal/i }).at(-1)!);
     expect(screen.getByRole('dialog')).toBeDefined();
     fireEvent.mouseDown(screen.getAllByRole('presentation').at(-1)!);
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -713,7 +718,7 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<LandingNavbar onLogin={vi.fn()} />);
     expect(screen.getByText('Projects')).toBeDefined();
     expect(screen.getByTestId('capabilities-link')).toBeDefined();
-    expect(screen.getByTestId('client-login-link').textContent).toContain('Client Login');
+    expect(screen.getByTestId('client-login-link').textContent).toContain('Project Portal');
   });
 
   it('scrolls to the capability register from desktop and mobile navigation', () => {

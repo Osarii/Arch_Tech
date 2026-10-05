@@ -13,7 +13,7 @@ export const Footer: React.FC<FooterProps> = ({ onLogin }) => (
         <p className="mt-4 max-w-md font-serif text-2xl font-light text-stone-300">Development shaped with clarity, from first opportunity to long-term operation.</p>
       </div>
       <div className="space-y-5 sm:text-right">
-        <button onClick={(event) => onLogin(event.currentTarget)} className="group inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white">Client Login <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></button>
+        <button onClick={(event) => onLogin(event.currentTarget)} className="group inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white">Project Portal <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" /></button>
         <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-600">© 2026 ARCH_TECH</p>
       </div>
     </div>

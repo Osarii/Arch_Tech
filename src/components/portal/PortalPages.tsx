@@ -72,11 +72,11 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
 };
 
 export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSuccess: () => void }> = ({ open, onClose, onSuccess }) => {
-  const portalClient = getPortalSnapshot().db.users[0];
-  const [email, setEmail] = useState(portalClient?.email ?? '');
-  const [password, setPassword] = useState(portalClient?.password ?? '');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const dialogRef = useRef<HTMLDivElement>(null);
+  const showQuickAccess = import.meta.env.DEV || import.meta.env.MODE === 'test';
 
   useEffect(() => {
     if (!open) return;
@@ -143,7 +143,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
           <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">Portal Access</h1>
           <p className="mt-4 max-w-sm text-sm leading-6 text-stone-400">Review project progress, updates, documents and the current model.</p>
 
-          <div className="mt-8 border-y border-white/10 py-5"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Quick access</p><div className="mt-4 grid grid-cols-3 gap-2">{(['client', 'architect', 'admin'] as PortalRole[]).map((role) => <button key={role} type="button" data-testid={`quick-login-${role}`} onClick={() => handleQuickLogin(role)} className="border border-white/20 px-2 py-3 font-mono text-[9px] uppercase tracking-[0.12em] text-stone-200 transition-colors hover:border-white hover:bg-white hover:text-black">{`${role[0].toUpperCase()}${role.slice(1)} access`}</button>)}</div><p className="mt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">— or use credentials manually —</p></div>
+          {showQuickAccess && <div className="mt-8 border-y border-white/10 py-5"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Quick access</p><div className="mt-4 grid grid-cols-3 gap-2">{(['client', 'architect', 'admin'] as PortalRole[]).map((role) => <button key={role} type="button" data-testid={`quick-login-${role}`} onClick={() => handleQuickLogin(role)} className="border border-white/20 px-2 py-3 font-mono text-[9px] uppercase tracking-[0.12em] text-stone-200 transition-colors hover:border-white hover:bg-white hover:text-black">{`${role[0].toUpperCase()}${role.slice(1)} access`}</button>)}</div><p className="mt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">— or use credentials manually —</p></div>}
 
           <form onSubmit={handleSubmit} className="mt-12 space-y-7">
             <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
@@ -175,7 +175,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
               Enter portal <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </form>
-          <p className="mt-6 font-mono text-[10px] leading-5 text-stone-500">Access is prefilled for convenience. Authentication is isolated for a later provider connection.</p>
+          <p className="mt-6 font-mono text-[10px] leading-5 text-stone-500">Authorized project access.</p>
         </div>
       </div>
     </div>
@@ -509,7 +509,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
             <span className="text-stone-700">/</span>
             <span className="text-stone-300">{project.code}</span>
           </p>
-          <button onClick={() => onNavigate('/login')} className="col-start-3 justify-self-end font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white">Client Login</button>
+          <button onClick={() => onNavigate('/login')} className="col-start-3 justify-self-end font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white">Project Portal</button>
         </div>
       </header>
       <main>

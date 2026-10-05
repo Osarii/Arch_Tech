@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
+test.describe('ARCH_TECH OpenBIM workspace E2E verification', () => {
   test('renders base application shell, panels, and diagnostics', async ({ page }) => {
     await page.goto('/?view=workspace');
 
     // Check title and brand
     await expect(page).toHaveTitle(/ARCH_TECH/i);
-    await expect(page.getByText('BIM LAB')).toBeVisible();
+    await expect(page.getByText('ARCH_TECH')).toBeVisible();
+    await expect(page.getByText('OPENBIM WORKSPACE')).toBeVisible();
 
     // Check header controls
     await expect(page.getByRole('button', { name: /Open IFC/i })).toBeVisible();
@@ -445,7 +446,7 @@ test.describe('BIM LAB V1 & V2 Comprehensive E2E Verification', () => {
 });
 
 test.describe('Arch_Tech Architectural Landing Page E2E', () => {
-  test('public projects lead through client login to the existing workspace', async ({ page }) => {
+  test('public projects lead through project portal access to the existing workspace', async ({ page }) => {
     await page.goto('/');
 
     // 1. Public architectural portfolio
@@ -456,7 +457,7 @@ test.describe('Arch_Tech Architectural Landing Page E2E', () => {
     // 2. Client access
     await page.getByTestId('client-login-link').click();
     await expect(page.getByRole('heading', { name: 'Portal Access' })).toBeVisible();
-    await page.getByTestId('login-submit').click();
+    await page.getByTestId('quick-login-client').click();
     await expect(page.getByText('Projects in progress.')).toBeVisible();
 
     // 3. Project model opens in the existing workspace

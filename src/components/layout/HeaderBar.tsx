@@ -144,12 +144,12 @@ export const HeaderBar: React.FC = () => {
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2">
           <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-sky-600 to-indigo-500 flex items-center justify-center font-bold text-white text-xs shadow">
-            B1
+            AT
           </div>
           <span className="font-semibold text-slate-100 text-sm tracking-tight">
-            BIM LAB
+            <span>ARCH_TECH</span>
             <span className="ml-1 text-[10px] text-sky-400 font-mono bg-sky-950/70 border border-sky-800 px-1 py-0.5 rounded">
-              V1
+              OPENBIM WORKSPACE
             </span>
           </span>
         </div>
