@@ -242,6 +242,52 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(within(emptyReviewSignals).getByText('Upcoming milestones')).toBeDefined();
   });
 
+  it('supports admin search, derived filters, sorting, clearing and empty results', () => {
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+
+    expect(screen.getByText('6 of 6 active projects')).toBeDefined();
+    fireEvent.change(screen.getByLabelText('Search projects'), { target: { value: 'Pacific Nexus' } });
+    expect(screen.getByText('1 of 6 active projects')).toBeDefined();
+    expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
+    const register = document.getElementById('portal-section-projects');
+    expect(register).toBeDefined();
+    expect(within(register!).queryByText('Summit Point Corporate District')).toBeNull();
+
+    fireEvent.change(screen.getByLabelText('Search projects'), { target: { value: 'no matching project' } });
+    expect(screen.getByText('No projects match the current search and filters.')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(screen.getByText('6 of 6 active projects')).toBeDefined();
+
+    fireEvent.change(screen.getByLabelText('Filter projects'), { target: { value: 'pending' } });
+    expect(screen.getByText('2 of 6 active projects')).toBeDefined();
+    expect(within(register!).getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
+    expect(within(register!).getByText('Mar Vista Hospitality District')).toBeDefined();
+    expect(within(register!).queryByText('Caribbean AI Compute Campus')).toBeNull();
+
+    fireEvent.change(screen.getByLabelText('Filter projects'), { target: { value: 'all' } });
+    fireEvent.change(screen.getByLabelText('Sort projects'), { target: { value: 'progress-desc' } });
+    const descendingRows = [...document.querySelectorAll('.portal-register-row')];
+    expect(descendingRows[0]?.textContent).toContain('Summit Point Corporate District');
+    fireEvent.change(screen.getByLabelText('Sort projects'), { target: { value: 'progress-asc' } });
+    const ascendingRows = [...document.querySelectorAll('.portal-register-row')];
+    expect(ascendingRows[0]?.textContent).toContain('Caribbean AI Compute Campus');
+    fireEvent.change(screen.getByLabelText('Sort projects'), { target: { value: 'phase' } });
+    const phaseRows = [...document.querySelectorAll('.portal-register-row')];
+    expect(phaseRows[0]?.textContent).toContain('Brief and site study');
+  });
+
+  it('uses framed lazy project media and provides a fallback when an image fails', () => {
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+
+    const thumbnail = document.querySelector('.portal-project-thumbnail') as HTMLImageElement;
+    expect(thumbnail.getAttribute('loading')).toBe('lazy');
+    expect(thumbnail.getAttribute('decoding')).toBe('async');
+    fireEvent.error(thumbnail);
+    expect(screen.getByLabelText('Project image unavailable')).toBeDefined();
+  });
+
   it('creates projects through the admin portal form', () => {
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     const adminNavigate = vi.fn();
@@ -529,6 +575,37 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByTestId('project-tab-model'));
     fireEvent.click(screen.getByTestId('open-3d-model'));
     expect(onOpenWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it('builds unique dossier media, facts and role-scoped project navigation', () => {
+    const project = getPortalProject('pacific-nexus-free-zone');
+    if (!project) throw new Error('Expected canonical project fixture');
+    const onNavigate = vi.fn();
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+    render(<DashboardProjectPage projectId={project.id} onNavigate={onNavigate} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} />);
+
+    const media = [...document.querySelectorAll('.portal-project-media-frame')];
+    const mediaSources = media.filter((item): item is HTMLImageElement => item instanceof HTMLImageElement).map((item) => item.getAttribute('src'));
+    expect(media).toHaveLength(3);
+    expect(new Set(mediaSources).size).toBe(mediaSources.length);
+    for (const label of ['Market', 'Development type', 'Context', 'Scale', 'Current phase', 'Progress', 'Next milestone']) {
+      expect(screen.getByText(label)).toBeDefined();
+    }
+    expect(screen.getByText(project.nextMilestone)).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Latest activity' })).toBeDefined();
+    expect(screen.getByTestId('previous-project')).toHaveProperty('disabled', true);
+    expect(screen.getByTestId('next-project').textContent).toContain('Mar Vista Hospitality District');
+    fireEvent.click(screen.getByTestId('next-project'));
+    expect(onNavigate).toHaveBeenCalledWith('/dashboard/projects/mar-vista-hospitality-district');
+
+    cleanup();
+    const architectNavigate = vi.fn();
+    portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
+    render(<DashboardProjectPage projectId={project.id} onNavigate={architectNavigate} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} homePath="/architect" role="architect" />);
+    expect(screen.getByTestId('next-project').textContent).toContain('Summit Point Corporate District');
+    fireEvent.click(screen.getByTestId('next-project'));
+    expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/summit-point-corporate-district');
+    expect(screen.queryByText('Pacific Regional Medical Campus')).toBeNull();
   });
 
   it('keeps client approvals actionable and gives staff management controls', () => {
