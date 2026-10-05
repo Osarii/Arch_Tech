@@ -133,7 +133,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
 
   return (
     <PortalShellContext.Provider value={{ insideShell: true, navigate }}>
-      <div className={`portal-surface ${role === 'admin' ? 'portal-admin' : ''} min-h-screen bg-[#D6CBB9] text-[#211E1A]`}>
+      <div className={`portal-surface ${role === 'admin' ? 'portal-admin' : ''} h-screen overflow-y-auto bg-[#D6CBB9] text-[#211E1A]`}>
         <header className="portal-header border-b border-black/10 bg-[#2D2E2C]">
           <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
             <div className="flex items-center gap-4">
