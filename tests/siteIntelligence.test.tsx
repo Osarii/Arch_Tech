@@ -408,11 +408,68 @@ describe('ExternalContextPanel UI Component', () => {
     expect(screen.queryByTestId('site-intelligence-seismic')).toBeNull();
   });
 
-  it('displays validation error if user tries to analyze an empty location', async () => {
-    const fetchMock = vi.fn();
+  it('clears previous analysis results when a subsequent geocode fails', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('nominatim')) {
+        if (url.includes('nonexistent')) return { ok: true, json: async () => [] };
+        return { ok: true, json: async () => mockNominatimSuccess() };
+      }
+      if (url.includes('open-meteo')) {
+        return { ok: true, json: async () => mockWeatherSuccess() };
+      }
+      if (url.includes('earthquake.usgs')) {
+        return { ok: true, json: async () => mockUsgsSuccess() };
+      }
+      return { ok: false };
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     render(<ExternalContextPanel />);
+    fireEvent.click(screen.getByTestId('site-intelligence-analyze'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-intelligence-location')).toBeDefined();
+      expect(screen.getByTestId('site-intelligence-weather')).toBeDefined();
+      expect(screen.getByTestId('site-intelligence-seismic')).toBeDefined();
+    });
+
+    const input = screen.getByTestId('site-intelligence-input');
+    fireEvent.change(input, { target: { value: 'Nonexistent Place XYZ' } });
+    fireEvent.click(screen.getByTestId('site-intelligence-analyze'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-intelligence-location-error')).toBeDefined();
+    });
+
+    expect(screen.queryByTestId('site-intelligence-location')).toBeNull();
+    expect(screen.queryByTestId('site-intelligence-weather')).toBeNull();
+    expect(screen.queryByTestId('site-intelligence-seismic')).toBeNull();
+  });
+
+  it('clears previous analysis results when a subsequent attempt is empty', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('nominatim')) {
+        return { ok: true, json: async () => mockNominatimSuccess() };
+      }
+      if (url.includes('open-meteo')) {
+        return { ok: true, json: async () => mockWeatherSuccess() };
+      }
+      if (url.includes('earthquake.usgs')) {
+        return { ok: true, json: async () => mockUsgsSuccess() };
+      }
+      return { ok: false };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<ExternalContextPanel />);
+    fireEvent.click(screen.getByTestId('site-intelligence-analyze'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-intelligence-location')).toBeDefined();
+      expect(screen.getByTestId('site-intelligence-weather')).toBeDefined();
+      expect(screen.getByTestId('site-intelligence-seismic')).toBeDefined();
+    });
+
     const input = screen.getByTestId('site-intelligence-input');
     fireEvent.change(input, { target: { value: '   ' } });
     fireEvent.click(screen.getByTestId('site-intelligence-analyze'));
@@ -422,6 +479,46 @@ describe('ExternalContextPanel UI Component', () => {
     });
 
     expect(screen.getByText(/Enter a location to analyze/i)).toBeDefined();
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('site-intelligence-location')).toBeNull();
+    expect(screen.queryByTestId('site-intelligence-weather')).toBeNull();
+    expect(screen.queryByTestId('site-intelligence-seismic')).toBeNull();
+  });
+
+  it('renders N/A when precipitation data is null', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('nominatim')) return { ok: true, json: async () => mockNominatimSuccess() };
+      if (url.includes('open-meteo')) return { ok: true, json: async () => ({ current: { temperature_2m: 21.0, weather_code: 1, precipitation: null, wind_speed_10m: 10 } }) };
+      if (url.includes('earthquake.usgs')) return { ok: true, json: async () => mockUsgsSuccess() };
+      return { ok: false };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<ExternalContextPanel />);
+    fireEvent.click(screen.getByTestId('site-intelligence-analyze'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-intelligence-weather')).toBeDefined();
+    });
+
+    expect(screen.getByText(/Precipitation:\s*N\/A/i)).toBeDefined();
+  });
+
+  it('renders 0 mm when precipitation data is numeric 0', async () => {
+    const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+      if (url.includes('nominatim')) return { ok: true, json: async () => mockNominatimSuccess() };
+      if (url.includes('open-meteo')) return { ok: true, json: async () => mockWeatherSuccess(20.0, 0, 0, 5.0) };
+      if (url.includes('earthquake.usgs')) return { ok: true, json: async () => mockUsgsSuccess() };
+      return { ok: false };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<ExternalContextPanel />);
+    fireEvent.click(screen.getByTestId('site-intelligence-analyze'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('site-intelligence-weather')).toBeDefined();
+    });
+
+    expect(screen.getByText(/Precipitation:\s*0\s*mm/i)).toBeDefined();
   });
 });

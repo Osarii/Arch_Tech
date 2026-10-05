@@ -161,6 +161,16 @@ export const ExternalContextPanel: React.FC = () => {
   const handleAnalyze = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const cleanQuery = query.trim();
+
+    setResolvedLocation(null);
+    setWeather(null);
+    setWeatherStatus('idle');
+    setWeatherError(null);
+    setSeismic(null);
+    setSeismicStatus('idle');
+    setSeismicError(null);
+    setLocationError(null);
+
     if (!cleanQuery) {
       setLocationStatus('error');
       setLocationError('Enter a location to analyze.');
@@ -168,13 +178,6 @@ export const ExternalContextPanel: React.FC = () => {
     }
 
     setLocationStatus('loading');
-    setLocationError(null);
-    setWeather(null);
-    setWeatherStatus('idle');
-    setWeatherError(null);
-    setSeismic(null);
-    setSeismicStatus('idle');
-    setSeismicError(null);
 
     let location: ResolvedLocation;
     try {
@@ -304,7 +307,7 @@ export const ExternalContextPanel: React.FC = () => {
                   <span className="text-xs text-stone-600">· {getWeatherCodeLabel(weather.weatherCode)} (WMO {weather.weatherCode})</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 border-t border-black/5 pt-2 font-mono text-[11px] text-stone-600">
-                  <div>Precipitation: {weather.precipitation != null ? `${weather.precipitation} mm` : '0 mm'}</div>
+                  <div>Precipitation: {weather.precipitation != null ? `${weather.precipitation} mm` : 'N/A'}</div>
                   <div>Wind: {weather.windSpeed != null ? `${weather.windSpeed} km/h` : 'N/A'}</div>
                 </div>
                 {weather.observedAt && (
