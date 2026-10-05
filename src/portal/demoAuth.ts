@@ -1,4 +1,5 @@
 import { getPortalUser, PortalRole } from './data';
+import { getApiBaseUrl } from '../services/apiClient';
 
 const SESSION_KEY = 'arch-tech-portal-session';
 const LEGACY_SESSION_KEY = 'arch-tech-demo-session';
@@ -26,8 +27,16 @@ const clearStoredSession = () => {
 const getAuthoritativeSession = (candidate: Partial<ClientSession> | null): ClientSession | null => {
   if (!candidate || typeof candidate.email !== 'string') return null;
   const user = getPortalUser(candidate.email);
-  if (!user || user.status !== 'active') return null;
-  return { name: user.name, email: user.email, role: user.role };
+  if (user) {
+    if (user.status !== 'active') return null;
+    return { name: user.name, email: user.email, role: user.role };
+  }
+  // In remote HTTP mode, users might not yet be loaded into inMemoryUsers on immediate reload.
+  // We keep the candidate session intact if it has valid session shape.
+  if (getApiBaseUrl() && candidate.name && candidate.role && ['client', 'architect', 'admin'].includes(candidate.role)) {
+    return { name: candidate.name, email: candidate.email, role: candidate.role as PortalRole };
+  }
+  return null;
 };
 
 export const portalAuth = {
@@ -78,7 +87,10 @@ export const portalAuth = {
   signIn(email: string, password: string): ClientSession | null {
     const user = getPortalUser(email.trim());
     if (!user || user.password !== password || user.status !== 'active') return null;
-    const session = { name: user.name, email: user.email, role: user.role };
+    return this.setSession({ name: user.name, email: user.email, role: user.role });
+  },
+
+  setSession(session: ClientSession): ClientSession {
     try {
       window.localStorage.setItem(SESSION_KEY, JSON.stringify(session));
       volatileSession = null;

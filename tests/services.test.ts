@@ -87,9 +87,11 @@ describe('portal service layer', () => {
     const createdUser = { id: 'portal-user-http-1', name: 'HTTP Operator', email: 'operator@arch-tech.studio', password: 'operator-password', role: 'client' as const, status: 'active' as const, projectIds: [] };
     const updatedUser = { ...createdUser, role: 'architect' as const, status: 'inactive' as const, projectIds: ['zona-franca-la-lima'] };
     const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
-      const path = new URL(url).pathname;
+      const parsedUrl = new URL(url);
+      const path = parsedUrl.pathname;
       if (init?.method === 'POST' && path === '/users') return new Response(JSON.stringify(createdUser), { status: 201 });
       if (init?.method === 'PATCH' && path === `/users/${createdUser.id}`) return new Response(JSON.stringify(updatedUser), { status: 200 });
+      if (path === '/users' && parsedUrl.searchParams.get('email') === createdUser.email) return new Response('[]', { status: 200 });
       if (path === '/users') return new Response(JSON.stringify([createdUser]), { status: 200 });
       throw new Error(`Unexpected request: ${init?.method ?? 'GET'} ${path}`);
     });
@@ -214,5 +216,56 @@ describe('portal service layer', () => {
 
     await expect(projectWorkflowService.addUpdate({ projectId: 'zona-franca-la-lima', date: '04 OCT 2026', title: 'Failed update', body: 'Not saved.' })).rejects.toThrow('Relation API unavailable');
     expect(getPortalSnapshot().db.updates.some((update) => update.title === 'Failed update')).toBe(false);
+  });
+
+  it('validates duplicate email and registers client over HTTP producing a usable session', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    const newUser = {
+      name: 'Registered Client',
+      email: 'new-client@arch-tech.studio',
+      password: 'password-client-123',
+    };
+    const serverUser = {
+      id: 'portal-user-registered-1',
+      name: newUser.name,
+      email: newUser.email,
+      password: newUser.password,
+      role: 'client' as const,
+      status: 'active' as const,
+      projectIds: [],
+    };
+    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      const parsedUrl = new URL(url);
+      const path = parsedUrl.pathname;
+      if (path === '/users' && parsedUrl.searchParams.get('email') === newUser.email) {
+        return new Response('[]', { status: 200 });
+      }
+      if (init?.method === 'POST' && path === '/users') {
+        return new Response(JSON.stringify(serverUser), { status: 201 });
+      }
+      throw new Error(`Unexpected request: ${init?.method ?? 'GET'} ${path}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { authService } = await import('../src/services/authService');
+    const session = await authService.register(newUser);
+    expect(session).toEqual({
+      name: serverUser.name,
+      email: serverUser.email,
+      role: serverUser.role,
+    });
+    expect(fetchMock.mock.calls.some(([url, init]) => String(url).includes('/users') && init?.method === 'POST')).toBe(true);
+
+    // Duplicate email check
+    const duplicateMock = vi.fn().mockImplementation(async (url: string) => {
+      const parsedUrl = new URL(url);
+      if (parsedUrl.pathname === '/users' && parsedUrl.searchParams.get('email') === newUser.email) {
+        return new Response(JSON.stringify([serverUser]), { status: 200 });
+      }
+      throw new Error(`Unexpected request`);
+    });
+    vi.stubGlobal('fetch', duplicateMock);
+
+    await expect(authService.register(newUser)).rejects.toThrow('An account with this email already exists.');
   });
 });

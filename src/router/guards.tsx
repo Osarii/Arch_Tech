@@ -4,6 +4,7 @@ import { LandingPage } from '../components/landing/LandingPage';
 import { LoginOverlay, NotFoundPage } from '../components/portal/PortalPages';
 import { getPortalUser, getProjectsForUser, PortalRole } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
+import { userService } from '../services/userService';
 
 export const roleHome = (role?: PortalRole) => role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard';
 
@@ -38,8 +39,18 @@ export const RoleRoute: React.FC<{ role: PortalRole }> = ({ role }) => {
 export const AccessibleProjectRoute: React.FC<{ role: PortalRole }> = ({ role }) => {
   const session = portalAuth.getSession();
   const { projectId } = useParams();
+  const [ready, setReady] = React.useState(!userService.isRemote() || Boolean(session && getPortalUser(session.email)));
+
+  React.useEffect(() => {
+    if (!ready && userService.isRemote()) {
+      void userService.list().then(() => setReady(true)).catch(() => setReady(true));
+    }
+  }, [ready]);
+
   if (!session) return <AuthGate />;
   if (role === 'admin') return <Outlet />;
+  if (!ready) return null;
+
   const user = getPortalUser(session.email);
   const allowed = Boolean(projectId && user && getProjectsForUser(user.id).some((project) => project.id === projectId));
   if (!allowed) return <Navigate to={roleHome(role)} replace />;

@@ -8,7 +8,7 @@ import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
 import { AboutSection, aboutFacts } from '../src/components/landing/AboutSection';
 import { TeamSection, teamMembers } from '../src/components/landing/TeamSection';
 import { ArchTechLogo } from '../src/components/brand/ArchTechLogo';
-import { getPortalProject, getPortalSnapshot, updatePortalDatabase } from '../src/portal/data';
+import { createPortalUser, getPortalProject, getPortalSnapshot, resetPortalUsers, updatePortalDatabase } from '../src/portal/data';
 import { portalAuth } from '../src/portal/demoAuth';
 import {
   AdminAnalyticsPage,
@@ -30,6 +30,7 @@ vi.mock('../src/components/layout/Workspace', () => ({
 describe('ARCH_TECH client architecture portal', () => {
   beforeEach(() => {
     window.localStorage.clear();
+    resetPortalUsers();
     window.history.replaceState({}, '', '/');
     document.documentElement.classList.remove('portal-dark');
   });
@@ -616,7 +617,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('quick login reads role users from the current portal snapshot', () => {
-    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-architect', name: 'Runtime Architect', email: 'runtime@arch-tech.studio', password: 'runtime-demo', role: 'architect', projectIds: ['zona-franca-la-lima'], status: 'active' }] }));
+    createPortalUser({ name: 'Runtime Architect', email: 'runtime@arch-tech.studio', password: 'runtime-demo', role: 'architect', projectIds: ['zona-franca-la-lima'], status: 'active' });
     render(<LoginOverlay open onClose={vi.fn()} onSuccess={vi.fn()} />);
     fireEvent.click(screen.getByTestId('quick-login-architect'));
     expect(portalAuth.getSession()?.email).toBe('runtime@arch-tech.studio');
@@ -732,7 +733,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('allows assigned client project details and blocks unassigned direct URLs', async () => {
-    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-client', name: 'Runtime Client', email: 'runtime-client@arch-tech.studio', password: 'runtime-demo', role: 'client', projectIds: ['zona-franca-la-lima'], status: 'active' }] }));
+    createPortalUser({ name: 'Runtime Client', email: 'runtime-client@arch-tech.studio', password: 'runtime-demo', role: 'client', projectIds: ['zona-franca-la-lima'], status: 'active' });
     portalAuth.signIn('runtime-client@arch-tech.studio', 'runtime-demo');
     window.history.replaceState({}, '', '/dashboard/projects/zona-franca-la-lima');
     render(<App />);

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ArrowRight, X } from 'lucide-react';
-import { portalAuth } from '../../portal/demoAuth';
 import { getPortalSnapshot, PortalRole } from '../../portal/data';
+import { portalAuth } from '../../portal/demoAuth';
 import { authService } from '../../services/authService';
 
 export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSuccess: () => void }> = ({
@@ -46,12 +46,24 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!portalAuth.signIn(email, password)) {
-      setError('Check the email and password.');
+    if (!authService.isRemote()) {
+      const session = portalAuth.signIn(email, password);
+      if (!session) {
+        setError('Check the email and password.');
+        return;
+      }
+      setError('');
+      onSuccess();
       return;
     }
-    setError('');
-    onSuccess();
+    void authService.signIn(email, password).then((session) => {
+      if (!session) {
+        setError('Check the email and password.');
+        return;
+      }
+      setError('');
+      onSuccess();
+    });
   };
 
   const handleRegister = async (event: React.FormEvent) => {
@@ -80,12 +92,28 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 
   const handleQuickLogin = (role: PortalRole) => {
     const user = getPortalSnapshot().db.users.find((candidate) => candidate.role === role);
-    if (!user || !portalAuth.signIn(user.email, user.password)) {
+    if (!user) {
       setError('This access is unavailable.');
       return;
     }
-    setError('');
-    onSuccess();
+    if (!authService.isRemote()) {
+      const session = portalAuth.signIn(user.email, user.password);
+      if (!session) {
+        setError('This access is unavailable.');
+        return;
+      }
+      setError('');
+      onSuccess();
+      return;
+    }
+    void authService.signIn(user.email, user.password).then((session) => {
+      if (!session) {
+        setError('This access is unavailable.');
+        return;
+      }
+      setError('');
+      onSuccess();
+    });
   };
 
   if (!open) return null;

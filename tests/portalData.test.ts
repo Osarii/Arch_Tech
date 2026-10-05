@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { getPortalSnapshot, updatePortalDatabase } from '../src/portal/data';
+import { getPortalSnapshot, resetPortalUsers, updatePortalDatabase } from '../src/portal/data';
 
 const PORTAL_STATE_KEY = 'arch-tech-portal-state';
 
 describe('portal persistence recovery', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    resetPortalUsers();
     getPortalSnapshot();
     window.localStorage.clear();
   });
@@ -19,16 +20,21 @@ describe('portal persistence recovery', () => {
     ]));
   });
 
-  it('migrates legacy user IDs and notification ownership to professional identities', () => {
+  it('migrates legacy user IDs and notification ownership to professional identities and removes users array from storage', () => {
     window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify({
       users: [{ id: 'demo-client', name: 'Demo Client', email: 'client@arch-tech.studio', password: 'studio-demo', role: 'client', projectIds: ['pacific-nexus-free-zone'], status: 'active' }],
       notifications: [{ userId: 'demo-client', projectId: 'pacific-nexus-free-zone', message: 'Legacy notice', date: '01 OCT 2026' }],
     }));
 
     const snapshot = getPortalSnapshot();
-    expect(snapshot.db.users.find((user) => user.id === 'portal-client')).toMatchObject({ name: 'Mariana Solano', email: 'mariana.solano@arch-tech.studio', projectIds: ['zona-franca-la-lima'] });
+    expect(snapshot.db.users.find((user) => user.id === 'portal-client')).toMatchObject({ name: 'Mariana Solano', email: 'mariana.solano@arch-tech.studio' });
     expect(snapshot.db.users.some((user) => user.id === 'demo-client' || user.name === 'Demo Client')).toBe(false);
     expect(snapshot.db.notifications).toContainEqual(expect.objectContaining({ userId: 'portal-client', message: 'Legacy notice' }));
+
+    const raw = window.localStorage.getItem(PORTAL_STATE_KEY);
+    const parsed = JSON.parse(raw ?? '{}');
+    expect(parsed.users).toBeUndefined();
+    expect(raw).not.toContain('password');
   });
 
   it.each([

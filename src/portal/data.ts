@@ -96,6 +96,7 @@ const PORTAL_SCHEMA_VERSION = 3;
 let volatilePortalDatabase: PortalDatabase | null = null;
 export const portalDb = db as PortalDatabase;
 export const portalUser = portalDb.users[0];
+let inMemoryUsers: PortalUser[] = portalDb.users.map((user) => ({ ...user, projectIds: [...user.projectIds] }));
 
 const legacyUserIdMap: Record<string, string> = {
   'demo-client': 'portal-client',
@@ -117,8 +118,8 @@ const isString = (value: unknown): value is string => typeof value === 'string';
 const isValidProgress = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100;
 const isRuntimeProjectId = (id: unknown): id is string => isString(id) && id.startsWith('admin-project-');
 const isSafeAssetPath = (asset: unknown): asset is string => typeof asset === 'string' && asset.startsWith('/projects/') && !asset.includes('/arch_');
-const validRoles: PortalRole[] = ['client', 'architect', 'admin'];
-const validUserStatuses: PortalUser['status'][] = ['active', 'inactive'];
+export const validRoles: PortalRole[] = ['client', 'architect', 'admin'];
+export const validUserStatuses: PortalUser['status'][] = ['active', 'inactive'];
 const validMilestoneStatuses: ProjectMilestone['status'][] = ['Complete', 'Current', 'Upcoming'];
 const validApprovalStatuses: ProjectApproval['status'][] = ['Approved', 'Pending', 'Rejected'];
 
@@ -234,46 +235,15 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
   });
 
   const projectIds = new Set(projects.map((project) => project.id));
-  const users = portalDb.users.map((seedUser) => {
-    const saved = Array.isArray(stored.users) ? stored.users.find((user) => user?.id === seedUser.id || legacyUserIdMap[user?.id ?? ''] === seedUser.id) : undefined;
-    const isLegacySavedUser = saved?.id !== seedUser.id;
-    const projectAssignments = Array.isArray(saved?.projectIds) ? saved.projectIds.map((id) => isString(id) ? mapProjectId(id) : id).filter((id): id is string => isString(id) && projectIds.has(id)) : [];
-    return {
-      ...seedUser,
-      ...(saved && !isLegacySavedUser && isString(saved.name) ? { name: saved.name } : {}),
-      ...(saved && !isLegacySavedUser && isString(saved.email) ? { email: saved.email } : {}),
-      ...(saved && !isLegacySavedUser && isString(saved.password) ? { password: saved.password } : {}),
-      ...(saved && !isLegacySavedUser && validRoles.includes(saved.role as PortalRole) ? { role: saved.role as PortalRole } : {}),
-      ...(saved && !isLegacySavedUser && validUserStatuses.includes(saved.status as PortalUser['status']) ? { status: saved.status as PortalUser['status'] } : {}),
-      projectIds: projectAssignments.length || stored.schemaVersion === PORTAL_SCHEMA_VERSION ? projectAssignments : seedUser.projectIds.filter((id) => projectIds.has(id)),
-    };
-  });
-  const customUsers: PortalUser[] = [];
-  if (Array.isArray(stored.users)) {
-    stored.users.forEach((user) => {
-      if (!isRecord(user) || users.some((current) => current.id === user.id)) return;
-      if (isString(user.id) && legacyUserIdMap[user.id]) return;
-      if (!isString(user.id) || !isString(user.name) || !isString(user.email) || !isString(user.password) || !validRoles.includes(user.role as PortalRole) || !validUserStatuses.includes(user.status as PortalUser['status'])) return;
-      customUsers.push({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        password: user.password,
-        role: user.role as PortalRole,
-        status: user.status as PortalUser['status'],
-        projectIds: Array.isArray(user.projectIds) ? user.projectIds.map((id) => isString(id) ? mapProjectId(id) : id).filter((id): id is string => isString(id) && projectIds.has(id)) : [],
-      });
-    });
-  }
+  const userIds = new Set(inMemoryUsers.map((user) => user.id));
 
-  const userIds = new Set([...customUsers, ...users].map((user) => user.id));
   const storedNotifications = Array.isArray(stored.notifications)
     ? stored.notifications.map((notification) => isRecord(notification) ? { ...notification, ...(isString(notification.userId) ? { userId: legacyUserIdMap[notification.userId] ?? notification.userId } : {}), ...(isString(notification.projectId) ? { projectId: mapProjectId(notification.projectId) } : {}) } : notification)
     : stored.notifications;
 
   return {
     schemaVersion: PORTAL_SCHEMA_VERSION,
-    users: [...customUsers, ...users],
+    users: [...inMemoryUsers],
     projects,
     updates: mergeRecords(portalDb.updates, remapProjectRecords(stored.updates), (record) => `${record.projectId}:${record.date}:${record.title}`, (value): value is ProjectUpdate => isValidProjectUpdate(value, projectIds)),
     milestones: mergeRecords(portalDb.milestones, remapProjectRecords(stored.milestones), (record) => `${record.projectId}:${record.label}`, (value): value is ProjectMilestone => isValidProjectMilestone(value, projectIds)),
@@ -287,18 +257,24 @@ const isPortalStateRoot = (value: unknown): value is Partial<PortalDatabase> => 
   typeof value === 'object' && value !== null && !Array.isArray(value)
 );
 
+const serializePortalStateForStorage = (state: PortalDatabase): string => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { users: _users, ...persistedState } = state;
+  return JSON.stringify(persistedState);
+};
+
 const readPortalDatabase = (): PortalDatabase => {
-  if (typeof window === 'undefined') return portalDb;
+  if (typeof window === 'undefined') return { ...portalDb, users: [...inMemoryUsers] };
 
   if (volatilePortalDatabase) {
     const current = volatilePortalDatabase;
     try {
-      window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(current));
+      window.localStorage.setItem(PORTAL_STATE_KEY, serializePortalStateForStorage(current));
       volatilePortalDatabase = null;
     } catch {
-      return current;
+      return { ...current, users: [...inMemoryUsers] };
     }
-    return current;
+    return { ...current, users: [...inMemoryUsers] };
   }
 
   let stored: Partial<PortalDatabase> = {};
@@ -318,22 +294,22 @@ const readPortalDatabase = (): PortalDatabase => {
   }
 
   try {
-    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(next));
+    window.localStorage.setItem(PORTAL_STATE_KEY, serializePortalStateForStorage(next));
   } catch {
     volatilePortalDatabase = next;
   }
-  return next;
+  return { ...next, users: [...inMemoryUsers] };
 };
 
 const writePortalDatabase = (next: PortalDatabase) => {
-  if (typeof window === 'undefined') return next;
+  if (typeof window === 'undefined') return { ...next, users: [...inMemoryUsers] };
   try {
-    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify(next));
+    window.localStorage.setItem(PORTAL_STATE_KEY, serializePortalStateForStorage(next));
     volatilePortalDatabase = null;
   } catch {
     volatilePortalDatabase = next;
   }
-  return next;
+  return { ...next, users: [...inMemoryUsers] };
 };
 
 export const getPortalSnapshot = () => {
@@ -350,22 +326,44 @@ export const getPortalSnapshot = () => {
   };
 };
 
-export const updatePortalDatabase = (mutate: (current: PortalDatabase) => PortalDatabase) => writePortalDatabase(mutate(readPortalDatabase()));
+export const updatePortalDatabase = (mutate: (current: PortalDatabase) => PortalDatabase) => {
+  const mutated = mutate(readPortalDatabase());
+  if (mutated.users) {
+    inMemoryUsers = [...mutated.users];
+  }
+  return writePortalDatabase(mutated);
+};
 export const updatePortalProject = (id: string, changes: Partial<PortalProjectRecord>) => updatePortalDatabase((current) => ({ ...current, projects: current.projects.map((project) => project.id === id ? { ...project, ...changes } : project) }));
 export const updatePortalApproval = (projectId: string, title: string, status: ProjectApproval['status']) => updatePortalDatabase((current) => ({ ...current, approvals: current.approvals.map((approval) => approval.projectId === projectId && approval.title === title ? { ...approval, status } : approval) }));
 export const addPortalUpdate = (update: ProjectUpdate) => updatePortalDatabase((current) => ({ ...current, updates: [update, ...current.updates] }));
 export const addPortalMilestone = (milestone: ProjectMilestone) => updatePortalDatabase((current) => ({ ...current, milestones: [...current.milestones, milestone] }));
 export const addPortalDocument = (document: ProjectDocument) => updatePortalDatabase((current) => ({ ...current, documents: [...current.documents, document] }));
 export const addPortalApproval = (approval: ProjectApproval) => updatePortalDatabase((current) => ({ ...current, approvals: [...current.approvals, approval] }));
-export const updatePortalUser = (id: string, changes: Partial<PortalUser>) => updatePortalDatabase((current) => ({ ...current, users: current.users.map((user) => user.id === id ? { ...user, ...changes } : user) }));
+
+export const updatePortalUser = (id: string, changes: Partial<PortalUser>) => {
+  inMemoryUsers = inMemoryUsers.map((user) => (user.id === id ? { ...user, ...changes } : user));
+  return inMemoryUsers.find((user) => user.id === id);
+};
 
 export const syncPortalProjects = (projects: PortalProjectRecord[]) => updatePortalDatabase((current) => ({ ...current, projects }));
-export const syncPortalUsers = (users: PortalUser[], replaceAll = false) => updatePortalDatabase((current) => ({
-  ...current,
-  users: replaceAll
-    ? users
-    : [...current.users.filter((user) => !users.some((remoteUser) => remoteUser.id === user.id)), ...users],
-}));
+
+export const syncPortalUsers = (users: PortalUser[], replaceAll = false) => {
+  if (replaceAll) {
+    inMemoryUsers = [...users];
+  } else {
+    const existingIds = new Set(users.map((u) => u.id));
+    inMemoryUsers = [...inMemoryUsers.filter((u) => !existingIds.has(u.id)), ...users];
+  }
+};
+
+export const resetPortalUsers = (users?: PortalUser[]) => {
+  inMemoryUsers = users ? [...users] : portalDb.users.map((user) => ({ ...user, projectIds: [...user.projectIds] }));
+};
+
+export const removePortalUserInMemory = (id: string) => {
+  inMemoryUsers = inMemoryUsers.filter((user) => user.id !== id);
+};
+
 export const syncPortalRelations = (relations: Pick<PortalDatabase, 'updates' | 'milestones' | 'documents' | 'approvals' | 'notifications'>) => updatePortalDatabase((current) => ({ ...current, ...relations }));
 
 export type CreatePortalProjectInput = Pick<PortalProjectRecord, 'title' | 'category' | 'phase' | 'progress'> & Partial<Pick<PortalProjectRecord, 'code' | 'nextMilestone' | 'summary' | 'statement' | 'image' | 'market' | 'developmentType' | 'context' | 'scale' | 'longView' | 'published'>>;
@@ -414,15 +412,15 @@ export const deletePortalProject = (id: string): boolean => {
     documents: current.documents.filter((record) => record.projectId !== id),
     approvals: current.approvals.filter((record) => record.projectId !== id),
     notifications: current.notifications.filter((record) => record.projectId !== id),
-    users: current.users.map((user) => ({ ...user, projectIds: user.projectIds.filter((projectId) => projectId !== id) })),
   }));
+  inMemoryUsers = inMemoryUsers.map((user) => ({ ...user, projectIds: user.projectIds.filter((projectId) => projectId !== id) }));
   return true;
 };
 
 export const createPortalUser = (input: CreatePortalUserInput): PortalUser => {
   const email = input.email.trim().toLowerCase();
   if (!input.name.trim() || !email || !input.password) throw new Error('Name, email and password are required.');
-  if (getPortalSnapshot().db.users.some((user) => user.email.toLowerCase() === email)) throw new Error('An account with this email already exists.');
+  if (inMemoryUsers.some((user) => user.email.toLowerCase() === email)) throw new Error('An account with this email already exists.');
   const user: PortalUser = {
     id: createPortalRecordId('portal-user'),
     name: input.name.trim(),
@@ -432,10 +430,10 @@ export const createPortalUser = (input: CreatePortalUserInput): PortalUser => {
     status: input.status ?? 'active',
     projectIds: input.projectIds ?? [],
   };
-  updatePortalDatabase((current) => ({ ...current, users: [...current.users, user] }));
+  inMemoryUsers = [user, ...inMemoryUsers];
   return user;
 };
-export const getPortalUser = (email: string) => readPortalDatabase().users.find((user) => user.email === email);
+export const getPortalUser = (email: string) => inMemoryUsers.find((user) => user.email.toLowerCase() === email.trim().toLowerCase());
 
 export const portalProjects: PortalProject[] = getPortalSnapshot().projects;
 
@@ -446,6 +444,6 @@ export const getPublicProject = (id: string) => getPublicProjects().find((projec
 
 export const getProjectsForUser = (userId: string) => {
   const snapshot = getPortalSnapshot();
-  const user = snapshot.db.users.find((candidate) => candidate.id === userId);
+  const user = inMemoryUsers.find((candidate) => candidate.id === userId);
   return snapshot.projects.filter((project) => !project.archived && user?.projectIds.includes(project.id));
 };
