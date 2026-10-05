@@ -25,6 +25,7 @@ describe('ARCH_TECH client architecture portal', () => {
     window.localStorage.clear();
     window.history.replaceState({}, '', '/');
     document.documentElement.classList.remove('portal-dark');
+    document.documentElement.classList.remove('portal-zen');
   });
 
   it('renders a projects-only public landing with project portal access', () => {
@@ -145,6 +146,24 @@ describe('ARCH_TECH client architecture portal', () => {
     rerender(<LoginOverlay open onClose={onClose} onSuccess={vi.fn()} />);
     fireEvent.mouseDown(screen.getAllByRole('presentation').at(-1)!);
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('supports a persisted Zen portal theme without replacing light or dark', () => {
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+    render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+
+    fireEvent.click(screen.getByTestId('theme-zen-toggle'));
+    expect(document.documentElement.classList.contains('portal-zen')).toBe(true);
+    expect(document.documentElement.classList.contains('portal-dark')).toBe(false);
+    expect(window.localStorage.getItem('arch-tech-portal-theme')).toBe('zen');
+    expect(screen.getByTestId('theme-zen-toggle').getAttribute('aria-pressed')).toBe('true');
+
+    cleanup();
+    render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    expect(document.documentElement.classList.contains('portal-zen')).toBe(true);
+    fireEvent.click(screen.getByTestId('theme-zen-toggle'));
+    expect(document.documentElement.classList.contains('portal-zen')).toBe(false);
+    expect(window.localStorage.getItem('arch-tech-portal-theme')).toBe('light');
   });
 
   it('shows client projects, progress, phase, milestone and latest updates', () => {

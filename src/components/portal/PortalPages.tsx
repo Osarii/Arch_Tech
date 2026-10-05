@@ -27,24 +27,31 @@ interface NavigationProps {
 
 const formatPortalDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
 const portalStatusClass = (status: string) => status === 'Pending' ? 'portal-status-pending' : status === 'Approved' || status === 'Complete' ? 'portal-status-approved' : status === 'Current' ? 'portal-status-current' : '';
+type PortalTheme = 'light' | 'dark' | 'zen';
 
 const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePath?: string; role?: PortalRole }> = ({ onNavigate, onSignOut, homePath = '/dashboard', role = 'client' }) => {
-  const [dark, setDark] = useState(() => {
-    if (typeof window === 'undefined') return false;
+  const [theme, setTheme] = useState<PortalTheme>(() => {
+    if (typeof window === 'undefined') return 'light';
     try {
-      return window.localStorage.getItem('arch-tech-portal-theme') === 'dark';
+      const storedTheme = window.localStorage.getItem('arch-tech-portal-theme');
+      return storedTheme === 'dark' || storedTheme === 'zen' ? storedTheme : 'light';
     } catch {
-      return false;
+      return 'light';
     }
   });
+  const dark = theme === 'dark';
+  const zen = theme === 'zen';
   useEffect(() => {
     document.documentElement.classList.toggle('portal-dark', dark);
+    document.documentElement.classList.toggle('portal-zen', zen);
     try {
-      window.localStorage.setItem('arch-tech-portal-theme', dark ? 'dark' : 'light');
+      window.localStorage.setItem('arch-tech-portal-theme', theme);
     } catch {
       // Theme preference is optional; the current mode remains usable in memory.
     }
-  }, [dark]);
+  }, [dark, theme, zen]);
+  const toggleDark = () => setTheme((value) => value === 'zen' ? 'dark' : value === 'dark' ? 'light' : 'dark');
+  const toggleZen = () => setTheme((value) => value === 'zen' ? 'light' : 'zen');
   const navigation = role === 'admin' ? ['Projects', 'People', 'Approvals', 'Activity'] : role === 'architect' ? ['Projects', 'Activity', 'Milestones', 'Documents', 'Approvals'] : ['Projects', 'Updates', 'Documents', 'Notifications'];
   const sectionIds = role === 'admin' ? { Projects: 'projects', People: 'people', Approvals: 'approvals', Activity: 'activity' } : role === 'architect' ? { Projects: 'projects', Activity: 'activity', Milestones: 'milestones', Documents: 'documents', Approvals: 'approvals' } : { Projects: 'projects', Updates: 'updates', Documents: 'documents', Notifications: 'notifications' };
   return (
@@ -58,9 +65,10 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
           {role === 'admin' ? 'Register' : role === 'architect' ? 'Workboard' : 'Projects'}
         </button>
         <nav aria-label={`${role} navigation`} className="hidden gap-3 border-l border-black/15 pl-5 lg:flex">{navigation.map((item) => <button key={item} data-testid={`portal-nav-${item.toLowerCase()}`} aria-controls={`portal-section-${sectionIds[item as keyof typeof sectionIds]}`} onClick={() => document.getElementById(`portal-section-${sectionIds[item as keyof typeof sectionIds]}`)?.scrollIntoView({ behavior: 'smooth' })} className="transition-colors hover:text-black">{item}</button>)}</nav>
-        <button onClick={() => setDark((value) => !value)} aria-label={dark ? 'Use light mode' : 'Use dark mode'} data-testid="theme-toggle" className="inline-flex items-center gap-2 transition-colors hover:text-black">
+        <button onClick={toggleDark} aria-label={dark ? 'Use light mode' : 'Use dark mode'} data-testid="theme-toggle" className="inline-flex items-center gap-2 transition-colors hover:text-black">
           {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />} {dark ? 'Light' : 'Dark'}
         </button>
+        <button onClick={toggleZen} aria-label={zen ? 'Use light mode' : 'Use zen mode'} aria-pressed={zen} data-testid="theme-zen-toggle" className={`border px-2 py-1 font-mono text-[9px] uppercase tracking-[0.16em] transition-colors ${zen ? 'portal-zen-toggle-active' : 'text-stone-300 hover:border-white hover:text-white'}`}>ZEN</button>
         {onSignOut && (
           <button onClick={onSignOut} className="inline-flex items-center gap-2 transition-colors hover:text-black">
             Sign out <LogOut className="h-3.5 w-3.5" />

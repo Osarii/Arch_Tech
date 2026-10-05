@@ -247,6 +247,133 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
   color: #0a0b0d !important;
 }
 
+/* Experimental Zen theme: a quiet limestone canvas with softened graphite structure. */
+html.portal-zen .portal-surface {
+  background-color: #F1EDE4 !important;
+  color: #242019 !important;
+}
+html.portal-zen .portal-surface .portal-header {
+  background-color: #333333 !important;
+  border-color: #E6E2DB !important;
+  color: #F8F6F2 !important;
+}
+html.portal-zen .portal-surface .portal-header [class~="text-[#211E1A]"],
+html.portal-zen .portal-surface .portal-header [class~="text-stone-600"],
+html.portal-zen .portal-surface .portal-header [class~="text-stone-500"],
+html.portal-zen .portal-surface .portal-header [class~="text-stone-300"] {
+  color: #F2F1ED !important;
+}
+html.portal-zen .portal-surface .portal-header [class~="border-black/15"] {
+  border-color: rgb(248 246 242 / 0.22) !important;
+}
+html.portal-zen .portal-surface .admin-overview-tile,
+html.portal-zen .portal-surface .portal-overview-tile,
+html.portal-zen .portal-surface [class~="bg-[#E6DED2]"] {
+  background-color: #F8F6F2 !important;
+}
+html.portal-zen .portal-surface [class~="bg-[#171714]"],
+html.portal-zen .portal-surface [class~="bg-black"] {
+  background-color: #333333 !important;
+  color: #F8F6F2 !important;
+}
+html.portal-zen .portal-surface [class~="bg-black/15"] {
+  background-color: #F2F1ED !important;
+}
+html.portal-zen .portal-surface [class~="border-black"],
+html.portal-zen .portal-surface [class~="border-black/10"],
+html.portal-zen .portal-surface [class~="border-black/15"],
+html.portal-zen .portal-surface [class~="border-black/20"] {
+  border-color: #E6E2DB !important;
+}
+html.portal-zen .portal-surface [class~="divide-black/15"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #E6E2DB !important;
+}
+html.portal-zen .portal-surface [class~="text-black"],
+html.portal-zen .portal-surface [class~="text-[#171714]"] {
+  color: #242019 !important;
+}
+html.portal-zen .portal-surface [class~="text-stone-600"],
+html.portal-zen .portal-surface [class~="text-stone-500"] {
+  color: #7E7258 !important;
+}
+html.portal-zen .portal-surface [class~="text-stone-400"],
+html.portal-zen .portal-surface [class~="text-stone-300"] {
+  color: #8D826B !important;
+}
+html.portal-zen .portal-surface [class~="hover:text-black"]:hover,
+html.portal-zen .portal-surface [class~="hover:text-stone-700"]:hover,
+html.portal-zen .portal-surface .portal-header [class~="hover:text-black"]:hover {
+  color: #242019 !important;
+}
+html.portal-zen .portal-surface .portal-header [class~="hover:text-black"]:hover {
+  color: #F8F6F2 !important;
+}
+html.portal-zen .portal-surface [class~="hover:bg-white/35"]:hover {
+  background-color: #F2F1ED !important;
+}
+html.portal-zen .portal-surface [class~="bg-[#11110f]"] {
+  background-color: #F8F6F2 !important;
+  color: #242019 !important;
+}
+html.portal-zen .portal-surface [class~="bg-[#11110f]"] [class~="text-white"] {
+  color: #242019 !important;
+}
+html.portal-zen .portal-surface .portal-status-pending {
+  color: #A86449 !important;
+}
+html.portal-zen .portal-surface .portal-status-approved,
+html.portal-zen .portal-surface .portal-status-complete {
+  color: #6F735C !important;
+}
+html.portal-zen .portal-surface .portal-status-current {
+  color: #A67B3F !important;
+}
+html.portal-zen .portal-surface .portal-register-row:focus-within {
+  background-color: #F2F1ED !important;
+  color: #242019 !important;
+}
+html.portal-zen .portal-surface .portal-register-row:focus-within [class~="text-stone-500"],
+html.portal-zen .portal-surface .portal-register-row:focus-within [class~="text-stone-600"] {
+  color: #7E7258 !important;
+}
+html.portal-zen .portal-surface .portal-register-actions .admin-action {
+  border-color: #E6E2DB;
+  color: #333333 !important;
+}
+html.portal-zen .portal-surface .portal-register-actions .admin-action:hover {
+  background-color: #333333 !important;
+  color: #F8F6F2 !important;
+}
+html.portal-zen .portal-surface .portal-progress-track {
+  background-color: #7E7258 !important;
+}
+html.portal-zen .portal-surface .portal-progress-fill {
+  background-color: #333333 !important;
+}
+html.portal-zen .portal-surface .admin-kpi-strip {
+  background-color: #333333 !important;
+  border-color: #333333 !important;
+}
+html.portal-zen .portal-surface .admin-kpi-strip .admin-overview-tile {
+  background-color: transparent !important;
+  color: #F8F6F2 !important;
+}
+html.portal-zen .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile {
+  border-left: 1px solid rgb(248 246 242 / 0.18) !important;
+}
+html.portal-zen .portal-surface .admin-kpi-strip [class~="text-stone-500"],
+html.portal-zen .portal-surface .admin-kpi-strip [class~="text-stone-600"] {
+  color: #B9B4AA !important;
+}
+html.portal-zen .portal-surface .portal-header .portal-zen-toggle-active {
+  background-color: #F8F6F2 !important;
+  border-color: #F8F6F2 !important;
+  color: #242019 !important;
+}
+html.portal-zen .portal-surface [class~="bg-[#11110f]"] {
+  background-color: #F8F6F2 !important;
+}
+
 /* Admin keeps the editorial register while giving operational information a usable reading scale. */
 .portal-admin > main {
   max-width: 92rem !important;
