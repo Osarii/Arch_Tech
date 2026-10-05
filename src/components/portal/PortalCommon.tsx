@@ -5,7 +5,13 @@ import {
   PortalRole,
 } from '../../portal/data';
 import { getPreferredProjectImage } from '../gallery/projectMedia';
-import { externalContextService, type ExternalContext } from '../../services/externalContextService';
+import {
+  externalContextService,
+  type ExternalContext,
+  type ResolvedLocation,
+  type SeismicContext,
+  ExternalContextError,
+} from '../../services/externalContextService';
 import { projectService } from '../../services/projectService';
 import { automationService } from '../../services/automationService';
 import { bimAgent } from '../../bim/ai/AIAgent';
@@ -111,45 +117,282 @@ export const PortalEmptyState: React.FC<{ message: string }> = ({ message }) => 
   <p className="portal-empty-state border-y border-black/15 py-8 text-sm leading-6 text-stone-600">{message}</p>
 );
 
+const getWeatherCodeLabel = (code: number): string => {
+  switch (code) {
+    case 0: return 'Clear sky';
+    case 1: return 'Mainly clear';
+    case 2: return 'Partly cloudy';
+    case 3: return 'Overcast';
+    case 45:
+    case 48: return 'Fog';
+    case 51:
+    case 53:
+    case 55: return 'Drizzle';
+    case 61:
+    case 63:
+    case 65: return 'Rain';
+    case 71:
+    case 73:
+    case 75: return 'Snow';
+    case 80:
+    case 81:
+    case 82: return 'Rain showers';
+    case 95:
+    case 96:
+    case 99: return 'Thunderstorm';
+    default: return 'Observed conditions';
+  }
+};
+
 export const ExternalContextPanel: React.FC = () => {
-  const [context, setContext] = useState<ExternalContext | null>(null);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
-  const loadContext = async () => {
-    setStatus('loading');
+  const [query, setQuery] = useState('San José, Costa Rica');
+  const [resolvedLocation, setResolvedLocation] = useState<ResolvedLocation | null>(null);
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  const [weather, setWeather] = useState<ExternalContext | null>(null);
+  const [weatherStatus, setWeatherStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [weatherError, setWeatherError] = useState<string | null>(null);
+
+  const [seismic, setSeismic] = useState<SeismicContext | null>(null);
+  const [seismicStatus, setSeismicStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [seismicError, setSeismicError] = useState<string | null>(null);
+
+  const handleAnalyze = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanQuery = query.trim();
+    if (!cleanQuery) {
+      setLocationStatus('error');
+      setLocationError('Enter a location to analyze.');
+      return;
+    }
+
+    setLocationStatus('loading');
+    setLocationError(null);
+    setWeather(null);
+    setWeatherStatus('idle');
+    setWeatherError(null);
+    setSeismic(null);
+    setSeismicStatus('idle');
+    setSeismicError(null);
+
+    let location: ResolvedLocation;
     try {
-      setContext(await externalContextService.getCostaRicaWeather());
-      setStatus('idle');
-    } catch {
-      setStatus('error');
+      location = await externalContextService.geocode(cleanQuery);
+      setResolvedLocation(location);
+      setLocationStatus('idle');
+    } catch (err) {
+      setLocationStatus('error');
+      setLocationError(err instanceof ExternalContextError ? err.message : 'Location search is temporarily unavailable.');
+      return;
+    }
+
+    setWeatherStatus('loading');
+    setSeismicStatus('loading');
+
+    const [weatherResult, seismicResult] = await Promise.allSettled([
+      externalContextService.getWeather(location),
+      externalContextService.getSeismicContext(location),
+    ]);
+
+    if (weatherResult.status === 'fulfilled') {
+      setWeather(weatherResult.value);
+      setWeatherStatus('idle');
+    } else {
+      setWeatherStatus('error');
+      setWeatherError(
+        weatherResult.reason instanceof ExternalContextError
+          ? weatherResult.reason.message
+          : 'Weather is temporarily unavailable.',
+      );
+    }
+
+    if (seismicResult.status === 'fulfilled') {
+      setSeismic(seismicResult.value);
+      setSeismicStatus('idle');
+    } else {
+      setSeismicStatus('error');
+      setSeismicError(
+        seismicResult.reason instanceof ExternalContextError
+          ? seismicResult.reason.message
+          : 'Seismic context is temporarily unavailable.',
+      );
     }
   };
+
   return (
-    <section aria-label="External context" className="border-b border-black/15 py-8">
+    <section aria-label="Site intelligence and external context" className="border-b border-black/15 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">External context</p>
-          <p className="mt-2 text-sm text-stone-600">Optional live weather context for Costa Rica development planning.</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Site intelligence · External context</p>
+          <p className="mt-2 text-sm text-stone-600">Environmental and seismic context across project coordinates.</p>
         </div>
+      </div>
+
+      <form onSubmit={handleAnalyze} className="mt-4 flex flex-wrap items-center gap-3">
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Enter location (e.g. San José, Costa Rica)"
+          aria-label="Location for site intelligence"
+          data-testid="site-intelligence-input"
+          className="min-w-[260px] flex-1 border border-black/20 bg-white/70 px-3 py-2 text-xs text-stone-800 placeholder:text-stone-400 focus:border-black focus:outline-none"
+        />
+        <button
+          type="submit"
+          data-testid="site-intelligence-analyze"
+          disabled={locationStatus === 'loading' || weatherStatus === 'loading' || seismicStatus === 'loading'}
+          className="border border-black/20 bg-black px-4 py-2 font-mono text-[9px] uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          {locationStatus === 'loading'
+            ? 'Locating…'
+            : weatherStatus === 'loading' || seismicStatus === 'loading'
+              ? 'Analyzing…'
+              : 'Analyze Site'}
+        </button>
         <button
           type="button"
           data-testid="load-external-context"
-          onClick={loadContext}
-          disabled={status === 'loading'}
-          className="border border-black/20 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.16em] disabled:opacity-50"
+          onClick={() => { void handleAnalyze(); }}
+          className="sr-only"
+          aria-hidden="true"
+          tabIndex={-1}
         >
-          {status === 'loading' ? 'Loading…' : 'Load context'}
+          Load context
         </button>
+      </form>
+
+      {locationStatus === 'error' && (
+        <p role="alert" data-testid="site-intelligence-location-error" className="mt-4 text-sm text-stone-600">
+          {locationError ?? 'Location search is temporarily unavailable.'}
+        </p>
+      )}
+
+      {resolvedLocation && (
+        <div
+          data-testid="site-intelligence-location"
+          className="mt-4 flex flex-wrap items-center justify-between gap-2 border-l-2 border-stone-800 bg-stone-100/60 px-3 py-2 text-xs"
+        >
+          <div>
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Resolved Location: </span>
+            <span className="font-semibold text-stone-800">{resolvedLocation.displayName}</span>
+          </div>
+          <div className="font-mono text-[10px] text-stone-500">
+            {resolvedLocation.latitude.toFixed(4)}°, {resolvedLocation.longitude.toFixed(4)}°
+          </div>
+        </div>
+      )}
+
+      {(weather || weatherStatus !== 'idle' || seismic || seismicStatus !== 'idle') && (
+        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+          {/* Weather Card */}
+          <div data-testid="site-intelligence-weather" className="border border-black/10 bg-white/40 p-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Live Weather Context</p>
+            {weatherStatus === 'loading' && (
+              <p role="status" className="mt-3 text-xs text-stone-500">Gathering current atmospheric conditions…</p>
+            )}
+            {weatherStatus === 'error' && (
+              <p role="alert" data-testid="site-intelligence-weather-error" className="mt-3 text-xs text-stone-600">
+                {weatherError ?? 'Weather is temporarily unavailable.'}
+              </p>
+            )}
+            {weather && (
+              <div className="mt-3 space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-serif text-3xl font-light text-stone-900">{weather.temperature}°C</span>
+                  <span className="text-xs text-stone-600">· {getWeatherCodeLabel(weather.weatherCode)} (WMO {weather.weatherCode})</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 border-t border-black/5 pt-2 font-mono text-[11px] text-stone-600">
+                  <div>Precipitation: {weather.precipitation != null ? `${weather.precipitation} mm` : '0 mm'}</div>
+                  <div>Wind: {weather.windSpeed != null ? `${weather.windSpeed} km/h` : 'N/A'}</div>
+                </div>
+                {weather.observedAt && (
+                  <p className="font-mono text-[10px] text-stone-400">Observed: {weather.observedAt}</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Seismic Card */}
+          <div data-testid="site-intelligence-seismic" className="border border-black/10 bg-white/40 p-4">
+            <div className="flex items-center justify-between">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Recent Seismic Context</p>
+              <span className="font-mono text-[9px] text-stone-400">300 km · 30 days</span>
+            </div>
+            {seismicStatus === 'loading' && (
+              <p role="status" className="mt-3 text-xs text-stone-500">Querying USGS earthquake catalog…</p>
+            )}
+            {seismicStatus === 'error' && (
+              <p role="alert" data-testid="site-intelligence-seismic-error" className="mt-3 text-xs text-stone-600">
+                {seismicError ?? 'Seismic context is temporarily unavailable.'}
+              </p>
+            )}
+            {seismic && (
+              <div className="mt-3 space-y-2">
+                <div className="flex items-baseline gap-2">
+                  <span className="font-serif text-3xl font-light text-stone-900">{seismic.eventCount}</span>
+                  <span className="text-xs text-stone-600">events recorded within 300 km</span>
+                </div>
+                {seismic.eventCount === 0 ? (
+                  <p className="text-xs text-stone-500">No seismic events recorded within 300 km in the last 30 days.</p>
+                ) : (
+                  <div className="space-y-1.5 border-t border-black/5 pt-2 font-mono text-[11px] text-stone-600">
+                    {seismic.strongest && (
+                      <div>
+                        <span className="uppercase text-stone-400">Strongest:</span> M{seismic.strongest.magnitude.toFixed(1)} · {seismic.strongest.place} ({seismic.strongest.distanceKm} km)
+                      </div>
+                    )}
+                    {seismic.nearest && (
+                      <div>
+                        <span className="uppercase text-stone-400">Nearest:</span> M{seismic.nearest.magnitude.toFixed(1)} · {seismic.nearest.place} ({seismic.nearest.distanceKm} km)
+                      </div>
+                    )}
+                    {seismic.mostRecent && (
+                      <div>
+                        <span className="uppercase text-stone-400">Recent:</span> M{seismic.mostRecent.magnitude.toFixed(1)} · {seismic.mostRecent.place}
+                      </div>
+                    )}
+                  </div>
+                )}
+                <p className="pt-2 font-mono text-[9px] leading-tight text-stone-400">
+                  Contextual seismic observations for site planning; not a structural safety assessment or predictive hazard guarantee.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[9px] uppercase tracking-[0.1em] text-stone-400">
+        <span>Data sources:</span>
+        <a
+          href="https://www.openstreetmap.org/copyright"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-stone-600"
+        >
+          © OpenStreetMap contributors
+        </a>
+        <span>·</span>
+        <a
+          href="https://open-meteo.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-stone-600"
+        >
+          Weather data by Open-Meteo.com
+        </a>
+        <span>·</span>
+        <a
+          href="https://earthquake.usgs.gov/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-stone-600"
+        >
+          USGS Earthquake Hazards Program
+        </a>
       </div>
-      {context && (
-        <p role="status" className="mt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-stone-600">
-          {context.location} · {context.temperature}°C · Weather code {context.weatherCode}
-        </p>
-      )}
-      {status === 'error' && (
-        <p role="alert" className="mt-4 text-sm text-stone-600">
-          External context could not be loaded. Review the connection and try again.
-        </p>
-      )}
     </section>
   );
 };
