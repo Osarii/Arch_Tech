@@ -1,0 +1,37 @@
+{
+  "name": "ARCH_TECH AI Assistant",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "arch-tech-ai", "responseMode": "responseNode" },
+      "id": "ai-webhook",
+      "name": "AI request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "arch-tech-ai"
+    },
+    {
+      "parameters": { "model": "={{$json.model || 'configured-llm'}}", "prompt": "={{$json.userPrompt}}", "options": { "systemMessage": "Return JSON with message and optional toolCalls. Do not execute tools." } },
+      "id": "ai-llm",
+      "name": "Interpret request",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": { "respondWith": "json", "responseBody": "={{$json.output || $json}}", "options": {} },
+      "id": "ai-response",
+      "name": "Structured response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [760, 300]
+    }
+  ],
+  "connections": {
+    "AI request": { "main": [[{ "node": "Interpret request", "type": "main", "index": 0 }]] },
+    "Interpret request": { "main": [[{ "node": "Structured response", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "arch-tech-ai-v1"
+}

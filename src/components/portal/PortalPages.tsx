@@ -20,6 +20,11 @@ import {
 import { SpatialRail } from '../gallery/SpatialRail';
 import { getPreferredProjectImage } from '../gallery/projectMedia';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
+import { authService } from '../../services/authService';
+import { externalContextService, type ExternalContext } from '../../services/externalContextService';
+import { automationService } from '../../services/automationService';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
 
 type Navigate = (path: string) => void;
 
@@ -41,6 +46,15 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
       return false;
     }
   });
+  const [textScale, setTextScale] = useState<'100' | '1125' | '125'>(() => {
+    if (typeof window === 'undefined') return '100';
+    try {
+      const stored = window.localStorage.getItem('arch-tech-portal-text-scale');
+      return stored === '1125' || stored === '125' ? stored : '100';
+    } catch {
+      return '100';
+    }
+  });
   useEffect(() => {
     document.documentElement.classList.toggle('portal-dark', dark);
     try {
@@ -49,6 +63,15 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
       // Theme preference is optional; the current mode remains usable in memory.
     }
   }, [dark]);
+  useEffect(() => {
+    document.documentElement.classList.remove('portal-scale-1125', 'portal-scale-125');
+    if (textScale !== '100') document.documentElement.classList.add(`portal-scale-${textScale}`);
+    try {
+      window.localStorage.setItem('arch-tech-portal-text-scale', textScale);
+    } catch {
+      // Text preference remains active in memory when storage is unavailable.
+    }
+  }, [textScale]);
   const navigation = role === 'admin' ? ['Projects', 'People', 'Approvals', 'Activity'] : role === 'architect' ? ['Projects', 'Activity', 'Milestones', 'Documents', 'Approvals'] : ['Projects', 'Updates', 'Documents', 'Notifications'];
   const sectionIds = role === 'admin' ? { Projects: 'projects', People: 'people', Approvals: 'approvals', Activity: 'activity' } : role === 'architect' ? { Projects: 'projects', Activity: 'activity', Milestones: 'milestones', Documents: 'documents', Approvals: 'approvals' } : { Projects: 'projects', Updates: 'updates', Documents: 'documents', Notifications: 'notifications' };
   return (
@@ -66,6 +89,9 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
         <button onClick={() => setDark((value) => !value)} aria-label={dark ? 'Use light mode' : 'Use dark mode'} data-testid="theme-toggle" className="inline-flex items-center gap-2 transition-colors hover:text-black">
           {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />} {dark ? 'Light' : 'Dark'}
         </button>
+        <div className="hidden items-center gap-1 border-l border-black/15 pl-3 sm:flex" aria-label="Text size">
+          {(['100', '1125', '125'] as const).map((scale) => <button key={scale} type="button" data-testid={`portal-text-scale-${scale}`} aria-pressed={textScale === scale} onClick={() => setTextScale(scale)} className={`font-mono text-[9px] transition-colors hover:text-black ${textScale === scale ? 'text-black' : 'text-stone-500'}`}>{scale === '1125' ? '112.5%' : `${scale}%`}</button>)}
+        </div>
         {onSignOut && (
           <button onClick={onSignOut} className="inline-flex items-center gap-2 transition-colors hover:text-black">
             Sign out <LogOut className="h-3.5 w-3.5" />
@@ -78,8 +104,11 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
 };
 
 export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSuccess: () => void }> = ({ open, onClose, onSuccess }) => {
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [registerName, setRegisterName] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const dialogRef = useRef<HTMLDivElement>(null);
   const showQuickAccess = import.meta.env.DEV || import.meta.env.MODE === 'test';
@@ -120,6 +149,21 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
     onSuccess();
   };
 
+  const handleRegister = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!registerName.trim() || !email.trim() || password.length < 8 || password !== confirmPassword) {
+      setError('Enter your name, a valid email, a password of at least 8 characters and a matching confirmation.');
+      return;
+    }
+    try {
+      await authService.register({ name: registerName, email, password, role: 'client', status: 'active', projectIds: [] });
+      setError('');
+      onSuccess();
+    } catch (registrationError) {
+      setError(registrationError instanceof Error ? registrationError.message : 'Registration could not be completed.');
+    }
+  };
+
   const handleQuickLogin = (role: PortalRole) => {
     const user = getPortalSnapshot().db.users.find((candidate) => candidate.role === role);
     if (!user || !portalAuth.signIn(user.email, user.password)) {
@@ -151,7 +195,13 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 
           {showQuickAccess && <div className="mt-8 border-y border-white/10 py-5"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Quick access</p><div className="mt-4 grid grid-cols-3 gap-2">{(['client', 'architect', 'admin'] as PortalRole[]).map((role) => <button key={role} type="button" data-testid={`quick-login-${role}`} onClick={() => handleQuickLogin(role)} className="border border-white/20 px-2 py-3 font-mono text-[9px] uppercase tracking-[0.12em] text-stone-200 transition-colors hover:border-white hover:bg-white hover:text-black">{`${role[0].toUpperCase()}${role.slice(1)} access`}</button>)}</div><p className="mt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">— or use credentials manually —</p></div>}
 
-          <form onSubmit={handleSubmit} className="mt-12 space-y-7">
+          <div className="mt-8 flex gap-4 border-b border-white/10 pb-3 font-mono text-[10px] uppercase tracking-[0.18em]">
+            <button type="button" onClick={() => { setMode('login'); setError(''); }} aria-pressed={mode === 'login'} className={mode === 'login' ? 'text-white' : 'text-stone-500'}>Sign in</button>
+            <button type="button" onClick={() => { setMode('register'); setError(''); }} aria-pressed={mode === 'register'} className={mode === 'register' ? 'text-white' : 'text-stone-500'}>Register</button>
+          </div>
+
+          <form onSubmit={mode === 'login' ? handleSubmit : handleRegister} className="mt-8 space-y-7">
+            {mode === 'register' && <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">Name<input data-testid="register-name" type="text" value={registerName} onChange={(event) => setRegisterName(event.target.value)} className="mt-3 w-full border-0 border-b border-white/25 bg-transparent px-0 py-3 font-sans text-sm text-white outline-none transition-colors focus:border-white" /></label>}
             <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
               Email
               <input
@@ -172,13 +222,14 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
                 className="mt-3 w-full border-0 border-b border-white/25 bg-transparent px-0 py-3 font-sans text-sm text-white outline-none transition-colors focus:border-white"
               />
             </label>
+            {mode === 'register' && <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">Confirm password<input data-testid="register-confirm-password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-3 w-full border-0 border-b border-white/25 bg-transparent px-0 py-3 font-sans text-sm text-white outline-none transition-colors focus:border-white" /></label>}
             {error && <p role="alert" className="text-sm text-red-300">{error}</p>}
             <button
               data-testid="login-submit"
               type="submit"
               className="group flex w-full items-center justify-between bg-[#f4efe8] px-6 py-4 font-mono text-[10px] uppercase tracking-[0.2em] text-black transition-transform duration-200 active:translate-y-px"
             >
-              Enter portal <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              {mode === 'login' ? 'Enter portal' : 'Create account'} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </form>
           <p className="mt-6 font-mono text-[10px] leading-5 text-stone-500">Authorized project access.</p>
@@ -213,6 +264,21 @@ const ProjectIdentityButton: React.FC<{ project: PortalProject; onNavigate: Navi
 );
 
 const PortalEmptyState: React.FC<{ message: string }> = ({ message }) => <p className="portal-empty-state border-y border-black/15 py-8 text-sm leading-6 text-stone-600">{message}</p>;
+
+const ExternalContextPanel: React.FC = () => {
+  const [context, setContext] = useState<ExternalContext | null>(null);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const loadContext = async () => {
+    setStatus('loading');
+    try {
+      setContext(await externalContextService.getCostaRicaWeather());
+      setStatus('idle');
+    } catch {
+      setStatus('error');
+    }
+  };
+  return <section aria-label="External context" className="border-b border-black/15 py-8"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">External context</p><p className="mt-2 text-sm text-stone-600">Optional live weather context for Costa Rica development planning.</p></div><button type="button" data-testid="load-external-context" onClick={loadContext} disabled={status === 'loading'} className="border border-black/20 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.16em] disabled:opacity-50">{status === 'loading' ? 'Loading…' : 'Load context'}</button></div>{context && <p role="status" className="mt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-stone-600">{context.location} · {context.temperature}°C · Weather code {context.weatherCode}</p>}{status === 'error' && <p role="alert" className="mt-4 text-sm text-stone-600">External context could not be loaded. Review the connection and try again.</p>}</section>;
+};
 
 export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
@@ -315,6 +381,9 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [createOpen, setCreateOpen] = useState(false);
   const [createError, setCreateError] = useState('');
+  const [operationFeedback, setOperationFeedback] = useState('');
+  const [userError, setUserError] = useState('');
+  const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'client' as PortalRole });
   const [newProject, setNewProject] = useState({ title: '', category: DEFAULT_NEW_PROJECT_CATEGORY, phase: 'Brief and site study', progress: '0' });
   const [projectSearch, setProjectSearch] = useState('');
   const [projectFilter, setProjectFilter] = useState('all');
@@ -400,24 +469,54 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
       return;
     }
     setCreateError('');
-    const id = `admin-project-${Date.now()}`;
-    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title, category, phase: newProject.phase, progress, nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '', published: false }] }));
+    const createdProject = projectService.create({ title, category, phase: newProject.phase, progress });
+    void createdProject.then((project) => automationService.emit({ event: 'project.created', projectId: project.id, message: `Project ${project.title} created.` }));
     setNewProject({ title: '', category: DEFAULT_NEW_PROJECT_CATEGORY, phase: 'Brief and site study', progress: '0' });
     setCreateOpen(false);
     createTriggerRef.current?.focus();
     refresh();
+    setOperationFeedback('Project created and added to the register.');
+  };
+  const createUser = async () => {
+    setUserError('');
+    try {
+      const user = await userService.create({ ...newUser, status: 'active', projectIds: [] });
+      setNewUser({ name: '', email: '', password: '', role: 'client' });
+      setOperationFeedback(`${user.name} was added as an active ${user.role}.`);
+      refresh();
+    } catch (error) {
+      setUserError(error instanceof Error ? error.message : 'Unable to create the user.');
+    }
+  };
+  const updateUser = async (id: string, changes: Parameters<typeof updatePortalUser>[1]) => {
+    updatePortalUser(id, changes);
+    await userService.update(id, changes);
+    setOperationFeedback('User access updated.');
+    refresh();
+  };
+  const editUserName = async (userId: string, currentName: string) => {
+    const nextName = window.prompt('Update user name', currentName)?.trim();
+    if (!nextName || nextName === currentName) return;
+    try {
+      await updateUser(userId, { name: nextName });
+    } catch (error) {
+      setUserError(error instanceof Error ? error.message : 'Unable to update the user.');
+    }
   };
   return (
     <div className="portal-surface portal-admin h-screen overflow-y-auto bg-[#D6CBB9] text-[#211E1A]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/admin" role="admin" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Administration / Portal overview</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">The project register.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">Projects, people, approvals and shared information across the ARCH_TECH portal.</p></div>
-        <section className="flex flex-wrap items-center gap-4 py-10"><button ref={createTriggerRef} onClick={() => { setCreateOpen(true); setCreateError(''); }} className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white">Create project</button><p className="text-sm text-stone-600">Create projects, manage people, assignments and approvals.</p></section>
+        <section className="flex flex-wrap items-center gap-4 py-10"><button ref={createTriggerRef} onClick={() => { setCreateOpen(true); setCreateError(''); }} className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white">Create project</button><p className="text-sm text-stone-600">Create projects, manage people, assignments and approvals.</p>{operationFeedback && <p role="status" className="basis-full text-sm text-stone-600">{operationFeedback}</p>}</section>
         <section className="admin-kpi-strip grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Portfolio overview"><div className="admin-overview-tile bg-[#E6DED2] p-6"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Active projects</p><p className="mt-3 font-serif text-5xl">{activeProjects.length.toString().padStart(2, '0')}</p><p className="mt-1 text-sm text-stone-600">currently active</p></div><div className="admin-overview-tile bg-[#E6DED2] p-6"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Average progress</p><p className="mt-3 font-serif text-5xl">{averageProgress}%</p><p className="mt-1 text-sm text-stone-600">across active work</p></div><div className="admin-overview-tile bg-[#E6DED2] p-6"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Pending approvals</p><p className="mt-3 font-serif text-5xl">{pendingApprovals.length.toString().padStart(2, '0')}</p><p className="mt-1 text-sm text-stone-600">requiring review</p></div><div className="admin-overview-tile bg-[#E6DED2] p-6"><p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Upcoming milestones</p><p className="mt-3 font-serif text-5xl">{upcomingMilestones.length.toString().padStart(2, '0')}</p><p className="mt-1 text-sm text-stone-600">in the active sequence</p></div></section>
+        <ExternalContextPanel />
         <section className="grid gap-10 border-b border-black/15 py-12 lg:grid-cols-[1fr_1.2fr]" aria-label="Development stages"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Development stages</p><h2 className="mt-4 font-serif text-4xl">Where the portfolio stands.</h2></div><div className="grid gap-4 sm:grid-cols-2">{Object.entries(stageCounts).map(([stage, count]) => <div key={stage} className="border-l border-black/20 pl-4"><p className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{stage}</p><p className="mt-3 font-serif text-3xl">{String(count).padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">active project{count === 1 ? '' : 's'}</p></div>)}</div></section>
+        <section className="grid gap-10 border-b border-black/15 py-12 lg:grid-cols-[0.75fr_1.25fr]" aria-label="Project progress chart"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Live portfolio signal</p><h2 className="mt-4 font-serif text-4xl">Progress by development.</h2><p className="mt-4 max-w-sm text-sm leading-6 text-stone-600">A direct view of current progress from the active project register.</p></div><div data-testid="project-progress-chart" role="img" aria-label="Project progress by development" className="grid grid-cols-2 gap-4 sm:grid-cols-3">{activeProjects.map((project) => <div key={project.id} className="min-w-0"><div className="flex h-40 items-end border-b border-l border-black/20 px-2"><div className="w-full bg-[#2D2E2C] transition-[height]" style={{ height: `${Math.max(4, project.progress)}%` }} aria-hidden="true" /></div><p className="mt-3 truncate font-mono text-[9px] uppercase tracking-[0.12em] text-stone-500">{project.title}</p><p className="mt-1 font-serif text-2xl">{project.progress}%</p></div>)}</div></section>
         <section className="grid gap-12 border-b border-black/15 py-12 lg:grid-cols-2" aria-label="Review and delivery signals"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring review</p>{reviewProjects.length ? reviewProjects.map((project) => <button key={project.id} onClick={() => onNavigate(`/admin/projects/${project.id}`)} className="mt-5 flex w-full items-center justify-between border-b border-black/10 pb-4 text-left"><span><span className="block font-serif text-2xl">{project.title}</span><span className="mt-1 block text-sm text-stone-500">{project.approvals.filter((approval) => approval.status === 'Pending').map((approval) => approval.title).join(' · ')}</span></span><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Review</span></button>) : <p className="mt-5 max-w-sm text-sm leading-6 text-stone-600">No project decisions are waiting for review.</p>}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>{upcomingMilestones.length ? upcomingMilestones.slice(0, 5).map((milestone) => <p key={`${milestone.projectId}-${milestone.label}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{milestone.projectTitle} · {milestone.label}</span><span className="font-mono text-[9px] uppercase text-stone-500">Upcoming</span></p>) : <p className="mt-5 max-w-sm text-sm leading-6 text-stone-600">No upcoming milestones are scheduled.</p>}</div></section>
         <section id="portal-section-projects" className="py-12"><div className="mb-8 flex items-end justify-between gap-6"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">All projects / assignments</h2><p className="mt-2 text-sm text-stone-600">{filteredProjects.length} of {activeProjects.length} active projects</p></div><span className="font-mono text-[10px] text-stone-500">{activeProjects.length.toString().padStart(2, '0')} active</span></div><div className="portal-register-toolbar mb-7 grid gap-3 border-y border-black/15 py-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]" role="search" aria-label="Filter project register"><label className="sr-only" htmlFor="admin-project-search">Search projects</label><input id="admin-project-search" value={projectSearch} onChange={(event) => setProjectSearch(event.target.value)} placeholder="Search title, code, category or phase" className="min-w-0 border-b border-black/20 bg-transparent px-0 py-2 text-sm outline-none placeholder:text-stone-500 focus:border-black" /><label className="sr-only" htmlFor="admin-project-filter">Filter projects</label><select id="admin-project-filter" value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)} className="border border-black/20 bg-transparent px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] outline-none"><option value="all">All projects</option><option value="pending">Pending approval</option>{projectPhases.map((phaseOption) => <option key={phaseOption} value={phaseOption}>{phaseOption}</option>)}</select><label className="sr-only" htmlFor="admin-project-sort">Sort projects</label><select id="admin-project-sort" value={projectSort} onChange={(event) => setProjectSort(event.target.value as typeof projectSort)} className="border border-black/20 bg-transparent px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] outline-none"><option value="name">Name A–Z</option><option value="progress-desc">Progress high → low</option><option value="progress-asc">Progress low → high</option><option value="phase">Phase</option></select>{filtersActive && <button type="button" onClick={clearProjectFilters} className="border border-black/20 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors hover:bg-black hover:text-white">Clear filters</button>}</div>{filteredProjects.length ? <ProjectRows projects={filteredProjects} onNavigate={onNavigate} onOpenWorkspace={() => onNavigate('/workspace')} detailPath={(id) => `/admin/projects/${id}`} /> : <PortalEmptyState message="No projects match the current search and filters." />}</section>
-        <section id="portal-section-people" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-3"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Clients</h2>{clients.map((user) => <div key={user.id} className="mt-5 flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex gap-2"><button onClick={() => updatePortalUser(user.id, { role: 'architect' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">Make architect</button><button onClick={() => updatePortalUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Architects</h2>{architects.map((user) => <div key={user.id} className="mt-5"><div className="flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex gap-2"><button onClick={() => updatePortalUser(user.id, { role: 'client' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">Make client</button><button onClick={() => updatePortalUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' }) && refresh()} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div><p className="mt-1 text-xs text-stone-500">{user.projectIds.length} assigned projects</p></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global approvals</h2>{db.approvals.map((approval) => <p key={approval.projectId} className="mt-5 flex justify-between gap-4 text-sm"><span>{approval.title}</span><span className="font-mono text-[9px] uppercase text-stone-500">{approval.status}</span></p>)}</div></section>
+        <section id="portal-section-people" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-3"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Clients</h2>{clients.map((user) => <div key={user.id} className="mt-5 flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex flex-wrap justify-end gap-2"><button onClick={() => void editUserName(user.id, user.name)} className="font-mono text-[9px] uppercase text-stone-500">Edit name</button><button onClick={() => void updateUser(user.id, { role: 'architect' })} className="font-mono text-[9px] uppercase text-stone-500">Make architect</button><button onClick={() => void updateUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' })} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Architects</h2>{architects.map((user) => <div key={user.id} className="mt-5"><div className="flex items-center justify-between gap-4"><span className="font-serif text-2xl">{user.name}</span><span className="flex flex-wrap justify-end gap-2"><button onClick={() => void editUserName(user.id, user.name)} className="font-mono text-[9px] uppercase text-stone-500">Edit name</button><button onClick={() => void updateUser(user.id, { role: 'client' })} className="font-mono text-[9px] uppercase text-stone-500">Make client</button><button onClick={() => void updateUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' })} className="font-mono text-[9px] uppercase text-stone-500">{user.status}</button></span></div><p className="mt-1 text-xs text-stone-500">{user.projectIds.length} assigned projects</p></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global approvals</h2>{db.approvals.map((approval) => <p key={approval.projectId} className="mt-5 flex justify-between gap-4 text-sm"><span>{approval.title}</span><span className="font-mono text-[9px] uppercase tracking-[0.12em]">{approval.status}</span></p>)}</div></section>
         <section id="portal-section-activity" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Assign people to projects</h2>{activeProjects.map((project) => <div key={project.id} data-testid={`admin-assignment-project-${project.id}`} className="mt-5"><p className="text-sm">{project.title}</p><div className="mt-2 flex flex-wrap gap-2">{assignableUsers.map((user) => <button key={user.id} data-testid={`admin-assignment-${project.id}-${user.id}`} onClick={() => toggleAssignment(user.id, project.id)} className={`border px-2 py-1 font-mono text-[9px] uppercase ${user.projectIds.includes(project.id) ? 'border-black bg-black text-white' : 'border-black/15 text-stone-500'}`}>{user.name}</button>)}</div></div>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Global notifications</h2>{db.notifications.map((notification) => <p key={`${notification.userId}-${notification.date}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{notification.message}</span><span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</div></section>
+        <section className="border-t border-black/15 pt-12" aria-labelledby="create-user-title"><div className="flex flex-wrap items-end justify-between gap-5"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">People management</p><h2 id="create-user-title" className="mt-3 font-serif text-3xl">Add portal access.</h2></div><p className="max-w-md text-sm leading-6 text-stone-600">Create an active client or architect account, then assign projects from the register.</p></div><form className="mt-7 grid gap-4 border-y border-black/15 py-6 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_auto_auto]" onSubmit={(event) => { event.preventDefault(); void createUser(); }}><label className="font-mono text-[9px] uppercase text-stone-500">Name<input required value={newUser.name} onChange={(event) => setNewUser({ ...newUser, name: event.target.value })} className="mt-2 w-full border-b border-black/20 bg-transparent py-2 text-sm outline-none" /></label><label className="font-mono text-[9px] uppercase text-stone-500">Email<input required type="email" value={newUser.email} onChange={(event) => setNewUser({ ...newUser, email: event.target.value })} className="mt-2 w-full border-b border-black/20 bg-transparent py-2 text-sm outline-none" /></label><label className="font-mono text-[9px] uppercase text-stone-500">Temporary password<input required minLength={8} value={newUser.password} onChange={(event) => setNewUser({ ...newUser, password: event.target.value })} className="mt-2 w-full border-b border-black/20 bg-transparent py-2 text-sm outline-none" /></label><label className="font-mono text-[9px] uppercase text-stone-500">Role<select value={newUser.role} onChange={(event) => setNewUser({ ...newUser, role: event.target.value as PortalRole })} className="mt-2 w-full border-b border-black/20 bg-transparent py-2 text-sm outline-none"><option value="client">Client</option><option value="architect">Architect</option></select></label><button data-testid="create-user" type="submit" className="self-end bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white">Add user</button></form>{userError && <p role="alert" className="mt-3 text-sm text-stone-600">{userError}</p>}</section>
         <section id="portal-section-approvals" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Pending approvals</p>{pendingApprovals.map((approval) => <button key={`${approval.projectId}-${approval.title}`} onClick={() => onNavigate(`/admin/projects/${approval.projectId}`)} className="mt-5 flex w-full justify-between gap-4 border-b border-black/10 pb-4 text-left text-sm"><span>{approval.projectTitle} · {approval.title}</span><span className="font-mono text-[9px] uppercase text-stone-500">Review</span></button>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>{db.notifications.map((notification) => <p key={`${notification.userId}-${notification.date}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{notification.message}</span><span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</div></section>
         <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent activity</h2>{recentActivity.map((update) => <p key={`${update.projectId}-${update.date}-${update.title}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{update.projectTitle} · {update.title}</span><span className="font-mono text-[9px] text-stone-500">{update.date}</span></p>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Development controls</h2><p className="mt-5 text-sm leading-6 text-stone-600">Create, assign and advance projects from the register. Open any project or its model directly from the portfolio list.</p></div></section>
       </main>
@@ -477,6 +576,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
   const [milestone, setMilestone] = useState('');
   const [documentName, setDocumentName] = useState('');
   const [approvalTitle, setApprovalTitle] = useState('');
+  const [operationFeedback, setOperationFeedback] = useState('');
   const tabs = ['Overview', 'Updates', 'Milestones', 'Documents', 'Approvals', 'Model'];
   const project = snapshot.projects.find((candidate) => candidate.id === projectId);
   const canManage = role === 'architect' || role === 'admin';
@@ -498,13 +598,27 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
     } else {
       setProgressError('');
     }
-    if (Object.keys(changes).length) updatePortalProject(projectId, changes);
+    if (Object.keys(changes).length) {
+      updatePortalProject(projectId, changes);
+      void automationService.emit({ event: 'project.updated', projectId, metadata: changes });
+      setOperationFeedback('Project status saved.');
+    }
     refresh();
   };
-  const addUpdate = () => { const title = updateTitle.trim(); const body = updateBody.trim(); if (!title || !body) return; addPortalUpdate({ projectId, date: formatPortalDate(new Date()), title, body }); setUpdateTitle(''); setUpdateBody(''); refresh(); };
+  const addUpdate = () => { const title = updateTitle.trim(); const body = updateBody.trim(); if (!title || !body) return; addPortalUpdate({ projectId, date: formatPortalDate(new Date()), title, body }); void automationService.emit({ event: 'project.updated', projectId, message: title }); setUpdateTitle(''); setUpdateBody(''); setOperationFeedback('Project update published.'); refresh(); };
   const addMilestone = () => { const label = milestone.trim(); if (!label) return; addPortalMilestone({ projectId, label, status: 'Upcoming' }); setMilestone(''); refresh(); };
   const addDocument = () => { const name = documentName.trim(); if (!name) return; addPortalDocument({ projectId, name, meta: 'PDF · Added in portal' }); setDocumentName(''); refresh(); };
-  const requestApproval = () => { const title = approvalTitle.trim(); if (!title) return; addPortalApproval({ projectId, title, status: 'Pending' }); setApprovalTitle(''); refresh(); };
+  const requestApproval = () => { const title = approvalTitle.trim(); if (!title) return; addPortalApproval({ projectId, title, status: 'Pending' }); void automationService.emit({ event: 'approval.requested', projectId, message: title }); setApprovalTitle(''); setOperationFeedback('Approval request sent.'); refresh(); };
+  const deleteProject = async () => {
+    if (role !== 'admin' || !window.confirm('Delete this runtime project and its related records?')) return;
+    try {
+      const deleted = await projectService.remove(projectId);
+      if (!deleted) throw new Error('Project could not be deleted.');
+      onNavigate(homePath);
+    } catch (error) {
+      setOperationFeedback(error instanceof Error ? error.message : 'Project could not be deleted.');
+    }
+  };
 
   if (!project) return <NotFoundPage onNavigate={onNavigate} />;
 
@@ -528,6 +642,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
         </div>
 
         <ProjectNavigation previous={previousProject} next={nextProject} onNavigate={onNavigate} role={role} />
+        {operationFeedback && <p role="status" className="mt-5 text-sm text-stone-600">{operationFeedback}</p>}
 
         <div className="flex gap-7 overflow-x-auto border-b border-black/15 py-5">
           {tabs.map((tab) => (
@@ -572,7 +687,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
             </div>
           )}
         </section>
-        {canManage && <section data-testid="role-management-panel" className="border-t border-black/15 py-12"><div className="flex items-end justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{role === 'admin' ? 'Administration' : 'Studio management'}</p><h2 className="mt-4 font-serif text-4xl">Project controls.</h2></div>{role === 'admin' && <div className="flex flex-wrap items-center justify-end gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{project.published ? 'Public portfolio' : 'Private project'}</span><button data-testid="toggle-publication" onClick={() => { updatePortalProject(projectId, { published: !project.published }); refresh(); }} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">{project.published ? 'Remove from public portfolio' : 'Publish to public portfolio'}</button><button onClick={() => { updatePortalProject(projectId, { archived: true }); onNavigate(homePath); }} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Archive project</button></div>}</div><div className="mt-8 grid gap-8 lg:grid-cols-2"><div className="space-y-4">{role === 'admin' && <label className="block font-mono text-[9px] uppercase text-stone-500">Project title<input aria-label="Project title" value={projectTitle || project.title} onChange={(event) => setProjectTitle(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label>}<label className="block font-mono text-[9px] uppercase text-stone-500">Progress / phase<input aria-label="Project progress" type="number" min={0} max={100} step={1} aria-invalid={Boolean(progressError)} aria-describedby={progressError ? 'project-progress-error' : undefined} value={progress || project.progress} onChange={(event) => { const value = event.target.value; setProgress(value); setProgressError(value.trim() !== '' && (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100) ? 'Progress must be a number from 0 to 100.' : ''); }} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" />{progressError && <p id="project-progress-error" role="alert" className="mt-2 text-xs text-stone-600">{progressError}</p>}<select aria-label="Project phase" value={phase || project.phase} onChange={(event) => setPhase(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><button onClick={saveStatus} className="bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-white">Save status</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Create project update<input aria-label="Update title" value={updateTitle} onChange={(event) => setUpdateTitle(event.target.value)} placeholder="Update title" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /><textarea aria-label="Update body" value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} placeholder="What changed?" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addUpdate} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Publish update</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Manage milestones<input aria-label="New milestone" value={milestone} onChange={(event) => setMilestone(event.target.value)} placeholder="Milestone name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addMilestone} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add milestone</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Issue document<input aria-label="New document" value={documentName} onChange={(event) => setDocumentName(event.target.value)} placeholder="Document name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addDocument} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add document</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Client approval request<input aria-label="New approval" value={approvalTitle} onChange={(event) => setApprovalTitle(event.target.value)} placeholder="Approval request" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={requestApproval} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Request approval</button></div><div><p className="font-mono text-[9px] uppercase text-stone-500">Project activity</p>{project.updates.slice(0, 3).map((update) => <p key={update.date + update.title} className="mt-4 text-sm text-stone-600">{update.date} · {update.title}</p>)}</div></div></section>}
+        {canManage && <section data-testid="role-management-panel" className="border-t border-black/15 py-12"><div className="flex items-end justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{role === 'admin' ? 'Administration' : 'Studio management'}</p><h2 className="mt-4 font-serif text-4xl">Project controls.</h2></div>{role === 'admin' && <div className="flex flex-wrap items-center justify-end gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{project.published ? 'Public portfolio' : 'Private project'}</span><button data-testid="toggle-publication" onClick={() => { updatePortalProject(projectId, { published: !project.published }); refresh(); }} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">{project.published ? 'Remove from public portfolio' : 'Publish to public portfolio'}</button><button data-testid="delete-project" onClick={() => void deleteProject()} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Delete runtime project</button></div>}</div><div className="mt-8 grid gap-8 lg:grid-cols-2"><div className="space-y-4">{role === 'admin' && <label className="block font-mono text-[9px] uppercase text-stone-500">Project title<input aria-label="Project title" value={projectTitle || project.title} onChange={(event) => setProjectTitle(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label>}<label className="block font-mono text-[9px] uppercase text-stone-500">Progress / phase<input aria-label="Project progress" type="number" min={0} max={100} step={1} aria-invalid={Boolean(progressError)} aria-describedby={progressError ? 'project-progress-error' : undefined} value={progress || project.progress} onChange={(event) => { const value = event.target.value; setProgress(value); setProgressError(value.trim() !== '' && (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100) ? 'Progress must be a number from 0 to 100.' : ''); }} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" />{progressError && <p id="project-progress-error" role="alert" className="mt-2 text-xs text-stone-600">{progressError}</p>}<select aria-label="Project phase" value={phase || project.phase} onChange={(event) => setPhase(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><button onClick={saveStatus} className="bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-white">Save status</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Create project update<input aria-label="Update title" value={updateTitle} onChange={(event) => setUpdateTitle(event.target.value)} placeholder="Update title" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /><textarea aria-label="Update body" value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} placeholder="What changed?" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addUpdate} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Publish update</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Manage milestones<input aria-label="New milestone" value={milestone} onChange={(event) => setMilestone(event.target.value)} placeholder="Milestone name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addMilestone} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add milestone</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Issue document<input aria-label="New document" value={documentName} onChange={(event) => setDocumentName(event.target.value)} placeholder="Document name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addDocument} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add document</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Client approval request<input aria-label="New approval" value={approvalTitle} onChange={(event) => setApprovalTitle(event.target.value)} placeholder="Approval request" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={requestApproval} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Request approval</button></div><div><p className="font-mono text-[9px] uppercase text-stone-500">Project activity</p>{project.updates.slice(0, 3).map((update) => <p key={update.date + update.title} className="mt-4 text-sm text-stone-600">{update.date} · {update.title}</p>)}</div></div></section>}
       </main>
     </div>
   );

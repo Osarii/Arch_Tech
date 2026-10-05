@@ -262,6 +262,19 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 
+  it('registers an active client without project assignments', async () => {
+    const onSuccess = vi.fn();
+    render(<LoginOverlay open onClose={vi.fn()} onSuccess={onSuccess} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Register' }));
+    fireEvent.change(screen.getByTestId('register-name'), { target: { value: 'New Portal Client' } });
+    fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'new.client@arch-tech.studio' } });
+    fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'client-password' } });
+    fireEvent.change(screen.getByTestId('register-confirm-password'), { target: { value: 'client-password' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create account' }));
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+    expect(getPortalSnapshot().db.users).toEqual(expect.arrayContaining([expect.objectContaining({ email: 'new.client@arch-tech.studio', role: 'client', status: 'active', projectIds: [] })]));
+  });
+
   it('shows client projects, progress, phase, milestone and latest updates', () => {
     portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
@@ -440,6 +453,17 @@ describe('ARCH_TECH client architecture portal', () => {
     cleanup();
     render(<ProjectShowcase onOpenProject={vi.fn()} />);
     expect(screen.getByText('Portal Annex')).toBeDefined();
+  });
+
+  it('creates an active portal user from Admin people management', async () => {
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Operations Client' } });
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'operations.client@arch-tech.studio' } });
+    fireEvent.change(screen.getByLabelText('Temporary password'), { target: { value: 'operations-password' } });
+    fireEvent.click(screen.getByTestId('create-user'));
+    await waitFor(() => expect(screen.getByText('Operations Client was added as an active client.')).toBeDefined());
+    expect(getPortalSnapshot().db.users).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Operations Client', role: 'client', status: 'active' })]));
   });
 
   it('validates admin project creation inputs', () => {

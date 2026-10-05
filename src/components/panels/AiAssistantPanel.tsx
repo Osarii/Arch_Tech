@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { bimAgent } from '@/bim/ai/AIAgent';
 import { AIMessage, PendingWriteProposal } from '@/types/bim';
+import { aiService } from '@/services/aiService';
 
 export const AiAssistantPanel: React.FC = () => {
   const [messages, setMessages] = useState<AIMessage[]>([]);
@@ -97,7 +98,7 @@ export const AiAssistantPanel: React.FC = () => {
             </div>
             <div className="text-[10px] text-slate-400 flex items-center space-x-1">
               <Cpu className="w-2.5 h-2.5 text-emerald-400" />
-              <span>Offline Deterministic Engine</span>
+              <span>{aiService.isConfigured() ? 'Remote n8n / offline fallback' : 'Offline Deterministic Engine'}</span>
             </div>
           </div>
         </div>

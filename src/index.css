@@ -778,3 +778,11 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
     transition-duration: 0.01ms !important;
   }
 }
+
+html.portal-scale-1125 {
+  font-size: 112.5%;
+}
+
+html.portal-scale-125 {
+  font-size: 125%;
+}

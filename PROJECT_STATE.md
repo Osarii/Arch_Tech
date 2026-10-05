@@ -17,6 +17,7 @@
 ## 2. Technology Stack
 - **Core Engine & BIM**: That Open Components (`3.4.8`), Fragments (`3.4.7`), `web-ifc` (`0.0.78`), Three.js (`0.182.0`)
 - **Frontend & App Framework**: React 19, TypeScript, Vite 6, Tailwind CSS, Lucide React icons
+- **Routing & Services**: React Router DOM with protected/role/project guards; typed `src/services/` boundary for API, project, user, auth, notification, external context, AI and automation flows
 - **State Management**: Lightweight Zustand (`src/stores/bimStore.ts` for BIM state; `src/portal/data.ts` for portal state snapshot)
 - **Database & Persistence**: `db.json` (showcase seed), `localStorage` (`arch-tech-portal-state`, schema version 3), native STEP-21 IFC persistence
 - **Testing & Tooling**: Vitest 3.x (unit/domain), Playwright (E2E browser workflows)
@@ -35,6 +36,8 @@ Garnier & Garnier remains a reference for development scale and enterprise posit
 - `/admin` — Protected Admin Portal (full project portfolio register, user role assignments, project creation form, publication toggle).
 - `/workspace` — Production OpenBIM Engineering Workspace (portal-authenticated in production; supports dev/test legacy direct entry via `/?view=workspace`, `?app=true`, or `#workspace`). Features `← Landing` return control.
 
+Optional local HTTP persistence is available through `npm run server` (JSON Server on port 3001) and `VITE_API_BASE_URL`. Without that variable, portal services preserve the existing localStorage-backed snapshot behavior.
+
 ---
 
 ## 4. Multi-Role Portal & User Access Structure
@@ -42,7 +45,10 @@ Garnier & Garnier remains a reference for development scale and enterprise posit
 - **Client Role**: Accesses assigned projects, project status, milestones, documents, updates, and pending approvals.
 - **Architect Role**: Accesses architectural drawings, technical specs, and design approval workflows.
 - **Admin Role**: Full portal control—publishes projects, creates new development projects, assigns user roles, and modifies project metadata.
-- **Demo Auth**: Handled via `src/portal/demoAuth.ts` with quick-login role presets.
+- **Portal Auth**: Handled via `src/portal/demoAuth.ts` for the current presentation users, with production registration, manual login, role-scoped routing and development/test-only quick access presets.
+- **Admin Operations**: Active projects expose objective KPIs, a responsive progress chart, search/filter/sort, runtime project creation/deletion with canonical showcase protection, user creation, role/status controls and assignments.
+- **External Context**: Admin can request live Costa Rica weather context from Open-Meteo with visible loading/error states.
+- **Persistent Preferences**: Portal text scale options (100%, 112.5%, 125%) persist under `arch-tech-portal-text-scale` alongside the existing Light/Dark theme preference.
 
 ---
 
@@ -95,7 +101,7 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 
 ### 8.1 Featured landing carousel
 - **Implementation**: `src/components/gallery/FeaturedProjectCarousel.tsx`, mounted by `src/components/landing/Hero.tsx`.
-- **Behavior**: Uses all six canonical public projects, links each slide to its public dossier, supports previous/next controls, indicators, Arrow/Home/End keyboard navigation, hover/focus pause, restrained 4.2-second autoplay, and `prefers-reduced-motion` autoplay suppression.
+- **Behavior**: Uses all six canonical public projects, links each slide to its public dossier, supports previous/next controls, indicators, Arrow/Home/End keyboard navigation, hover/focus pause, restrained 3.2-second autoplay, and `prefers-reduced-motion` autoplay suppression.
 - **Media stability**: Every slide uses the same fixed 16:9 media shell with an overflow-hidden object-cover image viewport and a stable content region, so the outer card does not resize between projects.
 - **Showcase media**: The six isolated local image sets are official Garnier portfolio photographs selected for campus, district, hospitality and institutional scale. This is an explicitly authorized ARCH_TECH concept/prototype use and does not imply official status or affiliation.
 - **Fallbacks**: `ProjectImage` renders a neutral ARCH_TECH development placeholder when a preferred local image is unavailable or fails to decode.
@@ -149,6 +155,7 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - **ARCH_TECH Brand Mark**: D1 Solid → Wireframe is the selected identity direction. `src/components/brand/ArchTechLogo.tsx` provides a reusable vector mark/full lockup that moves from solid architectural faces into restrained modeling construction lines, expressing physical structure → digital model.
 - **Portfolio Asset Pipeline**: Canonical image packs and official Garnier showcase media integrated; schema v3 migration completed.
 - **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient presentation auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
+- **Portal Application Architecture**: React Router migration, reusable protected/role/project guards, typed services with local fallback, JSON Server setup, external context integration, runtime project/user management, live Admin chart, persistent text scaling and n8n AI/automation workflow definitions.
 
 ---
 
@@ -166,6 +173,7 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 ## 13. Known Issues & Tech Debt
 1. **Metadata Extractor Schema Discrepancy**: `IfcOpenHouse_IFC4.ifc` file header specifies `IFC4`, but property extractor metadata reports `IFC2X3` in viewer UI. Do not alter loader/schema code without an explicit directive.
 2. **Vite Bundle Size Warning**: Production build emits bundle size warning for `Workspace` (~7 MB) and `worker` (~3.2 MB) due to embedded `web-ifc` WASM binaries and Three.js engine overhead; expected for complex browser CAD.
+3. **Optional Integrations**: n8n webhooks require explicit `VITE_N8N_AI_WEBHOOK_URL` / `VITE_N8N_AUTOMATION_WEBHOOK_URL` configuration; unavailable remote AI falls back to the deterministic provider and all write actions still pass through ToolRegistry confirmation.
 
 ---
 
@@ -187,8 +195,9 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint`).
-- **Vitest Unit/Domain Tests**: **166 / 166 PASSED** across 15 test files.
+- **Vitest Unit/Domain Tests**: **177 / 177 PASSED** across 16 test files after the portal service and router work.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
+- **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, full OpenBIM workflow and AI confirmation flows.
 - **Playwright E2E Tests**: **13 / 14 PASSED** in the current run; the existing BIM Phase 3 editing flow still fails at `tests/e2e/bimLab.spec.ts:342` because `Restore Element` is not rendered after deletion. This landing/brand task does not modify BIM internals.
 - **Targeted portal/landing suites**: `portalData` **11 / 11**, `demoAuth` **10 / 10**, `landingPage` **38 / 38**, and `spatialRail` **6 / 6** passed after the About and leadership update.
 - **Git Diff**: Verified with `git diff --check` after the landing media/carousel changes.

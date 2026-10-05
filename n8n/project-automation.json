@@ -1,0 +1,37 @@
+{
+  "name": "ARCH_TECH Project Automation",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "arch-tech-automation", "responseMode": "responseNode" },
+      "id": "automation-webhook",
+      "name": "Project event",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "arch-tech-automation"
+    },
+    {
+      "parameters": { "jsCode": "const event = $json.event || 'project.updated';\nconst labels = { 'project.created': 'Project created', 'project.updated': 'Project updated', 'approval.requested': 'Approval requested' };\nreturn [{ json: { success: true, notification: { message: `${labels[event] || 'Project event'} · ${$json.projectId}`, date: new Date().toISOString().slice(0, 10) } } }];" },
+      "id": "automation-summary",
+      "name": "Build notification payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": { "respondWith": "json", "responseBody": "={{$json}}", "options": {} },
+      "id": "automation-response",
+      "name": "Return notification",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [760, 300]
+    }
+  ],
+  "connections": {
+    "Project event": { "main": [[{ "node": "Build notification payload", "type": "main", "index": 0 }]] },
+    "Build notification payload": { "main": [[{ "node": "Return notification", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "arch-tech-automation-v1"
+}

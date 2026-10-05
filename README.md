@@ -9,7 +9,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
 ## Main Feature Areas
 
 1. **Public Development Portfolio**: Six official Garnier project references spanning free zones, corporate campuses, hospitality, social infrastructure and education, presented locally as an ARCH_TECH presentation/showcase prototype with a featured six-project carousel.
-2. **Multi-Role Client Portal**: Secure role-based portal (`Client`, `Architect`, `Admin`) backed by local snapshot state for tracking project milestones, document vaults, design approvals, and project updates.
+2. **Multi-Role Client Portal**: React Router role-based portal (`Client`, `Architect`, `Admin`) backed by a typed service layer, JSON Server-compatible API boundary and local snapshot fallback for tracking project milestones, document vaults, design approvals, and project updates.
 3. **OpenBIM Engineering Workspace**: Desktop-first web CAD environment for real `.ifc` files:
    - **Visualization & Inspection**: Spatial BIM tree, property sets (Psets, Qto), 2D floor plans, 3D section planes (X/Y/Z clipping), length measurement.
    - **Analysis & Filtering**: Quantity/area/volume metrics, type/storey/category filtering.
@@ -18,6 +18,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
    - **Parametric Building Generation**: Authentic IFC4 STEP-21 model authoring directly from parametric massing plans.
    - **AI Assistant**: Deterministic offline AI agent with explicit human confirmation gates for WRITE operations.
 4. **Landing + SpatialRail Media**: The public landing uses a keyboard-accessible, reduced-motion-aware featured-project carousel, an editorial About section, a stable leadership grid and the D1 Solid → Wireframe ARCH_TECH mark. Project dossiers retain the custom scroll-snap gallery rail and fullscreen lightbox inspection viewer for technical project media.
+5. **Operational Portal Services**: Project/user/auth/notification services support runtime CRUD, registration, role-scoped access, external Open-Meteo context, n8n AI/automation webhooks with deterministic fallback, live portfolio progress charts and persistent portal text scaling.
 
 ---
 
@@ -88,6 +89,9 @@ npm install
 # Start local development server
 npm run dev
 
+# Start JSON Server for the optional HTTP-backed local environment
+npm run server
+
 # Run unit / domain tests (Vitest)
 npm test
 
@@ -103,4 +107,5 @@ npm run build
 ## Current Development Status & Handoff Context
 
 - **Current Status**: All Phase 6A (Viewport), Phase 6B.1 (IFC4 Generation), Phase 6B.2 (Detached IFC Persistence), Landing/Portal Redesign, official Garnier showcase carousel, and SpatialRail Media Integration phases are **COMPLETE**.
+- **Portal workflow status**: React Router routes and reusable auth/role/project guards are active; local registration, Admin user/project management, JSON Server service fallbacks, external context loading and n8n integration points are available. Configure optional endpoints from `.env.example`.
 - **Detailed Handoff**: For complete handoff details, architecture invariants, known issues, and current priorities, refer to [PROJECT_STATE.md](PROJECT_STATE.md).

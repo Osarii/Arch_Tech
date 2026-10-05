@@ -37,7 +37,7 @@ export type PortalUser = {
   status: 'active' | 'inactive';
 };
 
-type PortalProjectRecord = {
+export type PortalProjectRecord = {
   id: string;
   code: string;
   title: string;
@@ -358,8 +358,70 @@ export const addPortalMilestone = (milestone: ProjectMilestone) => updatePortalD
 export const addPortalDocument = (document: ProjectDocument) => updatePortalDatabase((current) => ({ ...current, documents: [...current.documents, document] }));
 export const addPortalApproval = (approval: ProjectApproval) => updatePortalDatabase((current) => ({ ...current, approvals: [...current.approvals, approval] }));
 export const updatePortalUser = (id: string, changes: Partial<PortalUser>) => updatePortalDatabase((current) => ({ ...current, users: current.users.map((user) => user.id === id ? { ...user, ...changes } : user) }));
-export const createPortalProject = (project: PortalProjectRecord) => updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { ...project, published: project.published === true }] }));
 
+export type CreatePortalProjectInput = Pick<PortalProjectRecord, 'title' | 'category' | 'phase' | 'progress'> & Partial<Pick<PortalProjectRecord, 'code' | 'nextMilestone' | 'summary' | 'statement' | 'image' | 'market' | 'developmentType' | 'context' | 'scale' | 'longView' | 'published'>>;
+export type CreatePortalUserInput = Pick<PortalUser, 'name' | 'email' | 'password'> & Partial<Pick<PortalUser, 'role' | 'status' | 'projectIds'>>;
+
+const createRuntimeId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+
+export const createPortalProject = (input: CreatePortalProjectInput): PortalProject => {
+  const id = createRuntimeId('admin-project');
+  const project: PortalProjectRecord = {
+    id,
+    code: input.code?.trim() || `AT / ${String(getPortalSnapshot().projects.length + 1).padStart(2, '0')}`,
+    title: input.title.trim(),
+    category: input.category.trim(),
+    phase: input.phase.trim(),
+    progress: Math.max(0, Math.min(100, Number(input.progress))),
+    nextMilestone: input.nextMilestone?.trim() || 'Project review to be scheduled',
+    summary: input.summary?.trim() || 'Runtime development project created in the ARCH_TECH portal.',
+    statement: input.statement?.trim() || 'A project record ready for coordinated development delivery.',
+    image: input.image?.startsWith('/projects/') ? input.image : '',
+    market: input.market?.trim() || 'Costa Rica',
+    developmentType: input.developmentType?.trim() || input.category.trim(),
+    context: input.context?.trim() || 'Portal project',
+    scale: input.scale?.trim() || 'To be defined',
+    published: input.published === true,
+  };
+  updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, project] }));
+  return getPortalSnapshot().projects.find((candidate) => candidate.id === id)!;
+};
+
+export const isCanonicalPortalProject = (id: string) => portalDb.projects.some((project) => project.id === id);
+
+export const deletePortalProject = (id: string): boolean => {
+  if (isCanonicalPortalProject(id)) return false;
+  const exists = getPortalSnapshot().db.projects.some((project) => project.id === id);
+  if (!exists) return false;
+  updatePortalDatabase((current) => ({
+    ...current,
+    projects: current.projects.filter((project) => project.id !== id),
+    updates: current.updates.filter((record) => record.projectId !== id),
+    milestones: current.milestones.filter((record) => record.projectId !== id),
+    documents: current.documents.filter((record) => record.projectId !== id),
+    approvals: current.approvals.filter((record) => record.projectId !== id),
+    notifications: current.notifications.filter((record) => record.projectId !== id),
+    users: current.users.map((user) => ({ ...user, projectIds: user.projectIds.filter((projectId) => projectId !== id) })),
+  }));
+  return true;
+};
+
+export const createPortalUser = (input: CreatePortalUserInput): PortalUser => {
+  const email = input.email.trim().toLowerCase();
+  if (!input.name.trim() || !email || !input.password) throw new Error('Name, email and password are required.');
+  if (getPortalSnapshot().db.users.some((user) => user.email.toLowerCase() === email)) throw new Error('An account with this email already exists.');
+  const user: PortalUser = {
+    id: createRuntimeId('portal-user'),
+    name: input.name.trim(),
+    email,
+    password: input.password,
+    role: input.role ?? 'client',
+    status: input.status ?? 'active',
+    projectIds: input.projectIds ?? [],
+  };
+  updatePortalDatabase((current) => ({ ...current, users: [...current.users, user] }));
+  return user;
+};
 export const getPortalUser = (email: string) => readPortalDatabase().users.find((user) => user.email === email);
 
 export const portalProjects: PortalProject[] = getPortalSnapshot().projects;

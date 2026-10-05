@@ -7,6 +7,7 @@ import {
 import { ToolRegistry } from '@/bim/ai/ToolRegistry';
 import { AIProvider, RuleBasedProvider } from '@/bim/ai/providers/RuleBasedProvider';
 import { useBimStore } from '@/stores/bimStore';
+import { aiService } from '@/services/aiService';
 
 export class AIAgent {
   private static instance: AIAgent;
@@ -212,12 +213,22 @@ export class AIAgent {
     this.notify();
 
     const context = this.getActiveContext();
-    const providerResponse = await this.provider.generateResponse(
-      content,
-      this.messages,
-      ToolRegistry.getAllTools(),
-      context
-    );
+    let providerResponse;
+    if (aiService.isConfigured()) {
+      try {
+        providerResponse = await aiService.generateResponse({
+          userPrompt: content,
+          messages: this.messages,
+          tools: ToolRegistry.getAllTools(),
+          context,
+        });
+      } catch {
+        const fallback = await this.provider.generateResponse(content, this.messages, ToolRegistry.getAllTools(), context);
+        providerResponse = { ...fallback, message: `${fallback.message}\n\nRemote AI unavailable; deterministic fallback used.` };
+      }
+    } else {
+      providerResponse = await this.provider.generateResponse(content, this.messages, ToolRegistry.getAllTools(), context);
+    }
 
     let proposal: PendingWriteProposal | undefined;
     const executedToolCalls: any[] = [];
