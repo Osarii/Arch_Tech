@@ -198,7 +198,7 @@
       "projectId": "zona-franca-la-lima",
       "date": "04 OCT 2026",
       "title": "Showcase media review",
-      "body": "Official portfolio imagery and public facts are ready for the ARCH_TECH presentation prototype."
+      "body": "Official portfolio imagery and public facts are ready for the ARCH_TECH Concept Showcase."
     },
     {
       "projectId": "zona-franca-la-lima",
@@ -210,7 +210,7 @@
       "projectId": "el-cafetal",
       "date": "29 SEP 2026",
       "title": "Showcase media review",
-      "body": "Corporate campus imagery is staged for the presentation prototype."
+      "body": "Corporate campus imagery is staged for the ARCH_TECH Concept Showcase."
     },
     {
       "projectId": "santa-ana-country-club",
@@ -234,7 +234,7 @@
       "projectId": "universidad-latina",
       "date": "18 SEP 2026",
       "title": "Showcase media review",
-      "body": "Educational campus imagery is staged for the presentation prototype."
+      "body": "Educational campus imagery is staged for the ARCH_TECH Concept Showcase."
     }
   ],
   "milestones": [
@@ -333,62 +333,62 @@
     {
       "projectId": "zona-franca-la-lima",
       "name": "Official project reference",
-      "meta": "Showcase prototype · public source"
+      "meta": "Concept Showcase · public source"
     },
     {
       "projectId": "el-cafetal",
       "name": "Official project reference",
-      "meta": "Showcase prototype · public source"
+      "meta": "Concept Showcase · public source"
     },
     {
       "projectId": "santa-ana-country-club",
       "name": "Official project reference",
-      "meta": "Showcase prototype · public source"
+      "meta": "Concept Showcase · public source"
     },
     {
       "projectId": "waldorf-astoria",
       "name": "Official project reference",
-      "meta": "Showcase prototype · public source"
+      "meta": "Concept Showcase · public source"
     },
     {
       "projectId": "centro-corporativo-sabana",
       "name": "Official project reference",
-      "meta": "Showcase prototype · public source"
+      "meta": "Concept Showcase · public source"
     },
     {
       "projectId": "universidad-latina",
       "name": "Official project reference",
-      "meta": "Showcase prototype · public source"
+      "meta": "Concept Showcase · public source"
     },
     {
       "projectId": "zona-franca-la-lima",
       "name": "Local media mapping",
-      "meta": "Showcase prototype · ARCH_TECH"
+      "meta": "Concept coordination · ARCH_TECH"
     },
     {
       "projectId": "el-cafetal",
       "name": "Local media mapping",
-      "meta": "Showcase prototype · ARCH_TECH"
+      "meta": "Concept coordination · ARCH_TECH"
     },
     {
       "projectId": "santa-ana-country-club",
       "name": "Local media mapping",
-      "meta": "Showcase prototype · ARCH_TECH"
+      "meta": "Concept coordination · ARCH_TECH"
     },
     {
       "projectId": "waldorf-astoria",
       "name": "Local media mapping",
-      "meta": "Showcase prototype · ARCH_TECH"
+      "meta": "Concept coordination · ARCH_TECH"
     },
     {
       "projectId": "centro-corporativo-sabana",
       "name": "Local media mapping",
-      "meta": "Showcase prototype · ARCH_TECH"
+      "meta": "Concept coordination · ARCH_TECH"
     },
     {
       "projectId": "universidad-latina",
       "name": "Local media mapping",
-      "meta": "Showcase prototype · ARCH_TECH"
+      "meta": "Concept coordination · ARCH_TECH"
     }
   ],
   "approvals": [

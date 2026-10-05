@@ -2,15 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, Box, FileText, LogOut, Moon, Sun, X } from 'lucide-react';
 import { portalAuth } from '../../portal/demoAuth';
 import {
-  addPortalApproval,
-  addPortalDocument,
-  addPortalMilestone,
-  addPortalUpdate,
   getPublicProject,
   getPortalSnapshot,
   getProjectsForUser,
-  updatePortalApproval,
   PortalProject,
+  ProjectApproval,
   PortalRole,
   getPortalUser,
 } from '../../portal/data';
@@ -21,6 +17,7 @@ import { authService } from '../../services/authService';
 import { externalContextService, type ExternalContext } from '../../services/externalContextService';
 import { automationService } from '../../services/automationService';
 import { projectService } from '../../services/projectService';
+import { projectWorkflowService } from '../../services/projectWorkflowService';
 import { userService } from '../../services/userService';
 
 type Navigate = (path: string) => void;
@@ -279,6 +276,8 @@ const ExternalContextPanel: React.FC = () => {
 
 export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
+  const [operationFeedback, setOperationFeedback] = useState('');
+  const [operationFailed, setOperationFailed] = useState(false);
   const client = getPortalUser(portalAuth.getSession()?.email ?? '');
   const projects = snapshot.projects.filter((project) => !project.archived && client?.projectIds.includes(project.id));
   const updates = projects.flatMap((project) => project.updates.map((update) => ({ ...update, projectTitle: project.title }))).slice(0, 5);
@@ -290,9 +289,17 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
     if (!projectService.isRemote()) return;
     void Promise.all([projectService.list(), userService.list()]).then(refresh);
   }, []);
-  const respondToApproval = (projectId: string, title: string, status: 'Approved' | 'Rejected') => {
-    updatePortalApproval(projectId, title, status);
-    refresh();
+  const respondToApproval = async (projectId: string, title: string, status: 'Approved' | 'Rejected') => {
+    try {
+      const updated = await projectWorkflowService.updateApproval(projectId, title, status);
+      if (!updated) throw new Error('Approval could not be read back after saving.');
+      setOperationFailed(false);
+      setOperationFeedback(status === 'Approved' ? 'Approval recorded.' : 'Changes requested.');
+      refresh();
+    } catch (error) {
+      setOperationFailed(true);
+      setOperationFeedback(error instanceof Error ? error.message : 'Approval could not be saved.');
+    }
   };
 
   return (
@@ -326,6 +333,7 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
         <section className="grid gap-12 border-t border-black/15 py-12 lg:grid-cols-[1fr_1fr]" aria-label="Client decisions">
           <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring your attention</p>{pendingApprovals.length ? pendingApprovals.map((approval) => <div key={`${approval.projectId}-${approval.title}`} className="mt-6 border-b border-black/10 pb-5"><div className="flex items-start justify-between gap-6"><div><p className="font-serif text-2xl">{approval.title}</p><p className="mt-1 text-xs text-stone-500">{approval.projectTitle}</p></div><span className="portal-status-pending font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Pending</span></div><div className="mt-4 flex gap-2"><button onClick={() => respondToApproval(approval.projectId, approval.title, 'Approved')} className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white">Approve</button><button onClick={() => respondToApproval(approval.projectId, approval.title, 'Rejected')} className="border border-black/20 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]">Request changes</button></div></div>) : <p className="mt-6 text-sm leading-6 text-stone-600">No decisions are waiting for you.</p>}</div>
           <div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>{upcomingMilestones.length ? upcomingMilestones.map((milestone) => <p key={`${milestone.projectId}-${milestone.label}`} className="mt-6 flex justify-between gap-5 text-sm"><span>{milestone.projectTitle} · {milestone.label}</span><span className="font-mono text-[9px] uppercase text-stone-500">Upcoming</span></p>) : <p className="mt-6 text-sm text-stone-600">Milestones will appear here as projects advance.</p>}</div>
+          {operationFeedback && <p role={operationFailed ? 'alert' : 'status'} className="col-span-full text-sm text-stone-600">{operationFeedback}</p>}
         </section>
 
         <section id="portal-section-updates" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2">
@@ -357,7 +365,8 @@ export const ArchitectDashboardPage: React.FC<NavigationProps & { onSignOut: () 
   const [, setRemoteVersion] = useState(0);
   const architect = getPortalUser(portalAuth.getSession()?.email ?? '');
   const projects = getProjectsForUser(architect?.id ?? '');
-  const attention = projects.filter((project) => project.progress < 50 || project.approvals.some((approval) => approval.status === 'Pending'));
+  const projectsForReview = projects.filter((project) => project.approvals.some((approval) => approval.status === 'Pending'));
+  const averageProgress = projects.length ? Math.round(projects.reduce((total, project) => total + project.progress, 0) / projects.length) : 0;
   const milestones = projects.flatMap((project) => project.milestones.filter((milestone) => milestone.status !== 'Complete').map((milestone) => ({ ...milestone, projectTitle: project.title })));
   const approvals = projects.flatMap((project) => project.approvals.filter((approval) => approval.status === 'Pending').map((approval) => ({ ...approval, projectTitle: project.title })));
   const activity = projects.flatMap((project) => project.updates.map((update) => ({ ...update, projectTitle: project.title }))).slice(0, 5);
@@ -369,9 +378,9 @@ export const ArchitectDashboardPage: React.FC<NavigationProps & { onSignOut: () 
     <div className="portal-surface h-screen overflow-y-auto bg-[#D6CBB9] text-[#211E1A]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/architect" role="architect" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
         <div className="border-b border-black/15 pb-12"><p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Architect workspace / Assigned projects</p><h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Work in progress.</h1><p className="mt-6 max-w-xl text-sm leading-6 text-stone-600">A focused view of the projects, decisions and deliverables currently assigned to this studio.</p></div>
-        <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Architect workload"><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Assigned workload</p><p className="mt-3 font-serif text-3xl">{projects.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">active projects</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Attention</p><p className="mt-3 font-serif text-3xl">{attention.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">projects to review</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Client decisions</p><p className="mt-3 font-serif text-3xl">{approvals.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">responses pending</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Next milestones</p><p className="mt-3 font-serif text-3xl">{milestones.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">in the active sequence</p></div></section>
-        <section id="portal-section-projects" className="py-12"><div className="mb-8 flex items-center justify-between"><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Assigned projects</h2><span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active · {attention.length.toString().padStart(2, '0')} need attention</span></div><div className="divide-y divide-black/15 border-y border-black/15">{projects.map((project) => <article key={project.id} className="grid gap-5 py-5 lg:grid-cols-[minmax(0,1fr)_170px_auto] lg:items-center"><ProjectIdentityButton project={project} onNavigate={onNavigate} detailPath={(id) => `/architect/projects/${id}`} meta={<>{project.phase} · {project.progress}%</>} /><div><p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500"><span>Progress</span><span>{project.progress}%</span></p><div className="portal-progress-track h-px bg-black/15"><div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} /></div><p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p>{project.approvals.some((approval) => approval.status === 'Pending') && <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase">Client response pending</p>}</div><div className="flex gap-2 lg:justify-end"><button onClick={() => onNavigate(`/architect/projects/${project.id}`)} className="border border-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]">Open project</button><button onClick={() => onNavigate('/workspace')} className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white">3D model</button></div></article>)}</div></section>
-        <section id="portal-section-activity" className="grid gap-10 border-t border-black/15 pt-12 lg:grid-cols-3"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Attention needed</p>{attention.length ? attention.map((project) => <button key={project.id} data-testid={`architect-attention-${project.id}`} onClick={() => onNavigate(`/architect/projects/${project.id}`)} className="mt-5 block w-full text-left font-serif text-2xl hover:text-stone-500">{project.title}</button>) : <p className="mt-5 text-sm text-stone-600">All assigned projects are moving to plan.</p>}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>{milestones.slice(0, 4).map((milestone) => <button key={`${milestone.projectId}-${milestone.label}`} onClick={() => onNavigate(`/architect/projects/${milestone.projectId}`)} className="mt-5 flex w-full justify-between gap-4 text-left text-sm hover:text-stone-500"><span>{milestone.projectTitle} · {milestone.label}</span><span className={`${portalStatusClass(milestone.status)} font-mono text-[9px] uppercase text-stone-500`}>{milestone.status}</span></button>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Pending client approvals</p>{approvals.map((approval) => <button key={`${approval.projectId}-${approval.title}`} data-testid={`architect-approval-${approval.projectId}`} onClick={() => onNavigate(`/architect/projects/${approval.projectId}`)} className="mt-5 block w-full text-left text-sm hover:text-stone-500">{approval.projectTitle} · {approval.title}</button>)}</div></section>
+        <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Architect workload"><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Assigned workload</p><p className="mt-3 font-serif text-3xl">{projects.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">active projects</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Average progress</p><p className="mt-3 font-serif text-3xl">{averageProgress}%</p><p className="mt-1 text-xs text-stone-600">across assigned work</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Client decisions</p><p className="mt-3 font-serif text-3xl">{approvals.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">responses pending</p></div><div className="portal-overview-tile bg-[#E6DED2] p-5"><p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Next milestones</p><p className="mt-3 font-serif text-3xl">{milestones.length.toString().padStart(2, '0')}</p><p className="mt-1 text-xs text-stone-600">in the active sequence</p></div></section>
+        <section id="portal-section-projects" className="py-12"><div className="mb-8 flex items-center justify-between"><h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Assigned projects</h2><span className="font-mono text-[10px] text-stone-500">{projects.length.toString().padStart(2, '0')} active · {projectsForReview.length.toString().padStart(2, '0')} decisions pending</span></div><div className="divide-y divide-black/15 border-y border-black/15">{projects.map((project) => <article key={project.id} className="grid gap-5 py-5 lg:grid-cols-[minmax(0,1fr)_170px_auto] lg:items-center"><ProjectIdentityButton project={project} onNavigate={onNavigate} detailPath={(id) => `/architect/projects/${id}`} meta={<>{project.phase} · {project.progress}%</>} /><div><p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500"><span>Progress</span><span>{project.progress}%</span></p><div className="portal-progress-track h-px bg-black/15"><div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} /></div><p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p>{project.approvals.some((approval) => approval.status === 'Pending') && <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase">Client response pending</p>}</div><div className="flex gap-2 lg:justify-end"><button onClick={() => onNavigate(`/architect/projects/${project.id}`)} className="border border-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]">Open project</button><button onClick={() => onNavigate('/workspace')} className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white">3D model</button></div></article>)}</div></section>
+        <section id="portal-section-activity" className="grid gap-10 border-t border-black/15 pt-12 lg:grid-cols-3"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring review</p>{projectsForReview.length ? projectsForReview.map((project) => <button key={project.id} data-testid={`architect-review-${project.id}`} onClick={() => onNavigate(`/architect/projects/${project.id}`)} className="mt-5 block w-full text-left font-serif text-2xl hover:text-stone-500">{project.title}</button>) : <p className="mt-5 text-sm text-stone-600">No project decisions are waiting for review.</p>}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>{milestones.slice(0, 4).map((milestone) => <button key={`${milestone.projectId}-${milestone.label}`} onClick={() => onNavigate(`/architect/projects/${milestone.projectId}`)} className="mt-5 flex w-full justify-between gap-4 text-left text-sm hover:text-stone-500"><span>{milestone.projectTitle} · {milestone.label}</span><span className={`${portalStatusClass(milestone.status)} font-mono text-[9px] uppercase text-stone-500`}>{milestone.status}</span></button>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Pending client approvals</p>{approvals.map((approval) => <button key={`${approval.projectId}-${approval.title}`} data-testid={`architect-approval-${approval.projectId}`} onClick={() => onNavigate(`/architect/projects/${approval.projectId}`)} className="mt-5 block w-full text-left text-sm hover:text-stone-500">{approval.projectTitle} · {approval.title}</button>)}</div></section>
         <section className="grid gap-10 border-t border-black/15 pt-12 lg:grid-cols-2"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent project activity</p>{activity.map((update) => <button key={`${update.projectId}-${update.date}-${update.title}`} onClick={() => onNavigate(`/architect/projects/${update.projectId}`)} className="mt-5 flex w-full justify-between gap-4 text-left text-sm hover:text-stone-500"><span>{update.projectTitle} · {update.title}</span><span className="font-mono text-[9px] text-stone-500">{update.date}</span></button>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Tasks / deliverables</p>{projects.flatMap((project) => project.documents.slice(0, 2).map((document) => <button key={`${project.id}-${document.name}`} onClick={() => onNavigate(`/architect/projects/${project.id}`)} className="mt-5 flex w-full justify-between gap-4 text-left text-sm hover:text-stone-500"><span>{project.title} · {document.name}</span><span className="font-mono text-[9px] uppercase text-stone-500">Issue</span></button>))}</div></section>
         <section id="portal-section-milestones" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Milestones</p>{milestones.map((milestone) => <button key={`${milestone.projectId}-${milestone.label}`} onClick={() => onNavigate(`/architect/projects/${milestone.projectId}`)} className="mt-4 flex w-full justify-between text-left text-sm hover:text-stone-500"><span>{milestone.projectTitle} · {milestone.label}</span><span className="font-mono text-[9px] uppercase text-stone-500">{milestone.status}</span></button>)}</section>
         <section id="portal-section-documents" className="border-t border-black/15 pt-10"><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Documents</p>{projects.flatMap((project) => project.documents.map((document) => <button key={`${project.id}-${document.name}`} onClick={() => onNavigate(`/architect/projects/${project.id}`)} className="mt-4 block w-full text-left text-sm hover:text-stone-500">{project.title} · {document.name}</button>))}</section>
@@ -599,6 +608,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
   const [documentName, setDocumentName] = useState('');
   const [approvalTitle, setApprovalTitle] = useState('');
   const [operationFeedback, setOperationFeedback] = useState('');
+  const [operationFailed, setOperationFailed] = useState(false);
   const tabs = ['Overview', 'Updates', 'Milestones', 'Documents', 'Approvals', 'Model'];
   const project = snapshot.projects.find((candidate) => candidate.id === projectId);
   const canManage = role === 'architect' || role === 'admin';
@@ -629,16 +639,86 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
       const updated = await projectService.update(projectId, changes);
       if (!updated) throw new Error('Project status could not be read back from the API.');
       await automationService.emit({ event: 'project.updated', projectId, metadata: changes });
+      setOperationFailed(false);
       setOperationFeedback('Project status saved.');
       refresh();
     } catch (error) {
+      setOperationFailed(true);
       setOperationFeedback(error instanceof Error ? error.message : 'Project status could not be saved.');
     }
   };
-  const addUpdate = () => { const title = updateTitle.trim(); const body = updateBody.trim(); if (!title || !body) return; addPortalUpdate({ projectId, date: formatPortalDate(new Date()), title, body }); void automationService.emit({ event: 'project.updated', projectId, message: title }); setUpdateTitle(''); setUpdateBody(''); setOperationFeedback('Project update published.'); refresh(); };
-  const addMilestone = () => { const label = milestone.trim(); if (!label) return; addPortalMilestone({ projectId, label, status: 'Upcoming' }); setMilestone(''); refresh(); };
-  const addDocument = () => { const name = documentName.trim(); if (!name) return; addPortalDocument({ projectId, name, meta: 'PDF · Added in portal' }); setDocumentName(''); refresh(); };
-  const requestApproval = () => { const title = approvalTitle.trim(); if (!title) return; addPortalApproval({ projectId, title, status: 'Pending' }); void automationService.emit({ event: 'approval.requested', projectId, message: title }); setApprovalTitle(''); setOperationFeedback('Approval request sent.'); refresh(); };
+  const addUpdate = async () => {
+    const title = updateTitle.trim();
+    const body = updateBody.trim();
+    if (!title || !body) return;
+    try {
+      await projectWorkflowService.addUpdate({ projectId, date: formatPortalDate(new Date()), title, body });
+      void automationService.emit({ event: 'project.updated', projectId, message: title });
+      setUpdateTitle('');
+      setUpdateBody('');
+      setOperationFailed(false);
+      setOperationFeedback('Project update published.');
+      refresh();
+    } catch (error) {
+      setOperationFailed(true);
+      setOperationFeedback(error instanceof Error ? error.message : 'Project update could not be published.');
+    }
+  };
+  const addMilestone = async () => {
+    const label = milestone.trim();
+    if (!label) return;
+    try {
+      await projectWorkflowService.addMilestone({ projectId, label, status: 'Upcoming' });
+      setMilestone('');
+      setOperationFailed(false);
+      setOperationFeedback('Milestone added.');
+      refresh();
+    } catch (error) {
+      setOperationFailed(true);
+      setOperationFeedback(error instanceof Error ? error.message : 'Milestone could not be added.');
+    }
+  };
+  const addDocument = async () => {
+    const name = documentName.trim();
+    if (!name) return;
+    try {
+      await projectWorkflowService.addDocument({ projectId, name, meta: 'PDF · Added in portal' });
+      setDocumentName('');
+      setOperationFailed(false);
+      setOperationFeedback('Document added.');
+      refresh();
+    } catch (error) {
+      setOperationFailed(true);
+      setOperationFeedback(error instanceof Error ? error.message : 'Document could not be added.');
+    }
+  };
+  const requestApproval = async () => {
+    const title = approvalTitle.trim();
+    if (!title) return;
+    try {
+      await projectWorkflowService.requestApproval({ projectId, title, status: 'Pending' });
+      void automationService.emit({ event: 'approval.requested', projectId, message: title });
+      setApprovalTitle('');
+      setOperationFailed(false);
+      setOperationFeedback('Approval request sent.');
+      refresh();
+    } catch (error) {
+      setOperationFailed(true);
+      setOperationFeedback(error instanceof Error ? error.message : 'Approval request could not be sent.');
+    }
+  };
+  const respondToProjectApproval = async (title: string, status: ProjectApproval['status']) => {
+    try {
+      const updated = await projectWorkflowService.updateApproval(projectId, title, status);
+      if (!updated) throw new Error('Approval could not be read back after saving.');
+      setOperationFailed(false);
+      setOperationFeedback(status === 'Approved' ? 'Approval resolved.' : status === 'Rejected' ? 'Changes requested.' : 'Approval reopened.');
+      refresh();
+    } catch (error) {
+      setOperationFailed(true);
+      setOperationFeedback(error instanceof Error ? error.message : 'Approval could not be saved.');
+    }
+  };
   const deleteProject = async () => {
     if (role !== 'admin' || !window.confirm('Delete this runtime project and its related records?')) return;
     try {
@@ -682,7 +762,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
         </div>
 
         <ProjectNavigation previous={previousProject} next={nextProject} onNavigate={onNavigate} role={role} />
-        {operationFeedback && <p role="status" className="mt-5 text-sm text-stone-600">{operationFeedback}</p>}
+        {operationFeedback && <p role={operationFailed ? 'alert' : 'status'} className="mt-5 text-sm text-stone-600">{operationFeedback}</p>}
 
         <div className="flex gap-7 overflow-x-auto border-b border-black/15 py-5">
           {tabs.map((tab) => (
@@ -717,7 +797,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
           )}
           {activeTab === 'Approvals' && (
             <div className="divide-y divide-black/15 border-y border-black/15">
-              {project.approvals.length ? project.approvals.map((approval) => <div key={approval.title} className="flex items-center justify-between gap-6 py-6"><p className="font-serif text-2xl">{approval.title}</p><span className="flex items-center gap-3"><span className={`${portalStatusClass(approval.status)} font-mono text-[9px] uppercase tracking-wider`}>{approval.status}</span>{role === 'client' && approval.status === 'Pending' && <><button onClick={() => { updatePortalApproval(projectId, approval.title, 'Approved'); refresh(); }} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">Approve</button><button onClick={() => { updatePortalApproval(projectId, approval.title, 'Rejected'); refresh(); }} className="border border-black/15 px-3 py-2 font-mono text-[9px] uppercase text-stone-500">Reject</button></>}{canManage && <button onClick={() => { updatePortalApproval(projectId, approval.title, approval.status === 'Approved' ? 'Pending' : 'Approved'); refresh(); }} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">{approval.status === 'Approved' ? 'Reopen' : 'Resolve'}</button>}</span></div>) : <PortalEmptyState message="No approvals are currently associated with this project." />}
+              {project.approvals.length ? project.approvals.map((approval) => <div key={approval.title} className="flex items-center justify-between gap-6 py-6"><p className="font-serif text-2xl">{approval.title}</p><span className="flex items-center gap-3"><span className={`${portalStatusClass(approval.status)} font-mono text-[9px] uppercase tracking-wider`}>{approval.status}</span>{role === 'client' && approval.status === 'Pending' && <><button onClick={() => void respondToProjectApproval(approval.title, 'Approved')} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">Approve</button><button onClick={() => void respondToProjectApproval(approval.title, 'Rejected')} className="border border-black/15 px-3 py-2 font-mono text-[9px] uppercase text-stone-500">Reject</button></>}{canManage && <button onClick={() => void respondToProjectApproval(approval.title, approval.status === 'Approved' ? 'Pending' : 'Approved')} className="border border-black px-3 py-2 font-mono text-[9px] uppercase">{approval.status === 'Approved' ? 'Reopen' : 'Resolve'}</button>}</span></div>) : <PortalEmptyState message="No approvals are currently associated with this project." />}
             </div>
           )}
           {activeTab === 'Model' && (

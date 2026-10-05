@@ -1,4 +1,4 @@
-import { getPortalSnapshot, updatePortalDatabase, type PortalDatabase } from '../portal/data';
+import { createPortalRecordId, getPortalSnapshot, updatePortalDatabase, type PortalDatabase } from '../portal/data';
 import { apiClient, getApiBaseUrl } from './apiClient';
 
 export type PortalNotification = PortalDatabase['notifications'][number];
@@ -13,6 +13,6 @@ export const notificationService = {
       updatePortalDatabase((current) => ({ ...current, notifications: [...current.notifications, notification] }));
       return notification;
     }
-    return apiClient.post<PortalNotification>('/notifications', notification);
+    return apiClient.post<PortalNotification>('/notifications', { id: createPortalRecordId('portal-notification'), ...notification });
   },
 };

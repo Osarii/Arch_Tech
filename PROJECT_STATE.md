@@ -49,7 +49,8 @@ Optional local HTTP persistence is available through `npm run server` (JSON Serv
 - **Admin Operations**: Active projects expose objective KPIs, a responsive progress chart, search/filter/sort, runtime project creation/deletion with canonical showcase protection, user creation, role/status controls and assignments.
 - **External Context**: Admin can request live Costa Rica weather context from Open-Meteo with visible loading/error states.
 - **Persistent Preferences**: Portal text scale options (100%, 112.5%, 125%) persist under `arch-tech-portal-text-scale` alongside the existing Light/Dark theme preference.
-- **HTTP Mode**: With `VITE_API_BASE_URL`, the service layer treats JSON Server as authoritative, synchronizes the local snapshot cache after reads/writes, and reconciles project relations on deletion. Without it, the same UI uses the local fallback.
+- **HTTP Mode**: With `VITE_API_BASE_URL`, the service layer treats JSON Server as authoritative, synchronizes the local snapshot cache after reads/writes, and reconciles project relations on deletion. Project updates, milestones, documents and approvals use `projectWorkflowService` for HTTP CRUD with stable relation IDs and the same local fallback. Without the variable, the same UI uses the local fallback.
+- **Implemented vs External Setup**: React Router, auth/register, role guards, HTTP relation CRUD, objective metrics, accessibility, Vitest coverage and deterministic AI fallback are implemented in code. Imported/active n8n workflows, webhook URLs, LLM credentials and live remote AI execution remain external setup and were not run here.
 - **n8n Status**: Both workflows are importable JSON definitions with validated contracts and no committed credentials. Live LLM/webhook execution requires external n8n configuration and was not run here.
 
 ---
@@ -78,7 +79,7 @@ The authorized showcase portfolio uses six current projects from Garnier & Garni
 4. **Waldorf Astoria** (`waldorf-astoria`) — hotel and residences.
 5. **Centro Corporativo La Sabana** (`centro-corporativo-sabana`) — corporate office center.
 6. **Universidad Latina** (`universidad-latina`) — educational campus.
-Project facts and public photography are source-oriented. ARCH_TECH workflow updates, milestones, approvals and access assignments remain prototype coordination data.
+Project facts and public photography are source-oriented. ARCH_TECH workflow updates, milestones, approvals and access assignments remain concept coordination data.
 
 ---
 
@@ -157,7 +158,7 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - **ARCH_TECH Brand Mark**: D1 Solid → Wireframe is the selected identity direction. `src/components/brand/ArchTechLogo.tsx` provides a reusable vector mark/full lockup that moves from solid architectural faces into restrained modeling construction lines, expressing physical structure → digital model.
 - **Portfolio Asset Pipeline**: Canonical image packs and official Garnier showcase media integrated; schema v3 migration completed.
 - **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient presentation auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
-- **Portal Application Architecture**: React Router migration, reusable protected/role/project guards, typed services with local fallback, JSON Server setup, external context integration, runtime project/user management, live Admin chart, persistent text scaling and n8n AI/automation workflow definitions.
+- **Portal Application Architecture**: React Router migration, reusable protected/role/project guards, typed services with local fallback, JSON Server setup, synchronized project relation CRUD, external context integration, runtime project/user management, objective Admin/Architect metrics, persistent text scaling and n8n AI/automation workflow definitions.
 
 ---
 
@@ -197,7 +198,7 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint`).
-- **Vitest Unit/Domain Tests**: **181 / 181 PASSED** across 16 test files.
+- **Vitest Unit/Domain Tests**: **184 / 184 PASSED** across 16 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, full OpenBIM workflow and AI confirmation flows.
 - **Git Diff**: The current worktree is verified with `git diff --check` after the HTTP/n8n changes.

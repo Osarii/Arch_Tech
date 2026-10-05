@@ -275,7 +275,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(getPortalSnapshot().db.users).toEqual(expect.arrayContaining([expect.objectContaining({ email: 'new.client@arch-tech.studio', role: 'client', status: 'active', projectIds: [] })]));
   });
 
-  it('shows client projects, progress, phase, milestone and latest updates', () => {
+  it('shows client projects, progress, phase, milestone and latest updates', async () => {
     portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
@@ -288,7 +288,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(document.querySelector('.portal-project-thumbnail')).toBeDefined();
     expect(screen.getAllByRole('button', { name: 'Approve' }).length).toBeGreaterThan(0);
     fireEvent.click(screen.getAllByRole('button', { name: 'Approve' })[0]);
-    expect(screen.getByText('No decisions are waiting for you.')).toBeDefined();
+    await waitFor(() => expect(screen.getByText('No decisions are waiting for you.')).toBeDefined());
   });
 
   it('limits architect data and exposes the admin register', () => {
@@ -748,11 +748,11 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.queryByText('Universidad Latina')).toBeNull();
   });
 
-  it('keeps client approvals actionable and gives staff management controls', () => {
+  it('keeps client approvals actionable and gives staff management controls', async () => {
     render(<DashboardProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="client" />);
     fireEvent.click(screen.getByTestId('project-tab-approvals'));
     fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
-    expect(screen.getByText('Approved')).toBeDefined();
+    await waitFor(() => expect(screen.getByText('Approved')).toBeDefined());
 
     cleanup();
     render(<DashboardProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
@@ -761,15 +761,19 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.change(screen.getByLabelText('Update title'), { target: { value: 'Coordination note' } });
     fireEvent.change(screen.getByLabelText('Update body'), { target: { value: 'Team review completed.' } });
     fireEvent.click(screen.getByRole('button', { name: 'Publish update' }));
+    await waitFor(() => expect(getPortalSnapshot().db.updates.some((update) => update.title === 'Coordination note')).toBe(true));
     fireEvent.click(screen.getByTestId('project-tab-updates'));
-    expect(screen.getByText('Coordination note')).toBeDefined();
+    await waitFor(() => expect(screen.getByText('Coordination note')).toBeDefined());
     expect(getPortalSnapshot().db.updates.find((update) => update.title === 'Coordination note')?.date).toBe(new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase());
     fireEvent.change(screen.getByLabelText('New milestone'), { target: { value: 'Coordination issue' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add milestone' }));
+    await waitFor(() => expect(getPortalSnapshot().db.milestones.some((milestone) => milestone.label === 'Coordination issue')).toBe(true));
     fireEvent.change(screen.getByLabelText('New document'), { target: { value: 'Coordination set' } });
     fireEvent.click(screen.getByRole('button', { name: 'Add document' }));
+    await waitFor(() => expect(getPortalSnapshot().db.documents.some((document) => document.name === 'Coordination set')).toBe(true));
     fireEvent.change(screen.getByLabelText('New approval'), { target: { value: 'Client coordination review' } });
     fireEvent.click(screen.getByRole('button', { name: 'Request approval' }));
+    await waitFor(() => expect(getPortalSnapshot().db.approvals.some((approval) => approval.title === 'Client coordination review')).toBe(true));
     fireEvent.click(screen.getByTestId('project-tab-milestones'));
     expect(screen.getByText('Coordination issue')).toBeDefined();
     fireEvent.click(screen.getByTestId('project-tab-documents'));

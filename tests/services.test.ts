@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { externalContextService } from '../src/services/externalContextService';
 import { projectService } from '../src/services/projectService';
+import { projectWorkflowService } from '../src/services/projectWorkflowService';
 import { createPortalUser, getPortalSnapshot } from '../src/portal/data';
 
 describe('portal service layer', () => {
@@ -132,5 +133,86 @@ describe('portal service layer', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ message: 'API unavailable' }), { status: 503 })));
     await expect(projectService.create({ title: 'Unavailable', category: 'Test', phase: 'Concept design', progress: 0 })).rejects.toThrow('API unavailable');
     expect(getPortalSnapshot().projects.some((project) => project.title === 'Unavailable')).toBe(false);
+  });
+
+  it('keeps project workflow mutations on the local fallback when HTTP is disabled', async () => {
+    await projectWorkflowService.addUpdate({ projectId: 'zona-franca-la-lima', date: '04 OCT 2026', title: 'Local update', body: 'Saved locally.' });
+    await projectWorkflowService.addMilestone({ projectId: 'zona-franca-la-lima', label: 'Local milestone', status: 'Upcoming' });
+    await projectWorkflowService.addDocument({ projectId: 'zona-franca-la-lima', name: 'Local document', meta: 'PDF' });
+    await projectWorkflowService.requestApproval({ projectId: 'zona-franca-la-lima', title: 'Local approval', status: 'Pending' });
+    await projectWorkflowService.updateApproval('zona-franca-la-lima', 'Showcase framing', 'Approved');
+
+    const snapshot = getPortalSnapshot().db;
+    expect(snapshot.updates).toEqual(expect.arrayContaining([expect.objectContaining({ title: 'Local update' })]));
+    expect(snapshot.milestones).toEqual(expect.arrayContaining([expect.objectContaining({ label: 'Local milestone' })]));
+    expect(snapshot.documents).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Local document' })]));
+    expect(snapshot.approvals).toEqual(expect.arrayContaining([expect.objectContaining({ title: 'Local approval', status: 'Pending' })]));
+    expect(snapshot.approvals).toEqual(expect.arrayContaining([expect.objectContaining({ title: 'Showcase framing', status: 'Approved' })]));
+  });
+
+  it('uses JSON Server for all project workflow relations, stable IDs and cache synchronization', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    const relations = {
+      updates: [] as Array<Record<string, unknown>>,
+      milestones: [] as Array<Record<string, unknown>>,
+      documents: [] as Array<Record<string, unknown>>,
+      approvals: [{ id: 'approval-1', projectId: 'zona-franca-la-lima', title: 'Remote approval', status: 'Pending' } as Record<string, unknown>],
+      notifications: [] as Array<Record<string, unknown>>,
+    };
+    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      const parsedUrl = new URL(url);
+      const path = parsedUrl.pathname.replace(/^\//, '') as keyof typeof relations;
+      const method = init?.method ?? 'GET';
+      if (method === 'GET' && path in relations) {
+        const records = path === 'approvals' && parsedUrl.searchParams.has('title')
+          ? relations.approvals.filter((approval) => approval.projectId === parsedUrl.searchParams.get('projectId') && approval.title === parsedUrl.searchParams.get('title'))
+          : relations[path];
+        return new Response(JSON.stringify(records), { status: 200 });
+      }
+      if (method === 'POST' && path in relations) {
+        const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+        relations[path].push(body);
+        return new Response(JSON.stringify(body), { status: 201 });
+      }
+      if (method === 'PATCH' && path === 'approvals') {
+        throw new Error('Approval PATCH must address a stable JSON Server record ID.');
+      }
+      if (method === 'PATCH' && parsedUrl.pathname === '/approvals/approval-1') {
+        const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+        relations.approvals[0] = { ...relations.approvals[0], ...body };
+        return new Response(JSON.stringify(relations.approvals[0]), { status: 200 });
+      }
+      throw new Error(`Unexpected request: ${method} ${parsedUrl.pathname}${parsedUrl.search}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await projectWorkflowService.addUpdate({ projectId: 'zona-franca-la-lima', date: '04 OCT 2026', title: 'Remote update', body: 'Synced update.' });
+    await projectWorkflowService.addMilestone({ projectId: 'zona-franca-la-lima', label: 'Remote milestone', status: 'Upcoming' });
+    await projectWorkflowService.addDocument({ projectId: 'zona-franca-la-lima', name: 'Remote document', meta: 'PDF' });
+    await projectWorkflowService.requestApproval({ projectId: 'zona-franca-la-lima', title: 'Remote request', status: 'Pending' });
+    await projectWorkflowService.updateApproval('zona-franca-la-lima', 'Remote approval', 'Approved');
+
+    const snapshot = getPortalSnapshot().db;
+    expect(relations.updates[0].id).toEqual(expect.stringMatching(/^project-update-/));
+    expect(relations.milestones[0].id).toEqual(expect.stringMatching(/^project-milestone-/));
+    expect(relations.documents[0].id).toEqual(expect.stringMatching(/^project-document-/));
+    expect(relations.approvals.find((approval) => approval.title === 'Remote request')?.id).toEqual(expect.stringMatching(/^project-approval-/));
+    expect(snapshot.updates).toEqual(expect.arrayContaining([expect.objectContaining({ title: 'Remote update' })]));
+    expect(snapshot.milestones).toEqual(expect.arrayContaining([expect.objectContaining({ label: 'Remote milestone' })]));
+    expect(snapshot.documents).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Remote document' })]));
+    expect(snapshot.approvals).toEqual(expect.arrayContaining([expect.objectContaining({ title: 'Remote approval', status: 'Approved' })]));
+    expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/updates') && init?.method === 'POST')).toBe(true);
+    expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/milestones') && init?.method === 'POST')).toBe(true);
+    expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/documents') && init?.method === 'POST')).toBe(true);
+    expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/approvals') && init?.method === 'POST')).toBe(true);
+    expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith('/approvals/approval-1') && init?.method === 'PATCH')).toBe(true);
+  });
+
+  it('does not claim a project relation succeeded when HTTP persistence fails', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ message: 'Relation API unavailable' }), { status: 503 })));
+
+    await expect(projectWorkflowService.addUpdate({ projectId: 'zona-franca-la-lima', date: '04 OCT 2026', title: 'Failed update', body: 'Not saved.' })).rejects.toThrow('Relation API unavailable');
+    expect(getPortalSnapshot().db.updates.some((update) => update.title === 'Failed update')).toBe(false);
   });
 });

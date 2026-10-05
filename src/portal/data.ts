@@ -371,10 +371,10 @@ export const syncPortalRelations = (relations: Pick<PortalDatabase, 'updates' | 
 export type CreatePortalProjectInput = Pick<PortalProjectRecord, 'title' | 'category' | 'phase' | 'progress'> & Partial<Pick<PortalProjectRecord, 'code' | 'nextMilestone' | 'summary' | 'statement' | 'image' | 'market' | 'developmentType' | 'context' | 'scale' | 'longView' | 'published'>>;
 export type CreatePortalUserInput = Pick<PortalUser, 'name' | 'email' | 'password'> & Partial<Pick<PortalUser, 'role' | 'status' | 'projectIds'>>;
 
-const createRuntimeId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+export const createPortalRecordId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 export const createPortalProjectRecord = (input: CreatePortalProjectInput): PortalProjectRecord => {
-  const id = createRuntimeId('admin-project');
+  const id = createPortalRecordId('admin-project');
   return {
     id,
     code: input.code?.trim() || `AT / ${String(getPortalSnapshot().projects.length + 1).padStart(2, '0')}`,
@@ -424,7 +424,7 @@ export const createPortalUser = (input: CreatePortalUserInput): PortalUser => {
   if (!input.name.trim() || !email || !input.password) throw new Error('Name, email and password are required.');
   if (getPortalSnapshot().db.users.some((user) => user.email.toLowerCase() === email)) throw new Error('An account with this email already exists.');
   const user: PortalUser = {
-    id: createRuntimeId('portal-user'),
+    id: createPortalRecordId('portal-user'),
     name: input.name.trim(),
     email,
     password: input.password,

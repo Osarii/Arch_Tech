@@ -32,7 +32,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
 
 ### Landing reference photography
 
-The showcase uses six current projects from Garnier & Garnier's public portfolio. Project facts and names are kept factual and source-oriented; workflow updates, milestones and approvals remain ARCH_TECH prototype data. Each project's official media is stored in an isolated local directory, mapped explicitly in `src/components/gallery/projectMedia.tsx`, and the featured media viewport uses a fixed 16:9 shell so slide changes cannot resize the outer card. The carousel advances on a calm 4.2-second cadence; the La Lima portfolio feature deliberately uses a second local La Lima frame instead of repeating the opening cover.
+The showcase uses six current projects from Garnier & Garnier's public portfolio. Project facts and names are kept factual and source-oriented; workflow updates, milestones and approvals remain ARCH_TECH concept coordination data. Each project's official media is stored in an isolated local directory, mapped explicitly in `src/components/gallery/projectMedia.tsx`, and the featured media viewport uses a fixed 16:9 shell so slide changes cannot resize the outer card. The carousel advances on a calm 3.2-second cadence; the La Lima portfolio feature deliberately uses a second local La Lima frame instead of repeating the opening cover.
 
 Official portfolio source mapping:
 
