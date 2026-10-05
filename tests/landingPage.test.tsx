@@ -1406,4 +1406,163 @@ describe('ARCH_TECH client architecture portal', () => {
     });
     expect(screen.queryByText('404 / Page not found')).toBeNull();
   });
+
+  it('remote project hydration network failure does NOT redirect /404', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
+      return Promise.reject(new Error('Network failure'));
+    }));
+
+    window.history.replaceState({}, '', '/admin/projects/runtime-proj-id');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText('503 / Service unavailable')).toBeDefined();
+    });
+    expect(window.location.pathname).not.toBe('/404');
+    expect(screen.queryByText('404 / Page not found')).toBeNull();
+  });
+
+  it('remote user hydration failure does NOT redirect /403 based on stale data', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+
+    const remoteProject = createPortalProjectRecord({
+      title: 'Valid Remote Proj',
+      category: 'Corporate',
+      phase: 'Concept',
+      progress: 20,
+      published: true,
+    });
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/projects') {
+        return new Response(JSON.stringify([remoteProject]), { status: 200 });
+      }
+      if (parsed.pathname === '/users') {
+        return Promise.reject(new Error('Network error on users'));
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', `/dashboard/projects/${remoteProject.id}`);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText('503 / Service unavailable')).toBeDefined();
+    });
+    expect(window.location.pathname).not.toBe('/403');
+    expect(screen.queryByText('403 / Access restricted')).toBeNull();
+  });
+
+  it('retry/success then resolves correct route', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+
+    const remoteProject = createPortalProjectRecord({
+      title: 'Recovered Remote Proj',
+      category: 'Infrastructure',
+      phase: 'Planning',
+      progress: 50,
+      published: false,
+    });
+
+    let networkFailing = true;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (networkFailing) {
+        return Promise.reject(new Error('Temporary network drop'));
+      }
+      const parsed = new URL(url);
+      if (parsed.pathname === '/projects') {
+        return new Response(JSON.stringify([remoteProject]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', `/admin/projects/${remoteProject.id}`);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText('503 / Service unavailable')).toBeDefined();
+    });
+
+    networkFailing = false;
+    fireEvent.click(screen.getByTestId('retry-service'));
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(`/admin/projects/${remoteProject.id}`);
+      expect(screen.getByText('Recovered Remote Proj')).toBeDefined();
+    });
+    expect(screen.queryByText('503 / Service unavailable')).toBeNull();
+    expect(screen.queryByText('404 / Page not found')).toBeNull();
+  });
+
+  it('genuine empty successful response still produces /404', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/projects') {
+        return new Response(JSON.stringify([]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', '/admin/projects/truly-missing-project');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/404');
+      expect(screen.getByText('404 / Page not found')).toBeDefined();
+    });
+    expect(screen.queryByText('503 / Service unavailable')).toBeNull();
+  });
+
+  it('genuine successful unassigned response still produces /403', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+
+    const serverUser = {
+      id: 'portal-user-mariana',
+      name: 'Mariana Solano',
+      email: 'mariana.solano@arch-tech.studio',
+      password: 'client-access',
+      role: 'client' as const,
+      status: 'active' as const,
+      projectIds: ['some-other-project'],
+    };
+
+    const remoteProject = createPortalProjectRecord({
+      title: 'Forbidden Target Proj',
+      category: 'Corporate',
+      phase: 'Concept',
+      progress: 20,
+      published: true,
+    });
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/users') {
+        return new Response(JSON.stringify([serverUser]), { status: 200 });
+      }
+      if (parsed.pathname === '/projects') {
+        return new Response(JSON.stringify([remoteProject]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', `/dashboard/projects/${remoteProject.id}`);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/403');
+      expect(screen.getByText('403 / Access restricted')).toBeDefined();
+    });
+    expect(screen.queryByText('503 / Service unavailable')).toBeNull();
+    expect(screen.queryByText('404 / Page not found')).toBeNull();
+  });
 });

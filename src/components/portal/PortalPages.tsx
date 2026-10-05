@@ -1,7 +1,7 @@
 export { LoginOverlay } from './LoginOverlay';
 export { PublicProjectPage } from './PublicProjectPage';
 export { DashboardProjectPage } from './project/DashboardProjectPage';
-export { ForbiddenPage, NotFoundPage, PortalEmptyState, ExternalContextPanel, CreateProjectModal, PortalAIAssistantView } from './PortalCommon';
+export { ForbiddenPage, NotFoundPage, ServiceUnavailablePage, PortalEmptyState, ExternalContextPanel, CreateProjectModal, PortalAIAssistantView } from './PortalCommon';
 export { PortalShell, PORTAL_NAV_ITEMS, usePortalShell } from './PortalShell';
 
 // Client routed workspaces

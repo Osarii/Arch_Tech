@@ -24,6 +24,7 @@ import {
   LoginOverlay,
   PortalShell,
   PublicProjectPage,
+  ServiceUnavailablePage,
 } from '../components/portal/PortalPages';
 import { getPublicProject } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
@@ -70,21 +71,43 @@ const RootRoute: React.FC<{ onLogin: (trigger?: HTMLElement) => void; onNavigate
 const PublicProjectRoute: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
   const { projectId = '' } = useParams();
   const isRemote = projectService.isRemote();
-  const [ready, setReady] = useState(!isRemote || isProjectsHydrated());
+  const [loading, setLoading] = useState(Boolean(isRemote && !isProjectsHydrated()));
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryIndex, setRetryIndex] = useState(0);
 
   useEffect(() => {
-    if (ready || !isRemote) return;
+    if (!isRemote || isProjectsHydrated()) {
+      setLoading(false);
+      setLoadError(null);
+      return;
+    }
     let active = true;
-    void ensureProjectsHydrated().finally(() => {
+    setLoading(true);
+    setLoadError(null);
+    void ensureProjectsHydrated().then((success) => {
       if (!active) return;
-      setReady(true);
+      if (!success) {
+        setLoadError('Failed to load project records.');
+      } else {
+        setLoadError(null);
+      }
+      setLoading(false);
     });
     return () => {
       active = false;
     };
-  }, [ready, isRemote]);
+  }, [isRemote, retryIndex]);
 
-  if (!ready) return null;
+  if (loading) return null;
+  if (loadError) {
+    return (
+      <ServiceUnavailablePage
+        onNavigate={onNavigate}
+        onRetry={() => setRetryIndex((i) => i + 1)}
+        message="Unable to verify project existence. Please check your network connection and try again."
+      />
+    );
+  }
 
   const project = getPublicProject(projectId);
   if (!project) return <Navigate to="/404" replace />;

@@ -754,3 +754,43 @@ export const ForbiddenPage: React.FC<NavigationProps> = ({ onNavigate }) => {
     </main>
   );
 };
+
+export const ServiceUnavailablePage: React.FC<NavigationProps & { onRetry?: () => void; message?: string }> = ({ onNavigate, onRetry, message }) => {
+  const session = portalAuth.getSession();
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">503 / Service unavailable</p>
+      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">Service temporarily unavailable.</h1>
+      <p className="mt-3 max-w-md text-sm text-[#57534E]">
+        {message || 'Unable to load remote project and account records. Please check the network connection and try again.'}
+      </p>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+        {onRetry && (
+          <button
+            onClick={onRetry}
+            data-testid="retry-service"
+            className="inline-flex items-center gap-2 border border-black/20 bg-stone-900 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white hover:bg-black"
+          >
+            Retry connection
+          </button>
+        )}
+        {session && (
+          <button
+            onClick={() => onNavigate(getRoleHome(session.role))}
+            data-testid="return-workspace"
+            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
+          >
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return to workspace
+          </button>
+        )}
+        <button
+          onClick={() => onNavigate('/')}
+          data-testid="return-home"
+          className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
+        >
+          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Public home
+        </button>
+      </div>
+    </main>
+  );
+};
