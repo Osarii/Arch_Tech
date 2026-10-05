@@ -17,7 +17,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
    - **Real IFC Persistence**: Detached STEP-21 exports with coordinate remapping (UI X->IFC X, UI Y->IFC Z, UI Z->IFC Y) and relative rotation composition.
    - **Parametric Building Generation**: Authentic IFC4 STEP-21 model authoring directly from parametric massing plans.
    - **AI Assistant**: Deterministic offline AI agent with explicit human confirmation gates for WRITE operations.
-4. **Landing + SpatialRail Media**: The public landing uses a keyboard-accessible, reduced-motion-aware featured-project carousel, an editorial About section and a stable leadership grid. Project dossiers retain the custom scroll-snap gallery rail and fullscreen lightbox inspection viewer for technical project media.
+4. **Landing + SpatialRail Media**: The public landing uses a keyboard-accessible, reduced-motion-aware featured-project carousel, an editorial About section, a stable leadership grid and the D1 Solid → Wireframe ARCH_TECH mark. Project dossiers retain the custom scroll-snap gallery rail and fullscreen lightbox inspection viewer for technical project media.
 
 ---
 
@@ -31,7 +31,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
 
 ### Landing reference photography
 
-The showcase uses six current projects from Garnier & Garnier's public portfolio. Project facts and names are kept factual and source-oriented; workflow updates, milestones and approvals remain ARCH_TECH prototype data. Each project's official media is stored in an isolated local directory, mapped explicitly in `src/components/gallery/projectMedia.tsx`, and the featured media viewport uses a fixed 16:9 shell so slide changes cannot resize the outer card.
+The showcase uses six current projects from Garnier & Garnier's public portfolio. Project facts and names are kept factual and source-oriented; workflow updates, milestones and approvals remain ARCH_TECH prototype data. Each project's official media is stored in an isolated local directory, mapped explicitly in `src/components/gallery/projectMedia.tsx`, and the featured media viewport uses a fixed 16:9 shell so slide changes cannot resize the outer card. The carousel advances on a calm 4.2-second cadence; the La Lima portfolio feature deliberately uses a second local La Lima frame instead of repeating the opening cover.
 
 Official portfolio source mapping:
 
@@ -43,6 +43,8 @@ Official portfolio source mapping:
 - Universidad Latina (`universidad-latina`) — educational campus.
 
 The source portfolio is [Garnier & Garnier's official portfolio](https://www.garnier.cr/#/portfolio#top), with media retrieved from its official project API and stored locally under `public/projects/<project-slug>/garnier-cover.*` and `garnier-01.*` / `garnier-02.*`. This authorized prototype uses project photography only; it does not claim official ARCH_TECH/Garnier status, affiliation or endorsement.
+
+The ARCH_TECH identity follows the approved D1 Solid → Wireframe direction: a vector architectural mark transitions from physical structural faces into restrained BIM-style construction lines, communicating physical structure → digital model without generic technology effects.
 
 ### About and leadership sections
 

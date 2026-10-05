@@ -513,6 +513,43 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+.arch-tech-logo {
+  align-items: center;
+  display: inline-flex;
+  flex: none;
+  gap: 0.6rem;
+  line-height: 1;
+}
+.arch-tech-logo-symbol {
+  display: block;
+  height: 1.8rem;
+  overflow: visible;
+  width: 2.55rem;
+}
+.arch-tech-logo-wordmark {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+}
+.arch-tech-logo-wireframe {
+  opacity: 0.48;
+  transition: opacity 450ms ease;
+}
+.arch-tech-logo:hover .arch-tech-logo-wireframe,
+.arch-tech-logo:focus-visible .arch-tech-logo-wireframe,
+.arch-tech-logo:focus-within .arch-tech-logo-wireframe {
+  opacity: 0.86;
+}
+.arch-tech-logo-theme-inherit .arch-tech-logo-wireframe {
+  opacity: 0.42;
+}
+.arch-tech-logo-theme-inherit:hover .arch-tech-logo-wireframe,
+.arch-tech-logo-theme-inherit:focus-visible .arch-tech-logo-wireframe,
+.arch-tech-logo-theme-inherit:focus-within .arch-tech-logo-wireframe {
+  opacity: 0.75;
+}
 
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -530,5 +567,8 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
   .featured-project-slide-content {
     transform: none !important;
     transition: opacity 0.01ms linear !important;
+  }
+  .arch-tech-logo-wireframe {
+    transition-duration: 0.01ms !important;
   }
 }

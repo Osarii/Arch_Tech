@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 interface LandingNavbarProps {
   onLogin: (trigger?: HTMLElement) => void;
@@ -24,7 +25,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({ onLogin }) => {
   return (
     <nav className="fixed inset-x-0 top-0 z-50 border-b border-white/[0.08] bg-[#0a0b0d]/90 backdrop-blur-md">
       <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-        <a href="#hero" className="font-mono text-sm tracking-[0.25em] text-stone-100">ARCH_TECH</a>
+        <a href="#hero" aria-label="ARCH_TECH home" className="text-stone-100"><ArchTechLogo variant="full" theme="dark" /></a>
         <div className="hidden items-center gap-9 sm:flex">
           <button onClick={viewProjects} className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400 transition-colors hover:text-white">Projects</button>
           <button data-testid="capabilities-link" onClick={viewCapabilities} className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400 transition-colors hover:text-white">Capabilities</button>

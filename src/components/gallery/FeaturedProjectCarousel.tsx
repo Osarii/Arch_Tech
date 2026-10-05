@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getPublicProjects, type PortalProject } from '../../portal/data';
 import { preferredProjectImages, ProjectImage } from './projectMedia';
 
-const AUTOPLAY_MS = 6500;
+export const FEATURED_CAROUSEL_AUTOPLAY_MS = 4200;
 
 interface FeaturedProjectCarouselProps {
   onOpenProject: (id: string) => void;
@@ -76,7 +76,7 @@ export const FeaturedProjectCarousel: React.FC<FeaturedProjectCarouselProps> = (
 
   useEffect(() => {
     if (reducedMotion || paused || projects.length < 2) return;
-    const interval = window.setInterval(() => nextIndex(1), AUTOPLAY_MS);
+    const interval = window.setInterval(() => nextIndex(1), FEATURED_CAROUSEL_AUTOPLAY_MS);
     return () => window.clearInterval(interval);
   }, [nextIndex, paused, projects.length, reducedMotion]);
 
@@ -113,6 +113,7 @@ export const FeaturedProjectCarousel: React.FC<FeaturedProjectCarouselProps> = (
       aria-roledescription="carousel"
       tabIndex={0}
       data-autoplay={reducedMotion ? 'disabled' : 'enabled'}
+      data-autoplay-ms={FEATURED_CAROUSEL_AUTOPLAY_MS}
       data-paused={paused ? 'true' : 'false'}
       onKeyDown={handleKeyDown}
       onMouseEnter={() => setPaused(true)}

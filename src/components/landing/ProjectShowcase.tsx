@@ -36,7 +36,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
             className="group mt-12 block w-full text-left"
           >
             <span className="relative block aspect-[16/9] overflow-hidden bg-stone-300 md:aspect-[21/9]">
-              <ProjectImage project={featured} alt={`${featured.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
+              <ProjectImage project={featured} usage="showcase" alt={`${featured.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
             </span>
             <span className="mt-6 block border-b border-black/15 pb-10">
               <span className="flex items-start justify-between gap-6">

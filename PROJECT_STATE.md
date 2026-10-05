@@ -77,7 +77,7 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 ## 7. Project Image System & Migration Status
 - **Asset Storage**: Runtime project media lives under `public/projects/<project-slug>/`. Each showcase project has an isolated local set of official portfolio photographs; source archives are not the runtime asset location.
 - **Media Schema**: `image` is the primary cover and `media.gallery` holds additional official project views. Missing media remains empty and renders a neutral fallback; projects never borrow another project's image.
-- **Landing Media Mapping**: `src/components/gallery/projectMedia.tsx` maps all six showcase projects to their local cover image. The featured carousel uses the same explicit mapping, with local files documented in `README.md`.
+- **Landing Media Mapping**: `src/components/gallery/projectMedia.tsx` maps all six showcase projects to local carousel covers and project-scoped portfolio/showcase frames. The featured carousel uses the cover mapping while the large La Lima portfolio feature uses `garnier-01.webp`, avoiding an immediate repeated photograph.
 - **Migration Status**: **CLOSED / COMPLETE**. Legacy project IDs and media paths are remapped or sanitized at read time; schema version 3 persists the current project set and preserves safe `/projects/...` paths.
 
 ---
@@ -95,7 +95,7 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 
 ### 8.1 Featured landing carousel
 - **Implementation**: `src/components/gallery/FeaturedProjectCarousel.tsx`, mounted by `src/components/landing/Hero.tsx`.
-- **Behavior**: Uses all six canonical public projects, links each slide to its public dossier, supports previous/next controls, indicators, Arrow/Home/End keyboard navigation, hover/focus pause, restrained autoplay, and `prefers-reduced-motion` autoplay suppression.
+- **Behavior**: Uses all six canonical public projects, links each slide to its public dossier, supports previous/next controls, indicators, Arrow/Home/End keyboard navigation, hover/focus pause, restrained 4.2-second autoplay, and `prefers-reduced-motion` autoplay suppression.
 - **Media stability**: Every slide uses the same fixed 16:9 media shell with an overflow-hidden object-cover image viewport and a stable content region, so the outer card does not resize between projects.
 - **Showcase media**: The six isolated local image sets are official Garnier portfolio photographs selected for campus, district, hospitality and institutional scale. This is an explicitly authorized ARCH_TECH concept/prototype use and does not imply official status or affiliation.
 - **Fallbacks**: `ProjectImage` renders a neutral ARCH_TECH development placeholder when a preferred local image is unavailable or fails to decode.
@@ -145,6 +145,7 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - **SpatialRail Media Carousel**: High-performance scroll-snap media rail & lightbox.
 - **Landing Media Carousel**: Six-project featured carousel with locally stored official Garnier portfolio photography for the explicitly authorized presentation/showcase prototype, public dossier links, indicators, keyboard navigation, autoplay pause behavior, reduced-motion support and fixed slide dimensions. ARCH_TECH remains clearly presented as the concept/prototype identity.
 - **Landing About + Leadership**: Editorial About section with verified public Garnier company context, one local official About image, and a stable eight-person leadership grid using one-to-one local official portraits and current public titles.
+- **ARCH_TECH Brand Mark**: D1 Solid → Wireframe is the selected identity direction. `src/components/brand/ArchTechLogo.tsx` provides a reusable vector mark/full lockup that moves from solid architectural faces into restrained modeling construction lines, expressing physical structure → digital model.
 - **Portfolio Asset Pipeline**: Canonical image packs and official Garnier showcase media integrated; schema v3 migration completed.
 - **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient presentation auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
 
@@ -187,6 +188,6 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 - **Lint / Type Check**: **SUCCESS** (`npm run lint`).
 - **Vitest Unit/Domain Tests**: **166 / 166 PASSED** across 15 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
-- **Playwright E2E Tests**: **14 / 14 PASSED** (full browser verification suite).
+- **Playwright E2E Tests**: **13 / 14 PASSED** in the current run; the existing BIM Phase 3 editing flow still fails at `tests/e2e/bimLab.spec.ts:342` because `Restore Element` is not rendered after deletion. This landing/brand task does not modify BIM internals.
 - **Targeted portal/landing suites**: `portalData` **11 / 11**, `demoAuth` **10 / 10**, `landingPage` **38 / 38**, and `spatialRail` **6 / 6** passed after the About and leadership update.
 - **Git Diff**: Verified with `git diff --check` after the landing media/carousel changes.

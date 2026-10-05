@@ -7,6 +7,7 @@ import { LandingNavbar } from '../src/components/landing/LandingNavbar';
 import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
 import { AboutSection, aboutFacts } from '../src/components/landing/AboutSection';
 import { TeamSection, teamMembers } from '../src/components/landing/TeamSection';
+import { ArchTechLogo } from '../src/components/brand/ArchTechLogo';
 import { getPortalProject, getPortalSnapshot, updatePortalDatabase } from '../src/portal/data';
 import { portalAuth } from '../src/portal/demoAuth';
 import {
@@ -95,6 +96,7 @@ describe('ARCH_TECH client architecture portal', () => {
 
     const carousel = screen.getByTestId('hero-gallery');
     expect(carousel.getAttribute('aria-roledescription')).toBe('carousel');
+    expect(carousel.getAttribute('data-autoplay-ms')).toBe('4200');
     expect(carousel.className).not.toContain('sticky');
     expect(screen.getAllByTestId(/^featured-indicator-/)).toHaveLength(6);
     expect(screen.getAllByTestId(/^featured-project-/)).toHaveLength(6);
@@ -150,6 +152,43 @@ describe('ARCH_TECH client architecture portal', () => {
     window.matchMedia = originalMatchMedia;
   });
 
+  it('keeps the La Lima carousel cover separate from the portfolio showcase image', () => {
+    render(<Hero onViewProjects={vi.fn()} onOpenProject={vi.fn()} />);
+    const carouselImage = screen.getByTestId('featured-project-zona-franca-la-lima').querySelector('img')?.getAttribute('src');
+    expect(carouselImage).toBe('/projects/zona-franca-la-lima/garnier-cover.webp');
+
+    cleanup();
+    render(<ProjectShowcase onOpenProject={vi.fn()} />);
+    const showcaseImage = screen.getByTestId('public-project-zona-franca-la-lima').querySelector('img')?.getAttribute('src');
+    expect(showcaseImage).toBe('/projects/zona-franca-la-lima/garnier-01.webp');
+    expect(showcaseImage).not.toBe(carouselImage);
+    expect(showcaseImage?.startsWith('/projects/zona-franca-la-lima/')).toBe(true);
+  });
+
+  it('renders the vector ARCH_TECH mark and full lockup variants', () => {
+    const { rerender } = render(<ArchTechLogo variant="mark" theme="light" />);
+    expect(document.querySelector('.arch-tech-logo-mark svg')).toBeDefined();
+    expect(screen.queryByText('ARCH_TECH')).toBeNull();
+
+    rerender(<ArchTechLogo variant="full" theme="dark" />);
+    expect(document.querySelector('.arch-tech-logo-full svg')).toBeDefined();
+    expect(screen.getByText('ARCH_TECH')).toBeDefined();
+    expect(document.querySelector('.arch-tech-logo-wireframe')).toBeDefined();
+  });
+
+  it('uses the reusable vector brand lockup in landing and portal headers', () => {
+    render(<LandingNavbar onLogin={vi.fn()} />);
+    const landingHome = screen.getByRole('link', { name: 'ARCH_TECH home' });
+    expect(landingHome.querySelector('.arch-tech-logo-full svg')).toBeDefined();
+
+    cleanup();
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+    render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    const portalHome = screen.getByRole('button', { name: 'ARCH_TECH home' });
+    expect(portalHome.querySelector('.arch-tech-logo-full svg')).toBeDefined();
+    expect(screen.getByText('Garnier Portfolio Concept')).toBeDefined();
+  });
+
   it('routes hero development panels to their public project dossiers', () => {
     const onNavigate = vi.fn();
     render(<LandingPage onNavigate={onNavigate} onLogin={vi.fn()} />);
@@ -165,7 +204,7 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.click(screen.getByTestId('public-project-zona-franca-la-lima'));
     expect(onOpenProject).toHaveBeenCalledWith('zona-franca-la-lima');
     const projectImage = screen.getByTestId('public-project-zona-franca-la-lima').querySelector('img');
-    expect(projectImage?.getAttribute('src')).toContain('/garnier-cover.');
+    expect(projectImage?.getAttribute('src')).toBe('/projects/zona-franca-la-lima/garnier-01.webp');
     fireEvent.error(projectImage!);
     expect(screen.getByTestId('project-image-fallback-zona-franca-la-lima')).toBeDefined();
 

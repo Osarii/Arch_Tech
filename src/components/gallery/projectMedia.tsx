@@ -15,9 +15,29 @@ export const preferredProjectImages: Record<string, string> = {
   'universidad-latina': '/projects/universidad-latina/garnier-cover.webp',
 };
 
-export const getPreferredProjectImage = (project: PortalProject): string => (
-  preferredProjectImages[project.id] || project.image || project.media?.gallery?.[0] || project.media?.aerial || ''
-);
+/**
+ * The portfolio section uses a second frame for the first project so the
+ * landing page does not repeat the carousel's opening photograph immediately.
+ * Every fallback remains project-scoped and never borrows another project's media.
+ */
+export const showcaseProjectImages: Record<string, string> = {
+  'zona-franca-la-lima': '/projects/zona-franca-la-lima/garnier-01.webp',
+  'el-cafetal': '/projects/el-cafetal/garnier-01.webp',
+  'santa-ana-country-club': '/projects/santa-ana-country-club/garnier-01.webp',
+  'waldorf-astoria': '/projects/waldorf-astoria/garnier-01.jpeg',
+  'centro-corporativo-sabana': '/projects/centro-corporativo-sabana/garnier-01.jpg',
+  'universidad-latina': '/projects/universidad-latina/garnier-01.webp',
+};
+
+export type ProjectImageUsage = 'carousel' | 'showcase';
+
+export const getProjectImage = (project: PortalProject, usage: ProjectImageUsage = 'carousel'): string => {
+  const mappedImage = usage === 'showcase' ? showcaseProjectImages[project.id] : preferredProjectImages[project.id];
+  return mappedImage || project.image || project.media?.gallery?.[0] || project.media?.aerial || '';
+};
+
+export const getPreferredProjectImage = (project: PortalProject): string => getProjectImage(project, 'carousel');
+export const getShowcaseProjectImage = (project: PortalProject): string => getProjectImage(project, 'showcase');
 
 interface ProjectImageProps {
   project: PortalProject;
@@ -25,11 +45,12 @@ interface ProjectImageProps {
   className?: string;
   loading?: 'eager' | 'lazy';
   fetchPriority?: 'high' | 'low' | 'auto';
+  usage?: ProjectImageUsage;
 }
 
-export const ProjectImage: React.FC<ProjectImageProps> = ({ project, alt, className = '', loading = 'lazy', fetchPriority = 'low' }) => {
+export const ProjectImage: React.FC<ProjectImageProps> = ({ project, alt, className = '', loading = 'lazy', fetchPriority = 'low', usage = 'carousel' }) => {
   const [failed, setFailed] = useState(false);
-  const src = getPreferredProjectImage(project);
+  const src = getProjectImage(project, usage);
 
   if (!src || failed) {
     return (

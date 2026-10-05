@@ -19,6 +19,7 @@ import {
 } from '../../portal/data';
 import { SpatialRail } from '../gallery/SpatialRail';
 import { getPreferredProjectImage } from '../gallery/projectMedia';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 type Navigate = (path: string) => void;
 
@@ -53,8 +54,8 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
   return (
   <header className="portal-header border-b border-black/10 bg-[#2D2E2C]">
     <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-      <button onClick={() => onNavigate('/')} className="flex items-baseline gap-3 text-left text-[#211E1A]">
-        <span className="font-mono text-sm tracking-[0.24em]">ARCH_TECH</span>
+      <button onClick={() => onNavigate('/')} aria-label="ARCH_TECH home" className="flex items-center gap-3 text-left text-[#211E1A]">
+        <ArchTechLogo variant="full" theme="dark" />
         <span className="hidden font-mono text-[8px] uppercase tracking-[0.16em] text-stone-400 sm:inline">Garnier Portfolio Concept</span>
       </button>
       <div className="flex items-center gap-5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600">
