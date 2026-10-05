@@ -482,5 +482,69 @@ describe('Portal Accessibility System', () => {
       expect(screen.getByText(/SpeechSynthesis is unavailable/i)).toBeDefined();
       expect(screen.queryByTestId('narrator-start')).toBeNull();
     });
+
+    it('disables Hover Reader when caret API exists but SpeechSynthesis is absent', () => {
+      (document as any).caretPositionFromPoint = vi.fn();
+      // @ts-ignore
+      delete window.speechSynthesis;
+
+      render(
+        <PortalShell role="client">
+          <p>Text content</p>
+        </PortalShell>
+      );
+
+      fireEvent.click(screen.getByTestId('accessibility-panel-trigger'));
+      const hoverToggle = screen.getByTestId('hover-reader-toggle');
+      expect(hoverToggle.hasAttribute('disabled')).toBe(true);
+      expect(screen.getByText('Browser unsupported')).toBeDefined();
+    });
+
+    it('cleans up speech voice listener and cancels speech on unmount', () => {
+      const addEventListenerSpy = vi.fn();
+      const removeEventListenerSpy = vi.fn();
+
+      vi.stubGlobal('speechSynthesis', {
+        speak: mockSpeak,
+        pause: mockPause,
+        resume: mockResume,
+        cancel: mockCancel,
+        getVoices: mockGetVoices,
+        addEventListener: addEventListenerSpy,
+        removeEventListener: removeEventListenerSpy,
+      });
+
+      const { unmount } = render(
+        <PortalShell role="client">
+          <div>Content</div>
+        </PortalShell>
+      );
+
+      expect(addEventListenerSpy).toHaveBeenCalledWith('voiceschanged', expect.any(Function));
+
+      unmount();
+
+      expect(removeEventListenerSpy).toHaveBeenCalledWith('voiceschanged', expect.any(Function));
+      expect(mockCancel).toHaveBeenCalled();
+    });
+
+    it('does not render reading guide or mask when only Hover Reader is enabled', () => {
+      (document as any).caretPositionFromPoint = vi.fn();
+
+      render(
+        <PortalShell role="client">
+          <p>Text content</p>
+        </PortalShell>
+      );
+
+      fireEvent.click(screen.getByTestId('accessibility-panel-trigger'));
+      fireEvent.click(screen.getByTestId('hover-reader-toggle'));
+      fireEvent.click(screen.getByTestId('a11y-close-btn'));
+
+      fireEvent.mouseMove(window, { clientX: 100, clientY: 250 });
+
+      expect(screen.queryByTestId('reading-guide')).toBeNull();
+      expect(screen.queryByTestId('reading-mask')).toBeNull();
+    });
   });
 });

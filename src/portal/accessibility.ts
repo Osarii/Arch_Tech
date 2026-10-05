@@ -278,8 +278,15 @@ export function getRectForCharIndex(
 }
 
 export function isHoverReaderSupported(): boolean {
-  if (typeof document === 'undefined') return false;
-  return Boolean(document.caretPositionFromPoint || (document as any).caretRangeFromPoint);
+  if (typeof document === 'undefined' || typeof window === 'undefined') return false;
+  const hasCaret = Boolean(document.caretPositionFromPoint || (document as any).caretRangeFromPoint);
+  const hasSpeech = Boolean(
+    'speechSynthesis' in window &&
+    window.speechSynthesis &&
+    'SpeechSynthesisUtterance' in window &&
+    (window as any).SpeechSynthesisUtterance
+  );
+  return hasCaret && hasSpeech;
 }
 
 export function getHoveredWordAtPoint(x: number, y: number): { word: string; rect: DOMRect; node: Text } | null {

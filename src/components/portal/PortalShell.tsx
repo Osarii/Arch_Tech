@@ -111,7 +111,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
   const hoverTimerRef = useRef<any>(null);
   const lastHoverWordRef = useRef<string | null>(null);
 
-  // Check speech synthesis support and load voices
+  // Check speech synthesis support and load voices with clean lifecycle
   useEffect(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       setSpeechState('unsupported');
@@ -128,7 +128,25 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     };
 
     loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+    if (typeof window.speechSynthesis.addEventListener === 'function') {
+      window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    } else {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    return () => {
+      if (typeof window.speechSynthesis.removeEventListener === 'function') {
+        window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+      } else if (window.speechSynthesis.onvoiceschanged === loadVoices) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+      try {
+        window.speechSynthesis.cancel();
+      } catch {
+        // ignore
+      }
+      clearTimeout(hoverTimerRef.current);
+    };
   }, []);
 
   // Theme synchronization
@@ -237,7 +255,9 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     }
 
     const handlePointerMove = (e: MouseEvent) => {
-      setPointerY(e.clientY);
+      if (preferences.readingGuide || preferences.readingMask) {
+        setPointerY(e.clientY);
+      }
 
       if (!preferences.hoverReader) return;
 
@@ -290,7 +310,9 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     };
 
     const handlePointerLeave = () => {
-      setPointerY(null);
+      if (preferences.readingGuide || preferences.readingMask) {
+        setPointerY(null);
+      }
       setHoverRect(null);
       lastHoverWordRef.current = null;
       clearTimeout(hoverTimerRef.current);
