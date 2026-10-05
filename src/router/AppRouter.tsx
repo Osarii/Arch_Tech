@@ -2,15 +2,38 @@ import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LandingPage } from '../components/landing/LandingPage';
 import {
-  AdminDashboardPage,
-  ArchitectDashboardPage,
-  DashboardPage,
+  AdminAnalyticsPage,
+  AdminApprovalsPage,
+  AdminAssistantPage,
+  AdminOverviewPage,
+  AdminPeoplePage,
+  AdminProjectsPage,
+  ArchitectApprovalsPage,
+  ArchitectAssistantPage,
+  ArchitectDocumentsPage,
+  ArchitectInsightsPage,
+  ArchitectOverviewPage,
+  ArchitectProjectsPage,
+  ClientApprovalsPage,
+  ClientAssistantPage,
+  ClientDocumentsPage,
+  ClientInsightsPage,
+  ClientOverviewPage,
+  ClientProjectsPage,
   DashboardProjectPage,
   LoginOverlay,
+  PortalShell,
   PublicProjectPage,
 } from '../components/portal/PortalPages';
 import { portalAuth } from '../portal/demoAuth';
-import { roleHome, ProtectedRoute, RoleRoute, AccessibleProjectRoute, legacyWorkspaceRequested, NotFoundRoute } from './guards';
+import {
+  AccessibleProjectRoute,
+  legacyWorkspaceRequested,
+  NotFoundRoute,
+  ProtectedRoute,
+  RoleRoute,
+  roleHome,
+} from './guards';
 
 const Workspace = React.lazy(() => import('../components/layout/Workspace').then((module) => ({ default: module.Workspace })));
 
@@ -48,7 +71,16 @@ const DashboardProjectRoute: React.FC<{ role: 'client' | 'architect' | 'admin' }
   const navigate = useNavigate();
   const { projectId = '' } = useParams();
   const homePath = roleHome(role);
-  return <DashboardProjectPage projectId={projectId} onNavigate={navigate} onSignOut={() => { portalAuth.signOut(); navigate('/'); }} onOpenWorkspace={() => navigate('/workspace')} homePath={homePath} role={role} />;
+  return (
+    <DashboardProjectPage
+      projectId={projectId}
+      onNavigate={navigate}
+      onSignOut={() => { portalAuth.signOut(); navigate('/'); }}
+      onOpenWorkspace={() => navigate('/workspace')}
+      homePath={homePath}
+      role={role}
+    />
+  );
 };
 
 const RoutedApp: React.FC = () => {
@@ -86,6 +118,11 @@ const RoutedApp: React.FC = () => {
     navigate(path);
   };
 
+  const handleSignOut = () => {
+    portalAuth.signOut();
+    navigate('/');
+  };
+
   return (
     <>
       <Routes>
@@ -93,24 +130,51 @@ const RoutedApp: React.FC = () => {
         <Route path="/login" element={<Navigate to="/?login=1" replace />} />
         <Route path="/projects/:projectId" element={<PublicProjectRoute onNavigate={handleNavigate} />} />
         <Route element={<ProtectedRoute />}>
+          {/* CLIENT WORKSPACES */}
           <Route element={<RoleRoute role="client" />}>
-            <Route path="/dashboard" element={<DashboardPage onNavigate={handleNavigate} onSignOut={() => { portalAuth.signOut(); navigate('/'); }} />} />
-            <Route element={<AccessibleProjectRoute role="client" />}>
-              <Route path="/dashboard/projects/:projectId" element={<DashboardProjectRoute role="client" />} />
+            <Route element={<PortalShell role="client" onNavigate={handleNavigate} onSignOut={handleSignOut} />}>
+              <Route path="/dashboard" element={<ClientOverviewPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/dashboard/projects" element={<ClientProjectsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/dashboard/documents" element={<ClientDocumentsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/dashboard/approvals" element={<ClientApprovalsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/dashboard/insights" element={<ClientInsightsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/dashboard/assistant" element={<ClientAssistantPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route element={<AccessibleProjectRoute role="client" />}>
+                <Route path="/dashboard/projects/:projectId" element={<DashboardProjectRoute role="client" />} />
+              </Route>
             </Route>
           </Route>
+
+          {/* ARCHITECT WORKSPACES */}
           <Route element={<RoleRoute role="architect" />}>
-            <Route path="/architect" element={<ArchitectDashboardPage onNavigate={handleNavigate} onSignOut={() => { portalAuth.signOut(); navigate('/'); }} />} />
-            <Route element={<AccessibleProjectRoute role="architect" />}>
-              <Route path="/architect/projects/:projectId" element={<DashboardProjectRoute role="architect" />} />
+            <Route element={<PortalShell role="architect" onNavigate={handleNavigate} onSignOut={handleSignOut} />}>
+              <Route path="/architect" element={<ArchitectOverviewPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/architect/projects" element={<ArchitectProjectsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/architect/approvals" element={<ArchitectApprovalsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/architect/documents" element={<ArchitectDocumentsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/architect/insights" element={<ArchitectInsightsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/architect/assistant" element={<ArchitectAssistantPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route element={<AccessibleProjectRoute role="architect" />}>
+                <Route path="/architect/projects/:projectId" element={<DashboardProjectRoute role="architect" />} />
+              </Route>
             </Route>
           </Route>
+
+          {/* ADMIN WORKSPACES */}
           <Route element={<RoleRoute role="admin" />}>
-            <Route path="/admin" element={<AdminDashboardPage onNavigate={handleNavigate} onSignOut={() => { portalAuth.signOut(); navigate('/'); }} />} />
-            <Route element={<AccessibleProjectRoute role="admin" />}>
-              <Route path="/admin/projects/:projectId" element={<DashboardProjectRoute role="admin" />} />
+            <Route element={<PortalShell role="admin" onNavigate={handleNavigate} onSignOut={handleSignOut} />}>
+              <Route path="/admin" element={<AdminOverviewPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/admin/projects" element={<AdminProjectsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/admin/people" element={<AdminPeoplePage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/admin/approvals" element={<AdminApprovalsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/admin/analytics" element={<AdminAnalyticsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/admin/assistant" element={<AdminAssistantPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route element={<AccessibleProjectRoute role="admin" />}>
+                <Route path="/admin/projects/:projectId" element={<DashboardProjectRoute role="admin" />} />
+              </Route>
             </Route>
           </Route>
+
           <Route path="/workspace" element={<WorkspaceRoute />} />
         </Route>
         <Route path="*" element={<NotFoundRoute />} />

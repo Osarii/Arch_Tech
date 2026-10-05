@@ -11,11 +11,15 @@ import { ArchTechLogo } from '../src/components/brand/ArchTechLogo';
 import { getPortalProject, getPortalSnapshot, updatePortalDatabase } from '../src/portal/data';
 import { portalAuth } from '../src/portal/demoAuth';
 import {
+  AdminAnalyticsPage,
+  AdminDashboardPage,
+  AdminPeoplePage,
+  AdminProjectsPage,
+  ArchitectDashboardPage,
   DashboardPage,
   DashboardProjectPage,
-  AdminDashboardPage,
-  ArchitectDashboardPage,
   LoginOverlay,
+  PortalShell,
   PublicProjectPage,
 } from '../src/components/portal/PortalPages';
 
@@ -309,21 +313,25 @@ describe('ARCH_TECH client architecture portal', () => {
 
     cleanup();
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
-    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    render(<AdminProjectsPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     expect(screen.getByText('All projects / assignments')).toBeDefined();
     expect(screen.getAllByText('Universidad Latina').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Sebastián Araya').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Showcase framing').length).toBeGreaterThan(0);
     expect(document.querySelectorAll('.portal-project-thumbnail').length).toBeGreaterThan(0);
     const adminSurface = screen.getByText('All projects / assignments').closest('.portal-surface');
     expect(adminSurface?.className).toContain('portal-admin');
     expect(adminSurface?.className).toContain('bg-[#D6CBB9]');
+    expect(document.querySelector('.portal-register-row')).toBeDefined();
+    expect(screen.getByTestId('admin-open-model-zona-franca-la-lima').className).toContain('admin-action');
+    cleanup();
+    render(<AdminPeoplePage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    expect(screen.getAllByText('Sebastián Araya').length).toBeGreaterThan(0);
+    cleanup();
+    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    expect(screen.getAllByText('Showcase framing').length).toBeGreaterThan(0);
     expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelector('.font-serif')?.className).toContain('text-5xl');
     expect(screen.getByRole('region', { name: 'Portfolio overview' }).className).toContain('admin-kpi-strip');
     expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelectorAll('.admin-overview-tile')).toHaveLength(4);
     expect(screen.getByRole('region', { name: 'Review and delivery signals' }).className).not.toContain('portal-review-section');
-    expect(document.querySelector('.portal-register-row')).toBeDefined();
-    expect(screen.getByTestId('admin-open-model-zona-franca-la-lima').className).toContain('admin-action');
   });
 
   it('uses objective admin signals and reviews only projects with pending approvals', () => {
@@ -372,7 +380,7 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('supports admin search, derived filters, sorting, clearing and empty results', () => {
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
-    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    render(<AdminProjectsPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
     expect(screen.getByText('6 of 6 active projects')).toBeDefined();
     fireEvent.change(screen.getByLabelText('Search projects'), { target: { value: 'Zona Franca' } });
@@ -407,7 +415,7 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('uses framed lazy project media and provides a fallback when an image fails', () => {
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
-    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    render(<AdminProjectsPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
     const thumbnail = document.querySelector('.portal-project-thumbnail') as HTMLImageElement;
     expect(thumbnail.getAttribute('loading')).toBe('lazy');
@@ -422,12 +430,16 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<AdminDashboardPage onNavigate={adminNavigate} onSignOut={vi.fn()} />);
     expect(screen.getByText('Active projects')).toBeDefined();
     expect(screen.getByText('Decisions requiring review')).toBeDefined();
-    expect(screen.getByText('Development stages')).toBeDefined();
     expect(screen.getAllByText('Pending approvals').length).toBeGreaterThan(0);
     expect(screen.getByText('Recent activity')).toBeDefined();
     expect(screen.getByText('across active work')).toBeDefined();
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
+    cleanup();
+    render(<AdminAnalyticsPage onNavigate={adminNavigate} onSignOut={vi.fn()} />);
+    expect(screen.getByText('Development stages')).toBeDefined();
+    cleanup();
+    render(<AdminProjectsPage onNavigate={adminNavigate} onSignOut={vi.fn()} />);
     fireEvent.click(screen.getByTestId('admin-open-model-zona-franca-la-lima'));
     expect(adminNavigate).toHaveBeenCalledWith('/workspace');
     fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
@@ -457,7 +469,7 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('creates an active portal user from Admin people management', async () => {
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
-    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    render(<AdminPeoplePage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Operations Client' } });
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'operations.client@arch-tech.studio' } });
     fireEvent.change(screen.getByLabelText('Temporary password'), { target: { value: 'operations-password' } });
@@ -533,7 +545,7 @@ describe('ARCH_TECH client architecture portal', () => {
       ...current,
       users: current.users.map((user) => user.id === activeClient.id || user.id === activeArchitect.id ? { ...user, projectIds: [] } : user),
     }));
-    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    render(<AdminPeoplePage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
     const clientAssignment = screen.getByTestId(`admin-assignment-${activeProject.id}-${activeClient.id}`);
     const architectAssignment = screen.getByTestId(`admin-assignment-${activeProject.id}-${activeArchitect.id}`);
@@ -563,7 +575,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds).toEqual(beforeArchivedAttempt);
 
     cleanup();
-    render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    render(<AdminPeoplePage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     expect(screen.queryByTestId(`admin-assignment-project-${activeProject.id}`)).toBeNull();
     expect(screen.queryByTestId(`admin-assignment-${activeProject.id}-${activeClient.id}`)).toBeNull();
     expect(screen.getByText(activeClient.name)).toBeDefined();
@@ -635,29 +647,69 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(staleAssets.every((asset) => !migratedStorage.includes(asset))).toBe(true);
   });
 
-  it('role navigation controls point to real dashboard sections', () => {
+  it('role navigation controls point to real routed workspaces', () => {
     const cases = [
-      { role: 'client' as const, renderPage: () => <DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />, sections: ['projects', 'updates', 'documents', 'notifications'] },
-      { role: 'architect' as const, renderPage: () => <ArchitectDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />, sections: ['projects', 'activity', 'milestones', 'documents', 'approvals'] },
-      { role: 'admin' as const, renderPage: () => <AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />, sections: ['projects', 'people', 'approvals', 'activity'] },
+      {
+        role: 'client' as const,
+        navItems: [
+          { key: 'overview', path: '/dashboard' },
+          { key: 'projects', path: '/dashboard/projects' },
+          { key: 'documents', path: '/dashboard/documents' },
+          { key: 'approvals', path: '/dashboard/approvals' },
+          { key: 'insights', path: '/dashboard/insights' },
+          { key: 'assistant', path: '/dashboard/assistant' },
+        ],
+      },
+      {
+        role: 'architect' as const,
+        navItems: [
+          { key: 'overview', path: '/architect' },
+          { key: 'projects', path: '/architect/projects' },
+          { key: 'approvals', path: '/architect/approvals' },
+          { key: 'documents', path: '/architect/documents' },
+          { key: 'insights', path: '/architect/insights' },
+          { key: 'assistant', path: '/architect/assistant' },
+        ],
+      },
+      {
+        role: 'admin' as const,
+        navItems: [
+          { key: 'overview', path: '/admin' },
+          { key: 'projects', path: '/admin/projects' },
+          { key: 'people', path: '/admin/people' },
+          { key: 'approvals', path: '/admin/approvals' },
+          { key: 'analytics', path: '/admin/analytics' },
+          { key: 'assistant', path: '/admin/assistant' },
+        ],
+      },
     ];
-    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
-    const scrollIntoView = vi.fn();
-    HTMLElement.prototype.scrollIntoView = scrollIntoView;
     for (const item of cases) {
       cleanup();
       window.localStorage.clear();
-      portalAuth.signIn(item.role === 'client' ? 'mariana.solano@arch-tech.studio' : item.role === 'architect' ? 'sebastian.araya@arch-tech.studio' : 'andrea.quesada@arch-tech.studio', item.role === 'client' ? 'client-access' : item.role === 'architect' ? 'architect-access' : 'admin-access');
-      render(item.renderPage());
-      for (const section of item.sections) {
-        const button = screen.getByTestId(`portal-nav-${section === 'projects' ? 'projects' : section}`);
-        const target = button.getAttribute('aria-controls');
-        expect(target && document.getElementById(target)).toBeDefined();
+      portalAuth.signIn(
+        item.role === 'client'
+          ? 'mariana.solano@arch-tech.studio'
+          : item.role === 'architect'
+            ? 'sebastian.araya@arch-tech.studio'
+            : 'andrea.quesada@arch-tech.studio',
+        item.role === 'client'
+          ? 'client-access'
+          : item.role === 'architect'
+            ? 'architect-access'
+            : 'admin-access',
+      );
+      const onNavigate = vi.fn();
+      render(<PortalShell role={item.role} onNavigate={onNavigate} onSignOut={vi.fn()} />);
+      const overviewButton = screen.getByTestId('portal-nav-overview');
+      expect(overviewButton.getAttribute('aria-current')).toBe('page');
+      for (const nav of item.navItems) {
+        const button = screen.getByTestId(`portal-nav-${nav.key}`);
+        expect(button).toBeDefined();
         fireEvent.click(button);
+        expect(onNavigate).toHaveBeenCalledWith(nav.path);
+        expect(button.getAttribute('aria-current')).toBe('page');
       }
     }
-    expect(scrollIntoView).toHaveBeenCalled();
-    HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
   });
 
   it('redirects an authenticated role away from another role route', async () => {
