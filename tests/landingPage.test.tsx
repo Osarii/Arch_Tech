@@ -78,6 +78,10 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<TeamSection />);
 
     expect(screen.getByRole('heading', { name: 'The people behind the development.' })).toBeDefined();
+    const groupPhoto = screen.getByRole('img', { name: 'Garnier & Garnier leadership team gathered in an outdoor courtyard' });
+    expect(groupPhoto.getAttribute('src')).toBe('/team/garnier-team-group.png');
+    expect(groupPhoto.getAttribute('loading')).toBe('lazy');
+    expect(groupPhoto.getAttribute('decoding')).toBe('async');
     expect(teamMembers).toHaveLength(8);
     const portraitPaths = teamMembers.map((member) => member.portrait);
     expect(new Set(portraitPaths).size).toBe(teamMembers.length);

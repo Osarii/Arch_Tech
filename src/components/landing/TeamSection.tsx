@@ -43,6 +43,19 @@ export const TeamSection: React.FC = () => (
         ))}
       </div>
 
+      <figure className="mt-12">
+        <figcaption className="mb-3 font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Leadership / Garnier &amp; Garnier</figcaption>
+        <div className="landing-team-group-frame overflow-hidden border border-white/[0.14] bg-[#111216]">
+          <img
+            src="/team/garnier-team-group.png"
+            alt="Garnier & Garnier leadership team gathered in an outdoor courtyard"
+            loading="lazy"
+            decoding="async"
+            className="landing-team-group-image h-full w-full object-cover"
+          />
+        </div>
+      </figure>
+
       <p className="mt-8 font-mono text-[9px] uppercase tracking-[0.14em] text-stone-600">Current public team and roles / garnier.cr</p>
     </div>
   </section>
