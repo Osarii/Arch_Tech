@@ -11,6 +11,7 @@ import { automationService } from '../../services/automationService';
 import { bimAgent } from '../../bim/ai/AIAgent';
 import { aiService } from '../../services/aiService';
 import { AIMessage } from '../../types/bim';
+import { portalAuth } from '../../portal/demoAuth';
 
 export type Navigate = (path: string) => void;
 
@@ -689,12 +690,67 @@ export const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project 
   );
 };
 
-export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => (
-  <main className="flex h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
-    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">404</p>
-    <h1 className="mt-5 font-serif text-5xl">Project not found.</h1>
-    <button onClick={() => onNavigate('/')} className="mt-8 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em]">
-      <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return home
-    </button>
-  </main>
-);
+const getRoleHome = (role?: PortalRole) =>
+  role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard';
+
+export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => {
+  const session = portalAuth.getSession();
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">404 / Page not found</p>
+      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">Page not found.</h1>
+      <p className="mt-3 max-w-md text-sm text-[#57534E]">
+        The requested page, project or resource does not exist or has been moved.
+      </p>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+        {session && (
+          <button
+            onClick={() => onNavigate(getRoleHome(session.role))}
+            data-testid="return-workspace"
+            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
+          >
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return to workspace
+          </button>
+        )}
+        <button
+          onClick={() => onNavigate('/')}
+          data-testid="return-home"
+          className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
+        >
+          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return home
+        </button>
+      </div>
+    </main>
+  );
+};
+
+export const ForbiddenPage: React.FC<NavigationProps> = ({ onNavigate }) => {
+  const session = portalAuth.getSession();
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">403 / Access restricted</p>
+      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">Access restricted.</h1>
+      <p className="mt-3 max-w-md text-sm text-[#57534E]">
+        You do not have authorization to view this workspace, project or resource.
+      </p>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
+        {session && (
+          <button
+            onClick={() => onNavigate(getRoleHome(session.role))}
+            data-testid="return-workspace"
+            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
+          >
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return to authorized workspace
+          </button>
+        )}
+        <button
+          onClick={() => onNavigate('/')}
+          data-testid="return-home"
+          className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
+        >
+          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Public home
+        </button>
+      </div>
+    </main>
+  );
+};

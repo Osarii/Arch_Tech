@@ -488,7 +488,7 @@ describe('ARCH_TECH client architecture portal', () => {
 
     cleanup();
     render(<PublicProjectPage projectId={createdProject!.id} onNavigate={vi.fn()} />);
-    expect(screen.getByText('Project not found.')).toBeDefined();
+    expect(screen.getByText('Page not found.')).toBeDefined();
 
     cleanup();
     render(<DashboardProjectPage projectId={createdProject!.id} onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="admin" homePath="/admin" />);
@@ -744,10 +744,15 @@ describe('ARCH_TECH client architecture portal', () => {
     }
   });
 
-  it('redirects an authenticated role away from another role route', async () => {
+  it('redirects an authenticated role away from another role route to 403', async () => {
     portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
     window.history.replaceState({}, '', '/admin');
     render(<App />);
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/403');
+      expect(screen.getByText('403 / Access restricted')).toBeDefined();
+    });
+    fireEvent.click(screen.getByTestId('return-workspace'));
     await waitFor(() => {
       expect(window.location.pathname).toBe('/architect');
       expect(screen.getByText('Assigned projects')).toBeDefined();
@@ -784,9 +789,13 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<App />);
 
     await waitFor(() => {
-      expect(window.location.pathname).toBe('/dashboard');
+      expect(window.location.pathname).toBe('/403');
     });
     expect(portalAuth.getSession()?.role).toBe('client');
+    fireEvent.click(screen.getByTestId('return-workspace'));
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/dashboard');
+    });
   });
 
   it('rejects remote reload for deactivated user and displays login gate', async () => {
@@ -825,13 +834,15 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(window.localStorage.getItem('arch-tech-portal-session')).toBeNull();
   });
 
-  it('protects unassigned architect project details', async () => {
+  it('protects unassigned architect project details by redirecting to 403', async () => {
     portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
     window.history.replaceState({}, '', '/architect/projects/universidad-latina');
     render(<App />);
-    await waitFor(() => expect(window.location.pathname).toBe('/architect'));
-    expect(screen.getByText('Assigned projects')).toBeDefined();
+    await waitFor(() => expect(window.location.pathname).toBe('/403'));
+    expect(screen.getByText('403 / Access restricted')).toBeDefined();
     expect(screen.queryByText('Universidad Latina')).toBeNull();
+    fireEvent.click(screen.getByTestId('return-workspace'));
+    await waitFor(() => expect(window.location.pathname).toBe('/architect'));
   });
 
   it('allows assigned client project details and blocks unassigned direct URLs', async () => {
@@ -844,6 +855,9 @@ describe('ARCH_TECH client architecture portal', () => {
     cleanup();
     window.history.replaceState({}, '', '/dashboard/projects/universidad-latina');
     render(<App />);
+    await waitFor(() => expect(window.location.pathname).toBe('/403'));
+    expect(screen.getByText('403 / Access restricted')).toBeDefined();
+    fireEvent.click(screen.getByTestId('return-workspace'));
     await waitFor(() => expect(window.location.pathname).toBe('/dashboard'));
     expect(screen.getByText('Projects in progress.')).toBeDefined();
   });
@@ -1159,5 +1173,86 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(scrollIntoView).toHaveBeenCalledTimes(2);
 
     HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+  });
+
+  it('routes unknown application routes to /404 and allows returning home', async () => {
+    window.history.replaceState({}, '', '/some/nonexistent/route');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/404');
+      expect(screen.getByText('404 / Page not found')).toBeDefined();
+      expect(screen.getByText('Page not found.')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByTestId('return-home'));
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/');
+    });
+  });
+
+  it('redirects nonexistent portal project to /404', async () => {
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+    window.history.replaceState({}, '', '/dashboard/projects/totally-bogus-project');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/404');
+      expect(screen.getByText('404 / Page not found')).toBeDefined();
+    });
+
+    fireEvent.click(screen.getByTestId('return-workspace'));
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/dashboard');
+    });
+  });
+
+  it('redirects nonexistent public project to /404', async () => {
+    window.history.replaceState({}, '', '/projects/nonexistent-public-project');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/404');
+      expect(screen.getByText('404 / Page not found')).toBeDefined();
+    });
+  });
+
+  it('redirects admin on nonexistent project to /404 but allows existing project', async () => {
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+    window.history.replaceState({}, '', '/admin/projects/nonexistent-admin-project');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/404');
+    });
+
+    cleanup();
+    window.history.replaceState({}, '', '/admin/projects/zona-franca-la-lima');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/admin/projects/zona-franca-la-lima');
+      expect(screen.getByText('Zona Franca La Lima')).toBeDefined();
+    });
+  });
+
+  it('blocks client from architect and admin workspaces with 403', async () => {
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+    window.history.replaceState({}, '', '/architect');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/403');
+      expect(screen.getByText('403 / Access restricted')).toBeDefined();
+    });
+
+    cleanup();
+    window.history.replaceState({}, '', '/admin');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/403');
+      expect(screen.getByText('403 / Access restricted')).toBeDefined();
+    });
   });
 });

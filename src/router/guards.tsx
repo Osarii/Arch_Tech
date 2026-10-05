@@ -1,8 +1,8 @@
 import React from 'react';
 import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
 import { LandingPage } from '../components/landing/LandingPage';
-import { LoginOverlay, NotFoundPage } from '../components/portal/PortalPages';
-import { getPortalUser, getProjectsForUser, PortalRole } from '../portal/data';
+import { ForbiddenPage, LoginOverlay, NotFoundPage } from '../components/portal/PortalPages';
+import { getPortalProject, getPortalUser, getProjectsForUser, PortalRole } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
 import { authService } from '../services/authService';
 import { userService } from '../services/userService';
@@ -55,7 +55,7 @@ export const ProtectedRoute: React.FC = () => {
 export const RoleRoute: React.FC<{ role: PortalRole }> = ({ role }) => {
   const session = portalAuth.getSession();
   if (!session) return <AuthGate />;
-  if (session.role !== role) return <Navigate to={roleHome(session.role)} replace />;
+  if (session.role !== role) return <Navigate to="/403" replace />;
   return <Outlet />;
 };
 
@@ -71,13 +71,22 @@ export const AccessibleProjectRoute: React.FC<{ role: PortalRole }> = ({ role })
   }, [ready]);
 
   if (!session) return <AuthGate />;
-  if (role === 'admin') return <Outlet />;
   if (!ready) return null;
 
+  const project = projectId ? getPortalProject(projectId) : undefined;
+  if (!project) return <Navigate to="/404" replace />;
+
+  if (role === 'admin') return <Outlet />;
+
   const user = getPortalUser(session.email);
-  const allowed = Boolean(projectId && user && getProjectsForUser(user.id).some((project) => project.id === projectId));
-  if (!allowed) return <Navigate to={roleHome(role)} replace />;
+  const allowed = Boolean(projectId && user && getProjectsForUser(user.id).some((p) => p.id === projectId));
+  if (!allowed) return <Navigate to="/403" replace />;
   return <Outlet />;
+};
+
+export const ForbiddenRoute: React.FC = () => {
+  const navigate = useNavigate();
+  return <ForbiddenPage onNavigate={navigate} />;
 };
 
 export const NotFoundRoute: React.FC = () => {

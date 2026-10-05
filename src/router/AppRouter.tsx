@@ -25,9 +25,11 @@ import {
   PortalShell,
   PublicProjectPage,
 } from '../components/portal/PortalPages';
+import { getPublicProject } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
 import {
   AccessibleProjectRoute,
+  ForbiddenRoute,
   legacyWorkspaceRequested,
   NotFoundRoute,
   ProtectedRoute,
@@ -64,6 +66,8 @@ const RootRoute: React.FC<{ onLogin: (trigger?: HTMLElement) => void; onNavigate
 
 const PublicProjectRoute: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
   const { projectId = '' } = useParams();
+  const project = getPublicProject(projectId);
+  if (!project) return <Navigate to="/404" replace />;
   return <PublicProjectPage projectId={projectId} onNavigate={onNavigate} />;
 };
 
@@ -129,6 +133,8 @@ const RoutedApp: React.FC = () => {
         <Route path="/" element={<RootRoute onLogin={openLogin} onNavigate={handleNavigate} />} />
         <Route path="/login" element={<Navigate to="/?login=1" replace />} />
         <Route path="/projects/:projectId" element={<PublicProjectRoute onNavigate={handleNavigate} />} />
+        <Route path="/403" element={<ForbiddenRoute />} />
+        <Route path="/404" element={<NotFoundRoute />} />
         <Route element={<ProtectedRoute />}>
           {/* CLIENT WORKSPACES */}
           <Route element={<RoleRoute role="client" />}>
@@ -177,7 +183,7 @@ const RoutedApp: React.FC = () => {
 
           <Route path="/workspace" element={<WorkspaceRoute />} />
         </Route>
-        <Route path="*" element={<NotFoundRoute />} />
+        <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
       <LoginOverlay open={loginOpen} onClose={closeLogin} onSuccess={completeLogin} />
     </>
