@@ -2,21 +2,21 @@ import React, { useState } from 'react';
 import type { PortalProject } from '../../portal/data';
 
 /**
- * Explicit landing mapping to locally stored Garnier portfolio photography.
- * The fictional ARCH_TECH project identities remain unchanged; these images
- * are presentation references for scale and context only.
+ * Explicit landing mapping to locally stored official Garnier project media.
+ * Each entry stays inside its own project directory to prevent cross-project
+ * image substitution during the showcase migration.
  */
 export const preferredProjectImages: Record<string, string> = {
-  'pacific-nexus-free-zone': '/projects/pacific-nexus-free-zone/garnier-portfolio.webp',
-  'summit-point-corporate-district': '/projects/summit-point-corporate-district/garnier-portfolio.jpg',
-  'mar-vista-hospitality-district': '/projects/mar-vista-hospitality-district/garnier-portfolio.jpg',
-  'caribbean-ai-compute-campus': '/projects/caribbean-ai-compute-campus/garnier-portfolio.webp',
-  'guanacaste-renewable-compute-campus': '/projects/guanacaste-renewable-compute-campus/garnier-portfolio.webp',
-  'pacific-regional-medical-campus': '/projects/pacific-regional-medical-campus/garnier-portfolio.webp',
+  'zona-franca-la-lima': '/projects/zona-franca-la-lima/garnier-cover.webp',
+  'el-cafetal': '/projects/el-cafetal/garnier-cover.webp',
+  'santa-ana-country-club': '/projects/santa-ana-country-club/garnier-cover.webp',
+  'waldorf-astoria': '/projects/waldorf-astoria/garnier-cover.jpg',
+  'centro-corporativo-sabana': '/projects/centro-corporativo-sabana/garnier-cover.jpg',
+  'universidad-latina': '/projects/universidad-latina/garnier-cover.webp',
 };
 
 export const getPreferredProjectImage = (project: PortalProject): string => (
-  preferredProjectImages[project.id] || project.image || project.media?.aerial || ''
+  preferredProjectImages[project.id] || project.image || project.media?.gallery?.[0] || project.media?.aerial || ''
 );
 
 interface ProjectImageProps {

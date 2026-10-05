@@ -452,7 +452,7 @@ test.describe('Arch_Tech Architectural Landing Page E2E', () => {
     // 1. Public architectural portfolio
     await expect(page.getByText('ARCH_TECH').first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Development at a larger scale/ })).toBeVisible();
-    await expect(page.getByText('Development portfolio', { exact: true })).toBeVisible();
+    await expect(page.getByText(/Six official Garnier developments/)).toBeVisible();
 
     // 2. Client access
     await page.getByTestId('client-login-link').click();
@@ -461,7 +461,7 @@ test.describe('Arch_Tech Architectural Landing Page E2E', () => {
     await expect(page.getByText('Projects in progress.')).toBeVisible();
 
     // 3. Project model opens in the existing workspace
-    await page.getByTestId('dashboard-project-pacific-nexus-free-zone').click();
+    await page.getByTestId('dashboard-project-zona-franca-la-lima').click();
     await page.getByTestId('project-tab-model').click();
     await page.getByTestId('open-3d-model').click();
     await expect(page.getByRole('button', { name: /Open IFC/i })).toBeVisible();

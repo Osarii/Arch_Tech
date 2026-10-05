@@ -7,8 +7,8 @@
       "password": "client-access",
       "role": "client",
       "projectIds": [
-        "pacific-nexus-free-zone",
-        "mar-vista-hospitality-district"
+        "zona-franca-la-lima",
+        "waldorf-astoria"
       ],
       "status": "active"
     },
@@ -19,8 +19,8 @@
       "password": "architect-access",
       "role": "architect",
       "projectIds": [
-        "pacific-nexus-free-zone",
-        "summit-point-corporate-district"
+        "zona-franca-la-lima",
+        "el-cafetal"
       ],
       "status": "active"
     },
@@ -31,410 +31,422 @@
       "password": "admin-access",
       "role": "admin",
       "projectIds": [
-        "caribbean-ai-compute-campus",
-        "summit-point-corporate-district",
-        "pacific-regional-medical-campus",
-        "mar-vista-hospitality-district",
-        "pacific-nexus-free-zone",
-        "guanacaste-renewable-compute-campus"
+        "zona-franca-la-lima",
+        "el-cafetal",
+        "santa-ana-country-club",
+        "waldorf-astoria",
+        "centro-corporativo-sabana",
+        "universidad-latina"
       ],
       "status": "active"
     }
   ],
   "projects": [
     {
-      "id": "pacific-nexus-free-zone",
-      "code": "AT / 09",
-      "title": "Pacific Nexus Free Zone Campus",
-      "category": "Free Zone · Industrial Campus",
-      "phase": "Concept design",
-      "progress": 34,
-      "nextMilestone": "Investor program alignment · 18 November",
-      "summary": "A free-zone campus concept organized around logistics, shared utilities, adaptable production space and a clear movement network.",
-      "statement": "Pacific Nexus is planned as a phased employment and logistics campus: a framework of buildings, roads, landscape and shared infrastructure that can expand without losing clarity.",
-      "image": "/projects/pacific-nexus-free-zone/garnier-portfolio.webp",
-      "market": "Costa Rica · Central Pacific",
-      "developmentType": "Free zone and logistics campus",
-      "publicStage": "In concept design",
+      "id": "zona-franca-la-lima",
+      "code": "AT / 01",
+      "title": "Zona Franca La Lima",
+      "category": "Free zone · Industrial park",
+      "phase": "Showcase review",
+      "progress": 74,
+      "nextMilestone": "Portfolio review · 18 November",
+      "summary": "A free zone and industrial park in La Lima, Cartago, covering 79 hectares for advanced manufacturing, life sciences, logistics and related services.",
+      "statement": "The official portfolio describes La Lima as a 79-hectare mixed-commercial development with a technological profile for advanced manufacturing, life sciences, logistics centers and supplier and service companies.",
+      "image": "/projects/zona-franca-la-lima/garnier-cover.webp",
+      "market": "Costa Rica · La Lima, Cartago",
+      "developmentType": "Free zone / Industrial park",
+      "publicStage": "Operating since 2014",
       "published": true,
-      "context": "Port-to-inland logistics corridor",
-      "scale": "Regional employment campus",
-      "longView": "A flexible platform for industry, logistics and long-term regional value.",
+      "context": "La Lima, Cartago",
+      "scale": "400,000 m²",
+      "longView": "A business and infrastructure platform for advanced manufacturing, life sciences, logistics and related services.",
       "media": {
-        "aerial": "/projects/pacific-nexus-free-zone/aerial-overview.webp",
-        "masterplan": "/projects/pacific-nexus-free-zone/masterplan.webp",
-        "sitePlan": "/projects/pacific-nexus-free-zone/site-plan.webp",
-        "floorPlan": "/projects/pacific-nexus-free-zone/floor-plan.webp",
-        "interior": "/projects/pacific-nexus-free-zone/lobby-interior.webp",
-        "campusOverview": "/projects/pacific-nexus-free-zone/campus-overview.webp",
-        "conceptBoard": "/projects/pacific-nexus-free-zone/concept-board.webp"
+        "gallery": [
+          "/projects/zona-franca-la-lima/garnier-01.webp",
+          "/projects/zona-franca-la-lima/garnier-02.webp"
+        ]
       }
     },
     {
-      "id": "summit-point-corporate-district",
-      "code": "AT / 10",
-      "title": "Summit Point Corporate District",
-      "category": "Corporate · District Development",
-      "phase": "Concept design",
-      "progress": 41,
-      "nextMilestone": "Program alignment · 24 November",
-      "summary": "A corporate district concept linking flexible work buildings, public landscape, mobility and shared amenities in the Central Valley.",
-      "statement": "Summit Point gives a growing business district a legible framework of streets, courtyards and adaptable buildings. The public realm is treated as shared infrastructure for daily work and connection.",
-      "image": "/projects/summit-point-corporate-district/garnier-portfolio.jpg",
-      "market": "Costa Rica · Greater San José",
-      "developmentType": "Corporate district development",
-      "publicStage": "In concept design",
+      "id": "el-cafetal",
+      "code": "AT / 02",
+      "title": "El Cafetal",
+      "category": "Corporate center · Office campus",
+      "phase": "Showcase review",
+      "progress": 68,
+      "nextMilestone": "Portfolio review · 25 November",
+      "summary": "A corporate center in Belén, Heredia, formed by seven office towers with gardens, parking and access roads",
+      "statement": "The official portfolio describes seven eco-friendly office buildings, extensive gardens, 2,100 parking spaces and key access roads serving a corporate center with 5,600 employees.",
+      "image": "/projects/el-cafetal/garnier-cover.webp",
+      "market": "Costa Rica · Belén, Heredia",
+      "developmentType": "Corporate center / Office campus",
+      "publicStage": "Operating since 2014",
       "published": true,
-      "context": "Transit-connected Central Valley edge",
-      "scale": "Corporate district",
-      "longView": "A durable work setting with room for changing teams, uses and mobility.",
+      "context": "Belén, Heredia",
+      "scale": "88,980 m²",
+      "longView": "Seven office buildings, gardens, parking and access roads form the corporate setting described in the official portfolio.",
       "media": {
-        "aerial": "/projects/summit-point-corporate-district/aerial-overview.webp",
-        "masterplan": "/projects/summit-point-corporate-district/masterplan.webp",
-        "sitePlan": "/projects/summit-point-corporate-district/site-plan.webp",
-        "floorPlan": "/projects/summit-point-corporate-district/floor-plan.webp",
-        "interior": "/projects/summit-point-corporate-district/lobby-interior.webp",
-        "campusOverview": "/projects/summit-point-corporate-district/campus-overview.webp",
-        "conceptBoard": "/projects/summit-point-corporate-district/concept-board.webp"
+        "gallery": [
+          "/projects/el-cafetal/garnier-01.webp",
+          "/projects/el-cafetal/garnier-02.webp"
+        ]
       }
     },
     {
-      "id": "mar-vista-hospitality-district",
-      "code": "AT / 11",
-      "title": "Mar Vista Hospitality District",
-      "category": "Hospitality · Destination Development",
-      "phase": "Brief and site study",
-      "progress": 27,
-      "nextMilestone": "Destination brief · 02 December",
-      "summary": "A hospitality district concept shaped by arrival, shared amenities, landscape systems and the character of the Pacific coast.",
-      "statement": "Mar Vista is conceived as a sequence of connected hospitality settings rather than a single resort object. Arrival, operations, landscape and the coast establish a framework for future phases.",
-      "image": "/projects/mar-vista-hospitality-district/garnier-portfolio.jpg",
-      "market": "Costa Rica · Pacific Coast",
-      "developmentType": "Hospitality destination development",
-      "publicStage": "In site and destination study",
+      "id": "santa-ana-country-club",
+      "code": "AT / 03",
+      "title": "Santa Ana Country Club",
+      "category": "Social & sports club",
+      "phase": "Showcase review",
+      "progress": 82,
+      "nextMilestone": "Portfolio review · 02 December",
+      "summary": "A social and sports club on an eight-hectare site in Pozos de Santa Ana, with dining, aquatic, racquet, fitness and social amenities.",
+      "statement": "The official portfolio describes Santa Ana Country Club as an eight-hectare social and sports club with gastronomic, aquatic, racquet sports, fitness and social spaces.",
+      "image": "/projects/santa-ana-country-club/garnier-cover.webp",
+      "market": "Costa Rica · Pozos de Santa Ana",
+      "developmentType": "Social & sports club",
+      "publicStage": "Operating since 2019",
       "published": true,
-      "context": "Coastal forest / Pacific arrival corridor",
-      "scale": "Hospitality district",
-      "longView": "A destination experience shaped by landscape, seasonality and long-term stewardship.",
+      "context": "Pozos de Santa Ana",
+      "scale": "80,000 m²",
+      "longView": "A private club organized around sports, fitness, dining and social connection, as described by the official portfolio.",
       "media": {
-        "aerial": "/projects/mar-vista-hospitality-district/aerial-overview.webp",
-        "masterplan": "/projects/mar-vista-hospitality-district/masterplan.webp",
-        "sitePlan": "/projects/mar-vista-hospitality-district/site-plan.webp",
-        "floorPlan": "/projects/mar-vista-hospitality-district/floor-plan.webp",
-        "interior": "/projects/mar-vista-hospitality-district/lobby-interior.webp",
-        "campusOverview": "/projects/mar-vista-hospitality-district/campus-overview.webp",
-        "conceptBoard": "/projects/mar-vista-hospitality-district/concept-board.webp"
+        "gallery": [
+          "/projects/santa-ana-country-club/garnier-01.webp",
+          "/projects/santa-ana-country-club/garnier-02.webp"
+        ]
       }
     },
     {
-      "id": "caribbean-ai-compute-campus",
-      "code": "AT / 12",
-      "title": "Caribbean AI Compute Campus",
-      "category": "Compute Infrastructure · Campus Development",
-      "phase": "Brief and site study",
-      "progress": 19,
-      "nextMilestone": "Utility and site framework · 09 December",
-      "summary": "A digital-infrastructure campus concept organized around resilient utilities, secure movement and phased expansion.",
-      "statement": "The campus is structured as a series of serviceable building fields with clear utility corridors, controlled access and landscape buffers. Its first phase establishes the framework for future capacity.",
-      "image": "/projects/caribbean-ai-compute-campus/garnier-portfolio.webp",
-      "market": "Costa Rica · Caribbean corridor",
-      "developmentType": "Digital infrastructure campus",
-      "publicStage": "In opportunity and site strategy",
+      "id": "waldorf-astoria",
+      "code": "AT / 04",
+      "title": "Waldorf Astoria",
+      "category": "Hospitality · Hotel and residences",
+      "phase": "Showcase review",
+      "progress": 51,
+      "nextMilestone": "Portfolio review · 09 December",
+      "summary": "A hospitality project at Playa Penca, Punta Cacique, Guanacaste, planned around a hotel and residences.",
+      "statement": "Garnier's official portfolio describes the Waldorf Astoria Hotel Project at Playa Penca, Punta Cacique, with 188 rooms and around 30 residences.",
+      "image": "/projects/waldorf-astoria/garnier-cover.jpg",
+      "market": "Costa Rica · Playa Penca, Punta Cacique, Guanacaste",
+      "developmentType": "Hospitality / Hotel and residences",
+      "publicStage": "Proposed · opening listed as 2025",
       "published": true,
-      "context": "Caribbean energy and logistics corridor",
-      "scale": "Utility-served compute campus",
-      "longView": "A resilient infrastructure setting designed to adapt as technology and capacity change.",
+      "context": "Playa Penca, Punta Cacique, Guanacaste",
+      "scale": "55,000 m²",
+      "longView": "A hospitality project framed by the natural setting and destination experience described in the official portfolio.",
       "media": {
-        "aerial": "/projects/caribbean-ai-compute-campus/aerial-overview.webp",
-        "masterplan": "/projects/caribbean-ai-compute-campus/masterplan.webp",
-        "sitePlan": "/projects/caribbean-ai-compute-campus/site-plan.webp",
-        "floorPlan": "/projects/caribbean-ai-compute-campus/floor-plan.webp",
-        "interior": "/projects/caribbean-ai-compute-campus/lobby-interior.webp",
-        "campusOverview": "/projects/caribbean-ai-compute-campus/campus-overview.webp",
-        "conceptBoard": "/projects/caribbean-ai-compute-campus/concept-board.webp"
+        "gallery": [
+          "/projects/waldorf-astoria/garnier-01.jpeg",
+          "/projects/waldorf-astoria/garnier-02.jpeg"
+        ]
       }
     },
     {
-      "id": "guanacaste-renewable-compute-campus",
-      "code": "AT / 13",
-      "title": "Guanacaste Renewable Compute Campus",
-      "category": "Energy + Compute · Campus Development",
-      "phase": "Concept design",
-      "progress": 29,
-      "nextMilestone": "Energy and phasing review · 16 December",
-      "summary": "A renewable-infrastructure campus concept pairing utility planning, compute buildings, solar fields and a dry-forest landscape strategy.",
-      "statement": "The campus makes infrastructure visible: energy fields, service roads, cooling systems and building phases are organized as one development framework for a dry coastal region.",
-      "image": "/projects/guanacaste-renewable-compute-campus/garnier-portfolio.webp",
-      "market": "Costa Rica · Guanacaste",
-      "developmentType": "Renewable energy and digital infrastructure campus",
-      "publicStage": "In concept design",
+      "id": "centro-corporativo-sabana",
+      "code": "AT / 05",
+      "title": "Centro Corporativo La Sabana",
+      "category": "Corporate office center",
+      "phase": "Showcase review",
+      "progress": 43,
+      "nextMilestone": "Portfolio review · 16 December",
+      "summary": "A corporate office center in Sabana Sur, described by the official portfolio as an 18-level building with three parking basements.",
+      "statement": "The official portfolio describes Centro Corporativo La Sabana as an 18-level office building with three parking basements, office areas of 2,800 m² per floor and amenities including a gym, sports areas, spa, viewpoints, terraces and balconies.",
+      "image": "/projects/centro-corporativo-sabana/garnier-cover.jpg",
+      "market": "Costa Rica · Sabana Sur",
+      "developmentType": "Corporate office center",
+      "publicStage": "Proposed · upcoming",
       "published": true,
-      "context": "Dry forest / renewable corridor",
-      "scale": "Renewable compute campus",
-      "longView": "A measured relationship between renewable infrastructure, technology and the regional landscape.",
+      "context": "Sabana Sur",
+      "scale": "21,706.98 m²",
+      "longView": "An office center with amenities and sustainability goals, including the LEED Gold certification described in the official portfolio.",
       "media": {
-        "aerial": "/projects/guanacaste-renewable-compute-campus/aerial-overview.webp",
-        "masterplan": "/projects/guanacaste-renewable-compute-campus/masterplan.webp",
-        "sitePlan": "/projects/guanacaste-renewable-compute-campus/site-plan.webp",
-        "floorPlan": "/projects/guanacaste-renewable-compute-campus/floor-plan.webp",
-        "interior": "/projects/guanacaste-renewable-compute-campus/lobby-interior.webp",
-        "campusOverview": "/projects/guanacaste-renewable-compute-campus/campus-overview.webp",
-        "conceptBoard": "/projects/guanacaste-renewable-compute-campus/concept-board.webp"
+        "gallery": [
+          "/projects/centro-corporativo-sabana/garnier-01.jpg",
+          "/projects/centro-corporativo-sabana/garnier-02.jpg"
+        ]
       }
     },
     {
-      "id": "pacific-regional-medical-campus",
-      "code": "AT / 14",
-      "title": "Pacific Regional Medical Campus",
-      "category": "Healthcare · Regional Campus",
-      "phase": "Concept design",
-      "progress": 33,
-      "nextMilestone": "Care program alignment · 20 December",
-      "summary": "A regional care campus concept bringing clinical buildings, public arrival, landscape and future expansion into one clear framework.",
-      "statement": "The campus is planned around legible arrival, connected care settings and a landscape structure that can receive future phases. Its scale is regional, but its daily experience remains clear and humane.",
-      "image": "/projects/pacific-regional-medical-campus/garnier-portfolio.webp",
-      "market": "Costa Rica · Pacific region",
-      "developmentType": "Regional medical campus",
-      "publicStage": "In concept design",
+      "id": "universidad-latina",
+      "code": "AT / 06",
+      "title": "Universidad Latina",
+      "category": "Educational campus",
+      "phase": "Showcase review",
+      "progress": 63,
+      "nextMilestone": "Portfolio review · 23 December",
+      "summary": "An educational campus in Heredia integrating classrooms, workshops, laboratories, library, administrative offices and a food court.",
+      "statement": "The official portfolio describes a 15,000 m², five-level building that integrates educational and recreational infrastructure for private higher education.",
+      "image": "/projects/universidad-latina/garnier-cover.webp",
+      "market": "Costa Rica · Heredia",
+      "developmentType": "Educational campus",
+      "publicStage": "Operating since 2019",
       "published": true,
-      "context": "Pacific regional service corridor",
-      "scale": "Regional care campus",
-      "longView": "A resilient care setting designed to grow with the region it serves.",
+      "context": "Heredia",
+      "scale": "37,000 m²",
+      "longView": "An educational and recreational campus organized for the daily experience of students, as described in the official portfolio.",
       "media": {
-        "aerial": "/projects/pacific-regional-medical-campus/aerial-overview.webp",
-        "masterplan": "/projects/pacific-regional-medical-campus/masterplan.webp",
-        "sitePlan": "/projects/pacific-regional-medical-campus/site-plan.webp",
-        "floorPlan": "/projects/pacific-regional-medical-campus/floor-plan.webp",
-        "interior": "/projects/pacific-regional-medical-campus/lobby-interior.webp",
-        "campusOverview": "/projects/pacific-regional-medical-campus/campus-overview.webp",
-        "conceptBoard": "/projects/pacific-regional-medical-campus/concept-board.webp"
+        "gallery": [
+          "/projects/universidad-latina/garnier-01.webp",
+          "/projects/universidad-latina/garnier-02.webp"
+        ]
       }
     }
   ],
   "updates": [
     {
-      "projectId": "pacific-nexus-free-zone",
-      "date": "02 OCT 2026",
-      "title": "Material study issued",
-      "body": "The campus material and landscape palette is ready for client review."
+      "projectId": "zona-franca-la-lima",
+      "date": "04 OCT 2026",
+      "title": "Showcase media review",
+      "body": "Official portfolio imagery and public facts are ready for the ARCH_TECH presentation prototype."
     },
     {
-      "projectId": "pacific-nexus-free-zone",
-      "date": "24 SEP 2026",
-      "title": "Plan development complete",
-      "body": "Primary movement, service and building relationships have been coordinated."
-    },
-    {
-      "projectId": "summit-point-corporate-district",
+      "projectId": "zona-franca-la-lima",
       "date": "01 OCT 2026",
-      "title": "Mobility framework issued",
-      "body": "The district circulation and public realm framework is ready for coordination."
+      "title": "Portfolio facts checked",
+      "body": "Location, scale and development description were aligned with the official public source."
     },
     {
-      "projectId": "mar-vista-hospitality-district",
-      "date": "28 SEP 2026",
-      "title": "Destination brief shared",
-      "body": "Arrival, landscape and shared amenity principles are ready for review."
+      "projectId": "el-cafetal",
+      "date": "29 SEP 2026",
+      "title": "Showcase media review",
+      "body": "Corporate campus imagery is staged for the presentation prototype."
     },
     {
-      "projectId": "caribbean-ai-compute-campus",
+      "projectId": "santa-ana-country-club",
       "date": "26 SEP 2026",
-      "title": "Utility study initiated",
-      "body": "The site and shared infrastructure framework has entered coordination."
+      "title": "Project reference prepared",
+      "body": "Public project information is organized for the showcase dossier."
     },
     {
-      "projectId": "guanacaste-renewable-compute-campus",
+      "projectId": "waldorf-astoria",
+      "date": "24 SEP 2026",
+      "title": "Showcase media review",
+      "body": "Hospitality project imagery and public facts are ready for review."
+    },
+    {
+      "projectId": "centro-corporativo-sabana",
       "date": "21 SEP 2026",
-      "title": "Energy landscape review",
-      "body": "The first landscape and energy relationships have been documented."
+      "title": "Project reference prepared",
+      "body": "Office-center information is organized for the showcase dossier."
     },
     {
-      "projectId": "pacific-regional-medical-campus",
+      "projectId": "universidad-latina",
       "date": "18 SEP 2026",
-      "title": "Care program aligned",
-      "body": "The regional care program has been organized for the next planning phase."
+      "title": "Showcase media review",
+      "body": "Educational campus imagery is staged for the presentation prototype."
     }
   ],
   "milestones": [
     {
-      "projectId": "pacific-nexus-free-zone",
-      "label": "Opportunity and site strategy",
+      "projectId": "zona-franca-la-lima",
+      "label": "Public source intake",
       "status": "Complete"
     },
     {
-      "projectId": "pacific-nexus-free-zone",
-      "label": "Concept design",
+      "projectId": "zona-franca-la-lima",
+      "label": "Media mapping",
       "status": "Current"
     },
     {
-      "projectId": "pacific-nexus-free-zone",
-      "label": "Client design review",
+      "projectId": "zona-franca-la-lima",
+      "label": "Showcase review",
       "status": "Upcoming"
     },
     {
-      "projectId": "pacific-nexus-free-zone",
-      "label": "Documentation",
-      "status": "Upcoming"
-    },
-    {
-      "projectId": "summit-point-corporate-district",
-      "label": "Context and mobility study",
+      "projectId": "el-cafetal",
+      "label": "Public source intake",
       "status": "Complete"
     },
     {
-      "projectId": "summit-point-corporate-district",
-      "label": "Concept design",
+      "projectId": "el-cafetal",
+      "label": "Media mapping",
       "status": "Current"
     },
     {
-      "projectId": "summit-point-corporate-district",
-      "label": "Program alignment",
+      "projectId": "el-cafetal",
+      "label": "Showcase review",
       "status": "Upcoming"
     },
     {
-      "projectId": "mar-vista-hospitality-district",
-      "label": "Site and destination study",
-      "status": "Current"
-    },
-    {
-      "projectId": "mar-vista-hospitality-district",
-      "label": "Destination brief",
-      "status": "Upcoming"
-    },
-    {
-      "projectId": "mar-vista-hospitality-district",
-      "label": "Phasing framework",
-      "status": "Upcoming"
-    },
-    {
-      "projectId": "caribbean-ai-compute-campus",
-      "label": "Opportunity and site strategy",
-      "status": "Current"
-    },
-    {
-      "projectId": "caribbean-ai-compute-campus",
-      "label": "Utility and site framework",
-      "status": "Upcoming"
-    },
-    {
-      "projectId": "caribbean-ai-compute-campus",
-      "label": "Campus phasing",
-      "status": "Upcoming"
-    },
-    {
-      "projectId": "guanacaste-renewable-compute-campus",
-      "label": "Energy and landscape study",
+      "projectId": "santa-ana-country-club",
+      "label": "Public source intake",
       "status": "Complete"
     },
     {
-      "projectId": "guanacaste-renewable-compute-campus",
-      "label": "Concept design",
+      "projectId": "santa-ana-country-club",
+      "label": "Media mapping",
       "status": "Current"
     },
     {
-      "projectId": "guanacaste-renewable-compute-campus",
-      "label": "Energy and phasing review",
+      "projectId": "santa-ana-country-club",
+      "label": "Showcase review",
       "status": "Upcoming"
     },
     {
-      "projectId": "pacific-regional-medical-campus",
-      "label": "Regional context study",
+      "projectId": "waldorf-astoria",
+      "label": "Public source intake",
       "status": "Complete"
     },
     {
-      "projectId": "pacific-regional-medical-campus",
-      "label": "Concept design",
+      "projectId": "waldorf-astoria",
+      "label": "Media mapping",
       "status": "Current"
     },
     {
-      "projectId": "pacific-regional-medical-campus",
-      "label": "Care program alignment",
+      "projectId": "waldorf-astoria",
+      "label": "Showcase review",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "centro-corporativo-sabana",
+      "label": "Public source intake",
+      "status": "Complete"
+    },
+    {
+      "projectId": "centro-corporativo-sabana",
+      "label": "Media mapping",
+      "status": "Current"
+    },
+    {
+      "projectId": "centro-corporativo-sabana",
+      "label": "Showcase review",
+      "status": "Upcoming"
+    },
+    {
+      "projectId": "universidad-latina",
+      "label": "Public source intake",
+      "status": "Complete"
+    },
+    {
+      "projectId": "universidad-latina",
+      "label": "Media mapping",
+      "status": "Current"
+    },
+    {
+      "projectId": "universidad-latina",
+      "label": "Showcase review",
       "status": "Upcoming"
     }
   ],
   "documents": [
     {
-      "projectId": "pacific-nexus-free-zone",
-      "name": "Design development set",
-      "meta": "PDF · Updated 02 Oct 2026"
+      "projectId": "zona-franca-la-lima",
+      "name": "Official project reference",
+      "meta": "Showcase prototype · public source"
     },
     {
-      "projectId": "pacific-nexus-free-zone",
-      "name": "Material palette",
-      "meta": "PDF · Updated 02 Oct 2026"
+      "projectId": "el-cafetal",
+      "name": "Official project reference",
+      "meta": "Showcase prototype · public source"
     },
     {
-      "projectId": "pacific-nexus-free-zone",
-      "name": "Client review notes",
-      "meta": "PDF · Updated 30 Sep 2026"
+      "projectId": "santa-ana-country-club",
+      "name": "Official project reference",
+      "meta": "Showcase prototype · public source"
     },
     {
-      "projectId": "summit-point-corporate-district",
-      "name": "Mobility framework",
-      "meta": "PDF · Updated 01 Oct 2026"
+      "projectId": "waldorf-astoria",
+      "name": "Official project reference",
+      "meta": "Showcase prototype · public source"
     },
     {
-      "projectId": "summit-point-corporate-district",
-      "name": "Program alignment set",
-      "meta": "PDF · Updated 28 Sep 2026"
+      "projectId": "centro-corporativo-sabana",
+      "name": "Official project reference",
+      "meta": "Showcase prototype · public source"
     },
     {
-      "projectId": "mar-vista-hospitality-district",
-      "name": "Destination brief",
-      "meta": "PDF · Updated 28 Sep 2026"
+      "projectId": "universidad-latina",
+      "name": "Official project reference",
+      "meta": "Showcase prototype · public source"
     },
     {
-      "projectId": "caribbean-ai-compute-campus",
-      "name": "Utility framework",
-      "meta": "PDF · Updated 26 Sep 2026"
+      "projectId": "zona-franca-la-lima",
+      "name": "Local media mapping",
+      "meta": "Showcase prototype · ARCH_TECH"
     },
     {
-      "projectId": "pacific-regional-medical-campus",
-      "name": "Care program",
-      "meta": "PDF · Updated 18 Sep 2026"
+      "projectId": "el-cafetal",
+      "name": "Local media mapping",
+      "meta": "Showcase prototype · ARCH_TECH"
+    },
+    {
+      "projectId": "santa-ana-country-club",
+      "name": "Local media mapping",
+      "meta": "Showcase prototype · ARCH_TECH"
+    },
+    {
+      "projectId": "waldorf-astoria",
+      "name": "Local media mapping",
+      "meta": "Showcase prototype · ARCH_TECH"
+    },
+    {
+      "projectId": "centro-corporativo-sabana",
+      "name": "Local media mapping",
+      "meta": "Showcase prototype · ARCH_TECH"
+    },
+    {
+      "projectId": "universidad-latina",
+      "name": "Local media mapping",
+      "meta": "Showcase prototype · ARCH_TECH"
     }
   ],
   "approvals": [
     {
-      "projectId": "pacific-nexus-free-zone",
-      "title": "Material palette",
+      "projectId": "zona-franca-la-lima",
+      "title": "Showcase framing",
       "status": "Pending"
     },
     {
-      "projectId": "summit-point-corporate-district",
-      "title": "Mobility framework",
+      "projectId": "el-cafetal",
+      "title": "Public facts check",
       "status": "Approved"
     },
     {
-      "projectId": "mar-vista-hospitality-district",
-      "title": "Destination brief",
+      "projectId": "santa-ana-country-club",
+      "title": "Showcase framing",
       "status": "Pending"
+    },
+    {
+      "projectId": "waldorf-astoria",
+      "title": "Public facts check",
+      "status": "Approved"
+    },
+    {
+      "projectId": "centro-corporativo-sabana",
+      "title": "Public facts check",
+      "status": "Approved"
+    },
+    {
+      "projectId": "universidad-latina",
+      "title": "Showcase framing",
+      "status": "Approved"
     }
   ],
   "notifications": [
     {
       "userId": "portal-client",
-      "projectId": "pacific-nexus-free-zone",
-      "message": "Material study is ready for review.",
-      "date": "02 OCT 2026"
+      "projectId": "zona-franca-la-lima",
+      "message": "Showcase framing is ready for review.",
+      "date": "04 OCT 2026"
     },
     {
       "userId": "portal-client",
-      "projectId": "mar-vista-hospitality-district",
-      "message": "Destination brief is ready for review.",
-      "date": "28 SEP 2026"
+      "projectId": "waldorf-astoria",
+      "message": "Hospitality reference is ready for review.",
+      "date": "24 SEP 2026"
     },
     {
       "userId": "portal-architect",
-      "projectId": "pacific-nexus-free-zone",
-      "message": "Client review is scheduled for the current phase.",
-      "date": "02 OCT 2026"
+      "projectId": "zona-franca-la-lima",
+      "message": "Public source mapping is ready for coordination.",
+      "date": "04 OCT 2026"
     },
     {
       "userId": "portal-architect",
-      "projectId": "summit-point-corporate-district",
-      "message": "Mobility framework is ready for coordination.",
-      "date": "01 OCT 2026"
+      "projectId": "el-cafetal",
+      "message": "Corporate campus reference is ready for coordination.",
+      "date": "29 SEP 2026"
     }
   ]
 }

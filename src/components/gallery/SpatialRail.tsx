@@ -14,82 +14,38 @@ export type SpatialRailSlide = {
 };
 
 export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide[] => {
-  const media = project.media;
   const preferredImage = getPreferredProjectImage(project);
-  return [
+  const candidates = [
     {
       id: 'hero',
-      label: 'Facility Overview',
-      caption: 'Primary operational facility and landscape integration.',
-      category: 'Campus / Infrastructure Overview',
+      label: 'Project cover',
+      caption: 'Official project photography from the public portfolio.',
       src: preferredImage,
-      fit: 'cover',
-      aspect: 'wide',
     },
-    {
-      id: 'aerial',
-      label: 'Regional Context',
-      caption: 'Topographic alignment, corridor access, and site boundaries.',
-      category: 'Regional Context & Siting',
-      src: media?.aerial || preferredImage,
-      fit: 'cover',
-      aspect: 'wide',
-    },
-    {
-      id: 'campusOverview',
-      label: 'Campus Structure',
-      caption: 'Infrastructure framework, arterial connectors, and massing.',
-      category: 'Campus Infrastructure',
-      src: media?.campusOverview || media?.aerial || preferredImage,
-      fit: 'cover',
-      aspect: 'wide',
-    },
-    {
-      id: 'masterplan',
-      label: 'Masterplan',
-      caption: 'Phased development plots, easements, and buffer zoning.',
-      category: 'Master Planning & Phasing',
-      src: media?.masterplan || preferredImage,
-      fit: 'contain',
-      aspect: 'technical',
-    },
-    {
-      id: 'sitePlan',
-      label: 'Site Strategy',
-      caption: 'Circulation geometry, loading bays, and utility corridors.',
-      category: 'Site Strategy & Logistics',
-      src: media?.sitePlan || preferredImage,
-      fit: 'contain',
-      aspect: 'technical',
-    },
-    {
-      id: 'floorPlan',
-      label: 'Program Study',
-      caption: 'Structural grids, core placement, and modular layout zones.',
-      category: 'Spatial Programming & Layout',
-      src: media?.floorPlan || preferredImage,
-      fit: 'contain',
-      aspect: 'technical',
-    },
-    {
-      id: 'interior',
-      label: 'Operations',
-      caption: 'Operational environment, high-span volume, and envelope daylighting.',
-      category: 'Operations & Interior Volume',
-      src: media?.interior || preferredImage,
-      fit: 'cover',
-      aspect: 'wide',
-    },
-    {
-      id: 'conceptBoard',
-      label: 'Systems',
-      caption: 'Technical assemblies, materials, MEP strategies, and structural specs.',
-      category: 'Systems & Technical Specifications',
-      src: media?.conceptBoard || preferredImage,
-      fit: 'contain',
-      aspect: 'technical',
-    },
+    ...(project.media?.gallery ?? []).map((src, index) => ({
+      id: `gallery-${index + 1}`,
+      label: `Portfolio view ${String(index + 1).padStart(2, '0')}`,
+      caption: 'Official project photography from the public portfolio.',
+      src,
+    })),
   ];
+  const seen = new Set<string>();
+  const filtered = candidates.filter((slide) => {
+    if (seen.has(slide.src)) return false;
+    seen.add(slide.src);
+    return Boolean(slide.src);
+  });
+  const safeCandidates = filtered.length ? filtered : [{ id: 'hero', label: 'Project cover', caption: 'No official project photography is available.', src: '' }];
+  return safeCandidates.map((slide) => ({ ...slide, category: project.category, fit: 'cover' as const, aspect: 'wide' as const }));
+};
+
+const RailImage: React.FC<{ src?: string; alt: string; loading?: 'eager' | 'lazy'; fetchPriority?: 'high' | 'low' | 'auto'; className?: string }> = ({ src, alt, loading = 'lazy', fetchPriority = 'low', className = '' }) => {
+  const [failed, setFailed] = useState(!src);
+  useEffect(() => setFailed(!src), [src]);
+  if (failed) {
+    return <div data-testid="rail-image-fallback" role="img" aria-label={`${alt} image unavailable`} className={`landing-image-fallback ${className}`}><span>ARCH_TECH / PROJECT MEDIA</span></div>;
+  }
+  return <img src={src} alt={alt} loading={loading} fetchPriority={fetchPriority} decoding="async" onError={() => setFailed(true)} className={className} />;
 };
 
 interface SpatialRailProps {
@@ -362,17 +318,12 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                 className="relative block h-full w-full cursor-zoom-in text-left focus:outline-none"
                 aria-label={`Open fullscreen view of ${slide.label}`}
               >
-                <img
+                <RailImage
                   src={shouldLoadImage ? slide.src : undefined}
                   alt={`${project.title} - ${slide.label}`}
                   loading={isInitial ? 'eager' : 'lazy'}
                   fetchPriority={isInitial ? 'high' : isNext ? 'auto' : 'low'}
-                  decoding="async"
-                  className={`h-full w-full select-none transition-transform duration-500 ease-out will-change-transform group-hover:scale-[1.01] ${
-                    slide.fit === 'contain'
-                      ? 'object-contain p-2 sm:p-5 md:p-6'
-                      : 'object-cover'
-                  } ${isActive ? 'opacity-100' : 'opacity-80'}`}
+                  className={`h-full w-full select-none object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-[1.01] ${isActive ? 'opacity-100' : 'opacity-80'}`}
                 />
 
                 {/* Subtle Hover Action overlay */}
@@ -434,10 +385,9 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
 
           {/* Large Image Area */}
           <div className="relative flex flex-1 items-center justify-center py-2">
-            <img
+            <RailImage
               src={slides[fullscreenIndex].src}
               alt={`${project.title} - ${slides[fullscreenIndex].label}`}
-              decoding="async"
               className="max-h-[82vh] max-w-full select-none object-contain"
             />
           </div>

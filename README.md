@@ -8,7 +8,7 @@ Its primary identity is large-scale developments and infrastructure: free zones,
 
 ## Main Feature Areas
 
-1. **Public Development Portfolio**: Six fictional Costa Rica-oriented development concepts (Free Zone, Corporate, Hospitality, Compute, Renewable and Medical campuses) with a featured six-project carousel using locally stored official Garnier portfolio photography for this authorized ARCH_TECH presentation/showcase prototype. Canonical project identities remain unchanged.
+1. **Public Development Portfolio**: Six official Garnier project references spanning free zones, corporate campuses, hospitality, social infrastructure and education, presented locally as an ARCH_TECH presentation/showcase prototype with a featured six-project carousel.
 2. **Multi-Role Client Portal**: Secure role-based portal (`Client`, `Architect`, `Admin`) backed by local snapshot state for tracking project milestones, document vaults, design approvals, and project updates.
 3. **OpenBIM Engineering Workspace**: Desktop-first web CAD environment for real `.ifc` files:
    - **Visualization & Inspection**: Spatial BIM tree, property sets (Psets, Qto), 2D floor plans, 3D section planes (X/Y/Z clipping), length measurement.
@@ -31,18 +31,18 @@ Its primary identity is large-scale developments and infrastructure: free zones,
 
 ### Landing reference photography
 
-The six canonical projects keep their fictional names, categories, statements and dossier media. Their preferred public-facing primary images now use local copies of official Garnier portfolio photographs, mapped explicitly in `src/components/gallery/projectMedia.tsx`; the existing concept/render packs remain available for technical and private dossier context. These photographs are presentation references only and do not depict the fictional ARCH_TECH projects. The featured media viewport uses a fixed 16:9 shell so slide changes cannot resize the outer card.
+The showcase uses six current projects from Garnier & Garnier's public portfolio. Project facts and names are kept factual and source-oriented; workflow updates, milestones and approvals remain ARCH_TECH prototype data. Each project's official media is stored in an isolated local directory, mapped explicitly in `src/components/gallery/projectMedia.tsx`, and the featured media viewport uses a fixed 16:9 shell so slide changes cannot resize the outer card.
 
 Official portfolio source mapping:
 
-- Pacific Nexus / industrial campus: Zona Franca La Lima.
-- Summit Point / corporate district: Centro Corporativo La Sabana.
-- Mar Vista / hospitality district: Waldorf Astoria.
-- Caribbean AI / compute campus: CCL / Centro Corporativo Indora.
-- Guanacaste Renewable / infrastructure campus: El Cafetal.
-- Pacific Regional Medical / healthcare campus: Universidad Latina.
+- Zona Franca La Lima (`zona-franca-la-lima`) — free zone / industrial park.
+- El Cafetal (`el-cafetal`) — corporate center / office campus.
+- Santa Ana Country Club (`santa-ana-country-club`) — social and sports club.
+- Waldorf Astoria (`waldorf-astoria`) — hotel and residences.
+- Centro Corporativo La Sabana (`centro-corporativo-sabana`) — corporate office center.
+- Universidad Latina (`universidad-latina`) — educational campus.
 
-The source portfolio is [Garnier & Garnier's official portfolio](https://www.garnier.cr/#/portfolio#top), with media retrieved from its official project API and stored locally under `public/projects/<project-slug>/garnier-portfolio.*`. This authorized prototype uses project photography only; it does not claim official ARCH_TECH/Garnier status, affiliation or endorsement.
+The source portfolio is [Garnier & Garnier's official portfolio](https://www.garnier.cr/#/portfolio#top), with media retrieved from its official project API and stored locally under `public/projects/<project-slug>/garnier-cover.*` and `garnier-01.*` / `garnier-02.*`. This authorized prototype uses project photography only; it does not claim official ARCH_TECH/Garnier status, affiliation or endorsement.
 
 ---
 
@@ -59,7 +59,7 @@ arch_tech/
 │   │   ├── layout/           # App HeaderBar & Workspace container
 │   │   ├── panels/           # BIM Inspector panels (Tree, Properties, ChangeSet, Storeys, AI, etc.)
 │   │   └── portal/           # Client, Architect, and Admin portal pages
-│   ├── portal/               # Portal data snapshot, schema migration & demo auth
+│   ├── portal/               # Portal data snapshot, schema migration & presentation auth
 │   └── stores/               # Zustand state stores (bimStore.ts)
 ├── public/                   # Static assets, WebIFC WASM, IFC samples, project image packs
 ├── tests/                    # Vitest unit/domain tests and Playwright E2E suites

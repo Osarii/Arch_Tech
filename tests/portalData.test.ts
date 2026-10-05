@@ -13,8 +13,8 @@ describe('portal persistence recovery', () => {
   it('uses professional seed identities and preserves their assignments', () => {
     const users = getPortalSnapshot().db.users;
     expect(users).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: 'portal-client', name: 'Mariana Solano', email: 'mariana.solano@arch-tech.studio', role: 'client', projectIds: ['pacific-nexus-free-zone', 'mar-vista-hospitality-district'] }),
-      expect.objectContaining({ id: 'portal-architect', name: 'Sebastián Araya', email: 'sebastian.araya@arch-tech.studio', role: 'architect', projectIds: ['pacific-nexus-free-zone', 'summit-point-corporate-district'] }),
+      expect.objectContaining({ id: 'portal-client', name: 'Mariana Solano', email: 'mariana.solano@arch-tech.studio', role: 'client', projectIds: ['zona-franca-la-lima', 'waldorf-astoria'] }),
+      expect.objectContaining({ id: 'portal-architect', name: 'Sebastián Araya', email: 'sebastian.araya@arch-tech.studio', role: 'architect', projectIds: ['zona-franca-la-lima', 'el-cafetal'] }),
       expect.objectContaining({ id: 'portal-admin', name: 'Andrea Quesada', email: 'andrea.quesada@arch-tech.studio', role: 'admin' }),
     ]));
   });
@@ -26,7 +26,7 @@ describe('portal persistence recovery', () => {
     }));
 
     const snapshot = getPortalSnapshot();
-    expect(snapshot.db.users.find((user) => user.id === 'portal-client')).toMatchObject({ name: 'Mariana Solano', email: 'mariana.solano@arch-tech.studio', projectIds: ['pacific-nexus-free-zone'] });
+    expect(snapshot.db.users.find((user) => user.id === 'portal-client')).toMatchObject({ name: 'Mariana Solano', email: 'mariana.solano@arch-tech.studio', projectIds: ['zona-franca-la-lima'] });
     expect(snapshot.db.users.some((user) => user.id === 'demo-client' || user.name === 'Demo Client')).toBe(false);
     expect(snapshot.db.notifications).toContainEqual(expect.objectContaining({ userId: 'portal-client', message: 'Legacy notice' }));
   });
@@ -43,13 +43,13 @@ describe('portal persistence recovery', () => {
     const recovered = getPortalSnapshot();
     const persisted = JSON.parse(window.localStorage.getItem(PORTAL_STATE_KEY) ?? 'null');
 
-    expect(recovered.db.schemaVersion).toBe(2);
+    expect(recovered.db.schemaVersion).toBe(3);
     expect(recovered.projects).toHaveLength(6);
-    expect(persisted.schemaVersion).toBe(2);
+    expect(persisted.schemaVersion).toBe(3);
     expect(persisted.projects).toHaveLength(6);
 
     const secondRead = getPortalSnapshot();
-    expect(secondRead.db.schemaVersion).toBe(2);
+    expect(secondRead.db.schemaVersion).toBe(3);
     expect(secondRead.projects).toHaveLength(6);
     expect(secondRead.projects.map((project) => project.id)).toEqual(recovered.projects.map((project) => project.id));
   });
@@ -62,7 +62,7 @@ describe('portal persistence recovery', () => {
 
     const recovered = getPortalSnapshot();
 
-    expect(recovered.db.schemaVersion).toBe(2);
+    expect(recovered.db.schemaVersion).toBe(3);
     expect(recovered.projects).toHaveLength(6);
   });
 
@@ -116,7 +116,7 @@ describe('portal persistence recovery', () => {
 
     const recovered = getPortalSnapshot();
 
-    expect(recovered.db.schemaVersion).toBe(2);
+    expect(recovered.db.schemaVersion).toBe(3);
     expect(recovered.projects).toHaveLength(6);
     expect(recovered.projects.find((project) => project.id === seed.projects[0].id)?.progress).toBe(seed.projects[0].progress);
     expect(recovered.projects.some((project) => project.id === 'admin-project-invalid')).toBe(false);

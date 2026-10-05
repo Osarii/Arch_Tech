@@ -63,22 +63,22 @@ Garnier & Garnier remains a reference for development scale and enterprise posit
 ---
 
 ## 6. Current 6 Public Projects
-The public portfolio features six Costa Rica commercial and technological development projects:
-These six names and categories are the stable public portfolio unless explicitly changed later:
-1. **Pacific Nexus Free Zone Campus** (`pacific-nexus-free-zone`)
-2. **Summit Point Corporate District** (`summit-point-corporate-district`)
-3. **Mar Vista Hospitality District** (`mar-vista-hospitality-district`)
-4. **Caribbean AI Compute Campus** (`caribbean-ai-compute-campus`)
-5. **Guanacaste Renewable Compute Campus** (`guanacaste-renewable-compute-campus`)
-6. **Pacific Regional Medical Campus** (`pacific-regional-medical-campus`)
+The authorized showcase portfolio uses six current projects from Garnier & Garnier's public portfolio:
+1. **Zona Franca La Lima** (`zona-franca-la-lima`) — free zone / industrial park.
+2. **El Cafetal** (`el-cafetal`) — corporate center / office campus.
+3. **Santa Ana Country Club** (`santa-ana-country-club`) — social and sports club.
+4. **Waldorf Astoria** (`waldorf-astoria`) — hotel and residences.
+5. **Centro Corporativo La Sabana** (`centro-corporativo-sabana`) — corporate office center.
+6. **Universidad Latina** (`universidad-latina`) — educational campus.
+Project facts and public photography are source-oriented. ARCH_TECH workflow updates, milestones, approvals and access assignments remain prototype coordination data.
 
 ---
 
 ## 7. Project Image System & Migration Status
-- **Asset Storage**: Runtime project media lives under `public/projects/<project-slug>/`. Technical/dossier packs use `.webp` files; the authorized featured landing showcase uses locally stored Garnier portfolio `.webp`/`.jpg` files. Source archives are not the runtime asset location.
-- **Media Schema**: Standardized media structure (`image` for primary hero, plus `media.aerial`, `media.campusOverview`, `media.masterplan`, `media.sitePlan`, `media.floorPlan`, `media.interior`, `media.conceptBoard`).
-- **Landing Media Mapping**: `src/components/gallery/projectMedia.tsx` maps each of the six canonical fictional projects to one locally stored official Garnier portfolio image. The photographs are used for this explicitly authorized ARCH_TECH presentation/showcase prototype only; they do not represent the fictional projects, and the existing concept/render packs remain available for technical/private dossier context. Source project names and the official portfolio link are recorded in `README.md`.
-- **Migration Status**: **CLOSED / COMPLETE**. Legacy placeholder assets removed; schema version 2 automatically migrates runtime storage, sanitizing legacy asset paths and preserving safe `/projects/...` paths.
+- **Asset Storage**: Runtime project media lives under `public/projects/<project-slug>/`. Each showcase project has an isolated local set of official portfolio photographs; source archives are not the runtime asset location.
+- **Media Schema**: `image` is the primary cover and `media.gallery` holds additional official project views. Missing media remains empty and renders a neutral fallback; projects never borrow another project's image.
+- **Landing Media Mapping**: `src/components/gallery/projectMedia.tsx` maps all six showcase projects to their local cover image. The featured carousel uses the same explicit mapping, with local files documented in `README.md`.
+- **Migration Status**: **CLOSED / COMPLETE**. Legacy project IDs and media paths are remapped or sanitized at read time; schema version 3 persists the current project set and preserves safe `/projects/...` paths.
 
 ---
 
@@ -87,8 +87,8 @@ These six names and categories are the stable public portfolio unless explicitly
 - **Features**:
   - Custom high-performance horizontal image carousel built with native CSS scroll-snap.
   - IntersectionObserver slide tracking with smooth programmatic button scrolling.
-  - Aspect ratio handling: `wide` (16:9/16:10, cover) for exterior/aerial shots; `technical` (4:3, contain) for masterplans and floor plans.
-  - Thin editorial progress bar and active slide indicators (`01 / 08`).
+  - Aspect ratio handling: consistent `wide` cover frames for available official project photography.
+  - Thin editorial progress bar and active slide indicators (`01 / 03`, depending on available local media).
   - Scoped keyboard navigation (Left/Right arrows, Escape key).
   - Fullscreen/lightbox inspection viewer (`rail-fullscreen`) with keyboard controls. Interactive image zoom is not part of the current implementation.
   - Replaced prior Motion and Embla carousel dependencies, reducing bundle size.
@@ -97,7 +97,7 @@ These six names and categories are the stable public portfolio unless explicitly
 - **Implementation**: `src/components/gallery/FeaturedProjectCarousel.tsx`, mounted by `src/components/landing/Hero.tsx`.
 - **Behavior**: Uses all six canonical public projects, links each slide to its public dossier, supports previous/next controls, indicators, Arrow/Home/End keyboard navigation, hover/focus pause, restrained autoplay, and `prefers-reduced-motion` autoplay suppression.
 - **Media stability**: Every slide uses the same fixed 16:9 media shell with an overflow-hidden object-cover image viewport and a stable content region, so the outer card does not resize between projects.
-- **Showcase media**: The six local images are official Garnier portfolio photographs selected for campus, district, hospitality and institutional scale. This is an explicitly authorized ARCH_TECH concept/prototype use and does not imply official status or affiliation.
+- **Showcase media**: The six isolated local image sets are official Garnier portfolio photographs selected for campus, district, hospitality and institutional scale. This is an explicitly authorized ARCH_TECH concept/prototype use and does not imply official status or affiliation.
 - **Fallbacks**: `ProjectImage` renders a neutral ARCH_TECH development placeholder when a preferred local image is unavailable or fails to decode.
 
 ---
@@ -141,11 +141,11 @@ These six names and categories are the stable public portfolio unless explicitly
 - **Phase 6A**: Viewport lifecycle and state reset hardening.
 - **Phase 6B.1**: Transactional IFC4 building generation from `GenerationPlan`.
 - **Phase 6B.2**: Detached & idempotent real IFC persistence round-trip (UI X->IFC X, UI Y->IFC Z, UI Z->IFC Y coordinate mapping; relative rotation delta composition; delete/restore containment unlinking reconciliation; transactional reload rollback boundary).
-- **Public Experience & Portal**: Costa Rica development portfolio, multi-role access (Client/Architect/Admin), demo auth, dark architectural editorial design.
+- **Public Experience & Portal**: Garnier showcase portfolio, multi-role access (Client/Architect/Admin), presentation auth, dark architectural editorial design.
 - **SpatialRail Media Carousel**: High-performance scroll-snap media rail & lightbox.
-- **Landing Media Carousel**: Six-project featured carousel with locally stored official Garnier portfolio photography for the explicitly authorized presentation/showcase prototype, public dossier links, indicators, keyboard navigation, autoplay pause behavior, reduced-motion support and fixed slide dimensions. Canonical project names/categories are preserved; ARCH_TECH remains clearly presented as the concept/prototype identity.
+- **Landing Media Carousel**: Six-project featured carousel with locally stored official Garnier portfolio photography for the explicitly authorized presentation/showcase prototype, public dossier links, indicators, keyboard navigation, autoplay pause behavior, reduced-motion support and fixed slide dimensions. ARCH_TECH remains clearly presented as the concept/prototype identity.
 - **Portfolio Asset Pipeline**: Canonical zip image packs integrated & schema v2 migration completed.
-- **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient demo auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
+- **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient presentation auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
 
 ---
 

@@ -18,6 +18,7 @@ import {
   getPortalUser,
 } from '../../portal/data';
 import { SpatialRail } from '../gallery/SpatialRail';
+import { getPreferredProjectImage } from '../gallery/projectMedia';
 
 type Navigate = (path: string) => void;
 
@@ -27,7 +28,7 @@ interface NavigationProps {
 
 const formatPortalDate = (date: Date) => date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
 const portalStatusClass = (status: string) => status === 'Pending' ? 'portal-status-pending' : status === 'Approved' || status === 'Complete' ? 'portal-status-approved' : status === 'Rejected' ? 'portal-status-rejected' : status === 'Upcoming' ? 'portal-status-upcoming' : status === 'Current' ? 'portal-status-current' : '';
-const uniqueProjectMedia = (project: PortalProject) => [project.image, project.media?.aerial, project.media?.campusOverview, project.media?.masterplan].filter((path, index, paths): path is string => Boolean(path) && paths.indexOf(path) === index).slice(0, 3);
+const uniqueProjectMedia = (project: PortalProject) => [project.image, ...(project.media?.gallery ?? []), project.media?.aerial, project.media?.campusOverview, project.media?.masterplan].filter((path, index, paths): path is string => Boolean(path) && paths.indexOf(path) === index).slice(0, 3);
 const projectRoute = (role: PortalRole, id: string) => `${role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard'}/projects/${id}`;
 
 const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePath?: string; role?: PortalRole }> = ({ onNavigate, onSignOut, homePath = '/dashboard', role = 'client' }) => {
@@ -52,8 +53,9 @@ const PortalHeader: React.FC<NavigationProps & { onSignOut?: () => void; homePat
   return (
   <header className="portal-header border-b border-black/10 bg-[#2D2E2C]">
     <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-      <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em] text-[#211E1A]">
-        ARCH_TECH
+      <button onClick={() => onNavigate('/')} className="flex items-baseline gap-3 text-left text-[#211E1A]">
+        <span className="font-mono text-sm tracking-[0.24em]">ARCH_TECH</span>
+        <span className="hidden font-mono text-[8px] uppercase tracking-[0.16em] text-stone-400 sm:inline">Garnier Portfolio Concept</span>
       </button>
       <div className="flex items-center gap-5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600">
         <button onClick={() => onNavigate(homePath)} className="transition-colors hover:text-black">
@@ -186,11 +188,12 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
 };
 
 const ProjectThumbnail: React.FC<{ project: PortalProject }> = ({ project }) => {
-  const [imageAvailable, setImageAvailable] = useState(Boolean(project.image));
+  const image = getPreferredProjectImage(project);
+  const [imageAvailable, setImageAvailable] = useState(Boolean(image));
   if (!imageAvailable) {
     return <span className="portal-project-thumbnail portal-project-thumbnail-fallback" aria-label="Project image unavailable"><span>ARCH / PROJECT</span></span>;
   }
-  return <img src={project.image} alt="" loading="lazy" decoding="async" onError={() => setImageAvailable(false)} className="portal-project-thumbnail object-cover" />;
+  return <img src={image} alt={`${project.title} project image`} loading="lazy" decoding="async" onError={() => setImageAvailable(false)} className="portal-project-thumbnail object-cover" />;
 };
 
 const ProjectMediaFrame: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
@@ -397,7 +400,7 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
     }
     setCreateError('');
     const id = `admin-project-${Date.now()}`;
-    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title, category, phase: newProject.phase, progress, nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '/projects/pacific-nexus-free-zone/hero-exterior.webp', published: false }] }));
+    updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, { id, code: `AT / ${String(current.projects.length + 1).padStart(2, '0')}`, title, category, phase: newProject.phase, progress, nextMilestone: 'Project briefing', summary: 'New project created in the portal.', statement: 'Project statement pending.', image: '', published: false }] }));
     setNewProject({ title: '', category: DEFAULT_NEW_PROJECT_CATEGORY, phase: 'Brief and site study', progress: '0' });
     setCreateOpen(false);
     createTriggerRef.current?.focus();
@@ -585,7 +588,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
           <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em]">ARCH_TECH</button>
           <p className="hidden items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500 sm:flex">
             <span className="h-px w-8 bg-white/25" aria-hidden="true" />
-            <span>Project dossier</span>
+            <span>ARCH_TECH / Garnier Portfolio Concept</span>
             <span className="text-stone-700">/</span>
             <span className="text-stone-300">{project.code}</span>
           </p>

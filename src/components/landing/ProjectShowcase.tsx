@@ -22,10 +22,10 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">Development portfolio</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">ARCH_TECH / Garnier Portfolio Concept</p>
             <h2 className="mt-5 max-w-5xl font-serif text-5xl font-light tracking-tight sm:text-7xl">A portfolio built for consequence.</h2>
           </div>
-          <p className="max-w-sm text-sm leading-6 text-stone-600">Free zones, logistics campuses, corporate developments, mixed-use districts, hospitality destinations and masterplans across Costa Rica.</p>
+          <p className="max-w-sm text-sm leading-6 text-stone-600">Six official Garnier developments presented through an ARCH_TECH showcase interface. Public facts and project photography remain attributed to their source.</p>
         </div>
 
         {featured && (

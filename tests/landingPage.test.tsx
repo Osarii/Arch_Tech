@@ -33,15 +33,15 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<LandingPage onNavigate={onNavigate} onLogin={onLogin} />);
 
     expect(screen.getByRole('heading', { name: /Development at a larger scale/ })).toBeDefined();
-    expect(screen.getByText('Development portfolio')).toBeDefined();
+    expect(screen.getByText(/Six official Garnier developments/)).toBeDefined();
     expect(screen.getByText('From opportunity to operation.')).toBeDefined();
     expect(screen.getByText('A portfolio built for consequence.')).toBeDefined();
-    expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Summit Point Corporate District').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Mar Vista Hospitality District').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Caribbean AI Compute Campus').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Guanacaste Renewable Compute Campus').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Pacific Regional Medical Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Zona Franca La Lima').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('El Cafetal').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Waldorf Astoria').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Centro Corporativo La Sabana').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Santa Ana Country Club').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Universidad Latina').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: 'Structure for complex development.' })).toBeDefined();
     for (const label of ['SITE + LAND STRATEGY', 'MASTERPLANNING', 'INFRASTRUCTURE FRAMEWORK', 'DEVELOPMENT COORDINATION', 'DIGITAL PROJECT DELIVERY', 'OPERATIONAL CONTINUITY']) {
       expect(screen.getByText(label)).toBeDefined();
@@ -68,25 +68,25 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(carousel.className).not.toContain('sticky');
     expect(screen.getAllByTestId(/^featured-indicator-/)).toHaveLength(6);
     expect(screen.getAllByTestId(/^featured-project-/)).toHaveLength(6);
-    expect(carousel.querySelector('img')?.getAttribute('src')).toContain('/garnier-portfolio.');
+    expect(carousel.querySelector('img')?.getAttribute('src')).toContain('/garnier-cover.');
     const featuredImageSources = [...carousel.querySelectorAll('img[data-project-image]')].map((image) => image.getAttribute('src'));
     expect(featuredImageSources).toHaveLength(6);
     expect(new Set(featuredImageSources).size).toBe(6);
     const featuredShells = [...carousel.querySelectorAll('.featured-project-media-shell')];
     expect(featuredShells).toHaveLength(6);
     expect(featuredShells.every((shell) => shell.className.includes('featured-project-media-shell'))).toBe(true);
-    expect(screen.getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
+    expect(screen.getByText('Zona Franca La Lima')).toBeDefined();
     fireEvent.click(screen.getByTestId('hero-view-projects'));
     expect(onViewProjects).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByTestId('featured-carousel-next'));
-    expect(screen.getByText('Summit Point Corporate District')).toBeDefined();
-    expect(screen.getByTestId('featured-indicator-summit-point-corporate-district').getAttribute('aria-current')).toBe('true');
+    expect(screen.getByText('El Cafetal')).toBeDefined();
+    expect(screen.getByTestId('featured-indicator-el-cafetal').getAttribute('aria-current')).toBe('true');
     fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
-    expect(screen.getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: 'Open Pacific Nexus Free Zone Campus project dossier' }));
-    expect(onOpenProject).toHaveBeenLastCalledWith('pacific-nexus-free-zone');
-    for (const id of ['pacific-nexus-free-zone', 'summit-point-corporate-district', 'mar-vista-hospitality-district', 'caribbean-ai-compute-campus', 'guanacaste-renewable-compute-campus', 'pacific-regional-medical-campus']) {
+    expect(screen.getByText('Zona Franca La Lima')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Open Zona Franca La Lima project dossier' }));
+    expect(onOpenProject).toHaveBeenLastCalledWith('zona-franca-la-lima');
+    for (const id of ['zona-franca-la-lima', 'el-cafetal', 'waldorf-astoria', 'centro-corporativo-sabana', 'santa-ana-country-club', 'universidad-latina']) {
       fireEvent.click(screen.getByTestId(`featured-project-${id}`));
       expect(onOpenProject).toHaveBeenLastCalledWith(id);
     }
@@ -117,32 +117,32 @@ describe('ARCH_TECH client architecture portal', () => {
     const onNavigate = vi.fn();
     render(<LandingPage onNavigate={onNavigate} onLogin={vi.fn()} />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Open Pacific Nexus Free Zone Campus project dossier' }));
-    expect(onNavigate).toHaveBeenCalledWith('/projects/pacific-nexus-free-zone');
+    fireEvent.click(screen.getByRole('button', { name: 'Open Zona Franca La Lima project dossier' }));
+    expect(onNavigate).toHaveBeenCalledWith('/projects/zona-franca-la-lima');
   });
 
   it('opens public project details from the selected projects list', () => {
     const onOpenProject = vi.fn();
     render(<ProjectShowcase onOpenProject={onOpenProject} />);
 
-    fireEvent.click(screen.getByTestId('public-project-pacific-nexus-free-zone'));
-    expect(onOpenProject).toHaveBeenCalledWith('pacific-nexus-free-zone');
-    const projectImage = screen.getByTestId('public-project-pacific-nexus-free-zone').querySelector('img');
-    expect(projectImage?.getAttribute('src')).toContain('/garnier-portfolio.');
+    fireEvent.click(screen.getByTestId('public-project-zona-franca-la-lima'));
+    expect(onOpenProject).toHaveBeenCalledWith('zona-franca-la-lima');
+    const projectImage = screen.getByTestId('public-project-zona-franca-la-lima').querySelector('img');
+    expect(projectImage?.getAttribute('src')).toContain('/garnier-cover.');
     fireEvent.error(projectImage!);
-    expect(screen.getByTestId('project-image-fallback-pacific-nexus-free-zone')).toBeDefined();
+    expect(screen.getByTestId('project-image-fallback-zona-franca-la-lima')).toBeDefined();
 
     const onNavigate = vi.fn();
-    render(<PublicProjectPage projectId="pacific-nexus-free-zone" onNavigate={onNavigate} />);
-    expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
+    render(<PublicProjectPage projectId="zona-franca-la-lima" onNavigate={onNavigate} />);
+    expect(screen.getAllByText('Zona Franca La Lima').length).toBeGreaterThan(0);
     expect(screen.getByText('Project intent')).toBeDefined();
     expect(screen.getByText('Development path')).toBeDefined();
-    expect(screen.getAllByText('Costa Rica · Central Pacific').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Costa Rica · La Lima, Cartago').length).toBeGreaterThan(0);
 
     cleanup();
-    render(<PublicProjectPage projectId="summit-point-corporate-district" onNavigate={onNavigate} />);
-    expect(screen.getByText('Summit Point Corporate District')).toBeDefined();
-    expect(screen.getByText('Corporate district')).toBeDefined();
+    render(<PublicProjectPage projectId="el-cafetal" onNavigate={onNavigate} />);
+    expect(screen.getByText('El Cafetal')).toBeDefined();
+    expect(screen.getAllByText(/Corporate center · Office campus/).length).toBeGreaterThan(0);
     expect(screen.getByText('Long view')).toBeDefined();
   });
 
@@ -188,14 +188,14 @@ describe('ARCH_TECH client architecture portal', () => {
 
     expect(screen.getByText('Your projects')).toBeDefined();
     expect(screen.getAllByText('Progress').length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Design development/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Showcase review/).length).toBeGreaterThan(0);
     expect(screen.getByText('Decisions requiring your attention')).toBeDefined();
     expect(screen.getByText('Upcoming milestones')).toBeDefined();
     expect(screen.getByText('Recent project updates')).toBeDefined();
     expect(document.querySelector('.portal-project-thumbnail')).toBeDefined();
     expect(screen.getAllByRole('button', { name: 'Approve' }).length).toBeGreaterThan(0);
     fireEvent.click(screen.getAllByRole('button', { name: 'Approve' })[0]);
-    expect(screen.getByText('Request changes')).toBeDefined();
+    expect(screen.getByText('No decisions are waiting for you.')).toBeDefined();
   });
 
   it('limits architect data and exposes the admin register', () => {
@@ -204,23 +204,23 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<ArchitectDashboardPage onNavigate={architectNavigate} onSignOut={vi.fn()} />);
     expect(screen.getByText('Assigned projects')).toBeDefined();
     expect(screen.getByRole('region', { name: 'Architect workload' })).toBeDefined();
-    expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Summit Point Corporate District').length).toBeGreaterThan(0);
-    expect(screen.queryByText('Pacific Regional Medical Campus')).toBeNull();
+    expect(screen.getAllByText('Zona Franca La Lima').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('El Cafetal').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Universidad Latina')).toBeNull();
     expect(document.querySelectorAll('.portal-project-thumbnail').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
     expect(document.querySelectorAll('.portal-overview-tile')).toHaveLength(4);
-    fireEvent.click(screen.getByTestId('architect-approval-pacific-nexus-free-zone'));
-    expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/pacific-nexus-free-zone');
+    fireEvent.click(screen.getByTestId('architect-approval-zona-franca-la-lima'));
+    expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/zona-franca-la-lima');
 
     cleanup();
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     expect(screen.getByText('All projects / assignments')).toBeDefined();
-    expect(screen.getAllByText('Pacific Regional Medical Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Universidad Latina').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Sebastián Araya').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Material palette').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Showcase framing').length).toBeGreaterThan(0);
     expect(document.querySelectorAll('.portal-project-thumbnail').length).toBeGreaterThan(0);
     const adminSurface = screen.getByText('All projects / assignments').closest('.portal-surface');
     expect(adminSurface?.className).toContain('portal-admin');
@@ -230,15 +230,15 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelectorAll('.admin-overview-tile')).toHaveLength(4);
     expect(screen.getByRole('region', { name: 'Review and delivery signals' }).className).not.toContain('portal-review-section');
     expect(document.querySelector('.portal-register-row')).toBeDefined();
-    expect(screen.getByTestId('admin-open-model-pacific-nexus-free-zone').className).toContain('admin-action');
+    expect(screen.getByTestId('admin-open-model-zona-franca-la-lima').className).toContain('admin-action');
   });
 
   it('uses objective admin signals and reviews only projects with pending approvals', () => {
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     updatePortalDatabase((current) => ({
       ...current,
-      projects: current.projects.map((project) => project.id === 'caribbean-ai-compute-campus' ? { ...project, progress: 1 } : project),
-      approvals: current.approvals.filter((approval) => approval.projectId !== 'caribbean-ai-compute-campus'),
+      projects: current.projects.map((project) => project.id === 'centro-corporativo-sabana' ? { ...project, progress: 1 } : project),
+      approvals: current.approvals.filter((approval) => approval.projectId !== 'centro-corporativo-sabana'),
     }));
     const { db, projects } = getPortalSnapshot();
     const activeProjects = projects.filter((project) => !project.archived);
@@ -249,22 +249,22 @@ describe('ARCH_TECH client architecture portal', () => {
 
     const portfolioOverview = screen.getByRole('region', { name: 'Portfolio overview' });
     expect(within(portfolioOverview).getByText('Active projects')).toBeDefined();
-    expect(within(portfolioOverview).getByText(activeProjects.length.toString().padStart(2, '0'))).toBeDefined();
+    expect(within(portfolioOverview).getAllByText(activeProjects.length.toString().padStart(2, '0')).length).toBeGreaterThan(0);
     expect(within(portfolioOverview).getByText('Average progress')).toBeDefined();
     expect(within(portfolioOverview).getByText(`${expectedAverage}%`)).toBeDefined();
     expect(within(portfolioOverview).getByText('Pending approvals')).toBeDefined();
-    expect(within(portfolioOverview).getByText(expectedPending.toString().padStart(2, '0'))).toBeDefined();
+    expect(within(portfolioOverview).getAllByText(expectedPending.toString().padStart(2, '0')).length).toBeGreaterThan(0);
     expect(within(portfolioOverview).getByText('Upcoming milestones')).toBeDefined();
-    expect(within(portfolioOverview).getByText(expectedUpcoming.toString().padStart(2, '0'))).toBeDefined();
+    expect(within(portfolioOverview).getAllByText(expectedUpcoming.toString().padStart(2, '0')).length).toBeGreaterThan(0);
     expect(screen.queryByText('Project health')).toBeNull();
     expect(screen.queryByText('Operational controls')).toBeNull();
     expect(screen.getByText('Create projects, manage people, assignments and approvals.')).toBeDefined();
 
     const reviewSignals = screen.getByRole('region', { name: 'Review and delivery signals' });
     expect(within(reviewSignals).getByText('Decisions requiring review')).toBeDefined();
-    expect(within(reviewSignals).getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
-    expect(within(reviewSignals).getByText('Material palette')).toBeDefined();
-    expect(within(reviewSignals).queryByText('Caribbean AI Compute Campus')).toBeNull();
+    expect(within(reviewSignals).getByText('Zona Franca La Lima')).toBeDefined();
+    expect(within(reviewSignals).getAllByText('Showcase framing').length).toBeGreaterThan(0);
+    expect(within(reviewSignals).queryByText('Centro Corporativo La Sabana')).toBeNull();
 
     updatePortalDatabase((current) => ({
       ...current,
@@ -282,12 +282,12 @@ describe('ARCH_TECH client architecture portal', () => {
     render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
     expect(screen.getByText('6 of 6 active projects')).toBeDefined();
-    fireEvent.change(screen.getByLabelText('Search projects'), { target: { value: 'Pacific Nexus' } });
+    fireEvent.change(screen.getByLabelText('Search projects'), { target: { value: 'Zona Franca' } });
     expect(screen.getByText('1 of 6 active projects')).toBeDefined();
-    expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Zona Franca La Lima').length).toBeGreaterThan(0);
     const register = document.getElementById('portal-section-projects');
     expect(register).toBeDefined();
-    expect(within(register!).queryByText('Summit Point Corporate District')).toBeNull();
+    expect(within(register!).queryByText('El Cafetal')).toBeNull();
 
     fireEvent.change(screen.getByLabelText('Search projects'), { target: { value: 'no matching project' } });
     expect(screen.getByText('No projects match the current search and filters.')).toBeDefined();
@@ -296,20 +296,20 @@ describe('ARCH_TECH client architecture portal', () => {
 
     fireEvent.change(screen.getByLabelText('Filter projects'), { target: { value: 'pending' } });
     expect(screen.getByText('2 of 6 active projects')).toBeDefined();
-    expect(within(register!).getByText('Pacific Nexus Free Zone Campus')).toBeDefined();
-    expect(within(register!).getByText('Mar Vista Hospitality District')).toBeDefined();
-    expect(within(register!).queryByText('Caribbean AI Compute Campus')).toBeNull();
+    expect(within(register!).getByText('Zona Franca La Lima')).toBeDefined();
+    expect(within(register!).getByText('Santa Ana Country Club')).toBeDefined();
+    expect(within(register!).queryByText('Centro Corporativo La Sabana')).toBeNull();
 
     fireEvent.change(screen.getByLabelText('Filter projects'), { target: { value: 'all' } });
     fireEvent.change(screen.getByLabelText('Sort projects'), { target: { value: 'progress-desc' } });
     const descendingRows = [...document.querySelectorAll('.portal-register-row')];
-    expect(descendingRows[0]?.textContent).toContain('Summit Point Corporate District');
+    expect(descendingRows[0]?.textContent).toContain('Santa Ana Country Club');
     fireEvent.change(screen.getByLabelText('Sort projects'), { target: { value: 'progress-asc' } });
     const ascendingRows = [...document.querySelectorAll('.portal-register-row')];
-    expect(ascendingRows[0]?.textContent).toContain('Caribbean AI Compute Campus');
+    expect(ascendingRows[0]?.textContent).toContain('Centro Corporativo La Sabana');
     fireEvent.change(screen.getByLabelText('Sort projects'), { target: { value: 'phase' } });
     const phaseRows = [...document.querySelectorAll('.portal-register-row')];
-    expect(phaseRows[0]?.textContent).toContain('Brief and site study');
+    expect(phaseRows[0]?.textContent).toContain('Showcase review');
   });
 
   it('uses framed lazy project media and provides a fallback when an image fails', () => {
@@ -335,7 +335,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('across active work')).toBeDefined();
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
-    fireEvent.click(screen.getByTestId('admin-open-model-pacific-nexus-free-zone'));
+    fireEvent.click(screen.getByTestId('admin-open-model-zona-franca-la-lima'));
     expect(adminNavigate).toHaveBeenCalledWith('/workspace');
     fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
     expect(screen.getByRole('dialog', { name: 'New project.' })).toBeDefined();
@@ -419,7 +419,7 @@ describe('ARCH_TECH client architecture portal', () => {
   it('limits admin assignments to active users and active projects', () => {
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     const initial = getPortalSnapshot().db;
-    const activeProject = initial.projects.find((project) => project.id === 'pacific-nexus-free-zone');
+    const activeProject = initial.projects.find((project) => project.id === 'zona-franca-la-lima');
     const activeClient = initial.users.find((user) => user.role === 'client' && user.status === 'active');
     const activeArchitect = initial.users.find((user) => user.role === 'architect' && user.status === 'active');
     if (!activeProject || !activeClient || !activeArchitect) throw new Error('Expected canonical assignment fixtures');
@@ -499,7 +499,7 @@ describe('ARCH_TECH client architecture portal', () => {
   });
 
   it('quick login reads role users from the current portal snapshot', () => {
-    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-architect', name: 'Runtime Architect', email: 'runtime@arch-tech.studio', password: 'runtime-demo', role: 'architect', projectIds: ['pacific-nexus-free-zone'], status: 'active' }] }));
+    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-architect', name: 'Runtime Architect', email: 'runtime@arch-tech.studio', password: 'runtime-demo', role: 'architect', projectIds: ['zona-franca-la-lima'], status: 'active' }] }));
     render(<LoginOverlay open onClose={vi.fn()} onSuccess={vi.fn()} />);
     fireEvent.click(screen.getByTestId('quick-login-architect'));
     expect(portalAuth.getSession()?.email).toBe('runtime@arch-tech.studio');
@@ -517,14 +517,14 @@ describe('ARCH_TECH client architecture portal', () => {
 
     const snapshot = getPortalSnapshot();
     expect(snapshot.projects.map((project) => project.id)).toEqual([
-      'pacific-nexus-free-zone',
-      'summit-point-corporate-district',
-      'mar-vista-hospitality-district',
-      'caribbean-ai-compute-campus',
-      'guanacaste-renewable-compute-campus',
-      'pacific-regional-medical-campus',
+      'zona-franca-la-lima',
+      'el-cafetal',
+      'santa-ana-country-club',
+      'waldorf-astoria',
+      'centro-corporativo-sabana',
+      'universidad-latina',
     ]);
-    expect(snapshot.db.users.find((user) => user.id === 'portal-client')?.projectIds).toEqual(['pacific-nexus-free-zone', 'mar-vista-hospitality-district']);
+    expect(snapshot.db.users.find((user) => user.id === 'portal-client')?.projectIds).toEqual(['zona-franca-la-lima', 'waldorf-astoria']);
     const migratedStorage = window.localStorage.getItem('arch-tech-portal-state') ?? '';
     expect(staleIds.every((id) => !migratedStorage.includes(id))).toBe(true);
     expect(staleAssets.every((asset) => !migratedStorage.includes(asset))).toBe(true);
@@ -567,22 +567,22 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('protects unassigned architect project details', async () => {
     portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
-    window.history.replaceState({}, '', '/architect/projects/pacific-regional-medical-campus');
+    window.history.replaceState({}, '', '/architect/projects/universidad-latina');
     render(<App />);
     await waitFor(() => expect(window.location.pathname).toBe('/architect'));
     expect(screen.getByText('Assigned projects')).toBeDefined();
-    expect(screen.queryByText('Pacific Regional Medical Campus')).toBeNull();
+    expect(screen.queryByText('Universidad Latina')).toBeNull();
   });
 
   it('allows assigned client project details and blocks unassigned direct URLs', async () => {
-    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-client', name: 'Runtime Client', email: 'runtime-client@arch-tech.studio', password: 'runtime-demo', role: 'client', projectIds: ['pacific-nexus-free-zone'], status: 'active' }] }));
+    window.localStorage.setItem('arch-tech-portal-state', JSON.stringify({ users: [{ id: 'runtime-client', name: 'Runtime Client', email: 'runtime-client@arch-tech.studio', password: 'runtime-demo', role: 'client', projectIds: ['zona-franca-la-lima'], status: 'active' }] }));
     portalAuth.signIn('runtime-client@arch-tech.studio', 'runtime-demo');
-    window.history.replaceState({}, '', '/dashboard/projects/pacific-nexus-free-zone');
+    window.history.replaceState({}, '', '/dashboard/projects/zona-franca-la-lima');
     render(<App />);
     expect(screen.getByText('Current phase')).toBeDefined();
 
     cleanup();
-    window.history.replaceState({}, '', '/dashboard/projects/pacific-regional-medical-campus');
+    window.history.replaceState({}, '', '/dashboard/projects/universidad-latina');
     render(<App />);
     await waitFor(() => expect(window.location.pathname).toBe('/dashboard'));
     expect(screen.getByText('Projects in progress.')).toBeDefined();
@@ -590,10 +590,10 @@ describe('ARCH_TECH client architecture portal', () => {
 
   it('provides all project detail sections and opens the existing workspace', () => {
     const onOpenWorkspace = vi.fn();
-    expect(getPortalProject('pacific-nexus-free-zone')?.approvals[0].title).toBe('Material palette');
+    expect(getPortalProject('zona-franca-la-lima')?.approvals[0].title).toBe('Showcase framing');
     render(
       <DashboardProjectPage
-        projectId="pacific-nexus-free-zone"
+        projectId="zona-franca-la-lima"
         onNavigate={vi.fn()}
         onSignOut={vi.fn()}
         onOpenWorkspace={onOpenWorkspace}
@@ -602,18 +602,18 @@ describe('ARCH_TECH client architecture portal', () => {
 
     expect(screen.getByText('Current phase')).toBeDefined();
     fireEvent.click(screen.getByTestId('project-tab-updates'));
-    expect(screen.getByText('Material study issued')).toBeDefined();
+    expect(screen.getByText('Showcase media review')).toBeDefined();
     fireEvent.click(screen.getByTestId('project-tab-milestones'));
-    expect(screen.getByText('Client design review')).toBeDefined();
+    expect(screen.getAllByText('Showcase review').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByTestId('project-tab-documents'));
-    expect(screen.getByText('Design development set')).toBeDefined();
+    expect(screen.getByText('Official project reference')).toBeDefined();
     fireEvent.click(screen.getByTestId('project-tab-model'));
     fireEvent.click(screen.getByTestId('open-3d-model'));
     expect(onOpenWorkspace).toHaveBeenCalledTimes(1);
   });
 
   it('builds unique dossier media, facts and role-scoped project navigation', () => {
-    const project = getPortalProject('pacific-nexus-free-zone');
+    const project = getPortalProject('zona-franca-la-lima');
     if (!project) throw new Error('Expected canonical project fixture');
     const onNavigate = vi.fn();
     portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
@@ -629,28 +629,28 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText(project.nextMilestone)).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Latest activity' })).toBeDefined();
     expect(screen.getByTestId('previous-project')).toHaveProperty('disabled', true);
-    expect(screen.getByTestId('next-project').textContent).toContain('Mar Vista Hospitality District');
+    expect(screen.getByTestId('next-project').textContent).toContain('Waldorf Astoria');
     fireEvent.click(screen.getByTestId('next-project'));
-    expect(onNavigate).toHaveBeenCalledWith('/dashboard/projects/mar-vista-hospitality-district');
+    expect(onNavigate).toHaveBeenCalledWith('/dashboard/projects/waldorf-astoria');
 
     cleanup();
     const architectNavigate = vi.fn();
     portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
     render(<DashboardProjectPage projectId={project.id} onNavigate={architectNavigate} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} homePath="/architect" role="architect" />);
-    expect(screen.getByTestId('next-project').textContent).toContain('Summit Point Corporate District');
+    expect(screen.getByTestId('next-project').textContent).toContain('El Cafetal');
     fireEvent.click(screen.getByTestId('next-project'));
-    expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/summit-point-corporate-district');
-    expect(screen.queryByText('Pacific Regional Medical Campus')).toBeNull();
+    expect(architectNavigate).toHaveBeenCalledWith('/architect/projects/el-cafetal');
+    expect(screen.queryByText('Universidad Latina')).toBeNull();
   });
 
   it('keeps client approvals actionable and gives staff management controls', () => {
-    render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="client" />);
+    render(<DashboardProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="client" />);
     fireEvent.click(screen.getByTestId('project-tab-approvals'));
     fireEvent.click(screen.getByRole('button', { name: 'Approve' }));
     expect(screen.getByText('Approved')).toBeDefined();
 
     cleanup();
-    render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
+    render(<DashboardProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
     expect(screen.getByTestId('role-management-panel')).toBeDefined();
     expect(screen.queryByTestId('toggle-publication')).toBeNull();
     fireEvent.change(screen.getByLabelText('Update title'), { target: { value: 'Coordination note' } });
@@ -674,39 +674,39 @@ describe('ARCH_TECH client architecture portal', () => {
 
     cleanup();
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
-    render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="admin" homePath="/admin" />);
-    const beforeTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone');
-    fireEvent.change(screen.getByLabelText('Project title'), { target: { value: 'Pacific Nexus Free Zone Campus Updated' } });
+    render(<DashboardProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="admin" homePath="/admin" />);
+    const beforeTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'zona-franca-la-lima');
+    fireEvent.change(screen.getByLabelText('Project title'), { target: { value: 'Zona Franca La Lima Updated' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save status' }));
-    const afterTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone');
-    expect(afterTitleOnlySave?.title).toBe('Pacific Nexus Free Zone Campus Updated');
+    const afterTitleOnlySave = getPortalSnapshot().projects.find((project) => project.id === 'zona-franca-la-lima');
+    expect(afterTitleOnlySave?.title).toBe('Zona Franca La Lima Updated');
     expect(afterTitleOnlySave?.progress).toBe(beforeTitleOnlySave?.progress);
     expect(afterTitleOnlySave?.phase).toBe(beforeTitleOnlySave?.phase);
     expect(afterTitleOnlySave?.published).toBe(beforeTitleOnlySave?.published);
   });
 
   it('validates project progress and trims management inputs', () => {
-    render(<DashboardProjectPage projectId="pacific-nexus-free-zone" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
+    render(<DashboardProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} onSignOut={vi.fn()} onOpenWorkspace={vi.fn()} role="architect" homePath="/architect" />);
     const progressInput = screen.getByLabelText('Project progress');
     const saveStatus = screen.getByRole('button', { name: 'Save status' });
 
     fireEvent.change(progressInput, { target: { value: '0' } });
     fireEvent.click(saveStatus);
-    expect(getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone')?.progress).toBe(0);
+    expect(getPortalSnapshot().projects.find((project) => project.id === 'zona-franca-la-lima')?.progress).toBe(0);
 
     fireEvent.change(progressInput, { target: { value: '100' } });
     fireEvent.click(saveStatus);
-    expect(getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone')?.progress).toBe(100);
+    expect(getPortalSnapshot().projects.find((project) => project.id === 'zona-franca-la-lima')?.progress).toBe(100);
 
     for (const invalidValue of ['-1', '101']) {
       fireEvent.change(progressInput, { target: { value: invalidValue } });
       fireEvent.click(saveStatus);
-      expect(getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone')?.progress).toBe(100);
+      expect(getPortalSnapshot().projects.find((project) => project.id === 'zona-franca-la-lima')?.progress).toBe(100);
       expect(screen.getByRole('alert').textContent).toBe('Progress must be a number from 0 to 100.');
     }
     fireEvent.change(progressInput, { target: { value: 'not-a-number' } });
     fireEvent.click(saveStatus);
-    expect(getPortalSnapshot().projects.find((project) => project.id === 'pacific-nexus-free-zone')?.progress).toBe(100);
+    expect(getPortalSnapshot().projects.find((project) => project.id === 'zona-franca-la-lima')?.progress).toBe(100);
 
     fireEvent.change(screen.getByLabelText('Update title'), { target: { value: '  Coordination note  ' } });
     fireEvent.change(screen.getByLabelText('Update body'), { target: { value: '  Team review completed.  ' } });
@@ -787,8 +787,8 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(window.location.pathname).toBe('/dashboard');
     expect(screen.getByText('Projects in progress.')).toBeDefined();
 
-    fireEvent.click(screen.getByTestId('dashboard-project-pacific-nexus-free-zone'));
-    expect(window.location.pathname).toBe('/dashboard/projects/pacific-nexus-free-zone');
+    fireEvent.click(screen.getByTestId('dashboard-project-zona-franca-la-lima'));
+    expect(window.location.pathname).toBe('/dashboard/projects/zona-franca-la-lima');
     fireEvent.click(screen.getByTestId('project-tab-model'));
     fireEvent.click(screen.getByTestId('open-3d-model'));
     expect(window.location.pathname).toBe('/workspace');

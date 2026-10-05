@@ -14,7 +14,7 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => 
     <div className="mx-auto max-w-7xl">
       <div className="grid gap-12 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-stone-500">Costa Rica / Real-estate development platform</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-stone-500">ARCH_TECH / Garnier Portfolio Concept</p>
           <h1 className="mt-7 max-w-5xl font-serif text-7xl font-light leading-[0.88] tracking-[-0.045em] text-[#f4efe8] sm:text-8xl lg:text-[8.5rem]">
             Development<br />at a larger scale.
           </h1>
@@ -34,7 +34,7 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => 
 
       <div className="mt-16 grid gap-6 border-y border-white/[0.08] py-5 lg:grid-cols-[0.6fr_1.4fr] lg:items-center">
         <div className="flex items-center gap-4 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
-          <span className="text-stone-200">Portfolio / 2026</span>
+          <span className="text-stone-200">Official project showcase</span>
           <span className="h-px w-8 bg-white/20" aria-hidden="true" />
           <span>Opportunity to operation</span>
         </div>
