@@ -50,6 +50,8 @@ The ARCH_TECH identity follows the approved D1 Solid → Wireframe direction: a 
 
 The landing About section presents concise public company context sourced from [garnier.cr](https://www.garnier.cr/) and uses a locally stored official workplace image at `public/about/garnier-values.webp`. The Team section represents the eight current public leadership profiles with their official titles and one-to-one local portraits under `public/team/`. The compositions are ARCH_TECH editorial work; the 21st.dev About and Team references were used only as structural inspiration, not copied as UI or branding.
 
+The landing closes with an architectural footer: grouped public navigation, a Project Portal action, the explicit `Garnier & Garnier Showcase` context label, and an oversized ARCH_TECH wordmark. Footer links operate within the landing scroll container and respect reduced motion.
+
 ---
 
 ## Project Structure Overview

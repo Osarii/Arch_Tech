@@ -904,6 +904,46 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('renders the architectural footer directory, wordmark and useful navigation', () => {
+    render(<LandingPage onNavigate={vi.fn()} onLogin={vi.fn()} />);
+
+    const footer = screen.getByRole('contentinfo');
+    expect(within(footer).getByRole('heading', { name: 'Built for complex development.' })).toBeDefined();
+    expect(within(footer).getByTestId('footer-projects-link').getAttribute('href')).toBe('#projects');
+    expect(within(footer).getByTestId('footer-about-link').getAttribute('href')).toBe('#about');
+    expect(within(footer).getByTestId('footer-team-link').getAttribute('href')).toBe('#team');
+    expect(within(footer).getByText('Garnier & Garnier Showcase')).toBeDefined();
+    expect(within(footer).getByText('ARCH_TECH', { selector: '.landing-footer-wordmark-text' })).toBeDefined();
+  });
+
+  it('scrolls from footer directory links and returns to the landing top', () => {
+    render(<LandingPage onNavigate={vi.fn()} onLogin={vi.fn()} />);
+    const footer = screen.getByRole('contentinfo');
+    const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+    const originalScrollTo = HTMLElement.prototype.scrollTo;
+    const scrollIntoView = vi.fn();
+    const scrollTo = vi.fn();
+    HTMLElement.prototype.scrollIntoView = scrollIntoView;
+    HTMLElement.prototype.scrollTo = scrollTo;
+
+    fireEvent.click(within(footer).getByTestId('footer-projects-link'));
+    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' });
+    fireEvent.click(within(footer).getByTestId('footer-back-to-top'));
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'smooth' });
+
+    HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+    HTMLElement.prototype.scrollTo = originalScrollTo;
+  });
+
+  it('keeps the footer Project Portal connected to the existing login action', () => {
+    const onLogin = vi.fn();
+    render(<LandingPage onNavigate={vi.fn()} onLogin={onLogin} />);
+
+    fireEvent.click(screen.getByTestId('footer-portal-link'));
+    expect(onLogin).toHaveBeenCalledTimes(1);
+    expect(onLogin.mock.calls[0][0]).toBeInstanceOf(HTMLElement);
+  });
+
   it('guards private routes with the isolated portal login', () => {
     window.history.replaceState({}, '', '/dashboard');
     render(<App />);

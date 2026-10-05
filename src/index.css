@@ -31,6 +31,34 @@
   min-width: 0;
 }
 
+.landing-footer-link {
+  position: relative;
+}
+
+.landing-footer-link::after {
+  background: currentColor;
+  bottom: -0.3rem;
+  content: '';
+  height: 1px;
+  left: 0;
+  position: absolute;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms ease;
+  width: 100%;
+}
+
+.landing-footer-link:hover::after,
+.landing-footer-link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.landing-footer-wordmark-text {
+  font-size: clamp(4rem, 13vw, 15rem);
+  letter-spacing: -0.09em;
+  white-space: nowrap;
+}
+
 .landing-hero-heading {
   font-size: clamp(3.5rem, 8.5vw, 8.5rem);
 }
