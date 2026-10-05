@@ -47,7 +47,7 @@ Optional local HTTP persistence is available through `npm run server` (JSON Serv
 - **Admin Role**: Full portal control—publishes projects, creates new development projects, assigns user roles, and modifies project metadata.
 - **Portal Auth**: Handled via `src/portal/demoAuth.ts` for the current presentation users, with production registration, manual login, role-scoped routing and development/test-only quick access presets.
 - **Admin Operations**: Active projects expose objective KPIs, a responsive progress chart, search/filter/sort, runtime project creation/deletion with canonical showcase protection, user creation, role/status controls and assignments.
-- **External Context**: Admin can request live Costa Rica weather context from Open-Meteo with visible loading/error states.
+- **Site Intelligence / External Context**: Admin external-context views feature full multi-provider Site Intelligence with manual location resolution via OpenStreetMap Nominatim, live weather observation via Open-Meteo using resolved coordinates, and recent 30-day seismic context within 300 km via USGS Earthquake Catalog. Handles partial provider failures gracefully without requiring external API keys.
 - **Persistent Preferences**: Portal text scale options (100%, 112.5%, 125%) persist under `arch-tech-portal-text-scale` alongside the existing Light/Dark theme preference.
 - **HTTP Mode**: With `VITE_API_BASE_URL`, the service layer treats JSON Server as authoritative, synchronizes the local snapshot cache after reads/writes, and reconciles project relations on deletion. Project updates, milestones, documents and approvals use `projectWorkflowService` for HTTP CRUD with stable relation IDs and the same local fallback. Without the variable, the same UI uses the local fallback.
 - **Implemented vs External Setup**: React Router, auth/register, role guards, HTTP relation CRUD, objective metrics, accessibility, Vitest coverage and deterministic AI fallback are implemented in code. Imported/active n8n workflows, webhook URLs, LLM credentials and live remote AI execution remain external setup and were not run here.
@@ -159,6 +159,8 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - **Portfolio Asset Pipeline**: Canonical image packs and official Garnier showcase media integrated; schema v3 migration completed.
 - **Portal Reliability Hardening**: Durable-plus-volatile portal persistence recovery, persisted-shape validation, resilient presentation auth and theme storage, project-scoped client notifications, current-date updates, and accessible admin project-creation validation.
 - **Portal Application Architecture**: React Router migration, reusable protected/role/project guards, typed services with local fallback, JSON Server setup, synchronized project relation CRUD, external context integration, runtime project/user management, objective Admin/Architect metrics, persistent text scaling and n8n AI/automation workflow definitions.
+- **Phase 4 Accessibility**: Consolidated accessibility panel featuring a Web Speech API browser narrator with pause/resume/stop and route-change cancellation, color-safe high-contrast mode, reading guide/mask, text spacing, link highlighting, and reduced-motion controls with persistent preferences.
+- **Phase 5 Site Intelligence**: Multi-provider environmental and seismic context (OpenStreetMap Nominatim for manual geocoding with caching and rate throttling, Open-Meteo for dynamic coordinates weather, USGS Earthquake Catalog for 30-day seismic context). Includes independent loading/error states, partial failure resilience, stale-state clearing, and explicit data attribution.
 
 ---
 
@@ -197,8 +199,8 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 ---
 
 ## 16. Current Verification Status
-- **Lint / Type Check**: **SUCCESS** (`npm run lint`).
-- **Vitest Unit/Domain Tests**: **220 / 220 PASSED** across 17 test files.
+- **Lint / Type Check**: **SUCCESS** (`npm run lint` / `tsc --noEmit`).
+- **Vitest Unit/Domain Tests**: **246 / 246 PASSED** across 18 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, full OpenBIM workflow and AI confirmation flows.
-- **Git Diff**: The current worktree is verified with `git diff --check` after the Phase 4 accessibility upgrade.
+- **Git Diff**: The current worktree is verified with `git diff --check` after Phase 5 Site Intelligence.
