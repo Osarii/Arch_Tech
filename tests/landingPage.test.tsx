@@ -157,6 +157,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByText('Decisions requiring your attention')).toBeDefined();
     expect(screen.getByText('Upcoming milestones')).toBeDefined();
     expect(screen.getByText('Recent project updates')).toBeDefined();
+    expect(document.querySelector('.portal-project-thumbnail')).toBeDefined();
     expect(screen.getAllByRole('button', { name: 'Approve' }).length).toBeGreaterThan(0);
     fireEvent.click(screen.getAllByRole('button', { name: 'Approve' })[0]);
     expect(screen.getByText('Request changes')).toBeDefined();
@@ -171,6 +172,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getAllByText('Pacific Nexus Free Zone Campus').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Summit Point Corporate District').length).toBeGreaterThan(0);
     expect(screen.queryByText('Pacific Regional Medical Campus')).toBeNull();
+    expect(document.querySelectorAll('.portal-project-thumbnail').length).toBeGreaterThan(0);
     fireEvent.click(screen.getByTestId('theme-toggle'));
     expect(document.documentElement.classList.contains('portal-dark')).toBe(true);
     expect(document.querySelectorAll('.portal-overview-tile')).toHaveLength(4);
@@ -184,6 +186,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getAllByText('Pacific Regional Medical Campus').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Sebastián Araya').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Material palette').length).toBeGreaterThan(0);
+    expect(document.querySelectorAll('.portal-project-thumbnail').length).toBeGreaterThan(0);
     const adminSurface = screen.getByText('All projects / assignments').closest('.portal-surface');
     expect(adminSurface?.className).toContain('portal-admin');
     expect(adminSurface?.className).toContain('bg-[#D6CBB9]');
