@@ -27,9 +27,12 @@ import {
 } from '../components/portal/PortalPages';
 import { getPublicProject } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
+import { projectService } from '../services/projectService';
 import {
   AccessibleProjectRoute,
+  ensureProjectsHydrated,
   ForbiddenRoute,
+  isProjectsHydrated,
   legacyWorkspaceRequested,
   NotFoundRoute,
   ProtectedRoute,
@@ -66,6 +69,23 @@ const RootRoute: React.FC<{ onLogin: (trigger?: HTMLElement) => void; onNavigate
 
 const PublicProjectRoute: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
   const { projectId = '' } = useParams();
+  const isRemote = projectService.isRemote();
+  const [ready, setReady] = useState(!isRemote || isProjectsHydrated());
+
+  useEffect(() => {
+    if (ready || !isRemote) return;
+    let active = true;
+    void ensureProjectsHydrated().finally(() => {
+      if (!active) return;
+      setReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [ready, isRemote]);
+
+  if (!ready) return null;
+
   const project = getPublicProject(projectId);
   if (!project) return <Navigate to="/404" replace />;
   return <PublicProjectPage projectId={projectId} onNavigate={onNavigate} />;

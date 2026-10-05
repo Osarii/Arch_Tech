@@ -5,6 +5,7 @@ import { ForbiddenPage, LoginOverlay, NotFoundPage } from '../components/portal/
 import { getPortalProject, getPortalUser, getProjectsForUser, PortalRole } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
 import { authService } from '../services/authService';
+import { projectService } from '../services/projectService';
 import { userService } from '../services/userService';
 
 export const roleHome = (role?: PortalRole) => role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard';
@@ -59,16 +60,100 @@ export const RoleRoute: React.FC<{ role: PortalRole }> = ({ role }) => {
   return <Outlet />;
 };
 
+let lastApiBaseUrl: string | undefined = undefined;
+let projectsHydrated = false;
+let inflightProjectsPromise: Promise<void> | null = null;
+let usersHydrated = false;
+let inflightUsersPromise: Promise<void> | null = null;
+
+export const resetRouterHydration = () => {
+  lastApiBaseUrl = undefined;
+  projectsHydrated = false;
+  inflightProjectsPromise = null;
+  usersHydrated = false;
+  inflightUsersPromise = null;
+};
+
+const checkEnv = () => {
+  const currentBase = projectService.isRemote() ? (import.meta.env.VITE_API_BASE_URL || 'remote') : 'local';
+  if (currentBase !== lastApiBaseUrl) {
+    lastApiBaseUrl = currentBase;
+    projectsHydrated = false;
+    inflightProjectsPromise = null;
+    usersHydrated = false;
+    inflightUsersPromise = null;
+  }
+};
+
+export const isProjectsHydrated = () => {
+  checkEnv();
+  return !projectService.isRemote() || projectsHydrated;
+};
+
+export const ensureProjectsHydrated = async (): Promise<void> => {
+  checkEnv();
+  if (!projectService.isRemote() || projectsHydrated) return;
+  if (inflightProjectsPromise) return inflightProjectsPromise;
+  inflightProjectsPromise = (async () => {
+    try {
+      await projectService.list();
+      projectsHydrated = true;
+    } catch {
+      projectsHydrated = true;
+    }
+  })().finally(() => {
+    inflightProjectsPromise = null;
+  });
+  return inflightProjectsPromise;
+};
+
+export const ensureUsersHydrated = async (): Promise<void> => {
+  checkEnv();
+  if (!userService.isRemote() || usersHydrated) return;
+  if (inflightUsersPromise) return inflightUsersPromise;
+  inflightUsersPromise = (async () => {
+    try {
+      await userService.list();
+      usersHydrated = true;
+    } catch {
+      usersHydrated = true;
+    }
+  })().finally(() => {
+    inflightUsersPromise = null;
+  });
+  return inflightUsersPromise;
+};
+
 export const AccessibleProjectRoute: React.FC<{ role: PortalRole }> = ({ role }) => {
   const session = portalAuth.getSession();
-  const { projectId } = useParams();
-  const [ready, setReady] = React.useState(!userService.isRemote() || Boolean(session && getPortalUser(session.email)));
+  const { projectId = '' } = useParams();
+  checkEnv();
+
+  const isRemote = projectService.isRemote() || userService.isRemote();
+  const needsProjects = projectService.isRemote() && !projectsHydrated;
+  const needsUser = userService.isRemote() && role !== 'admin' && !usersHydrated;
+
+  const [ready, setReady] = React.useState(!isRemote || (!needsProjects && !needsUser));
 
   React.useEffect(() => {
-    if (!ready && userService.isRemote()) {
-      void userService.list().then(() => setReady(true)).catch(() => setReady(true));
+    checkEnv();
+    if (ready || !isRemote) return;
+    let active = true;
+    const tasks: Promise<unknown>[] = [];
+    if (projectService.isRemote() && !projectsHydrated) {
+      tasks.push(ensureProjectsHydrated());
     }
-  }, [ready]);
+    if (userService.isRemote() && role !== 'admin' && !usersHydrated) {
+      tasks.push(ensureUsersHydrated());
+    }
+    void Promise.all(tasks).finally(() => {
+      if (!active) return;
+      setReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [ready, isRemote, role, session]);
 
   if (!session) return <AuthGate />;
   if (!ready) return null;

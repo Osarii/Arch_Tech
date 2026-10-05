@@ -8,7 +8,7 @@ import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
 import { AboutSection, aboutFacts } from '../src/components/landing/AboutSection';
 import { TeamSection, teamMembers } from '../src/components/landing/TeamSection';
 import { ArchTechLogo } from '../src/components/brand/ArchTechLogo';
-import { createPortalUser, getPortalProject, getPortalSnapshot, resetPortalUsers, updatePortalDatabase } from '../src/portal/data';
+import { createPortalProjectRecord, createPortalUser, getPortalProject, getPortalSnapshot, resetPortalUsers, updatePortalDatabase } from '../src/portal/data';
 import { portalAuth } from '../src/portal/demoAuth';
 import {
   AdminAnalyticsPage,
@@ -22,6 +22,7 @@ import {
   PortalShell,
   PublicProjectPage,
 } from '../src/components/portal/PortalPages';
+import { resetRouterHydration } from '../src/router/guards';
 
 vi.mock('../src/components/layout/Workspace', () => ({
   Workspace: () => <div data-testid="workspace">BIM Workspace</div>,
@@ -31,6 +32,7 @@ describe('ARCH_TECH client architecture portal', () => {
   beforeEach(() => {
     window.localStorage.clear();
     resetPortalUsers();
+    resetRouterHydration();
     window.history.replaceState({}, '', '/');
     document.documentElement.classList.remove('portal-dark');
   });
@@ -1254,5 +1256,154 @@ describe('ARCH_TECH client architecture portal', () => {
       expect(window.location.pathname).toBe('/403');
       expect(screen.getByText('403 / Access restricted')).toBeDefined();
     });
+  });
+
+  it('remote project exists but is absent from initial local snapshot → not 404', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+
+    const remoteProject = createPortalProjectRecord({
+      title: 'Runtime Remote 99',
+      category: 'Corporate',
+      phase: 'Concept',
+      progress: 15,
+      published: true,
+    });
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/projects') {
+        return new Response(JSON.stringify([remoteProject]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', `/admin/projects/${remoteProject.id}`);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(`/admin/projects/${remoteProject.id}`);
+      expect(screen.getByText('Runtime Remote 99')).toBeDefined();
+    });
+    expect(screen.queryByText('404 / Page not found')).toBeNull();
+  });
+
+  it('remote existing unassigned project → 403', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
+
+    const serverUser = {
+      id: 'portal-user-mariana',
+      name: 'Mariana Solano',
+      email: 'mariana.solano@arch-tech.studio',
+      password: 'client-access',
+      role: 'client' as const,
+      status: 'active' as const,
+      projectIds: ['other-project-id'],
+    };
+
+    const remoteProject = createPortalProjectRecord({
+      title: 'Runtime Unassigned Proj',
+      category: 'Corporate',
+      phase: 'Concept',
+      progress: 20,
+      published: true,
+    });
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/users') {
+        return new Response(JSON.stringify([serverUser]), { status: 200 });
+      }
+      if (parsed.pathname === '/projects') {
+        return new Response(JSON.stringify([remoteProject]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', `/dashboard/projects/${remoteProject.id}`);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/403');
+      expect(screen.getByText('403 / Access restricted')).toBeDefined();
+    });
+    expect(screen.queryByText('Runtime Unassigned Proj')).toBeNull();
+    expect(screen.queryByText('404 / Page not found')).toBeNull();
+  });
+
+  it('remote nonexistent project → 404', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => {
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', '/admin/projects/completely-missing-project');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/404');
+      expect(screen.getByText('404 / Page not found')).toBeDefined();
+    });
+  });
+
+  it('admin fresh session can open remote runtime project', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+
+    const runtimeAdminProject = createPortalProjectRecord({
+      title: 'Runtime Admin Proj',
+      category: 'Infrastructure',
+      phase: 'Planning',
+      progress: 30,
+      published: false,
+    });
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/projects') {
+        return new Response(JSON.stringify([runtimeAdminProject]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', `/admin/projects/${runtimeAdminProject.id}`);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(`/admin/projects/${runtimeAdminProject.id}`);
+      expect(screen.getByText('Runtime Admin Proj')).toBeDefined();
+    });
+  });
+
+  it('published remote runtime project resolves publicly if supported by current service architecture', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+
+    const publishedProject = createPortalProjectRecord({
+      title: 'Runtime Public Proj',
+      category: 'Hospitality',
+      phase: 'Design',
+      progress: 45,
+      published: true,
+    });
+
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      const parsed = new URL(url);
+      if (parsed.pathname === '/projects') {
+        return new Response(JSON.stringify([publishedProject]), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    window.history.replaceState({}, '', `/projects/${publishedProject.id}`);
+    render(<App />);
+
+    await waitFor(() => {
+      expect(window.location.pathname).toBe(`/projects/${publishedProject.id}`);
+      expect(screen.getByText('Runtime Public Proj')).toBeDefined();
+    });
+    expect(screen.queryByText('404 / Page not found')).toBeNull();
   });
 });
