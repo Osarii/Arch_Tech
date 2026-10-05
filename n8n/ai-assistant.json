@@ -2,36 +2,95 @@
   "name": "ARCH_TECH AI Assistant",
   "nodes": [
     {
-      "parameters": { "httpMethod": "POST", "path": "arch-tech-ai", "responseMode": "responseNode" },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "arch-tech-ai",
+        "responseMode": "responseNode",
+        "options": {}
+      },
       "id": "ai-webhook",
       "name": "AI request",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
+      "typeVersion": 2.1,
       "position": [240, 300],
       "webhookId": "arch-tech-ai"
     },
     {
-      "parameters": { "model": "={{$json.model || 'configured-llm'}}", "prompt": "={{$json.userPrompt}}", "options": { "systemMessage": "Return JSON with message and optional toolCalls. Do not execute tools." } },
-      "id": "ai-llm",
-      "name": "Interpret request",
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
-      "typeVersion": 1,
-      "position": [500, 300]
+      "parameters": {
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nreturn [{ json: { userPrompt: String(input.userPrompt || input.prompt || ''), messages: Array.isArray(input.messages) ? input.messages : [], tools: Array.isArray(input.tools) ? input.tools : [], context: input.context && typeof input.context === 'object' ? input.context : {} } }];"
+      },
+      "id": "ai-normalize",
+      "name": "Normalize AI request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
     },
     {
-      "parameters": { "respondWith": "json", "responseBody": "={{$json.output || $json}}", "options": {} },
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.userPrompt }}",
+        "options": {
+          "systemMessage": "You are the ARCH_TECH BIM assistant. Return only valid JSON with a string message and optional toolCalls array. Never execute tools. Tool calls must use the provided tool names and args so the frontend can apply its existing confirmation gate."
+        }
+      },
+      "id": "ai-chain",
+      "name": "ARCH_TECH LLM chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "modelName": "gpt-4o-mini",
+        "options": {}
+      },
+      "id": "ai-chat-model",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [700, 520]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.text ?? $json.output ?? $json.response ?? $json;\nlet parsed = raw;\nif (typeof raw === 'string') { try { parsed = JSON.parse(raw); } catch { parsed = { message: raw }; } }\nconst message = parsed && typeof parsed.message === 'string' ? parsed.message : 'The remote assistant returned no message.';\nconst toolCalls = parsed && Array.isArray(parsed.toolCalls) ? parsed.toolCalls : undefined;\nreturn [{ json: toolCalls ? { message, toolCalls } : { message } }];"
+      },
+      "id": "ai-shape-response",
+      "name": "Shape AI response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [940, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
       "id": "ai-response",
       "name": "Structured response",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
-      "position": [760, 300]
+      "typeVersion": 1.1,
+      "position": [1180, 300]
     }
   ],
   "connections": {
-    "AI request": { "main": [[{ "node": "Interpret request", "type": "main", "index": 0 }]] },
-    "Interpret request": { "main": [[{ "node": "Structured response", "type": "main", "index": 0 }]] }
+    "AI request": {
+      "main": [[{ "node": "Normalize AI request", "type": "main", "index": 0 }]]
+    },
+    "Normalize AI request": {
+      "main": [[{ "node": "ARCH_TECH LLM chain", "type": "main", "index": 0 }]]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [[{ "node": "ARCH_TECH LLM chain", "type": "ai_languageModel", "index": 0 }]]
+    },
+    "ARCH_TECH LLM chain": {
+      "main": [[{ "node": "Shape AI response", "type": "main", "index": 0 }]]
+    },
+    "Shape AI response": {
+      "main": [[{ "node": "Structured response", "type": "main", "index": 0 }]]
+    }
   },
   "active": false,
   "settings": {},
-  "versionId": "arch-tech-ai-v1"
+  "versionId": "arch-tech-ai-v2"
 }

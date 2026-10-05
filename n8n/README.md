@@ -18,6 +18,8 @@ Automation request: `{ event, projectId, message?, metadata? }`, where `event` i
 
 Set `VITE_N8N_AI_WEBHOOK_URL` and `VITE_N8N_AUTOMATION_WEBHOOK_URL`, restart Vite, then use the BIM Assistant or create/update/request approval controls in the Admin portal.
 
+The repository validates the workflow JSON structure and frontend contracts only. Live LLM execution requires an imported workflow, deployed webhook and configured n8n credential; no live n8n pass is claimed here.
+
 ## Failure behavior
 
 Unavailable or malformed webhooks surface an error and preserve the deterministic offline AI provider or local portal state. No write tool is executed remotely without the existing confirmation gate.

@@ -416,7 +416,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(screen.getByLabelText('Project image unavailable')).toBeDefined();
   });
 
-  it('creates projects through the admin portal form', () => {
+  it('creates projects through the admin portal form', async () => {
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     const adminNavigate = vi.fn();
     render(<AdminDashboardPage onNavigate={adminNavigate} onSignOut={vi.fn()} />);
@@ -435,7 +435,7 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Portal Annex' } });
     fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '24' } });
     fireEvent.click(screen.getAllByRole('button', { name: 'Create project' }).at(-1)!);
-    expect(screen.getAllByText('Portal Annex').length).toBeGreaterThan(0);
+    await waitFor(() => expect(screen.getAllByText('Portal Annex').length).toBeGreaterThan(0));
     const createdProject = getPortalSnapshot().projects.find((project) => project.title === 'Portal Annex');
     expect(createdProject?.published).toBe(false);
     cleanup();
@@ -466,7 +466,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(getPortalSnapshot().db.users).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'Operations Client', role: 'client', status: 'active' })]));
   });
 
-  it('validates admin project creation inputs', () => {
+  it('validates admin project creation inputs', async () => {
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
@@ -487,6 +487,7 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: '  Compute infrastructure  ' } });
     fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '0' } });
     submitCreateProject();
+    await waitFor(() => expect(getPortalSnapshot().projects.some((project) => project.title === 'Edge Development Campus')).toBe(true));
     const zeroProject = getPortalSnapshot().projects.find((project) => project.title === 'Edge Development Campus');
     expect(zeroProject).toMatchObject({ title: 'Edge Development Campus', category: 'Compute infrastructure', progress: 0, published: false });
 
@@ -495,7 +496,7 @@ describe('ARCH_TECH client architecture portal', () => {
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: '  Regional development  ' } });
     fireEvent.change(screen.getByLabelText('Initial progress'), { target: { value: '100' } });
     submitCreateProject();
-    expect(getPortalSnapshot().projects.find((project) => project.title === 'Full Delivery Campus')).toMatchObject({ category: 'Regional development', progress: 100 });
+    await waitFor(() => expect(getPortalSnapshot().projects.find((project) => project.title === 'Full Delivery Campus')).toMatchObject({ category: 'Regional development', progress: 100 }));
 
     const projectCountBeforeInvalid = getPortalSnapshot().projects.length;
     for (const invalidProgress of ['-1', '101', 'not-a-number', '']) {

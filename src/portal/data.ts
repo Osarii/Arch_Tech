@@ -359,14 +359,23 @@ export const addPortalDocument = (document: ProjectDocument) => updatePortalData
 export const addPortalApproval = (approval: ProjectApproval) => updatePortalDatabase((current) => ({ ...current, approvals: [...current.approvals, approval] }));
 export const updatePortalUser = (id: string, changes: Partial<PortalUser>) => updatePortalDatabase((current) => ({ ...current, users: current.users.map((user) => user.id === id ? { ...user, ...changes } : user) }));
 
+export const syncPortalProjects = (projects: PortalProjectRecord[]) => updatePortalDatabase((current) => ({ ...current, projects }));
+export const syncPortalUsers = (users: PortalUser[], replaceAll = false) => updatePortalDatabase((current) => ({
+  ...current,
+  users: replaceAll
+    ? users
+    : [...current.users.filter((user) => !users.some((remoteUser) => remoteUser.id === user.id)), ...users],
+}));
+export const syncPortalRelations = (relations: Pick<PortalDatabase, 'updates' | 'milestones' | 'documents' | 'approvals' | 'notifications'>) => updatePortalDatabase((current) => ({ ...current, ...relations }));
+
 export type CreatePortalProjectInput = Pick<PortalProjectRecord, 'title' | 'category' | 'phase' | 'progress'> & Partial<Pick<PortalProjectRecord, 'code' | 'nextMilestone' | 'summary' | 'statement' | 'image' | 'market' | 'developmentType' | 'context' | 'scale' | 'longView' | 'published'>>;
 export type CreatePortalUserInput = Pick<PortalUser, 'name' | 'email' | 'password'> & Partial<Pick<PortalUser, 'role' | 'status' | 'projectIds'>>;
 
 const createRuntimeId = (prefix: string) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-export const createPortalProject = (input: CreatePortalProjectInput): PortalProject => {
+export const createPortalProjectRecord = (input: CreatePortalProjectInput): PortalProjectRecord => {
   const id = createRuntimeId('admin-project');
-  const project: PortalProjectRecord = {
+  return {
     id,
     code: input.code?.trim() || `AT / ${String(getPortalSnapshot().projects.length + 1).padStart(2, '0')}`,
     title: input.title.trim(),
@@ -383,8 +392,12 @@ export const createPortalProject = (input: CreatePortalProjectInput): PortalProj
     scale: input.scale?.trim() || 'To be defined',
     published: input.published === true,
   };
+};
+
+export const createPortalProject = (input: CreatePortalProjectInput): PortalProject => {
+  const project = createPortalProjectRecord(input);
   updatePortalDatabase((current) => ({ ...current, projects: [...current.projects, project] }));
-  return getPortalSnapshot().projects.find((candidate) => candidate.id === id)!;
+  return getPortalSnapshot().projects.find((candidate) => candidate.id === project.id)!;
 };
 
 export const isCanonicalPortalProject = (id: string) => portalDb.projects.some((project) => project.id === id);

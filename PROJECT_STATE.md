@@ -49,6 +49,8 @@ Optional local HTTP persistence is available through `npm run server` (JSON Serv
 - **Admin Operations**: Active projects expose objective KPIs, a responsive progress chart, search/filter/sort, runtime project creation/deletion with canonical showcase protection, user creation, role/status controls and assignments.
 - **External Context**: Admin can request live Costa Rica weather context from Open-Meteo with visible loading/error states.
 - **Persistent Preferences**: Portal text scale options (100%, 112.5%, 125%) persist under `arch-tech-portal-text-scale` alongside the existing Light/Dark theme preference.
+- **HTTP Mode**: With `VITE_API_BASE_URL`, the service layer treats JSON Server as authoritative, synchronizes the local snapshot cache after reads/writes, and reconciles project relations on deletion. Without it, the same UI uses the local fallback.
+- **n8n Status**: Both workflows are importable JSON definitions with validated contracts and no committed credentials. Live LLM/webhook execution requires external n8n configuration and was not run here.
 
 ---
 
@@ -195,9 +197,7 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint`).
-- **Vitest Unit/Domain Tests**: **177 / 177 PASSED** across 16 test files after the portal service and router work.
+- **Vitest Unit/Domain Tests**: **181 / 181 PASSED** across 16 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, full OpenBIM workflow and AI confirmation flows.
-- **Playwright E2E Tests**: **13 / 14 PASSED** in the current run; the existing BIM Phase 3 editing flow still fails at `tests/e2e/bimLab.spec.ts:342` because `Restore Element` is not rendered after deletion. This landing/brand task does not modify BIM internals.
-- **Targeted portal/landing suites**: `portalData` **11 / 11**, `demoAuth` **10 / 10**, `landingPage` **38 / 38**, and `spatialRail` **6 / 6** passed after the About and leadership update.
-- **Git Diff**: Verified with `git diff --check` after the landing media/carousel changes.
+- **Git Diff**: The current worktree is verified with `git diff --check` after the HTTP/n8n changes.

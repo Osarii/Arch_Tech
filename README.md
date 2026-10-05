@@ -107,5 +107,6 @@ npm run build
 ## Current Development Status & Handoff Context
 
 - **Current Status**: All Phase 6A (Viewport), Phase 6B.1 (IFC4 Generation), Phase 6B.2 (Detached IFC Persistence), Landing/Portal Redesign, official Garnier showcase carousel, and SpatialRail Media Integration phases are **COMPLETE**.
-- **Portal workflow status**: React Router routes and reusable auth/role/project guards are active; local registration, Admin user/project management, JSON Server service fallbacks, external context loading and n8n integration points are available. Configure optional endpoints from `.env.example`.
+- **Implemented**: React Router routes and reusable auth/role/project guards, local registration, Admin user/project management, synchronized JSON Server CRUD, external context loading, deterministic AI fallback and importable n8n workflow definitions.
+- **Requires external configuration**: Set `VITE_API_BASE_URL` only when running JSON Server or another compatible API. Set the two `VITE_N8N_*_WEBHOOK_URL` values and configure an LLM credential in n8n for live remote AI/automation execution; no live n8n execution is claimed by this repository.
 - **Detailed Handoff**: For complete handoff details, architecture invariants, known issues, and current priorities, refer to [PROJECT_STATE.md](PROJECT_STATE.md).

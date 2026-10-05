@@ -2,36 +2,51 @@
   "name": "ARCH_TECH Project Automation",
   "nodes": [
     {
-      "parameters": { "httpMethod": "POST", "path": "arch-tech-automation", "responseMode": "responseNode" },
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "arch-tech-automation",
+        "responseMode": "responseNode",
+        "options": {}
+      },
       "id": "automation-webhook",
       "name": "Project event",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 2,
+      "typeVersion": 2.1,
       "position": [240, 300],
       "webhookId": "arch-tech-automation"
     },
     {
-      "parameters": { "jsCode": "const event = $json.event || 'project.updated';\nconst labels = { 'project.created': 'Project created', 'project.updated': 'Project updated', 'approval.requested': 'Approval requested' };\nreturn [{ json: { success: true, notification: { message: `${labels[event] || 'Project event'} · ${$json.projectId}`, date: new Date().toISOString().slice(0, 10) } } }];" },
+      "parameters": {
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst allowed = ['project.created', 'project.updated', 'approval.requested'];\nconst event = typeof input.event === 'string' ? input.event : '';\nconst projectId = typeof input.projectId === 'string' ? input.projectId.trim() : '';\nif (!allowed.includes(event)) return [{ json: { success: false, error: 'Unsupported project event.' } }];\nif (!projectId) return [{ json: { success: false, error: 'projectId is required.' } }];\nconst labels = { 'project.created': 'Project created', 'project.updated': 'Project updated', 'approval.requested': 'Approval requested' };\nreturn [{ json: { success: true, notification: { message: `${labels[event]} · ${projectId}`, date: new Date().toISOString().slice(0, 10) } } }];"
+      },
       "id": "automation-summary",
-      "name": "Build notification payload",
+      "name": "Validate project event",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [500, 300]
+      "position": [520, 300]
     },
     {
-      "parameters": { "respondWith": "json", "responseBody": "={{$json}}", "options": {} },
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
       "id": "automation-response",
       "name": "Return notification",
       "type": "n8n-nodes-base.respondToWebhook",
-      "typeVersion": 1,
-      "position": [760, 300]
+      "typeVersion": 1.1,
+      "position": [800, 300]
     }
   ],
   "connections": {
-    "Project event": { "main": [[{ "node": "Build notification payload", "type": "main", "index": 0 }]] },
-    "Build notification payload": { "main": [[{ "node": "Return notification", "type": "main", "index": 0 }]] }
+    "Project event": {
+      "main": [[{ "node": "Validate project event", "type": "main", "index": 0 }]]
+    },
+    "Validate project event": {
+      "main": [[{ "node": "Return notification", "type": "main", "index": 0 }]]
+    }
   },
   "active": false,
   "settings": {},
-  "versionId": "arch-tech-automation-v1"
+  "versionId": "arch-tech-automation-v2"
 }

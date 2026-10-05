@@ -10,9 +10,6 @@ import {
   getPortalSnapshot,
   getProjectsForUser,
   updatePortalApproval,
-  updatePortalDatabase,
-  updatePortalProject,
-  updatePortalUser,
   PortalProject,
   PortalRole,
   getPortalUser,
@@ -289,6 +286,10 @@ export const DashboardPage: React.FC<NavigationProps & { onSignOut: () => void }
   const pendingApprovals = projects.flatMap((project) => project.approvals.filter((approval) => approval.status === 'Pending').map((approval) => ({ ...approval, projectTitle: project.title })));
   const notifications = snapshot.db.notifications.filter((notification) => notification.userId === client?.id && projects.some((project) => project.id === notification.projectId));
   const refresh = () => setSnapshot(getPortalSnapshot());
+  useEffect(() => {
+    if (!projectService.isRemote()) return;
+    void Promise.all([projectService.list(), userService.list()]).then(refresh);
+  }, []);
   const respondToApproval = (projectId: string, title: string, status: 'Approved' | 'Rejected') => {
     updatePortalApproval(projectId, title, status);
     refresh();
@@ -353,12 +354,17 @@ const ProjectRows: React.FC<{ projects: PortalProject[]; onNavigate: Navigate; d
 );
 
 export const ArchitectDashboardPage: React.FC<NavigationProps & { onSignOut: () => void }> = ({ onNavigate, onSignOut }) => {
+  const [, setRemoteVersion] = useState(0);
   const architect = getPortalUser(portalAuth.getSession()?.email ?? '');
   const projects = getProjectsForUser(architect?.id ?? '');
   const attention = projects.filter((project) => project.progress < 50 || project.approvals.some((approval) => approval.status === 'Pending'));
   const milestones = projects.flatMap((project) => project.milestones.filter((milestone) => milestone.status !== 'Complete').map((milestone) => ({ ...milestone, projectTitle: project.title })));
   const approvals = projects.flatMap((project) => project.approvals.filter((approval) => approval.status === 'Pending').map((approval) => ({ ...approval, projectTitle: project.title })));
   const activity = projects.flatMap((project) => project.updates.map((update) => ({ ...update, projectTitle: project.title }))).slice(0, 5);
+  useEffect(() => {
+    if (!projectService.isRemote()) return;
+    void Promise.all([projectService.list(), userService.list()]).then(() => setRemoteVersion((version) => version + 1));
+  }, []);
   return (
     <div className="portal-surface h-screen overflow-y-auto bg-[#D6CBB9] text-[#211E1A]"><PortalHeader onNavigate={onNavigate} onSignOut={onSignOut} homePath="/architect" role="architect" />
       <main className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12 lg:py-20">
@@ -381,6 +387,7 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [createOpen, setCreateOpen] = useState(false);
   const [createError, setCreateError] = useState('');
+  const [creatingProject, setCreatingProject] = useState(false);
   const [operationFeedback, setOperationFeedback] = useState('');
   const [userError, setUserError] = useState('');
   const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'client' as PortalRole });
@@ -420,6 +427,10 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
     setProjectSort('name');
   };
   const refresh = () => setSnapshot(getPortalSnapshot());
+  useEffect(() => {
+    if (!projectService.isRemote()) return;
+    void Promise.all([projectService.list(), userService.list()]).then(refresh).catch((error) => setCreateError(error instanceof Error ? error.message : 'Remote project data could not be loaded.'));
+  }, []);
   const closeCreateDialog = () => {
     setCreateOpen(false);
     setCreateError('');
@@ -452,15 +463,20 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [createOpen]);
-  const toggleAssignment = (userId: string, projectId: string) => {
+  const toggleAssignment = async (userId: string, projectId: string) => {
     const current = getPortalSnapshot().db;
     const user = current.users.find((candidate) => candidate.id === userId);
     const project = current.projects.find((candidate) => candidate.id === projectId);
     if (!user || user.status !== 'active' || !['client', 'architect'].includes(user.role) || !project || project.archived === true) return;
-    updatePortalDatabase((current) => ({ ...current, users: current.users.map((user) => user.id !== userId ? user : { ...user, projectIds: user.projectIds.includes(projectId) ? user.projectIds.filter((id) => id !== projectId) : [...user.projectIds, projectId] }) }));
-    refresh();
+    const projectIds = user.projectIds.includes(projectId) ? user.projectIds.filter((id) => id !== projectId) : [...user.projectIds, projectId];
+    try {
+      await userService.update(userId, { projectIds });
+      refresh();
+    } catch (error) {
+      setUserError(error instanceof Error ? error.message : 'Assignment could not be saved.');
+    }
   };
-  const createProject = () => {
+  const createProject = async () => {
     const title = newProject.title.trim();
     const category = newProject.category.trim();
     const progress = Number(newProject.progress);
@@ -469,13 +485,20 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
       return;
     }
     setCreateError('');
-    const createdProject = projectService.create({ title, category, phase: newProject.phase, progress });
-    void createdProject.then((project) => automationService.emit({ event: 'project.created', projectId: project.id, message: `Project ${project.title} created.` }));
-    setNewProject({ title: '', category: DEFAULT_NEW_PROJECT_CATEGORY, phase: 'Brief and site study', progress: '0' });
-    setCreateOpen(false);
-    createTriggerRef.current?.focus();
-    refresh();
-    setOperationFeedback('Project created and added to the register.');
+    setCreatingProject(true);
+    try {
+      const project = await projectService.create({ title, category, phase: newProject.phase, progress });
+      await automationService.emit({ event: 'project.created', projectId: project.id, message: `Project ${project.title} created.` });
+      setNewProject({ title: '', category: DEFAULT_NEW_PROJECT_CATEGORY, phase: 'Brief and site study', progress: '0' });
+      setCreateOpen(false);
+      createTriggerRef.current?.focus();
+      refresh();
+      setOperationFeedback('Project created and added to the register.');
+    } catch (error) {
+      setCreateError(error instanceof Error ? error.message : 'Project could not be created.');
+    } finally {
+      setCreatingProject(false);
+    }
   };
   const createUser = async () => {
     setUserError('');
@@ -488,8 +511,7 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
       setUserError(error instanceof Error ? error.message : 'Unable to create the user.');
     }
   };
-  const updateUser = async (id: string, changes: Parameters<typeof updatePortalUser>[1]) => {
-    updatePortalUser(id, changes);
+  const updateUser = async (id: string, changes: Parameters<typeof userService.update>[1]) => {
     await userService.update(id, changes);
     setOperationFeedback('User access updated.');
     refresh();
@@ -520,7 +542,7 @@ export const AdminDashboardPage: React.FC<NavigationProps & { onSignOut: () => v
         <section id="portal-section-approvals" className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Pending approvals</p>{pendingApprovals.map((approval) => <button key={`${approval.projectId}-${approval.title}`} onClick={() => onNavigate(`/admin/projects/${approval.projectId}`)} className="mt-5 flex w-full justify-between gap-4 border-b border-black/10 pb-4 text-left text-sm"><span>{approval.projectTitle} · {approval.title}</span><span className="font-mono text-[9px] uppercase text-stone-500">Review</span></button>)}</div><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>{db.notifications.map((notification) => <p key={`${notification.userId}-${notification.date}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{notification.message}</span><span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span></p>)}</div></section>
         <section className="grid gap-12 border-t border-black/15 pt-12 lg:grid-cols-2"><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent activity</h2>{recentActivity.map((update) => <p key={`${update.projectId}-${update.date}-${update.title}`} className="mt-5 flex justify-between gap-4 text-sm"><span>{update.projectTitle} · {update.title}</span><span className="font-mono text-[9px] text-stone-500">{update.date}</span></p>)}</div><div><h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Development controls</h2><p className="mt-5 text-sm leading-6 text-stone-600">Create, assign and advance projects from the register. Open any project or its model directly from the portfolio list.</p></div></section>
       </main>
-      {createOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-4 py-4 backdrop-blur-sm sm:items-center" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeCreateDialog()}><form ref={createDialogRef} noValidate role="dialog" aria-modal="true" aria-labelledby="create-project-title" onSubmit={(event) => { event.preventDefault(); createProject(); }} className="w-full max-w-xl border border-white/15 bg-[#11110f] p-7 text-[#f4efe8] shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Administration</p><h2 id="create-project-title" className="mt-4 font-serif text-4xl">New project.</h2></div><button type="button" onClick={closeCreateDialog} aria-label="Close create project" className="border border-white/20 p-2 text-stone-300"><X className="h-4 w-4" /></button></div><div className="mt-8 space-y-5"><label className="block font-mono text-[9px] uppercase text-stone-400">Title<input required value={newProject.title} onChange={(event) => setNewProject({ ...newProject, title: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><label className="block font-mono text-[9px] uppercase text-stone-400">Category<input required value={newProject.category} onChange={(event) => setNewProject({ ...newProject, category: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><div className="grid gap-5 sm:grid-cols-2"><label className="block font-mono text-[9px] uppercase text-stone-400">Phase<select value={newProject.phase} onChange={(event) => setNewProject({ ...newProject, phase: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-[#11110f] py-3 text-sm text-white outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><label className="block font-mono text-[9px] uppercase text-stone-400">Initial progress<input required type="number" min="0" max="100" step="1" value={newProject.progress} onChange={(event) => setNewProject({ ...newProject, progress: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label></div></div>{createError && <p role="alert" className="mt-5 text-xs text-red-300">{createError}</p>}<button type="submit" className="mt-8 w-full bg-[#f4efe8] px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-black">Create project</button></form></div>}
+      {createOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 px-4 py-4 backdrop-blur-sm sm:items-center" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !creatingProject && closeCreateDialog()}><form ref={createDialogRef} noValidate role="dialog" aria-modal="true" aria-labelledby="create-project-title" onSubmit={(event) => { event.preventDefault(); void createProject(); }} className="w-full max-w-xl border border-white/15 bg-[#11110f] p-7 text-[#f4efe8] shadow-2xl"><div className="flex items-start justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Administration</p><h2 id="create-project-title" className="mt-4 font-serif text-4xl">New project.</h2></div><button type="button" disabled={creatingProject} onClick={closeCreateDialog} aria-label="Close create project" className="border border-white/20 p-2 text-stone-300 disabled:opacity-50"><X className="h-4 w-4" /></button></div><div className="mt-8 space-y-5"><label className="block font-mono text-[9px] uppercase text-stone-400">Title<input required disabled={creatingProject} value={newProject.title} onChange={(event) => setNewProject({ ...newProject, title: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><label className="block font-mono text-[9px] uppercase text-stone-400">Category<input required disabled={creatingProject} value={newProject.category} onChange={(event) => setNewProject({ ...newProject, category: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label><div className="grid gap-5 sm:grid-cols-2"><label className="block font-mono text-[9px] uppercase text-stone-400">Phase<select disabled={creatingProject} value={newProject.phase} onChange={(event) => setNewProject({ ...newProject, phase: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-[#11110f] py-3 text-sm text-white outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><label className="block font-mono text-[9px] uppercase text-stone-400">Initial progress<input required disabled={creatingProject} type="number" min="0" max="100" step="1" value={newProject.progress} onChange={(event) => setNewProject({ ...newProject, progress: event.target.value })} className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none" /></label></div></div>{createError && <p role="alert" className="mt-5 text-xs text-red-300">{createError}</p>}<button disabled={creatingProject} type="submit" className="mt-8 w-full bg-[#f4efe8] px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-black disabled:opacity-50">{creatingProject ? 'Creating project…' : 'Create project'}</button></form></div>}
     </div>
   );
 };
@@ -586,7 +608,11 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
   const previousProject = projectIndex > 0 ? accessibleProjects[projectIndex - 1] : undefined;
   const nextProject = projectIndex >= 0 && projectIndex < accessibleProjects.length - 1 ? accessibleProjects[projectIndex + 1] : undefined;
   const refresh = () => setSnapshot(getPortalSnapshot());
-  const saveStatus = () => {
+  useEffect(() => {
+    if (!projectService.isRemote()) return;
+    void Promise.all([projectService.list(), userService.list()]).then(refresh);
+  }, []);
+  const saveStatus = async () => {
     const progressValue = progress.trim();
     const changes = {
       ...(progressValue !== '' && Number.isFinite(Number(progressValue)) && Number(progressValue) >= 0 && Number(progressValue) <= 100 ? { progress: Number(progressValue) } : {}),
@@ -598,12 +624,16 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
     } else {
       setProgressError('');
     }
-    if (Object.keys(changes).length) {
-      updatePortalProject(projectId, changes);
-      void automationService.emit({ event: 'project.updated', projectId, metadata: changes });
+    if (!Object.keys(changes).length) return;
+    try {
+      const updated = await projectService.update(projectId, changes);
+      if (!updated) throw new Error('Project status could not be read back from the API.');
+      await automationService.emit({ event: 'project.updated', projectId, metadata: changes });
       setOperationFeedback('Project status saved.');
+      refresh();
+    } catch (error) {
+      setOperationFeedback(error instanceof Error ? error.message : 'Project status could not be saved.');
     }
-    refresh();
   };
   const addUpdate = () => { const title = updateTitle.trim(); const body = updateBody.trim(); if (!title || !body) return; addPortalUpdate({ projectId, date: formatPortalDate(new Date()), title, body }); void automationService.emit({ event: 'project.updated', projectId, message: title }); setUpdateTitle(''); setUpdateBody(''); setOperationFeedback('Project update published.'); refresh(); };
   const addMilestone = () => { const label = milestone.trim(); if (!label) return; addPortalMilestone({ projectId, label, status: 'Upcoming' }); setMilestone(''); refresh(); };
@@ -617,6 +647,16 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
       onNavigate(homePath);
     } catch (error) {
       setOperationFeedback(error instanceof Error ? error.message : 'Project could not be deleted.');
+    }
+  };
+  const togglePublication = async () => {
+    if (!project) return;
+    try {
+      await projectService.update(projectId, { published: !project.published });
+      setOperationFeedback(project.published ? 'Project removed from the public portfolio.' : 'Project published to the public portfolio.');
+      refresh();
+    } catch (error) {
+      setOperationFeedback(error instanceof Error ? error.message : 'Publication status could not be saved.');
     }
   };
 
@@ -687,7 +727,7 @@ export const DashboardProjectPage: React.FC<NavigationProps & { projectId: strin
             </div>
           )}
         </section>
-        {canManage && <section data-testid="role-management-panel" className="border-t border-black/15 py-12"><div className="flex items-end justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{role === 'admin' ? 'Administration' : 'Studio management'}</p><h2 className="mt-4 font-serif text-4xl">Project controls.</h2></div>{role === 'admin' && <div className="flex flex-wrap items-center justify-end gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{project.published ? 'Public portfolio' : 'Private project'}</span><button data-testid="toggle-publication" onClick={() => { updatePortalProject(projectId, { published: !project.published }); refresh(); }} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">{project.published ? 'Remove from public portfolio' : 'Publish to public portfolio'}</button><button data-testid="delete-project" onClick={() => void deleteProject()} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Delete runtime project</button></div>}</div><div className="mt-8 grid gap-8 lg:grid-cols-2"><div className="space-y-4">{role === 'admin' && <label className="block font-mono text-[9px] uppercase text-stone-500">Project title<input aria-label="Project title" value={projectTitle || project.title} onChange={(event) => setProjectTitle(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label>}<label className="block font-mono text-[9px] uppercase text-stone-500">Progress / phase<input aria-label="Project progress" type="number" min={0} max={100} step={1} aria-invalid={Boolean(progressError)} aria-describedby={progressError ? 'project-progress-error' : undefined} value={progress || project.progress} onChange={(event) => { const value = event.target.value; setProgress(value); setProgressError(value.trim() !== '' && (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100) ? 'Progress must be a number from 0 to 100.' : ''); }} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" />{progressError && <p id="project-progress-error" role="alert" className="mt-2 text-xs text-stone-600">{progressError}</p>}<select aria-label="Project phase" value={phase || project.phase} onChange={(event) => setPhase(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><button onClick={saveStatus} className="bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-white">Save status</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Create project update<input aria-label="Update title" value={updateTitle} onChange={(event) => setUpdateTitle(event.target.value)} placeholder="Update title" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /><textarea aria-label="Update body" value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} placeholder="What changed?" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addUpdate} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Publish update</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Manage milestones<input aria-label="New milestone" value={milestone} onChange={(event) => setMilestone(event.target.value)} placeholder="Milestone name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addMilestone} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add milestone</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Issue document<input aria-label="New document" value={documentName} onChange={(event) => setDocumentName(event.target.value)} placeholder="Document name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addDocument} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add document</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Client approval request<input aria-label="New approval" value={approvalTitle} onChange={(event) => setApprovalTitle(event.target.value)} placeholder="Approval request" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={requestApproval} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Request approval</button></div><div><p className="font-mono text-[9px] uppercase text-stone-500">Project activity</p>{project.updates.slice(0, 3).map((update) => <p key={update.date + update.title} className="mt-4 text-sm text-stone-600">{update.date} · {update.title}</p>)}</div></div></section>}
+        {canManage && <section data-testid="role-management-panel" className="border-t border-black/15 py-12"><div className="flex items-end justify-between gap-6"><div><p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{role === 'admin' ? 'Administration' : 'Studio management'}</p><h2 className="mt-4 font-serif text-4xl">Project controls.</h2></div>{role === 'admin' && <div className="flex flex-wrap items-center justify-end gap-3"><span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{project.published ? 'Public portfolio' : 'Private project'}</span><button data-testid="toggle-publication" onClick={() => void togglePublication()} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">{project.published ? 'Remove from public portfolio' : 'Publish to public portfolio'}</button><button data-testid="delete-project" onClick={() => void deleteProject()} className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Delete runtime project</button></div>}</div><div className="mt-8 grid gap-8 lg:grid-cols-2"><div className="space-y-4">{role === 'admin' && <label className="block font-mono text-[9px] uppercase text-stone-500">Project title<input aria-label="Project title" value={projectTitle || project.title} onChange={(event) => setProjectTitle(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label>}<label className="block font-mono text-[9px] uppercase text-stone-500">Progress / phase<input aria-label="Project progress" type="number" min={0} max={100} step={1} aria-invalid={Boolean(progressError)} aria-describedby={progressError ? 'project-progress-error' : undefined} value={progress || project.progress} onChange={(event) => { const value = event.target.value; setProgress(value); setProgressError(value.trim() !== '' && (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100) ? 'Progress must be a number from 0 to 100.' : ''); }} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" />{progressError && <p id="project-progress-error" role="alert" className="mt-2 text-xs text-stone-600">{progressError}</p>}<select aria-label="Project phase" value={phase || project.phase} onChange={(event) => setPhase(event.target.value)} className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"><option>Brief and site study</option><option>Concept design</option><option>Design development</option><option>Documentation</option></select></label><button onClick={() => void saveStatus()} className="bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-white">Save status</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Create project update<input aria-label="Update title" value={updateTitle} onChange={(event) => setUpdateTitle(event.target.value)} placeholder="Update title" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /><textarea aria-label="Update body" value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} placeholder="What changed?" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addUpdate} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Publish update</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Manage milestones<input aria-label="New milestone" value={milestone} onChange={(event) => setMilestone(event.target.value)} placeholder="Milestone name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addMilestone} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add milestone</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Issue document<input aria-label="New document" value={documentName} onChange={(event) => setDocumentName(event.target.value)} placeholder="Document name" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={addDocument} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Add document</button></div><div className="space-y-4"><label className="block font-mono text-[9px] uppercase text-stone-500">Client approval request<input aria-label="New approval" value={approvalTitle} onChange={(event) => setApprovalTitle(event.target.value)} placeholder="Approval request" className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none" /></label><button onClick={requestApproval} className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]">Request approval</button></div><div><p className="font-mono text-[9px] uppercase text-stone-500">Project activity</p>{project.updates.slice(0, 3).map((update) => <p key={update.date + update.title} className="mt-4 text-sm text-stone-600">{update.date} · {update.title}</p>)}</div></div></section>}
       </main>
     </div>
   );
