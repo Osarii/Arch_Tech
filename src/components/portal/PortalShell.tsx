@@ -1,10 +1,22 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { LogOut, Moon, Sun, Play, Pause, Square, Palette } from 'lucide-react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { LogOut, Moon, Sun, Sliders } from 'lucide-react';
 import { useInRouterContext, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { PortalRole, getPortalUser } from '../../portal/data';
 import { portalAuth } from '../../portal/demoAuth';
 import { roleHome } from '../../router/guards';
+import {
+  AccessibilityPreferences,
+  DEFAULT_A11Y_PREFERENCES,
+  applyAccessibilityClasses,
+  extractMainContentWithMap,
+  getHoveredWordAtPoint,
+  getRectForCharIndex,
+  loadAccessibilityPreferences,
+  saveAccessibilityPreferences,
+} from '../../portal/accessibility';
+import { AccessibilityPanel } from './AccessibilityPanel';
+import { AccessibilityOverlay } from './AccessibilityOverlay';
 
 export interface PortalShellProps {
   role: PortalRole;
@@ -81,120 +93,119 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     }
   });
 
-  const [textScale, setTextScale] = useState<'100' | '1125' | '125'>(() => {
-    if (typeof window === 'undefined') return '100';
-    try {
-      const stored = window.localStorage.getItem('arch-tech-portal-text-scale');
-      return stored === '1125' || stored === '125' ? stored : '100';
-    } catch {
-      return '100';
-    }
-  });
-
-  const [colorSafe, setColorSafe] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    try {
-      return window.localStorage.getItem('arch-tech-portal-color-safe') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [preferences, setPreferences] = useState<AccessibilityPreferences>(() =>
+    loadAccessibilityPreferences()
+  );
+  const [isA11yPanelOpen, setIsA11yPanelOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const a11yTriggerRef = useRef<HTMLButtonElement>(null);
 
   const [speechState, setSpeechState] = useState<'unsupported' | 'idle' | 'playing' | 'paused'>('idle');
+  const speechStateRef = useRef(speechState);
+  speechStateRef.current = speechState;
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [speechHighlightRect, setSpeechHighlightRect] = useState<DOMRect | null>(null);
 
+  const [pointerY, setPointerY] = useState<number | null>(null);
+  const [hoverRect, setHoverRect] = useState<DOMRect | null>(null);
+  const hoverTimerRef = useRef<any>(null);
+  const lastHoverWordRef = useRef<string | null>(null);
+
+  // Check speech synthesis support and load voices
   useEffect(() => {
     if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       setSpeechState('unsupported');
+      return;
     }
+
+    const loadVoices = () => {
+      try {
+        const v = window.speechSynthesis.getVoices();
+        if (v && v.length > 0) setAvailableVoices(v);
+      } catch {
+        // Voice loading fallback
+      }
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
   }, []);
 
+  // Theme synchronization
   useEffect(() => {
     document.documentElement.classList.toggle('portal-dark', dark);
     try {
       window.localStorage.setItem('arch-tech-portal-theme', dark ? 'dark' : 'light');
     } catch {
-      // Theme preference is optional; current mode remains in memory.
+      // theme in memory
     }
   }, [dark]);
 
+  // Apply accessibility classes & persist
   useEffect(() => {
-    document.documentElement.classList.remove('portal-scale-1125', 'portal-scale-125');
-    if (textScale !== '100') document.documentElement.classList.add(`portal-scale-${textScale}`);
-    try {
-      window.localStorage.setItem('arch-tech-portal-text-scale', textScale);
-    } catch {
-      // Text preference remains active in memory.
-    }
-  }, [textScale]);
+    applyAccessibilityClasses(preferences);
+    saveAccessibilityPreferences(preferences);
+  }, [preferences]);
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('portal-color-safe', colorSafe);
-    try {
-      window.localStorage.setItem('arch-tech-portal-color-safe', colorSafe ? 'true' : 'false');
-    } catch {
-      // Color-safe preference remains active in memory.
-    }
-  }, [colorSafe]);
-
+  // Full-page narrator methods
   const stopSpeech = () => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       setSpeechState('idle');
+      setSpeechHighlightRect(null);
+      setAnnouncement('Speech stopped');
     }
-  };
-
-  useEffect(() => {
-    stopSpeech();
-    return () => {
-      stopSpeech();
-    };
-  }, [currentPath]);
-
-  const extractAccessibleText = (node: Node): string => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      return node.textContent || '';
-    }
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      const el = node as Element;
-      const tag = el.tagName.toLowerCase();
-      if (
-        el.hasAttribute('hidden') ||
-        el.getAttribute('aria-hidden') === 'true' ||
-        tag === 'nav' ||
-        tag === 'button' ||
-        tag === 'a' ||
-        tag === 'input' ||
-        tag === 'select' ||
-        tag === 'textarea' ||
-        tag === 'svg'
-      ) {
-        return '';
-      }
-      let text = '';
-      for (const child of Array.from(node.childNodes)) {
-        text += extractAccessibleText(child) + ' ';
-      }
-      return text;
-    }
-    return '';
   };
 
   const startSpeech = () => {
-    if (speechState === 'unsupported' || typeof window === 'undefined') return;
+    if (speechState === 'unsupported' || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
-    
+    setHoverRect(null);
+
     const mainNode = document.querySelector('main');
     if (!mainNode) return;
 
-    const text = extractAccessibleText(mainNode).replace(/\s+/g, ' ').trim();
-    if (!text) return;
+    const extracted = extractMainContentWithMap(mainNode);
+    if (!extracted.fullText.trim()) return;
 
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.onstart = () => setSpeechState('playing');
-    utterance.onend = () => setSpeechState('idle');
-    utterance.onerror = () => setSpeechState('idle');
-    utterance.onpause = () => setSpeechState('paused');
-    utterance.onresume = () => setSpeechState('playing');
+    const utterance = new SpeechSynthesisUtterance(extracted.fullText);
+    utterance.rate = preferences.speed;
+    if (preferences.voiceURI) {
+      const v = availableVoices.find((voice) => voice.voiceURI === preferences.voiceURI);
+      if (v) utterance.voice = v;
+    }
+
+    utterance.onstart = () => {
+      setSpeechState('playing');
+      setAnnouncement('Narration started');
+    };
+    utterance.onpause = () => {
+      setSpeechState('paused');
+      setAnnouncement('Narration paused');
+    };
+    utterance.onresume = () => {
+      setSpeechState('playing');
+      setAnnouncement('Narration resumed');
+    };
+    utterance.onend = () => {
+      setSpeechState('idle');
+      setSpeechHighlightRect(null);
+      setAnnouncement('Narration ended');
+    };
+    utterance.onerror = () => {
+      setSpeechState('idle');
+      setSpeechHighlightRect(null);
+    };
+
+    // Boundary events for real-time word highlighting
+    utterance.onboundary = (event: SpeechSynthesisEvent) => {
+      if (preferences.spokenWordHighlight) {
+        const rect = getRectForCharIndex(extracted, event.charIndex, (event as any).charLength);
+        if (rect) {
+          setSpeechHighlightRect(rect);
+        }
+      }
+    };
 
     window.speechSynthesis.speak(utterance);
   };
@@ -207,6 +218,126 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
       window.speechSynthesis.resume();
     }
   };
+
+  // Route change cancels narration
+  useEffect(() => {
+    stopSpeech();
+    return () => {
+      stopSpeech();
+    };
+  }, [currentPath]);
+
+  // Pointer tracking for Reading Guide, Reading Mask, and Hover Reader
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!preferences.readingGuide && !preferences.readingMask && !preferences.hoverReader) {
+      setPointerY(null);
+      setHoverRect(null);
+      return;
+    }
+
+    const handlePointerMove = (e: MouseEvent) => {
+      setPointerY(e.clientY);
+
+      if (!preferences.hoverReader) return;
+
+      // Full-page narration takes priority over Hover Reader
+      if (speechState === 'playing' || speechState === 'paused') {
+        if (hoverRect) setHoverRect(null);
+        return;
+      }
+
+      // Check if pointer is still inside the current hovered word box
+      if (hoverRect) {
+        if (
+          e.clientX >= hoverRect.left &&
+          e.clientX <= hoverRect.right &&
+          e.clientY >= hoverRect.top &&
+          e.clientY <= hoverRect.bottom
+        ) {
+          return;
+        } else {
+          setHoverRect(null);
+          lastHoverWordRef.current = null;
+        }
+      }
+
+      clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = setTimeout(() => {
+        if (speechStateRef.current === 'playing' || speechStateRef.current === 'paused') return;
+        const result = getHoveredWordAtPoint(e.clientX, e.clientY);
+        if (!result) {
+          setHoverRect(null);
+          lastHoverWordRef.current = null;
+          return;
+        }
+
+        setHoverRect(result.rect);
+        if (lastHoverWordRef.current === result.word) return;
+        lastHoverWordRef.current = result.word;
+
+        if ('speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+          const utterance = new SpeechSynthesisUtterance(result.word);
+          utterance.rate = preferences.speed;
+          if (preferences.voiceURI) {
+            const v = availableVoices.find((voice) => voice.voiceURI === preferences.voiceURI);
+            if (v) utterance.voice = v;
+          }
+          window.speechSynthesis.speak(utterance);
+        }
+      }, 150);
+    };
+
+    const handlePointerLeave = () => {
+      setPointerY(null);
+      setHoverRect(null);
+      lastHoverWordRef.current = null;
+      clearTimeout(hoverTimerRef.current);
+    };
+
+    window.addEventListener('mousemove', handlePointerMove);
+    document.addEventListener('mouseleave', handlePointerLeave);
+
+    return () => {
+      clearTimeout(hoverTimerRef.current);
+      window.removeEventListener('mousemove', handlePointerMove);
+      document.removeEventListener('mouseleave', handlePointerLeave);
+    };
+  }, [
+    preferences.readingGuide,
+    preferences.readingMask,
+    preferences.hoverReader,
+    preferences.speed,
+    preferences.voiceURI,
+    speechState,
+    hoverRect,
+    availableVoices,
+  ]);
+
+  const handleUpdatePreferences = (updates: Partial<AccessibilityPreferences>) => {
+    setPreferences((prev) => ({ ...prev, ...updates }));
+    const key = Object.keys(updates)[0];
+    if (key) setAnnouncement(`Updated accessibility preference: ${key}`);
+  };
+
+  const handleResetPreferences = () => {
+    setPreferences({ ...DEFAULT_A11Y_PREFERENCES });
+    setAnnouncement('Accessibility preferences reset to default');
+  };
+
+  const hasActivePreferences =
+    preferences.speed !== 1 ||
+    preferences.hoverReader ||
+    !preferences.spokenWordHighlight ||
+    preferences.readingGuide ||
+    preferences.readingMask ||
+    preferences.textScale !== '100' ||
+    preferences.textSpacing ||
+    preferences.colorSafe ||
+    preferences.highContrast ||
+    preferences.highlightLinks ||
+    preferences.reduceMotion;
 
   const navItems = PORTAL_NAV_ITEMS[role];
   const homePath = roleHome(role);
@@ -272,71 +403,26 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 {dark ? 'Light' : 'Dark'}
               </button>
 
+              {/* Compact ARCH_TECH Accessibility Control */}
               <button
+                ref={a11yTriggerRef}
                 type="button"
-                onClick={() => setColorSafe((value) => !value)}
-                aria-pressed={colorSafe}
-                aria-label="Toggle color-safe mode"
-                data-testid="color-safe-toggle"
-                className={`inline-flex items-center gap-2 transition-colors hover:text-black ${colorSafe ? 'text-black font-semibold' : 'text-stone-500'}`}
+                onClick={() => setIsA11yPanelOpen(true)}
+                aria-label="Open accessibility panel"
+                aria-expanded={isA11yPanelOpen}
+                data-testid="accessibility-panel-trigger"
+                className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 transition-colors ${
+                  hasActivePreferences
+                    ? 'border-black/30 bg-black/10 text-black font-semibold'
+                    : 'border-black/10 bg-transparent text-stone-500 hover:text-black hover:border-black/30'
+                }`}
               >
-                <Palette className="h-3.5 w-3.5" /> Color-safe
+                <Sliders className="h-3.5 w-3.5" />
+                <span>A11y</span>
+                {hasActivePreferences && (
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-label="Adjustments active" />
+                )}
               </button>
-
-              {speechState !== 'unsupported' && (
-                <div className="hidden items-center gap-2 border-l border-black/15 pl-3 sm:flex" aria-label="Narrator controls">
-                  {speechState === 'idle' ? (
-                    <button
-                      type="button"
-                      onClick={startSpeech}
-                      aria-label="Start narrator"
-                      data-testid="narrator-start"
-                      className="inline-flex items-center gap-1.5 transition-colors hover:text-black text-stone-500"
-                    >
-                      <Play className="h-3.5 w-3.5" /> Read
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={toggleSpeechPause}
-                        aria-label={speechState === 'playing' ? 'Pause narrator' : 'Resume narrator'}
-                        data-testid="narrator-pause-resume"
-                        className="inline-flex items-center gap-1.5 transition-colors hover:text-black text-stone-500"
-                      >
-                        {speechState === 'playing' ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-                        {speechState === 'playing' ? 'Pause' : 'Resume'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={stopSpeech}
-                        aria-label="Stop narrator"
-                        data-testid="narrator-stop"
-                        className="inline-flex items-center gap-1.5 transition-colors hover:text-black text-stone-500"
-                      >
-                        <Square className="h-3.5 w-3.5" /> Stop
-                      </button>
-                    </>
-                  )}
-                </div>
-              )}
-
-              <div className="hidden items-center gap-1 border-l border-black/15 pl-3 sm:flex" aria-label="Text size">
-                {(['100', '1125', '125'] as const).map((scale) => (
-                  <button
-                    key={scale}
-                    type="button"
-                    data-testid={`portal-text-scale-${scale}`}
-                    aria-pressed={textScale === scale}
-                    onClick={() => setTextScale(scale)}
-                    className={`font-mono text-[9px] transition-colors hover:text-black ${
-                      textScale === scale ? 'text-black font-semibold' : 'text-stone-500'
-                    }`}
-                  >
-                    {scale === '1125' ? '112.5%' : `${scale}%`}
-                  </button>
-                ))}
-              </div>
 
               <button
                 type="button"
@@ -392,6 +478,30 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
         <main className="mx-auto max-w-7xl px-6 py-10 sm:px-8 lg:px-12 lg:py-16">
           {children ?? <Outlet />}
         </main>
+
+        {/* Presentation-only reading overlay (Reading guide, mask, single word highlight) */}
+        <AccessibilityOverlay
+          highlightRect={speechHighlightRect || hoverRect}
+          readingGuide={preferences.readingGuide}
+          readingMask={preferences.readingMask}
+          pointerY={pointerY}
+          announcement={announcement}
+        />
+
+        {/* Unified ARCH_TECH Accessibility Panel */}
+        <AccessibilityPanel
+          isOpen={isA11yPanelOpen}
+          onClose={() => setIsA11yPanelOpen(false)}
+          preferences={preferences}
+          onUpdatePreferences={handleUpdatePreferences}
+          onResetPreferences={handleResetPreferences}
+          speechState={speechState}
+          onStartSpeech={startSpeech}
+          onTogglePauseSpeech={toggleSpeechPause}
+          onStopSpeech={stopSpeech}
+          availableVoices={availableVoices}
+          triggerRef={a11yTriggerRef}
+        />
       </div>
     </PortalShellContext.Provider>
   );

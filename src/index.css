@@ -787,7 +787,7 @@ html.portal-scale-125 {
   font-size: 125%;
 }
 
-/* Color-safe mode */
+/* Color-safe mode: semantic patterns & high state differentiation */
 html.portal-color-safe .portal-status-pending,
 html.portal-color-safe .portal-status-approved,
 html.portal-color-safe .portal-status-complete,
@@ -798,14 +798,15 @@ html.portal-color-safe .portal-status-current {
   text-decoration-style: dotted;
   text-underline-offset: 3px;
   text-decoration-thickness: 1.5px;
+  border-width: 1px !important;
 }
 
-html.portal-color-safe .portal-status-pending::before { content: '● '; }
+html.portal-color-safe .portal-status-pending::before { content: '● '; font-weight: 900; }
 html.portal-color-safe .portal-status-approved::before,
-html.portal-color-safe .portal-status-complete::before { content: '✓ '; }
-html.portal-color-safe .portal-status-rejected::before { content: '✕ '; }
-html.portal-color-safe .portal-status-upcoming::before { content: '○ '; }
-html.portal-color-safe .portal-status-current::before { content: '▶ '; }
+html.portal-color-safe .portal-status-complete::before { content: '✓ '; font-weight: 900; }
+html.portal-color-safe .portal-status-rejected::before { content: '✕ '; font-weight: 900; }
+html.portal-color-safe .portal-status-upcoming::before { content: '○ '; font-weight: 900; }
+html.portal-color-safe .portal-status-current::before { content: '▶ '; font-weight: 900; }
 
 html.portal-color-safe .portal-progress-fill {
   background-image: repeating-linear-gradient(
@@ -815,4 +816,127 @@ html.portal-color-safe .portal-progress-fill {
     rgba(128, 128, 128, 0.5) 4px,
     rgba(128, 128, 128, 0.5) 8px
   );
+}
+
+/* High Contrast Mode: Token-based maximum contrast */
+html.portal-high-contrast .portal-surface {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+html.portal-high-contrast .portal-header {
+  background-color: #000000 !important;
+  border-bottom: 2px solid #ffffff !important;
+}
+
+html.portal-high-contrast button,
+html.portal-high-contrast input,
+html.portal-high-contrast select,
+html.portal-high-contrast textarea,
+html.portal-high-contrast .border-black\/10,
+html.portal-high-contrast .border-white\/10,
+html.portal-high-contrast .border-white\/15,
+html.portal-high-contrast .border-black\/15 {
+  border-color: #ffffff !important;
+}
+
+html.portal-high-contrast button:focus-visible,
+html.portal-high-contrast a:focus-visible,
+html.portal-high-contrast input:focus-visible,
+html.portal-high-contrast select:focus-visible {
+  outline: 3px solid #ffea00 !important;
+  outline-offset: 2px !important;
+}
+
+/* Text Spacing (WCAG 1.4.12) */
+html.portal-text-spacing main,
+html.portal-text-spacing main p,
+html.portal-text-spacing main h1,
+html.portal-text-spacing main h2,
+html.portal-text-spacing main h3,
+html.portal-text-spacing main h4,
+html.portal-text-spacing main span,
+html.portal-text-spacing main li,
+html.portal-text-spacing main td,
+html.portal-text-spacing main th {
+  line-height: 1.8 !important;
+  letter-spacing: 0.12em !important;
+  word-spacing: 0.16em !important;
+}
+html.portal-text-spacing main p {
+  margin-bottom: 2em !important;
+}
+
+/* Highlight Links */
+html.portal-highlight-links a,
+html.portal-highlight-links [role="link"] {
+  text-decoration: underline 2px solid currentColor !important;
+  text-underline-offset: 4px !important;
+  font-weight: 700 !important;
+}
+html.portal-highlight-links a:hover,
+html.portal-highlight-links a:focus {
+  background-color: rgba(255, 234, 0, 0.3) !important;
+}
+
+/* Reduce Motion (Manual preference) */
+html.portal-reduce-motion *,
+html.portal-reduce-motion *::before,
+html.portal-reduce-motion *::after {
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+}
+
+/* One Reusable Word Highlight Overlay */
+.portal-word-highlight {
+  background-color: rgba(37, 99, 235, 0.25);
+  outline: 2px solid #2563eb;
+  border-radius: 2px;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+  transition: top 60ms ease-out, left 60ms ease-out, width 60ms ease-out, height 60ms ease-out;
+}
+html.portal-dark .portal-word-highlight {
+  background-color: rgba(234, 179, 8, 0.3);
+  outline: 2px solid #eab308;
+  box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+}
+html.portal-color-safe .portal-word-highlight {
+  background-color: rgba(0, 0, 0, 0.2);
+  outline: 2px dashed #000000;
+}
+html.portal-dark.portal-color-safe .portal-word-highlight {
+  background-color: rgba(255, 255, 255, 0.25);
+  outline: 2px dashed #ffffff;
+}
+html.portal-high-contrast .portal-word-highlight {
+  background-color: rgba(255, 234, 0, 0.45);
+  outline: 3px solid #ffea00;
+}
+html.portal-reduce-motion .portal-word-highlight {
+  transition: none !important;
+}
+
+/* Reading Guide */
+.portal-reading-guide {
+  background-color: #2563eb;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.6);
+}
+html.portal-dark .portal-reading-guide {
+  background-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+}
+html.portal-high-contrast .portal-reading-guide {
+  background-color: #ffea00;
+  height: 3px !important;
+  box-shadow: none;
+}
+
+/* Reading Mask */
+.portal-reading-mask {
+  transition: top 40ms linear;
+}
+html.portal-reduce-motion .portal-reading-mask {
+  transition: none !important;
 }

@@ -198,7 +198,7 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint`).
-- **Vitest Unit/Domain Tests**: **184 / 184 PASSED** across 16 test files.
+- **Vitest Unit/Domain Tests**: **220 / 220 PASSED** across 17 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, full OpenBIM workflow and AI confirmation flows.
-- **Git Diff**: The current worktree is verified with `git diff --check` after the HTTP/n8n changes.
+- **Git Diff**: The current worktree is verified with `git diff --check` after the Phase 4 accessibility upgrade.
