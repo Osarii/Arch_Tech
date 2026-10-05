@@ -50,9 +50,9 @@ const FeaturedProjectSlide: React.FC<{ project: PortalProject; index: number; to
         </span>
         <span className="featured-project-slide-content pointer-events-none absolute inset-x-0 bottom-0 grid min-h-[9.5rem] gap-4 p-5 text-white sm:min-h-[12rem] sm:gap-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end lg:p-10">
           <span>
-            <span className="block max-w-3xl font-serif text-3xl font-light leading-[0.98] sm:text-6xl lg:text-7xl">{project.title}</span>
+            <span className="featured-project-title block max-w-3xl font-serif font-light leading-[0.98]">{project.title}</span>
             <span className="mt-3 block font-mono text-[10px] uppercase tracking-[0.16em] text-stone-300 sm:mt-4">{project.category}</span>
-            <span className="mt-3 block max-w-2xl font-serif text-base font-light leading-snug text-stone-200 sm:mt-5 sm:text-2xl">{project.statement}</span>
+            <span className="featured-project-statement mt-3 block max-w-2xl font-serif font-light leading-snug text-stone-200 sm:mt-5">{project.statement}</span>
           </span>
           <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-stone-300 transition-colors group-hover:text-white group-focus-visible:text-white">
             View dossier <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

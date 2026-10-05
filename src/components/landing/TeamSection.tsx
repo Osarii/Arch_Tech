@@ -22,7 +22,7 @@ export const TeamSection: React.FC = () => (
         <p className="max-w-sm text-sm leading-6 text-stone-400">A multidisciplinary leadership group connecting strategy, engineering, finance, new business, people and sustainability.</p>
       </div>
 
-      <div className="mt-10 grid grid-cols-1 gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-10 grid grid-cols-1 gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-4">
         {teamMembers.map((member, index) => (
           <article key={member.name} className="landing-team-card group">
             <div className="landing-team-portrait overflow-hidden border border-white/[0.14] bg-[#111216]">

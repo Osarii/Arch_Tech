@@ -10,10 +10,10 @@ export const aboutFacts = [
 export const AboutSection: React.FC = () => (
   <section id="about" aria-labelledby="about-title" className="landing-about border-b border-black/15 bg-[#D6CBB9] px-6 py-20 text-[#211E1A] sm:px-8 lg:px-12 lg:py-28">
     <div className="mx-auto max-w-7xl">
-      <div className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-start lg:gap-16">
+      <div className="landing-about-grid grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-start lg:gap-16">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">About / development context</p>
-          <h2 id="about-title" className="mt-5 max-w-3xl font-serif text-5xl font-light leading-[0.96] tracking-tight sm:text-7xl">Development is more than the building.</h2>
+          <h2 id="about-title" className="landing-about-heading mt-5 max-w-3xl font-serif font-light leading-[0.96] tracking-tight">Development is more than the building.</h2>
           <p className="mt-8 max-w-2xl border-l border-black/20 pl-5 text-base leading-7 text-stone-700 sm:text-lg">
             Garnier &amp; Garnier brings 30 years of real-estate development experience in Costa Rica to projects shaped by their market, setting and long-term use.
           </p>

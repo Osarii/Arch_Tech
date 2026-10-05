@@ -18,12 +18,12 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
   const [projects] = useState(getPublicProjects);
   const [featured, ...register] = projects;
   return (
-    <section id="projects" className="bg-[#E6DED2] px-6 py-24 text-[#171714] sm:px-8 lg:px-12 lg:py-32">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
+    <section id="projects" className="landing-projects-section bg-[#E6DED2] px-6 py-24 text-[#171714] sm:px-8 lg:px-12 lg:py-32">
+      <div className="landing-projects-inner mx-auto max-w-7xl">
+        <div className="landing-projects-header grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">ARCH_TECH / Garnier Portfolio Concept</p>
-            <h2 className="mt-5 max-w-5xl font-serif text-5xl font-light tracking-tight sm:text-7xl">A portfolio built for consequence.</h2>
+            <h2 className="landing-projects-heading mt-5 max-w-5xl font-serif font-light tracking-tight">A portfolio built for consequence.</h2>
           </div>
           <p className="max-w-sm text-sm leading-6 text-stone-600">Six official Garnier developments presented through an ARCH_TECH showcase interface. Public facts and project photography remain attributed to their source.</p>
         </div>
@@ -33,7 +33,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
             key={featured.id}
             data-testid={`public-project-${featured.id}`}
             onClick={() => onOpenProject(featured.id)}
-            className="group mt-12 block w-full text-left"
+            className="landing-projects-featured group mt-12 block w-full text-left"
           >
             <span className="relative block aspect-[16/9] overflow-hidden bg-stone-300 md:aspect-[21/9]">
               <ProjectImage project={featured} usage="showcase" alt={`${featured.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
@@ -55,7 +55,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
           </button>
         )}
 
-        <div className="hidden grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] gap-8 border-b border-black/15 py-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500 lg:grid">
+        <div className="landing-projects-register-header hidden grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] gap-8 border-b border-black/15 py-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500 lg:grid">
           <span>No.</span>
           <span>Site</span>
           <span>Development</span>
@@ -70,7 +70,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
               key={project.id}
               data-testid={`public-project-${project.id}`}
               onClick={() => onOpenProject(project.id)}
-              className="group grid w-full gap-5 border-b border-black/15 py-6 text-left transition-colors hover:bg-[#ded9cf] sm:grid-cols-[14rem_1fr] lg:grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] lg:items-center lg:gap-8"
+              className="landing-projects-register-row group grid w-full gap-5 border-b border-black/15 py-6 text-left transition-colors hover:bg-[#ded9cf] sm:grid-cols-[14rem_1fr] lg:grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] lg:items-center lg:gap-8"
             >
               <span className="hidden font-mono text-[10px] text-stone-500 lg:block">{String(i + 2).padStart(2, '0')}</span>
               <span className="relative block aspect-[16/10] overflow-hidden bg-stone-300">
