@@ -188,6 +188,8 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(adminSurface?.className).toContain('portal-admin');
     expect(adminSurface?.className).toContain('bg-[#D8C7AF]');
     expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelector('.font-serif')?.className).toContain('text-5xl');
+    expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelector('.admin-overview-accent')).toBeDefined();
+    expect(document.querySelector('.portal-register-row')).toBeDefined();
     expect(screen.getByTestId('admin-open-model-pacific-nexus-free-zone').className).toContain('admin-action');
   });
 
