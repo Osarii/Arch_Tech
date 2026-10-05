@@ -96,7 +96,7 @@ describe('ARCH_TECH client architecture portal', () => {
 
     const carousel = screen.getByTestId('hero-gallery');
     expect(carousel.getAttribute('aria-roledescription')).toBe('carousel');
-    expect(carousel.getAttribute('data-autoplay-ms')).toBe('4200');
+    expect(carousel.getAttribute('data-autoplay-ms')).toBe('3200');
     expect(carousel.className).not.toContain('sticky');
     expect(screen.getAllByTestId(/^featured-indicator-/)).toHaveLength(6);
     expect(screen.getAllByTestId(/^featured-project-/)).toHaveLength(6);

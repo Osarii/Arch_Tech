@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getPublicProjects, type PortalProject } from '../../portal/data';
 import { preferredProjectImages, ProjectImage } from './projectMedia';
 
-export const FEATURED_CAROUSEL_AUTOPLAY_MS = 4200;
+export const FEATURED_CAROUSEL_AUTOPLAY_MS = 3200;
 
 interface FeaturedProjectCarouselProps {
   onOpenProject: (id: string) => void;
