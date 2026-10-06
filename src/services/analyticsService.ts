@@ -160,10 +160,22 @@ export const analyticsService = {
     projects: PortalProjectRecord[],
     snapshots: ProgressSnapshot[],
   ): PortfolioProgressChange {
-    const currentAverage = this.currentPortfolioAverage(projects);
+    const active = projects.filter((p) => !p.archived);
+    const currentAverage = this.currentPortfolioAverage(active);
     const history = this.portfolioAverageOverTime(snapshots);
 
-    if (!history.length) {
+    if (!history.length || !snapshots.length) {
+      return {
+        delta: null,
+        baselineAverage: null,
+        currentAverage,
+      };
+    }
+
+    const recordedProjectIds = new Set(snapshots.map((s) => s.projectId));
+    const cohortProjects = active.filter((p) => recordedProjectIds.has(p.id));
+
+    if (!cohortProjects.length) {
       return {
         delta: null,
         baselineAverage: null,
@@ -172,7 +184,9 @@ export const analyticsService = {
     }
 
     const baselineAverage = history[0].averageProgress;
-    const delta = Math.round((currentAverage - baselineAverage) * 10) / 10;
+    const cohortTotal = cohortProjects.reduce((sum, p) => sum + p.progress, 0);
+    const cohortCurrentAverage = Math.round((cohortTotal / cohortProjects.length) * 10) / 10;
+    const delta = Math.round((cohortCurrentAverage - baselineAverage) * 10) / 10;
 
     return {
       delta,

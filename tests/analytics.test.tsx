@@ -49,6 +49,14 @@ describe('Phase 6: Portfolio Analytics & Progress History', () => {
       expect(isValidProgressSnapshot({ id: 's3', projectId: 'proj-2', date: '2026-03-15', progress: 100 }, validProjectIds)).toBe(true);
     });
 
+    it('rejects invalid, unparseable, or non-date string values in ProgressSnapshot', () => {
+      const validProjectIds = new Set(['proj-1']);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: 'not-a-date', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '   ', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '2026-99-99', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: 12345, progress: 50 }, validProjectIds)).toBe(false);
+    });
+
     it('rejects malformed records and out-of-bound progress values', () => {
       const validProjectIds = new Set(['proj-1']);
       expect(isValidProgressSnapshot({ id: '', projectId: 'proj-1', date: '2026-01-15', progress: 50 }, validProjectIds)).toBe(false);
@@ -101,11 +109,36 @@ describe('Phase 6: Portfolio Analytics & Progress History', () => {
       expect(avg).toBe(60); // (80 + 60 + 40) / 3 = 60
     });
 
-    it('calculates change between historical baseline and current values', () => {
+    it('calculates change between historical baseline and current values using cohort with history', () => {
       const change = analyticsService.changeBetweenHistoricalAndCurrent(projects, snapshots);
       expect(change.currentAverage).toBe(60);
       expect(change.baselineAverage).toBe(30);
-      expect(change.delta).toBe(30);
+      // Cohort with history is p1 (80) and p2 (60). Cohort average = 70. Baseline average = 30. Delta = 70 - 30 = 40!
+      expect(change.delta).toBe(40);
+    });
+
+    it('ensures active projects without history do not distort historical/current delta cohort', () => {
+      const cohortTestProjects = [
+        createMockProject('proj-a', 'Project A', 70), // Baseline was 30% -> +40%
+        createMockProject('proj-b', 'Project B', 90), // Baseline was 50% -> +40%
+        createMockProject('proj-c', 'Project C (Brand New)', 5), // No history, 5% progress
+      ];
+      const cohortSnapshots: ProgressSnapshot[] = [
+        { id: 'ca1', projectId: 'proj-a', date: '2026-01-15', progress: 30 },
+        { id: 'cb1', projectId: 'proj-b', date: '2026-01-15', progress: 50 },
+      ];
+
+      const change = analyticsService.changeBetweenHistoricalAndCurrent(cohortTestProjects, cohortSnapshots);
+      // Baseline = (30 + 50) / 2 = 40%
+      expect(change.baselineAverage).toBe(40);
+      // Cohort current = (70 + 90) / 2 = 80%. Delta = 80 - 40 = 40%
+      expect(change.delta).toBe(40);
+      // All active projects current average = (70 + 90 + 5) / 3 = 55%
+      expect(change.currentAverage).toBe(55);
+
+      // Project C is still listed among projects without historical data
+      const withoutHistory = analyticsService.projectsWithoutHistoricalData(cohortTestProjects, cohortSnapshots);
+      expect(withoutHistory.map((p) => p.id)).toEqual(['proj-c']);
     });
 
     it('identifies strongest positive project movement', () => {
@@ -145,7 +178,8 @@ describe('Phase 6: Portfolio Analytics & Progress History', () => {
 
       const change = analyticsService.changeBetweenHistoricalAndCurrent(projects, single);
       expect(change.baselineAverage).toBe(50);
-      expect(change.delta).toBe(10); // 60 - 50 = 10
+      // Cohort is p1 (current 80). Baseline is 50. Delta = 80 - 50 = 30!
+      expect(change.delta).toBe(30);
     });
 
     it('handles 0% and 100% boundary conditions', () => {
@@ -292,6 +326,36 @@ describe('Phase 6: Portfolio Analytics & Progress History', () => {
       expect(screen.getAllByText(/Active projects/i).length).toBeGreaterThan(0);
       expect(screen.getByTestId('project-progress-chart')).toBeDefined();
       expect(screen.getByTestId('site-intelligence-input')).toBeDefined();
+    });
+
+    it('uses semantic currentColor and theme-safe SVG styling for trend charts', () => {
+      const { container } = render(<AdminAnalyticsPage />);
+
+      const svg = container.querySelector('[data-testid="portfolio-trend-chart"] svg');
+      expect(svg).toBeDefined();
+
+      // Paths use stroke="currentColor" without fixed dark hex colors
+      const paths = svg?.querySelectorAll('path');
+      expect(paths && paths.length > 0).toBe(true);
+      paths?.forEach((path) => {
+        expect(path.getAttribute('stroke')).toBe('currentColor');
+        expect(path.getAttribute('stroke')).not.toBe('#2D2E2C');
+      });
+
+      // Circles for historical checkpoints are open rings with stroke="currentColor" and fill="none"
+      const circles = svg?.querySelectorAll('circle');
+      expect(circles && circles.length > 0).toBe(true);
+      circles?.forEach((circle) => {
+        expect(circle.getAttribute('stroke')).toBe('currentColor');
+        expect(circle.getAttribute('fill')).toBe('none');
+      });
+
+      // Live marker is a polygon diamond with fill-current
+      const polygons = svg?.querySelectorAll('polygon');
+      expect(polygons && polygons.length > 0).toBe(true);
+      polygons?.forEach((polygon) => {
+        expect(polygon.getAttribute('class')).toContain('fill-current');
+      });
     });
   });
 });

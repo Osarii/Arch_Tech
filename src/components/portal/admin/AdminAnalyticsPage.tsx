@@ -80,7 +80,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
 
   return (
     <div data-testid={testId} className="relative min-w-0">
-      <div className="border border-black/15 bg-[#E6DED2]/30 p-4">
+      <div className="border border-black/15 bg-black/[0.02] p-4 text-inherit">
         <svg
           role="img"
           aria-label={title}
@@ -109,7 +109,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
                   x={padLeft - 8}
                   y={y + 3.5}
                   textAnchor="end"
-                  className="fill-stone-500 font-mono text-[10px]"
+                  className="fill-current opacity-60 font-mono text-[10px]"
                 >
                   {gridVal}%
                 </text>
@@ -117,12 +117,12 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
             );
           })}
 
-          {/* Historical path */}
+          {/* Historical path (solid) */}
           {historicalPath && (
             <path
               d={historicalPath}
               fill="none"
-              stroke="#2D2E2C"
+              stroke="currentColor"
               strokeWidth={2.25}
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -134,7 +134,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
             <path
               d={liveConnectorPath}
               fill="none"
-              stroke="#2D2E2C"
+              stroke="currentColor"
               strokeWidth={2}
               strokeDasharray="4 4"
               strokeLinejoin="round"
@@ -149,14 +149,14 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
                 <g key={`point-${idx}`}>
                   <polygon
                     points={`${c.x},${c.y - 6} ${c.x + 6},${c.y} ${c.x},${c.y + 6} ${c.x - 6},${c.y}`}
-                    className="fill-stone-900 stroke-[#E6DED2]"
-                    strokeWidth={1.5}
+                    className="fill-current stroke-current"
+                    strokeWidth={1}
                   />
                   <text
                     x={c.x}
                     y={c.y - 9}
                     textAnchor="middle"
-                    className="fill-stone-900 font-mono text-[10px] font-bold"
+                    className="fill-current font-mono text-[10px] font-bold"
                   >
                     Live {c.safeVal}%
                   </text>
@@ -164,7 +164,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
                     x={c.x}
                     y={padTop + plotH + 16}
                     textAnchor="middle"
-                    className="fill-stone-900 font-mono text-[9px] font-semibold tracking-wider uppercase"
+                    className="fill-current font-mono text-[9px] font-semibold tracking-wider uppercase"
                   >
                     Current
                   </text>
@@ -178,14 +178,15 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
                   cx={c.x}
                   cy={c.y}
                   r={4.5}
-                  className="fill-[#E6DED2] stroke-stone-800"
-                  strokeWidth={2}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.25}
                 />
                 <text
                   x={c.x}
                   y={c.y - 8}
                   textAnchor="middle"
-                  className="fill-stone-900 font-mono text-[10px] font-medium"
+                  className="fill-current font-mono text-[10px] font-medium"
                 >
                   {c.safeVal}%
                 </text>
@@ -193,7 +194,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
                   x={c.x}
                   y={padTop + plotH + 16}
                   textAnchor="middle"
-                  className="fill-stone-600 font-mono text-[9px]"
+                  className="fill-current opacity-70 font-mono text-[9px]"
                 >
                   {c.label}
                 </text>
@@ -203,18 +204,18 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
         </svg>
 
         {/* Legend & context */}
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-black/10 pt-2 text-[10px] text-stone-600">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-black/10 pt-2 text-[10px]">
           <div className="flex items-center gap-4 font-mono">
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rounded-full border border-stone-800 bg-[#E6DED2]" />
+              <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-current bg-transparent" />
               Historical checkpoint
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="inline-block h-2 w-2 rotate-45 bg-stone-900" />
+              <span className="inline-block h-2.5 w-2.5 rotate-45 bg-current" />
               Live registered progress
             </span>
           </div>
-          <span className="font-mono text-[9px] text-stone-500 uppercase tracking-wider">
+          <span className="font-mono text-[9px] opacity-70 uppercase tracking-wider">
             ARCH_TECH concept telemetry
           </span>
         </div>

@@ -224,6 +224,14 @@ const isValidNotification = (value: unknown, projectIds: Set<string>, userIds: S
   return isString(value.userId) && userIds.has(value.userId) && isString(value.projectId) && projectIds.has(value.projectId) && isString(value.message) && isString(value.date);
 };
 
+const isValidSnapshotDate = (dateStr: unknown): dateStr is string => {
+  if (typeof dateStr !== 'string') return false;
+  const trimmed = dateStr.trim();
+  if (trimmed.length === 0) return false;
+  const parsed = Date.parse(trimmed);
+  return Number.isFinite(parsed) && !Number.isNaN(parsed);
+};
+
 export const isValidProgressSnapshot = (value: unknown, projectIds: Set<string>): value is ProgressSnapshot => {
   if (!isRecord(value)) return false;
   return (
@@ -231,8 +239,7 @@ export const isValidProgressSnapshot = (value: unknown, projectIds: Set<string>)
     value.id.trim().length > 0 &&
     isString(value.projectId) &&
     projectIds.has(value.projectId) &&
-    isString(value.date) &&
-    value.date.trim().length > 0 &&
+    isValidSnapshotDate(value.date) &&
     isValidProgress(value.progress)
   );
 };
