@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('ARCH_TECH OpenBIM workspace E2E verification', () => {
+test.describe('GARNIER ARCHITECTURE OpenBIM workspace E2E verification', () => {
   test('renders base application shell, panels, and diagnostics', async ({ page }) => {
     await page.goto('/?view=workspace');
 
     // Check title and brand
-    await expect(page).toHaveTitle(/ARCH_TECH/i);
-    await expect(page.getByText('ARCH_TECH')).toBeVisible();
+    await expect(page).toHaveTitle(/GARNIER ARCHITECTURE/i);
+    await expect(page.getByRole('img', { name: 'GARNIER ARCHITECTURE' })).toBeVisible();
     await expect(page.getByText('OPENBIM WORKSPACE')).toBeVisible();
 
     // Check header controls
@@ -445,12 +445,12 @@ test.describe('ARCH_TECH OpenBIM workspace E2E verification', () => {
   });
 });
 
-test.describe('Arch_Tech Architectural Landing Page E2E', () => {
+test.describe('GARNIER ARCHITECTURE landing page E2E', () => {
   test('public projects lead through project portal access to the existing workspace', async ({ page }) => {
     await page.goto('/');
 
     // 1. Public architectural portfolio
-    await expect(page.getByText('ARCH_TECH').first()).toBeVisible();
+    await expect(page.getByRole('img', { name: 'GARNIER ARCHITECTURE' }).first()).toBeVisible();
     await expect(page.getByRole('heading', { name: /Development at a larger scale/ })).toBeVisible();
     await expect(page.getByText(/Six official Garnier developments/)).toBeVisible();
 
