@@ -376,7 +376,11 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
     rawNews,
     (record) => record.id,
     (value): value is NewsArticle => isValidNewsArticle(value, projectIds),
-  );
+  ).map((article) => (
+    article.image === '/projects/waldorf-astoria/garnier-cover.webp'
+      ? { ...article, image: '/projects/waldorf-astoria/garnier-cover.jpg' }
+      : article
+  ));
 
   return {
     schemaVersion: PORTAL_SCHEMA_VERSION,

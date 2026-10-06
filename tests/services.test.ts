@@ -685,5 +685,35 @@ describe('portal service layer', () => {
       expect(deletedPaths).toContain(`/news/${remoteNewsId}`);
       expect(deletedPaths).toContain(`/projects/${remoteProjectId}`);
     });
+
+    it('migrates stale Waldorf Astoria webp news image path to jpg in portal database', async () => {
+      const staleState = {
+        schemaVersion: 4,
+        news: [
+          {
+            id: 'news-waldorf-astoria-groundbreaking',
+            projectId: 'waldorf-astoria',
+            slug: 'waldorf-astoria-cacique-structural-milestone',
+            title: 'Waldorf Astoria Cacique Reaches Coastal Superstructure Milestone',
+            excerpt: 'The cliffside hospitality resort advances...',
+            body: 'The ultra-luxury hospitality development...',
+            category: 'Milestone',
+            cadence: 'milestone',
+            status: 'published',
+            image: '/projects/waldorf-astoria/garnier-cover.webp',
+            featured: true,
+            sourceType: 'manual',
+            createdAt: '2026-09-28T14:15:00.000Z',
+            updatedAt: '2026-09-28T14:15:00.000Z',
+          },
+        ],
+      };
+      window.localStorage.setItem('arch-tech-portal-state', JSON.stringify(staleState));
+
+      const { getPortalSnapshot } = await import('../src/portal/data');
+      const snapshot = getPortalSnapshot();
+      const article = snapshot.db.news?.find((item) => item.id === 'news-waldorf-astoria-groundbreaking');
+      expect(article?.image).toBe('/projects/waldorf-astoria/garnier-cover.jpg');
+    });
   });
 });
