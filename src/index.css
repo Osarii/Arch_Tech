@@ -789,10 +789,6 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] { background-color: #FF
   height: 1.75rem;
   opacity: 0.82;
 }
-.landing-project-detail-mark .arch-tech-logo-symbol {
-  height: 1.2rem;
-  opacity: 0.8;
-}
 .landing-footer-mark .arch-tech-logo-symbol {
   height: clamp(5rem, 9vw, 8rem);
   opacity: 0.9;
@@ -1065,140 +1061,11 @@ button[data-testid^="public-project-"]:active {
   transition-duration: 80ms;
 }
 
-/* Phase 8B: Architectural Project Route Transition */
-.arch-transition-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.arch-transition-overlay[data-transition-active="true"] {
-  pointer-events: auto;
-}
-
-/* Graphite architectural wipe curtain */
-.arch-transition-curtain {
-  position: absolute;
-  inset: 0;
-  background-color: #0c0e12;
-  will-change: clip-path;
-}
-
-/* Forward: Left-to-right wipe */
-.arch-transition-curtain[data-direction="forward"][data-phase="entering"] {
-  animation: arch-wipe-in-forward 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.arch-transition-curtain[data-direction="forward"][data-phase="exiting"] {
-  animation: arch-wipe-out-forward 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-/* Reverse: Right-to-left wipe */
-.arch-transition-curtain[data-direction="reverse"][data-phase="entering"] {
-  animation: arch-wipe-in-reverse 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.arch-transition-curtain[data-direction="reverse"][data-phase="exiting"] {
-  animation: arch-wipe-out-reverse 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes arch-wipe-in-forward {
-  from {
-    clip-path: inset(0 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0% 0 0);
-  }
-}
-
-@keyframes arch-wipe-out-forward {
-  from {
-    clip-path: inset(0 0% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 100%);
-  }
-}
-
-@keyframes arch-wipe-in-reverse {
-  from {
-    clip-path: inset(0 0 0 100%);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-@keyframes arch-wipe-out-reverse {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-  to {
-    clip-path: inset(0 100% 0 0);
-  }
-}
-
-/* Technical sweeping line along the leading edge */
-.arch-transition-sweep-line {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1.5px;
-  background: linear-gradient(180deg, rgba(216, 199, 175, 0) 0%, #D8C7AF 45%, #FFFFFF 50%, #D8C7AF 55%, rgba(216, 199, 175, 0) 100%);
-  box-shadow: 0 0 10px rgba(216, 199, 175, 0.35);
-  pointer-events: none;
-  z-index: 10;
-  will-change: left, right;
-}
-
-.arch-transition-sweep-line[data-direction="forward"][data-phase="entering"] {
-  animation: arch-sweep-in-forward 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.arch-transition-sweep-line[data-direction="forward"][data-phase="exiting"] {
-  animation: arch-sweep-out-forward 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.arch-transition-sweep-line[data-direction="reverse"][data-phase="entering"] {
-  animation: arch-sweep-in-reverse 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.arch-transition-sweep-line[data-direction="reverse"][data-phase="exiting"] {
-  animation: arch-sweep-out-reverse 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes arch-sweep-in-forward {
-  from { left: 0%; opacity: 0.3; }
-  10% { opacity: 1; }
-  to { left: 100%; opacity: 1; }
-}
-
-@keyframes arch-sweep-out-forward {
-  from { left: 0%; opacity: 1; }
-  90% { opacity: 1; }
-  to { left: 100%; opacity: 0; }
-}
-
-@keyframes arch-sweep-in-reverse {
-  from { right: 0%; opacity: 0.3; }
-  10% { opacity: 1; }
-  to { right: 100%; opacity: 1; }
-}
-
-@keyframes arch-sweep-out-reverse {
-  from { right: 0%; opacity: 1; }
-  90% { opacity: 1; }
-  to { right: 100%; opacity: 0; }
-}
-
-/* Subtle architectural wireframe grid pattern while covered */
-.arch-transition-grid {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 40px 40px;
+/* Native View Transition crossfade for route changes */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: ease-out;
 }
 
 /* Reduced motion overrides for Phase 8 */
@@ -1223,8 +1090,9 @@ button[data-testid^="public-project-"]:active {
   .motion-wireframe-container * {
     transition: none !important;
   }
-  .arch-transition-overlay {
-    display: none !important;
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0s !important;
   }
   .landing-projects-featured:active,
   .landing-project-row:active,
@@ -1259,8 +1127,9 @@ html.portal-reduce-motion .motion-wireframe-container * {
   transition: none !important;
 }
 
-html.portal-reduce-motion .arch-transition-overlay {
-  display: none !important;
+html.portal-reduce-motion ::view-transition-old(root),
+html.portal-reduce-motion ::view-transition-new(root) {
+  animation-duration: 0s !important;
 }
 
 html.portal-reduce-motion .landing-projects-featured:active,
