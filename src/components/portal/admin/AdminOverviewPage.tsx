@@ -81,7 +81,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             setCreateOpen(true);
             setOperationFeedback('');
           }}
-          className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white hover:bg-stone-800"
+          className="admin-primary-action bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white hover:bg-stone-800"
         >
           Create project
         </button>

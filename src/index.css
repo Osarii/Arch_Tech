@@ -477,11 +477,34 @@ html:not(.portal-dark) .portal-surface .arch-tech-logo-portal .arch-tech-logo-sy
 html:not(.portal-dark) .portal-surface .portal-register-row:focus-within { background-color: #ABD1B5 !important; color: #000000 !important; }
 html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action { border: 1px solid rgb(0 0 0 / 0.35); color: #000000 !important; padding: 0.4rem 0.55rem; }
 html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action:hover { background-color: #000000 !important; color: #EDF4ED !important; }
-html:not(.portal-dark) .portal-surface .admin-kpi-strip { background-color: #000000 !important; border-color: #000000 !important; }
-html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile { background-color: transparent !important; color: #EDF4ED !important; }
-html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile { border-left: 1px solid rgb(237 244 237 / 0.25) !important; }
+html:not(.portal-dark) .portal-surface .admin-kpi-strip { background-color: #79B791 !important; border-color: #79B791 !important; }
+html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile { background-color: #ABD1B5 !important; color: #000000 !important; }
+html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile { border-left: 1px solid rgb(0 0 0 / 0.2) !important; }
 html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
-html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-600"] { color: #ABD1B5 !important; }
+html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
+html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-600"] { color: #000000 !important; }
+html.portal-dark .portal-surface .admin-primary-action,
+html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"],
+html:not(.portal-dark) .portal-surface .admin-primary-action,
+html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"] {
+  background-color: #FFBF00 !important;
+  border: 1px solid rgb(0 0 0 / 0.35) !important;
+  color: #000000 !important;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+html.portal-dark .portal-surface .admin-primary-action:hover,
+html.portal-dark .portal-surface .admin-primary-action:focus-visible,
+html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"]:hover,
+html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"]:focus-visible,
+html:not(.portal-dark) .portal-surface .admin-primary-action:hover,
+html:not(.portal-dark) .portal-surface .admin-primary-action:focus-visible,
+html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"]:hover,
+html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"]:focus-visible {
+  background-color: #79B791 !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
+  outline: none;
+}
 [class~="bg-[#11110f]"] { background-color: #000000 !important; }
 html.portal-dark .portal-surface [class~="bg-[#171714]"] { background-color: #FFBF00 !important; color: #000000 !important; }
 
