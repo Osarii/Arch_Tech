@@ -10,7 +10,7 @@ export const aboutFacts = [
 ] as const;
 
 export const AboutSection: React.FC = () => (
-  <section id="about" aria-labelledby="about-title" className="landing-about border-b border-black/15 bg-[#D6CBB9] px-6 py-20 text-[#211E1A] sm:px-8 lg:px-12 lg:py-28">
+  <section id="about" aria-labelledby="about-title" className="landing-about border-b border-black/15 bg-[#EDF4ED] px-6 py-20 text-[#000000] sm:px-8 lg:px-12 lg:py-28">
     <div className="mx-auto max-w-7xl">
       <div className="landing-about-grid grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-start lg:gap-16">
         <div>
@@ -27,7 +27,7 @@ export const AboutSection: React.FC = () => (
         </div>
 
         <Reveal variant="mask" delay={120}>
-          <figure className="landing-about-media overflow-hidden border border-[#2D2E2C]/35 bg-[#E9E2D7]">
+          <figure className="landing-about-media overflow-hidden border border-[#000000]/35 bg-[#ABD1B5]">
             <img
               src="/about/garnier-values.webp"
               alt="Interior workplace environment from the official Garnier public portfolio"
@@ -35,7 +35,7 @@ export const AboutSection: React.FC = () => (
               decoding="async"
               className="h-full w-full object-cover"
             />
-            <figcaption className="border-t border-[#2D2E2C]/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">Public source image / Garnier &amp; Garnier</figcaption>
+            <figcaption className="border-t border-[#000000]/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">Public source image / Garnier &amp; Garnier</figcaption>
           </figure>
         </Reveal>
       </div>
@@ -44,7 +44,7 @@ export const AboutSection: React.FC = () => (
         {aboutFacts.map((fact, index) => (
           <div key={fact.value} className="border-b border-black/15 px-0 py-5 last:border-b-0 sm:px-5 sm:even:border-l lg:border-b-0 lg:border-r lg:first:pl-0 lg:last:border-r-0 lg:last:pr-0">
             <Reveal variant="fade-up" delay={index * 60}>
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#2D2E2C]">
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#000000]">
                 <MetricCounter value={fact.value} />
               </p>
               <p className="mt-2 max-w-[12rem] text-sm leading-5 text-stone-600">{fact.label}</p>

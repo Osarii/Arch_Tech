@@ -13,7 +13,7 @@ export const teamMembers = [
 ] as const;
 
 export const TeamSection: React.FC = () => (
-  <section id="team" aria-labelledby="team-title" className="landing-team border-b border-white/[0.08] bg-[#0b0c10] px-6 py-20 text-[#f4efe8] sm:px-8 lg:px-12 lg:py-28">
+  <section id="team" aria-labelledby="team-title" className="landing-team border-b border-white/[0.08] bg-[#000000] px-6 py-20 text-[#EDF4ED] sm:px-8 lg:px-12 lg:py-28">
     <div className="mx-auto max-w-7xl">
       <Reveal variant="fade-up">
         <div className="grid gap-8 border-b border-white/[0.08] pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -29,7 +29,7 @@ export const TeamSection: React.FC = () => (
         {teamMembers.map((member, index) => (
           <Reveal key={member.name} variant="fade-up" delay={index * 45}>
             <article className="landing-team-card group">
-              <div className="landing-team-portrait overflow-hidden border border-white/[0.14] bg-[#111216]">
+              <div className="landing-team-portrait overflow-hidden border border-white/[0.14] bg-[#79B791]">
                 <img
                   src={member.portrait}
                   alt={`${member.name}, ${member.role}`}
@@ -40,7 +40,7 @@ export const TeamSection: React.FC = () => (
               </div>
               <div className="border-b border-white/[0.14] py-4">
                 <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{String(index + 1).padStart(2, '0')}</p>
-                <h3 className="mt-3 font-serif text-2xl font-light text-[#f4efe8]">{member.name}</h3>
+                <h3 className="mt-3 font-serif text-2xl font-light text-[#EDF4ED]">{member.name}</h3>
                 <p className="mt-2 min-h-[2.5rem] text-xs leading-5 text-stone-400">{member.role}</p>
               </div>
             </article>
@@ -51,7 +51,7 @@ export const TeamSection: React.FC = () => (
       <Reveal variant="fade-up" delay={150}>
         <figure className="mt-12">
           <figcaption className="mb-3 font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Leadership / Garnier &amp; Garnier</figcaption>
-          <div className="landing-team-group-frame overflow-hidden border border-white/[0.14] bg-[#111216]">
+          <div className="landing-team-group-frame overflow-hidden border border-white/[0.14] bg-[#79B791]">
             <img
               src="/team/garnier-team-group.png"
               alt="Garnier & Garnier leadership team gathered in an outdoor courtyard"

@@ -20,7 +20,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
   const [projects] = useState(getPublicProjects);
   const [featured, ...register] = projects;
   return (
-    <section id="projects" className="landing-projects-section bg-[#E6DED2] px-6 py-24 text-[#171714] sm:px-8 lg:px-12 lg:py-32">
+    <section id="projects" className="landing-projects-section bg-[#EDF4ED] px-6 py-24 text-[#000000] sm:px-8 lg:px-12 lg:py-32">
       <div className="landing-projects-inner mx-auto max-w-7xl">
         <Reveal variant="fade-up">
           <div className="landing-projects-header grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -80,7 +80,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
               <button
                 data-testid={`public-project-${project.id}`}
                 onClick={() => onOpenProject(project.id)}
-                className="landing-projects-register-row group grid w-full gap-5 border-b border-black/15 py-6 text-left transition-colors hover:bg-[#ded9cf] sm:grid-cols-[14rem_1fr] lg:grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] lg:items-center lg:gap-8"
+                className="landing-projects-register-row group grid w-full gap-5 border-b border-black/15 py-6 text-left transition-colors hover:bg-[#ABD1B5] sm:grid-cols-[14rem_1fr] lg:grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] lg:items-center lg:gap-8"
               >
                 <span className="hidden font-mono text-[10px] text-stone-500 lg:block">{String(i + 2).padStart(2, '0')}</span>
                 <span className="relative block aspect-[16/10] overflow-hidden bg-stone-300">

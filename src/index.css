@@ -88,6 +88,70 @@
 .landing-navbar-links {
   gap: clamp(1.25rem, 2.4vw, 2.25rem);
 }
+/* Shared Garnier Architecture public surface palette. */
+.landing-surface {
+  background-color: #000000;
+  color: #EDF4ED;
+}
+.landing-surface .landing-projects-section,
+.landing-surface .landing-about,
+.landing-surface #capabilities {
+  background-color: #EDF4ED;
+  color: #000000;
+}
+.landing-surface .landing-hero,
+.landing-surface .landing-team,
+.landing-surface #development,
+.landing-surface .landing-footer {
+  background-color: #000000;
+  color: #EDF4ED;
+}
+.landing-surface .landing-navbar,
+.landing-surface .landing-navbar [class~="bg-[#000000]"] {
+  background-color: #000000 !important;
+}
+.landing-surface .landing-hero [class~="text-stone-100"],
+.landing-surface .landing-hero [class~="text-stone-200"],
+.landing-surface .landing-team [class~="text-stone-100"],
+.landing-surface .landing-team [class~="text-[#EDF4ED]"],
+.landing-surface #development [class~="text-[#EDF4ED]"],
+.landing-surface .landing-footer [class~="text-stone-100"] { color: #EDF4ED !important; }
+.landing-surface .landing-hero [class~="text-stone-300"],
+.landing-surface .landing-hero [class~="text-stone-400"],
+.landing-surface .landing-hero [class~="text-stone-500"],
+.landing-surface .landing-team [class~="text-stone-300"],
+.landing-surface .landing-team [class~="text-stone-400"],
+.landing-surface .landing-team [class~="text-stone-500"],
+.landing-surface #development [class~="text-stone-300"],
+.landing-surface #development [class~="text-stone-400"],
+.landing-surface #development [class~="text-stone-500"],
+.landing-surface .landing-footer [class~="text-stone-300"],
+.landing-surface .landing-footer [class~="text-stone-400"],
+.landing-surface .landing-footer [class~="text-stone-500"],
+.landing-surface .landing-footer [class~="text-stone-600"] { color: #ABD1B5 !important; }
+.landing-surface .landing-projects-section [class~="text-stone-500"],
+.landing-surface .landing-projects-section [class~="text-stone-600"],
+.landing-surface .landing-projects-section [class~="text-stone-700"],
+.landing-surface .landing-about [class~="text-stone-500"],
+.landing-surface .landing-about [class~="text-stone-600"],
+.landing-surface .landing-about [class~="text-stone-700"],
+.landing-surface #capabilities [class~="text-stone-500"],
+.landing-surface #capabilities [class~="text-stone-600"] { color: #000000 !important; }
+.landing-surface .landing-hero [class*="border-white"],
+.landing-surface .landing-team [class*="border-white"],
+.landing-surface #development [class*="border-white"],
+.landing-surface .landing-footer [class*="border-white"] { border-color: rgb(237 244 237 / 0.18) !important; }
+.landing-surface .landing-hero [class*="bg-white"],
+.landing-surface .landing-navbar [class*="bg-white"] { background-color: rgb(237 244 237 / 0.2) !important; }
+.landing-surface .landing-projects-section [class*="border-black"],
+.landing-surface .landing-about [class*="border-black"],
+.landing-surface #capabilities [class*="border-black"] { border-color: rgb(0 0 0 / 0.2) !important; }
+.landing-surface .landing-projects-section [class*="bg-stone-300"] { background-color: #ABD1B5 !important; }
+.landing-surface .landing-navbar .arch-interactive-button:hover { background-color: #ABD1B5 !important; border-color: #ABD1B5 !important; color: #000000 !important; }
+.landing-surface .landing-projects-register-row:hover { background-color: #ABD1B5 !important; }
+.landing-surface .landing-footer-link:hover,
+.landing-surface .landing-footer-link:focus-visible { color: #EDF4ED !important; }
+
 
 @media (max-width: 639px) {
   .landing-team-portrait {
