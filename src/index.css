@@ -429,7 +429,8 @@ html.portal-dark .portal-surface .arch-tech-logo-portal {
   background: #FFBF00;
   display: block;
   height: 1.65rem;
-  mask: url('/brand/garnier-architecture/03_symbol_monochrome_graphite_transparent.png') center / contain no-repeat;
+  mask: url('/brand/garnier-architecture/09_symbol_black.png') center / contain no-repeat;
+  -webkit-mask: url('/brand/garnier-architecture/09_symbol_black.png') center / contain no-repeat;
   width: 1.65rem;
 }
 html.portal-dark .portal-surface .arch-tech-logo-portal .arch-tech-logo-symbol { opacity: 0; }
@@ -533,7 +534,8 @@ html:not(.portal-dark) .portal-surface .arch-tech-logo-portal {
   background: #000000;
   display: block;
   height: 1.65rem;
-  mask: url('/brand/garnier-architecture/03_symbol_monochrome_graphite_transparent.png') center / contain no-repeat;
+  mask: url('/brand/garnier-architecture/09_symbol_black.png') center / contain no-repeat;
+  -webkit-mask: url('/brand/garnier-architecture/09_symbol_black.png') center / contain no-repeat;
   width: 1.65rem;
 }
 html:not(.portal-dark) .portal-surface .arch-tech-logo-portal .arch-tech-logo-symbol { opacity: 0; }
