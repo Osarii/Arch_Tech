@@ -717,33 +717,6 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
 .arch-tech-logo-mark .arch-tech-logo-symbol {
   height: 1.65rem;
 }
-.arch-tech-logo-wordmark {
-  display: flex;
-  flex-direction: column;
-  font-family: Arial, Helvetica, sans-serif;
-  gap: 0.2rem;
-  min-width: 0;
-  white-space: nowrap;
-}
-.arch-tech-logo-wordmark-primary {
-  font-size: 0.72rem;
-  font-weight: 400;
-  letter-spacing: 0.3em;
-}
-.arch-tech-logo-wordmark-secondary {
-  font-size: 0.36rem;
-  font-weight: 400;
-  letter-spacing: 0.26em;
-}
-.arch-tech-logo-theme-dark .arch-tech-logo-wordmark {
-  color: #d8d4ca;
-}
-.arch-tech-logo-theme-light .arch-tech-logo-wordmark {
-  color: #2b2a27;
-}
-.arch-tech-logo-theme-inherit .arch-tech-logo-wordmark {
-  color: currentColor;
-}
 .arch-tech-logo-stacked {
   display: block;
 }
@@ -765,8 +738,8 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
 }
 
 @media (max-width: 639px) {
-  .arch-tech-logo-portal .arch-tech-logo-wordmark {
-    display: none;
+  .arch-tech-logo-full .arch-tech-logo-lockup {
+    width: min(100%, 18rem);
   }
 }
 

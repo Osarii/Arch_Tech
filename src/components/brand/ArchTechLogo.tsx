@@ -32,18 +32,12 @@ export const ArchTechLogo: React.FC<ArchTechLogoProps> = ({ variant = 'full', th
   return (
     <span className={`arch-tech-logo arch-tech-logo-${variant} arch-tech-logo-theme-${theme} ${className}`.trim()} {...accessibleProps}>
       <img
-        className={variant === 'stacked' ? 'arch-tech-logo-lockup' : 'arch-tech-logo-symbol'}
-        src={variant === 'stacked' ? asset.lockup : asset.mark}
+        className={variant === 'mark' ? 'arch-tech-logo-symbol' : 'arch-tech-logo-lockup'}
+        src={variant === 'mark' ? asset.mark : asset.lockup}
         alt=""
         aria-hidden="true"
         draggable="false"
       />
-      {variant === 'full' && (
-        <span className="arch-tech-logo-wordmark" aria-hidden="true">
-          <span className="arch-tech-logo-wordmark-primary">GARNIER</span>
-          <span className="arch-tech-logo-wordmark-secondary">ARCHITECTURE</span>
-        </span>
-      )}
     </span>
   );
 };
