@@ -1,5 +1,5 @@
 {
-  "name": "ARCH_TECH Project Automation",
+  "name": "GARNIER ARCHITECTURE Project Automation",
   "nodes": [
     {
       "parameters": {
@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst allowed = ['project.created', 'project.updated', 'approval.requested'];\nconst event = typeof input.event === 'string' ? input.event : '';\nconst projectId = typeof input.projectId === 'string' ? input.projectId.trim() : '';\nif (!allowed.includes(event)) return [{ json: { success: false, error: 'Unsupported project event.' } }];\nif (!projectId) return [{ json: { success: false, error: 'projectId is required.' } }];\nconst labels = { 'project.created': 'Project created', 'project.updated': 'Project updated', 'approval.requested': 'Approval requested' };\nreturn [{ json: { success: true, notification: { message: `${labels[event]} · ${projectId}`, date: new Date().toISOString().slice(0, 10) } } }];"
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst allowed = ['project.created', 'project.updated', 'approval.requested'];\nconst event = typeof input.event === 'string' ? input.event : '';\nconst projectId = typeof input.projectId === 'string' ? input.projectId.trim() : '';\nif (!allowed.includes(event)) return [{ json: { success: false, error: 'Unsupported project event.' } }];\nif (!projectId) return [{ json: { success: false, error: 'projectId is required.' } }];\nconst locale = input.locale === 'es' ? 'es' : 'en';\nconst labels = {\n  en: {\n    'project.created': 'Project created',\n    'project.updated': 'Project updated',\n    'approval.requested': 'Approval requested'\n  },\n  es: {\n    'project.created': 'Proyecto creado',\n    'project.updated': 'Proyecto actualizado',\n    'approval.requested': 'Aprobación solicitada'\n  }\n};\nconst message = `${labels[locale][event]} · ${projectId}`;\nreturn [{ json: { success: true, locale, notification: { message, date: new Date().toISOString().slice(0, 10) } } }];"
       },
       "id": "automation-summary",
       "name": "Validate project event",
@@ -48,5 +48,5 @@
   },
   "active": false,
   "settings": {},
-  "versionId": "arch-tech-automation-v2"
+  "versionId": "garnier-architecture-automation-v3"
 }

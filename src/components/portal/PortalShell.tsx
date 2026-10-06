@@ -1,20 +1,11 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { LogOut, Moon, Sun, Sliders } from 'lucide-react';
 import { useInRouterContext, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { PortalRole, getPortalUser } from '../../portal/data';
 import { portalAuth } from '../../portal/demoAuth';
 import { roleHome } from '../../router/guards';
-import {
-  AccessibilityPreferences,
-  DEFAULT_A11Y_PREFERENCES,
-  applyAccessibilityClasses,
-  extractMainContentWithMap,
-  getHoveredWordAtPoint,
-  getRectForCharIndex,
-  loadAccessibilityPreferences,
-  saveAccessibilityPreferences,
-} from '../../portal/accessibility';
+import { useAccessibility } from '../../portal/useAccessibility';
 import { AccessibilityPanel } from './AccessibilityPanel';
 import { AccessibilityOverlay } from './AccessibilityOverlay';
 
@@ -94,61 +85,24 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     }
   });
 
-  const [preferences, setPreferences] = useState<AccessibilityPreferences>(() =>
-    loadAccessibilityPreferences()
-  );
-  const [isA11yPanelOpen, setIsA11yPanelOpen] = useState(false);
-  const [announcement, setAnnouncement] = useState('');
-  const a11yTriggerRef = useRef<HTMLButtonElement>(null);
-
-  const [speechState, setSpeechState] = useState<'unsupported' | 'idle' | 'playing' | 'paused'>('idle');
-  const speechStateRef = useRef(speechState);
-  speechStateRef.current = speechState;
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [speechHighlightRect, setSpeechHighlightRect] = useState<DOMRect | null>(null);
-
-  const [pointerY, setPointerY] = useState<number | null>(null);
-  const [hoverRect, setHoverRect] = useState<DOMRect | null>(null);
-  const hoverTimerRef = useRef<any>(null);
-  const lastHoverWordRef = useRef<string | null>(null);
-
-  // Check speech synthesis support and load voices with clean lifecycle
-  useEffect(() => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
-      setSpeechState('unsupported');
-      return;
-    }
-
-    const loadVoices = () => {
-      try {
-        const v = window.speechSynthesis.getVoices();
-        if (v && v.length > 0) setAvailableVoices(v);
-      } catch {
-        // Voice loading fallback
-      }
-    };
-
-    loadVoices();
-    if (typeof window.speechSynthesis.addEventListener === 'function') {
-      window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
-    } else {
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
-
-    return () => {
-      if (typeof window.speechSynthesis.removeEventListener === 'function') {
-        window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-      } else if (window.speechSynthesis.onvoiceschanged === loadVoices) {
-        window.speechSynthesis.onvoiceschanged = null;
-      }
-      try {
-        window.speechSynthesis.cancel();
-      } catch {
-        // ignore
-      }
-      clearTimeout(hoverTimerRef.current);
-    };
-  }, []);
+  const {
+    preferences,
+    updatePreferences,
+    resetPreferences,
+    isA11yPanelOpen,
+    setIsA11yPanelOpen,
+    a11yTriggerRef,
+    speechState,
+    startSpeech,
+    stopSpeech,
+    toggleSpeechPause,
+    availableVoices,
+    speechHighlightRect,
+    pointerY,
+    hoverRect,
+    announcement,
+    activeLocale,
+  } = useAccessibility({ currentPath });
 
   // Theme synchronization
   useEffect(() => {
@@ -159,195 +113,6 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
       // theme in memory
     }
   }, [dark]);
-
-  // Apply accessibility classes & persist
-  useEffect(() => {
-    applyAccessibilityClasses(preferences);
-    saveAccessibilityPreferences(preferences);
-  }, [preferences]);
-
-  // Full-page narrator methods
-  const stopSpeech = () => {
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      setSpeechState('idle');
-      setSpeechHighlightRect(null);
-      setAnnouncement('Speech stopped');
-    }
-  };
-
-  const startSpeech = () => {
-    if (speechState === 'unsupported' || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    setHoverRect(null);
-
-    const mainNode = document.querySelector('main');
-    if (!mainNode) return;
-
-    const extracted = extractMainContentWithMap(mainNode);
-    if (!extracted.fullText.trim()) return;
-
-    const utterance = new SpeechSynthesisUtterance(extracted.fullText);
-    utterance.rate = preferences.speed;
-    if (preferences.voiceURI) {
-      const v = availableVoices.find((voice) => voice.voiceURI === preferences.voiceURI);
-      if (v) utterance.voice = v;
-    }
-
-    utterance.onstart = () => {
-      setSpeechState('playing');
-      setAnnouncement('Narration started');
-    };
-    utterance.onpause = () => {
-      setSpeechState('paused');
-      setAnnouncement('Narration paused');
-    };
-    utterance.onresume = () => {
-      setSpeechState('playing');
-      setAnnouncement('Narration resumed');
-    };
-    utterance.onend = () => {
-      setSpeechState('idle');
-      setSpeechHighlightRect(null);
-      setAnnouncement('Narration ended');
-    };
-    utterance.onerror = () => {
-      setSpeechState('idle');
-      setSpeechHighlightRect(null);
-    };
-
-    // Boundary events for real-time word highlighting
-    utterance.onboundary = (event: SpeechSynthesisEvent) => {
-      if (preferences.spokenWordHighlight) {
-        const rect = getRectForCharIndex(extracted, event.charIndex, (event as any).charLength);
-        if (rect) {
-          setSpeechHighlightRect(rect);
-        }
-      }
-    };
-
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const toggleSpeechPause = () => {
-    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    if (speechState === 'playing') {
-      window.speechSynthesis.pause();
-    } else if (speechState === 'paused') {
-      window.speechSynthesis.resume();
-    }
-  };
-
-  // Route change cancels narration
-  useEffect(() => {
-    stopSpeech();
-    return () => {
-      stopSpeech();
-    };
-  }, [currentPath]);
-
-  // Pointer tracking for Reading Guide, Reading Mask, and Hover Reader
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (!preferences.readingGuide && !preferences.readingMask && !preferences.hoverReader) {
-      setPointerY(null);
-      setHoverRect(null);
-      return;
-    }
-
-    const handlePointerMove = (e: MouseEvent) => {
-      if (preferences.readingGuide || preferences.readingMask) {
-        setPointerY(e.clientY);
-      }
-
-      if (!preferences.hoverReader) return;
-
-      // Full-page narration takes priority over Hover Reader
-      if (speechState === 'playing' || speechState === 'paused') {
-        if (hoverRect) setHoverRect(null);
-        return;
-      }
-
-      // Check if pointer is still inside the current hovered word box
-      if (hoverRect) {
-        if (
-          e.clientX >= hoverRect.left &&
-          e.clientX <= hoverRect.right &&
-          e.clientY >= hoverRect.top &&
-          e.clientY <= hoverRect.bottom
-        ) {
-          return;
-        } else {
-          setHoverRect(null);
-          lastHoverWordRef.current = null;
-        }
-      }
-
-      clearTimeout(hoverTimerRef.current);
-      hoverTimerRef.current = setTimeout(() => {
-        if (speechStateRef.current === 'playing' || speechStateRef.current === 'paused') return;
-        const result = getHoveredWordAtPoint(e.clientX, e.clientY);
-        if (!result) {
-          setHoverRect(null);
-          lastHoverWordRef.current = null;
-          return;
-        }
-
-        setHoverRect(result.rect);
-        if (lastHoverWordRef.current === result.word) return;
-        lastHoverWordRef.current = result.word;
-
-        if ('speechSynthesis' in window) {
-          window.speechSynthesis.cancel();
-          const utterance = new SpeechSynthesisUtterance(result.word);
-          utterance.rate = preferences.speed;
-          if (preferences.voiceURI) {
-            const v = availableVoices.find((voice) => voice.voiceURI === preferences.voiceURI);
-            if (v) utterance.voice = v;
-          }
-          window.speechSynthesis.speak(utterance);
-        }
-      }, 150);
-    };
-
-    const handlePointerLeave = () => {
-      if (preferences.readingGuide || preferences.readingMask) {
-        setPointerY(null);
-      }
-      setHoverRect(null);
-      lastHoverWordRef.current = null;
-      clearTimeout(hoverTimerRef.current);
-    };
-
-    window.addEventListener('mousemove', handlePointerMove);
-    document.addEventListener('mouseleave', handlePointerLeave);
-
-    return () => {
-      clearTimeout(hoverTimerRef.current);
-      window.removeEventListener('mousemove', handlePointerMove);
-      document.removeEventListener('mouseleave', handlePointerLeave);
-    };
-  }, [
-    preferences.readingGuide,
-    preferences.readingMask,
-    preferences.hoverReader,
-    preferences.speed,
-    preferences.voiceURI,
-    speechState,
-    hoverRect,
-    availableVoices,
-  ]);
-
-  const handleUpdatePreferences = (updates: Partial<AccessibilityPreferences>) => {
-    setPreferences((prev) => ({ ...prev, ...updates }));
-    const key = Object.keys(updates)[0];
-    if (key) setAnnouncement(`Updated accessibility preference: ${key}`);
-  };
-
-  const handleResetPreferences = () => {
-    setPreferences({ ...DEFAULT_A11Y_PREFERENCES });
-    setAnnouncement('Accessibility preferences reset to default');
-  };
 
   const hasActivePreferences =
     preferences.speed !== 1 ||
@@ -516,14 +281,15 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
           isOpen={isA11yPanelOpen}
           onClose={() => setIsA11yPanelOpen(false)}
           preferences={preferences}
-          onUpdatePreferences={handleUpdatePreferences}
-          onResetPreferences={handleResetPreferences}
+          onUpdatePreferences={updatePreferences}
+          onResetPreferences={resetPreferences}
           speechState={speechState}
           onStartSpeech={startSpeech}
           onTogglePauseSpeech={toggleSpeechPause}
           onStopSpeech={stopSpeech}
           availableVoices={availableVoices}
           triggerRef={a11yTriggerRef}
+          locale={activeLocale}
         />
       </div>
     </PortalShellContext.Provider>

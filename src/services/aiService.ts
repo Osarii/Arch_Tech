@@ -7,6 +7,10 @@ export type RemoteAIRequest = {
   messages: AIMessage[];
   tools: ToolDefinition[];
   context: ConversationContext;
+  locale: 'en' | 'es';
+  role?: string;
+  route?: string;
+  projectId?: string;
 };
 
 export class AIServiceError extends Error {

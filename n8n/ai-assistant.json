@@ -1,5 +1,5 @@
 {
-  "name": "ARCH_TECH AI Assistant",
+  "name": "GARNIER ARCHITECTURE AI Assistant",
   "nodes": [
     {
       "parameters": {
@@ -17,7 +17,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nreturn [{ json: { userPrompt: String(input.userPrompt || input.prompt || ''), messages: Array.isArray(input.messages) ? input.messages : [], tools: Array.isArray(input.tools) ? input.tools : [], context: input.context && typeof input.context === 'object' ? input.context : {} } }];"
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst userPrompt = String(input.userPrompt || input.prompt || '');\nconst locale = input.locale === 'es' ? 'es' : 'en';\nconst role = input.role ? String(input.role) : undefined;\nconst projectId = input.projectId ? String(input.projectId) : undefined;\nconst route = input.route ? String(input.route) : undefined;\nconst context = input.context && typeof input.context === 'object' ? input.context : {};\nconst rawMessages = Array.isArray(input.messages) ? input.messages : [];\nconst recentMessages = rawMessages.slice(-6).map(m => ({\n  role: m.role,\n  content: typeof m.content === 'string' ? m.content.slice(0, 300) : String(m.content || '')\n}));\nconst tools = (Array.isArray(input.tools) ? input.tools : []).map(t => ({\n  name: t.name,\n  description: t.description,\n  category: t.category,\n  parameters: t.parameters\n}));\nconst promptPayload = {\n  locale,\n  role,\n  projectId,\n  route,\n  userPrompt,\n  bimContext: context,\n  recentMessages,\n  availableTools: tools\n};\nreturn [{\n  json: {\n    userPrompt,\n    locale,\n    role,\n    projectId,\n    route,\n    context,\n    recentMessages,\n    tools,\n    promptText: JSON.stringify(promptPayload, null, 2)\n  }\n}];"
       },
       "id": "ai-normalize",
       "name": "Normalize AI request",
@@ -28,13 +28,13 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "={{ $json.userPrompt }}",
+        "text": "={{ $json.promptText || $json.userPrompt }}",
         "options": {
-          "systemMessage": "You are the ARCH_TECH BIM assistant. Return only valid JSON with a string message and optional toolCalls array. Never execute tools. Tool calls must use the provided tool names and args so the frontend can apply its existing confirmation gate."
+          "systemMessage": "You are the GARNIER ARCHITECTURE BIM assistant. Your input is structured JSON containing userPrompt, locale, bimContext, recentMessages, and availableTools. Always respect the requested locale: if locale is 'es', respond in Spanish; if locale is 'en', respond in English. Return ONLY valid JSON with a string message and optional toolCalls array: {\"message\": \"...\", \"toolCalls\": [{\"toolName\": \"...\", \"args\": {...}}]}. Never execute tools yourself. Tool calls must use the provided exact tool names and args so the frontend confirmation gate can safely govern execution."
         }
       },
       "id": "ai-chain",
-      "name": "ARCH_TECH LLM chain",
+      "name": "GARNIER ARCHITECTURE LLM chain",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [700, 300]
@@ -78,12 +78,12 @@
       "main": [[{ "node": "Normalize AI request", "type": "main", "index": 0 }]]
     },
     "Normalize AI request": {
-      "main": [[{ "node": "ARCH_TECH LLM chain", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "GARNIER ARCHITECTURE LLM chain", "type": "main", "index": 0 }]]
     },
     "OpenAI Chat Model": {
-      "ai_languageModel": [[{ "node": "ARCH_TECH LLM chain", "type": "ai_languageModel", "index": 0 }]]
+      "ai_languageModel": [[{ "node": "GARNIER ARCHITECTURE LLM chain", "type": "ai_languageModel", "index": 0 }]]
     },
-    "ARCH_TECH LLM chain": {
+    "GARNIER ARCHITECTURE LLM chain": {
       "main": [[{ "node": "Shape AI response", "type": "main", "index": 0 }]]
     },
     "Shape AI response": {
@@ -92,5 +92,5 @@
   },
   "active": false,
   "settings": {},
-  "versionId": "arch-tech-ai-v2"
+  "versionId": "garnier-architecture-ai-v3"
 }

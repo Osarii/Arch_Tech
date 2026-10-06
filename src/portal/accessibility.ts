@@ -1,3 +1,5 @@
+import { SiteLocale, STORAGE_KEY_LOCALE } from './locale';
+
 export type TextScale = '100' | '1125' | '125';
 export type SpeechSpeed = 0.75 | 1 | 1.25 | 1.5;
 
@@ -19,6 +21,13 @@ export interface AccessibilityPreferences {
 
   // Motion
   reduceMotion: boolean;
+
+  // Shared Locale & Voice per Locale
+  locale?: SiteLocale;
+  voiceByLocale?: {
+    en?: string | null;
+    es?: string | null;
+  };
 }
 
 export const DEFAULT_A11Y_PREFERENCES: AccessibilityPreferences = {
@@ -36,13 +45,149 @@ export const DEFAULT_A11Y_PREFERENCES: AccessibilityPreferences = {
   highlightLinks: false,
 
   reduceMotion: false,
+  voiceByLocale: {
+    en: null,
+    es: null,
+  },
 };
 
+export { STORAGE_KEY_LOCALE };
 export const STORAGE_KEY_A11Y = 'arch-tech-a11y-preferences';
 export const STORAGE_KEY_THEME = 'arch-tech-portal-theme';
 export const STORAGE_KEY_LEGACY_SCALE = 'arch-tech-portal-text-scale';
 export const STORAGE_KEY_LEGACY_COLOR_SAFE = 'arch-tech-portal-color-safe';
 export const STORAGE_KEY_LEGACY_REDUCE_MOTION = 'arch-tech-portal-reduce-motion';
+
+/**
+ * Filter allowed voices to high-quality English and Spanish only.
+ */
+export function isAllowedVoice(voice: SpeechSynthesisVoice): boolean {
+  if (!voice || !voice.lang) return false;
+  const lang = voice.lang.toLowerCase();
+  return lang.startsWith('en') || lang.startsWith('es');
+}
+
+/**
+ * Rank voice according to site locale priority:
+ * Spanish:
+ *   1. es-CR
+ *   2. other Latin-American Spanish (es-419, es-mx, es-co, etc.)
+ *   3. generic Spanish (es-es, es)
+ *   4. English voices (en-US > en-GB > other)
+ * English:
+ *   1. en-US
+ *   2. en-GB
+ *   3. other English
+ *   4. Spanish voices (es-CR > Latin-American > other)
+ */
+export function getVoiceRank(voice: SpeechSynthesisVoice, locale: SiteLocale): number {
+  const lang = (voice.lang || '').toLowerCase();
+  const isEs = lang.startsWith('es');
+  const isEn = lang.startsWith('en');
+
+  if (locale === 'es') {
+    if (isEs) {
+      if (lang === 'es-cr' || lang.startsWith('es-cr')) return 1;
+      if (
+        lang.includes('419') ||
+        lang.startsWith('es-mx') ||
+        lang.startsWith('es-co') ||
+        lang.startsWith('es-ar') ||
+        lang.startsWith('es-cl') ||
+        lang.startsWith('es-pe') ||
+        lang.startsWith('es-us') ||
+        lang.startsWith('es-gt') ||
+        lang.startsWith('es-pa') ||
+        lang.startsWith('es-hn') ||
+        lang.startsWith('es-sv') ||
+        lang.startsWith('es-ni')
+      ) {
+        return 2;
+      }
+      return 3; // generic Spanish
+    }
+    if (isEn) {
+      if (lang.startsWith('en-us')) return 10;
+      if (lang.startsWith('en-gb')) return 11;
+      return 12;
+    }
+    return 99;
+  } else {
+    // English
+    if (isEn) {
+      if (lang.startsWith('en-us')) return 1;
+      if (lang.startsWith('en-gb')) return 2;
+      return 3;
+    }
+    if (isEs) {
+      if (lang === 'es-cr' || lang.startsWith('es-cr')) return 10;
+      if (
+        lang.includes('419') ||
+        lang.startsWith('es-mx') ||
+        lang.startsWith('es-co') ||
+        lang.startsWith('es-ar')
+      ) {
+        return 11;
+      }
+      return 12;
+    }
+    return 99;
+  }
+}
+
+/**
+ * Filter and sort voices to only English and Spanish, prioritized by active site locale.
+ */
+export function filterAndRankVoices(
+  voices: SpeechSynthesisVoice[],
+  locale: SiteLocale
+): SpeechSynthesisVoice[] {
+  return voices
+    .filter(isAllowedVoice)
+    .sort((a, b) => {
+      const rankA = getVoiceRank(a, locale);
+      const rankB = getVoiceRank(b, locale);
+      if (rankA !== rankB) return rankA - rankB;
+      return (a.name || '').localeCompare(b.name || '');
+    });
+}
+
+/**
+ * Select the best voice for the active locale.
+ * If the user's preferred voice URI is compatible with the active locale, use it.
+ * Otherwise, automatically select the highest-ranked voice for that locale.
+ */
+export function getBestVoiceForLocale(
+  voices: SpeechSynthesisVoice[],
+  locale: SiteLocale,
+  preferredURI?: string | null
+): SpeechSynthesisVoice | undefined {
+  const allowed = voices.filter(isAllowedVoice);
+  if (!allowed.length) return undefined;
+
+  // If a preferred voice URI is set, check if it matches the current locale family
+  if (preferredURI) {
+    const matched = allowed.find((v) => v.voiceURI === preferredURI);
+    if (matched) {
+      const matchedLang = (matched.lang || '').toLowerCase();
+      const isCompatible = locale === 'es' ? matchedLang.startsWith('es') : matchedLang.startsWith('en');
+      if (isCompatible) {
+        return matched;
+      }
+    }
+  }
+
+  // Automatically pick the highest ranked voice for the locale
+  const matchingFamily = allowed.filter((v) =>
+    locale === 'es' ? (v.lang || '').toLowerCase().startsWith('es') : (v.lang || '').toLowerCase().startsWith('en')
+  );
+
+  if (matchingFamily.length > 0) {
+    return matchingFamily.sort((a, b) => getVoiceRank(a, locale) - getVoiceRank(b, locale))[0];
+  }
+
+  return filterAndRankVoices(allowed, locale)[0];
+}
 
 export function loadAccessibilityPreferences(): AccessibilityPreferences {
   if (typeof window === 'undefined') {

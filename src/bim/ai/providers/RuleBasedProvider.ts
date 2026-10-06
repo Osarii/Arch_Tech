@@ -44,34 +44,56 @@ export class RuleBasedProvider implements AIProvider {
 
     // Helper to detect common BIM category keywords
     const extractCategory = (text: string): string | undefined => {
-      const categories = [
-        'wall',
-        'walls',
-        'slab',
-        'slabs',
-        'door',
-        'doors',
-        'window',
-        'windows',
-        'column',
-        'columns',
-        'beam',
-        'beams',
-        'space',
-        'spaces',
-        'roof',
-        'roofs',
-        'stair',
-        'stairs',
-        'storey',
-        'storeys',
-      ];
-      for (const cat of categories) {
-        // match whole word or category phrase
-        const regex = new RegExp(`\\b${cat}\\b`, 'i');
+      const categoryMap: Record<string, string> = {
+        wall: 'walls',
+        walls: 'walls',
+        muro: 'walls',
+        muros: 'walls',
+        pared: 'walls',
+        paredes: 'walls',
+        slab: 'slabs',
+        slabs: 'slabs',
+        losa: 'slabs',
+        losas: 'slabs',
+        door: 'doors',
+        doors: 'doors',
+        puerta: 'doors',
+        puertas: 'doors',
+        window: 'windows',
+        windows: 'windows',
+        ventana: 'windows',
+        ventanas: 'windows',
+        column: 'columns',
+        columns: 'columns',
+        columna: 'columns',
+        columnas: 'columns',
+        beam: 'beams',
+        beams: 'beams',
+        viga: 'beams',
+        vigas: 'beams',
+        space: 'spaces',
+        spaces: 'spaces',
+        espacio: 'spaces',
+        espacios: 'spaces',
+        roof: 'roofs',
+        roofs: 'roofs',
+        techo: 'roofs',
+        techos: 'roofs',
+        cubierta: 'roofs',
+        cubiertas: 'roofs',
+        stair: 'stairs',
+        stairs: 'stairs',
+        escalera: 'stairs',
+        escaleras: 'stairs',
+        storey: 'storeys',
+        storeys: 'storeys',
+        nivel: 'storeys',
+        niveles: 'storeys',
+      };
+      for (const [key, val] of Object.entries(categoryMap)) {
+        const regex = new RegExp(`\\b${key}\\b`, 'i');
         if (regex.test(text)) {
-          // Normalize singular/plural
-          return cat;
+          return val;
         }
       }
       return undefined;
@@ -157,7 +179,9 @@ export class RuleBasedProvider implements AIProvider {
       prompt.includes('show all') ||
       prompt.includes('unhide all') ||
       prompt.includes('restore visibility') ||
-      prompt.includes('clear isolation')
+      prompt.includes('clear isolation') ||
+      prompt.includes('mostrar todos') ||
+      prompt.includes('mostrar todo')
     ) {
       return {
         message: 'Restoring visibility of all elements in the 3D viewport...',
@@ -166,7 +190,12 @@ export class RuleBasedProvider implements AIProvider {
     }
 
     // 6. ISOLATE / SHOW BY CATEGORY
-    if (prompt.startsWith('isolate') || prompt.startsWith('show only') || prompt.includes('isolate category')) {
+    if (
+      prompt.startsWith('isolate') ||
+      prompt.startsWith('show only') ||
+      prompt.includes('isolate category') ||
+      prompt.startsWith('aislar')
+    ) {
       const cat = extractCategory(prompt);
       if (cat) {
         return {
@@ -220,7 +249,8 @@ export class RuleBasedProvider implements AIProvider {
       prompt.startsWith('search') ||
       prompt.startsWith('find') ||
       prompt.startsWith('query') ||
-      prompt.startsWith('filter')
+      prompt.startsWith('filter') ||
+      prompt.startsWith('buscar')
     ) {
       const cat = extractCategory(prompt);
       const typeMatch = prompt.match(/\b(ifc[a-z0-9]+)\b/i);
@@ -278,7 +308,10 @@ export class RuleBasedProvider implements AIProvider {
       prompt.includes('element count') ||
       prompt.includes('total count') ||
       prompt.includes('volume') ||
-      prompt.includes('gross area')
+      prompt.includes('gross area') ||
+      prompt.includes('cantidades') ||
+      prompt.includes('cómputo') ||
+      prompt.includes('computo')
     ) {
       return {
         message: 'Calculating model quantities, volume, areas, and element distributions...',
@@ -316,7 +349,9 @@ export class RuleBasedProvider implements AIProvider {
       prompt.includes('massing') ||
       prompt.includes('create building') ||
       prompt.includes('build') ||
-      prompt.includes('house')
+      prompt.includes('house') ||
+      prompt.includes('previsualizar') ||
+      prompt.includes('edificio')
     ) {
       // Dimensions: e.g. "10x8", "10 x 8", "10m x 8m", "10 by 8", "length 10 ... width 8"
       let length: number | undefined;
@@ -335,9 +370,9 @@ export class RuleBasedProvider implements AIProvider {
         }
       }
 
-      // Storeys: e.g. "2 storeys", "2-storey", "1 story", "3 floors", "storeys: 2"
+      // Storeys: e.g. "2 storeys", "2-storey", "1 story", "3 floors", "storeys: 2", "2 niveles"
       let storeys: number | undefined;
-      const storeyMatch = prompt.match(/(\d+)\s*-?\s*(?:storey|storeys|story|stories|floors?|levels?)/);
+      const storeyMatch = prompt.match(/(\d+)\s*-?\s*(?:storey|storeys|story|stories|floors?|levels?|niveles|nivel|pisos?)/);
       if (storeyMatch) {
         storeys = parseInt(storeyMatch[1], 10);
       } else {
@@ -352,7 +387,7 @@ export class RuleBasedProvider implements AIProvider {
       let totalHeight: number | undefined;
 
       const perStoreyMatch = prompt.match(
-        /(\d+\.?\d*)\s*-?\s*m?\s*(?:storey\s*height|height\s*per\s*storey|height\s*each\s*storey|floor\s*height|each\s*storey|per\s*storey)/
+        /(\d+\.?\d*)\s*-?\s*m?\s*(?:storey\s*height|height\s*per\s*storey|height\s*each\s*storey|floor\s*height|each\s*storey|per\s*storey|altura\s*por\s*nivel|de\s*altura\s*por\s*nivel)/
       );
       if (perStoreyMatch) {
         storeyHeight = parseFloat(perStoreyMatch[1]);

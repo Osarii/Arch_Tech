@@ -8,6 +8,8 @@ import { ToolRegistry } from '@/bim/ai/ToolRegistry';
 import { AIProvider, RuleBasedProvider } from '@/bim/ai/providers/RuleBasedProvider';
 import { useBimStore } from '@/stores/bimStore';
 import { aiService } from '@/services/aiService';
+import { getStoredLocale } from '@/portal/locale';
+import { portalAuth } from '@/portal/demoAuth';
 
 export class AIAgent {
   private static instance: AIAgent;
@@ -201,7 +203,10 @@ export class AIAgent {
    * READ actions execute directly.
    * WRITE actions produce a pending confirmation proposal.
    */
-  public async sendMessage(content: string): Promise<AIMessage> {
+  public async sendMessage(
+    content: string,
+    options?: { locale?: 'en' | 'es'; role?: string; route?: string; projectId?: string }
+  ): Promise<AIMessage> {
     const userMsg: AIMessage = {
       id: `user-${Date.now()}`,
       role: 'user',
@@ -213,6 +218,15 @@ export class AIAgent {
     this.notify();
 
     const context = this.getActiveContext();
+    const locale = options?.locale ?? getStoredLocale();
+    const role = options?.role ?? portalAuth.getSession()?.role ?? undefined;
+    const route = options?.route ?? (typeof window !== 'undefined' ? window.location.pathname : undefined);
+    const projectId =
+      options?.projectId ??
+      (typeof window !== 'undefined'
+        ? window.location.pathname.match(/\/portal\/project\/([^/?#]+)/)?.[1]
+        : undefined);
+
     let providerResponse;
     if (aiService.isConfigured()) {
       try {
@@ -221,6 +235,10 @@ export class AIAgent {
           messages: this.messages,
           tools: ToolRegistry.getAllTools(),
           context,
+          locale,
+          role,
+          route,
+          projectId,
         });
       } catch {
         const fallback = await this.provider.generateResponse(content, this.messages, ToolRegistry.getAllTools(), context);

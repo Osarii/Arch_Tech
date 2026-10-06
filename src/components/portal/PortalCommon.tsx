@@ -18,6 +18,7 @@ import { bimAgent } from '../../bim/ai/AIAgent';
 import { aiService } from '../../services/aiService';
 import { AIMessage } from '../../types/bim';
 import { portalAuth } from '../../portal/demoAuth';
+import { useLocale } from '../../portal/locale';
 
 export type Navigate = (path: string) => void;
 
@@ -629,6 +630,8 @@ export const PortalAIAssistantView: React.FC<{
   role: PortalRole;
   onNavigate: Navigate;
 }> = ({ role, onNavigate }) => {
+  const { locale, t } = useLocale();
+  const aiT = t.portalAi;
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [inputPrompt, setInputPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -659,20 +662,10 @@ export const PortalAIAssistantView: React.FC<{
 
   const quickPrompts =
     role === 'client'
-      ? ['Calculate model quantities', 'Show all elements', 'Isolate walls']
+      ? aiT.quickPrompts.client
       : role === 'architect'
-        ? [
-            'Preview 10x8m 2-storey building, 3m height per storey',
-            'Calculate model quantities',
-            'Find all walls',
-            'Show all elements',
-          ]
-        : [
-            'Calculate model quantities',
-            'Find all walls',
-            'Preview 10x8m 2-storey building, 3m height per storey',
-            'Show all elements',
-          ];
+        ? aiT.quickPrompts.architect
+        : aiT.quickPrompts.admin;
 
   return (
     <div className="space-y-8">
@@ -680,30 +673,30 @@ export const PortalAIAssistantView: React.FC<{
         <div>
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-purple-600" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">BIM AI Assistant</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{aiT.heading}</span>
           </div>
           <p className="mt-1 text-sm text-stone-600">
-            Natural language BIM intelligence and coordination engine.
+            {aiT.subtitle}
           </p>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 border border-black/15 bg-white/40 px-2.5 py-1 text-[10px] font-mono text-stone-600">
             <Cpu className="h-3 w-3 text-emerald-600" />
-            <span>{aiService.isConfigured() ? 'Remote n8n / offline fallback' : 'Offline Deterministic Engine'}</span>
+            <span>{aiService.isConfigured() ? aiT.remoteStatus : aiT.offlineStatus}</span>
           </div>
           <button
             onClick={() => bimAgent.clearHistory()}
             data-testid="ai-btn-clear"
             className="border border-black/20 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-stone-600 hover:text-black hover:border-black"
-            title="Clear Conversation History"
+            title={aiT.clearHistory}
           >
-            Clear History
+            {aiT.clearHistory}
           </button>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">Quick prompts:</span>
+        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{aiT.quickPromptsLabel}</span>
         {quickPrompts.map((prompt) => (
           <button
             key={prompt}
@@ -722,9 +715,9 @@ export const PortalAIAssistantView: React.FC<{
           {messages.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center text-stone-500">
               <Bot className="h-8 w-8 stroke-1 text-stone-400" />
-              <p className="mt-3 font-serif text-xl text-stone-700">How can the assistant help today?</p>
+              <p className="mt-3 font-serif text-xl text-stone-700">{aiT.emptyTitle}</p>
               <p className="mt-1 max-w-sm text-xs text-stone-500">
-                Ask about building quantities, model elements, structural search or massing preview generation.
+                {aiT.emptyDescription}
               </p>
             </div>
           ) : (
@@ -757,20 +750,20 @@ export const PortalAIAssistantView: React.FC<{
                   ))}
                   {msg.proposal && (
                     <div data-testid="ai-proposal-card" className="mt-3 border border-amber-500/40 bg-amber-50 p-2 text-stone-800">
-                      <p className="font-mono text-[9px] font-semibold uppercase text-amber-700">WRITE ACTION CONFIRMATION</p>
+                      <p className="font-mono text-[9px] font-semibold uppercase text-amber-700">{aiT.writeConfirmation}</p>
                       <p className="mt-1 text-xs">{msg.proposal.toolName}: {msg.proposal.description}</p>
                       <div className="mt-2 flex gap-2">
                         <button
                           onClick={() => bimAgent.confirmProposal(msg.proposal!.proposalId)}
                           className="bg-black px-2.5 py-1 font-mono text-[9px] uppercase text-white"
                         >
-                          Confirm
+                          {aiT.confirm}
                         </button>
                         <button
                           onClick={() => bimAgent.rejectProposal(msg.proposal!.proposalId)}
                           className="border border-black/20 px-2.5 py-1 font-mono text-[9px] uppercase text-stone-600"
                         >
-                          Reject
+                          {aiT.reject}
                         </button>
                       </div>
                     </div>
@@ -793,7 +786,7 @@ export const PortalAIAssistantView: React.FC<{
             value={inputPrompt}
             onChange={(e) => setInputPrompt(e.target.value)}
             disabled={isProcessing}
-            placeholder="Ask about model quantities, elements or building generation…"
+            placeholder={aiT.inputPlaceholder}
             className="flex-1 border border-black/20 bg-white px-3 py-2 text-xs outline-none placeholder:text-stone-400 focus:border-black"
           />
           <button
@@ -801,7 +794,7 @@ export const PortalAIAssistantView: React.FC<{
             disabled={isProcessing || !inputPrompt.trim()}
             className="flex items-center gap-1.5 bg-black px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-white disabled:opacity-40"
           >
-            <span>Send</span>
+            <span>{aiT.send}</span>
             <Send className="h-3 w-3" />
           </button>
         </form>
@@ -809,9 +802,11 @@ export const PortalAIAssistantView: React.FC<{
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-black/15 pt-6">
         <div>
-          <p className="font-serif text-xl">3D Engineering Workspace</p>
+          <p className="font-serif text-xl">{locale === 'es' ? 'Espacio de Trabajo de Ingeniería 3D' : '3D Engineering Workspace'}</p>
           <p className="text-xs text-stone-600">
-            Open the live WebGL workspace to inspect fragments, property sets, and visual model modifications.
+            {locale === 'es'
+              ? 'Abra el espacio WebGL en vivo para inspeccionar fragmentos, conjuntos de propiedades y modificaciones visuales del modelo.'
+              : 'Open the live WebGL workspace to inspect fragments, property sets, and visual model modifications.'}
           </p>
         </div>
         <button

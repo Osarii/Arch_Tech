@@ -5,6 +5,7 @@ import { ProjectImage } from '../gallery/projectMedia';
 import { Reveal } from '../motion/Reveal';
 import { WireframeToSolid } from '../motion/WireframeToSolid';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
+import { useLocale } from '../../portal/locale';
 
 interface ProjectShowcaseProps {
   onOpenProject: (id: string) => void;
@@ -20,6 +21,9 @@ const Field: React.FC<{ label: string; value: string; labelAlways?: boolean }> =
 export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject }) => {
   const [projects] = useState(getPublicProjects);
   const [featured, ...register] = projects;
+  const { locale, landing } = useLocale();
+  const t = landing.projects;
+
   return (
     <section id="projects" className="landing-projects-section bg-[#EDF4ED] px-6 py-24 text-[#000000] sm:px-8 lg:px-12 lg:py-32">
       <div className="landing-projects-inner mx-auto max-w-7xl">
@@ -28,11 +32,11 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
             <div>
               <div className="flex items-center gap-3">
                 <ArchTechLogo variant="mark" tone="muted-teal" theme="inherit" className="landing-projects-mark pointer-events-none" />
-                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">{t.eyebrow}</p>
               </div>
-              <h2 className="landing-projects-heading mt-5 max-w-5xl font-serif font-light tracking-tight">A portfolio built for consequence.</h2>
+              <h2 className="landing-projects-heading mt-5 max-w-5xl font-serif font-light tracking-tight">{t.heading}</h2>
             </div>
-            <p className="max-w-sm text-sm leading-6 text-stone-600">Six official Garnier developments presented through a GARNIER ARCHITECTURE showcase interface. Public facts and project photography remain attributed to their source.</p>
+            <p className="max-w-sm text-sm leading-6 text-stone-600">{t.description}</p>
           </div>
         </Reveal>
 
@@ -52,15 +56,15 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
               <span className="mt-6 block border-b border-black/15 pb-10">
                 <span className="flex items-start justify-between gap-6">
                   <span className="block">
-                    <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">01 · Principal development · {featured.category}</span>
+                    <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{t.principalBadge}{featured.category}</span>
                     <span className="mt-3 block max-w-4xl font-serif text-4xl font-light leading-[1.02] sm:text-6xl lg:text-7xl">{featured.title}</span>
                   </span>
                   <ArrowUpRight className="mt-1 hidden h-6 w-6 shrink-0 text-stone-700 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 lg:block" />
                 </span>
                 <span className="mt-8 grid gap-5 border-t border-black/15 pt-5 sm:grid-cols-3">
-                  <Field labelAlways label="Market" value={featured.market ?? 'Costa Rica'} />
-                  <Field labelAlways label="Stage" value={featured.publicStage ?? featured.phase} />
-                  <Field labelAlways label="Scale" value={featured.scale ?? 'Development study'} />
+                  <Field labelAlways label={t.market} value={featured.market ?? 'Costa Rica'} />
+                  <Field labelAlways label={t.stage} value={featured.publicStage ?? featured.phase} />
+                  <Field labelAlways label={t.scale} value={featured.scale ?? 'Development study'} />
                 </span>
               </span>
             </button>
@@ -70,11 +74,11 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
         <Reveal variant="fade" delay={120}>
           <div className="landing-projects-register-header hidden grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] gap-8 border-b border-black/15 py-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500 lg:grid">
             <span>No.</span>
-            <span>Site</span>
-            <span>Development</span>
-            <span>Market</span>
-            <span>Stage</span>
-            <span>Scale</span>
+            <span>{locale === 'es' ? 'Ubicación' : 'Site'}</span>
+            <span>{locale === 'es' ? 'Desarrollo' : 'Development'}</span>
+            <span>{t.market}</span>
+            <span>{t.stage}</span>
+            <span>{t.scale}</span>
             <span />
           </div>
         </Reveal>
@@ -96,9 +100,9 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
                     <span className="mt-2 block font-serif text-2xl font-light leading-tight sm:text-3xl">{project.title}</span>
                   </span>
                   <span className="grid gap-4 sm:col-start-2 sm:grid-cols-3 lg:contents">
-                    <Field label="Market" value={project.market ?? 'Costa Rica'} />
-                    <Field label="Stage" value={project.publicStage ?? project.phase} />
-                    <Field label="Scale" value={project.scale ?? 'Development study'} />
+                    <Field label={t.market} value={project.market ?? 'Costa Rica'} />
+                    <Field label={t.stage} value={project.publicStage ?? project.phase} />
+                    <Field label={t.scale} value={project.scale ?? 'Development study'} />
                   </span>
                 </span>
                 <ArrowUpRight className="hidden h-4 w-4 text-stone-600 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 lg:block" />

@@ -16,6 +16,7 @@ import {
   TextScale,
   isHoverReaderSupported,
 } from '../../portal/accessibility';
+import { SiteLocale, a11yPanelTranslations, useLocale } from '../../portal/locale';
 
 export interface AccessibilityPanelProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export interface AccessibilityPanelProps {
   onStopSpeech: () => void;
   availableVoices: SpeechSynthesisVoice[];
   triggerRef?: React.RefObject<HTMLElement | null>;
+  locale?: SiteLocale;
 }
 
 export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
@@ -44,9 +46,13 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
   onStopSpeech,
   availableVoices,
   triggerRef,
+  locale: propLocale,
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const { locale: contextLocale } = useLocale();
+  const activeLocale = propLocale ?? contextLocale;
+  const t = a11yPanelTranslations[activeLocale];
 
   // Focus trap & Escape key
   useEffect(() => {
@@ -100,7 +106,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
 
   return (
     <div
-      className="portal-a11y-ignore fixed inset-0 z-[9990] flex justify-end bg-black/50 backdrop-blur-sm transition-opacity"
+      className="portal-a11y-ignore fixed inset-0 z-[9990] flex justify-end bg-black/60 backdrop-blur-sm transition-opacity"
       onClick={handleClose}
       aria-hidden="false"
     >
@@ -109,18 +115,18 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
         role="dialog"
         aria-modal="true"
         aria-labelledby="a11y-panel-title"
-        className="h-full w-full max-w-md overflow-y-auto border-l border-white/10 bg-[#1E1F1E] text-stone-200 shadow-2xl p-6 flex flex-col gap-6"
+        className="flex h-full w-full max-w-md flex-col gap-5 overflow-y-auto border-l border-white/10 bg-[#141517] p-6 text-stone-200 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="flex items-center justify-between border-b border-white/10 pb-3">
           <div className="flex items-center gap-2">
             <Sliders className="h-4 w-4 text-stone-400" />
             <h2
               id="a11y-panel-title"
               className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-white"
             >
-              GARNIER ARCHITECTURE // ACCESSIBILITY
+              {t.title}
             </h2>
           </div>
           <button
@@ -136,35 +142,35 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
         </div>
 
         {/* SECTION 1: READING */}
-        <section aria-labelledby="a11y-reading-title" className="flex flex-col gap-4">
+        <section aria-labelledby="a11y-reading-title" className="flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-white/5 pb-1">
             <Volume2 className="h-3.5 w-3.5 text-stone-400" />
             <h3
               id="a11y-reading-title"
               className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400"
             >
-              // 01 READING & SPEECH
+              {t.readingTitle}
             </h3>
           </div>
 
           {/* Full Page Narrator Controls */}
-          <div className="rounded border border-white/10 bg-white/5 p-3 flex flex-col gap-3">
+          <div className="flex flex-col gap-2.5 rounded border border-white/10 bg-white/5 p-3">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs text-white">Full-Page Narrator</span>
+              <span className="font-mono text-xs font-medium text-white">{t.fullPageNarrator}</span>
               <span className="font-mono text-[9px] uppercase tracking-wider text-stone-400">
                 {speechState === 'unsupported'
-                  ? 'Unsupported'
+                  ? t.unsupported
                   : speechState === 'playing'
-                    ? 'Narrating'
+                    ? t.narrating
                     : speechState === 'paused'
-                      ? 'Paused'
-                      : 'Ready'}
+                      ? t.paused
+                      : t.ready}
               </span>
             </div>
 
             {speechState === 'unsupported' ? (
-              <p className="font-mono text-[11px] text-stone-400 italic">
-                SpeechSynthesis is unavailable in this environment.
+              <p className="font-mono text-[11px] italic text-stone-400">
+                {t.unsupportedDesc}
               </p>
             ) : (
               <div className="flex items-center gap-2">
@@ -174,9 +180,9 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                     onClick={onStartSpeech}
                     aria-label="Start reading page"
                     data-testid="narrator-start"
-                    className="flex-1 inline-flex items-center justify-center gap-2 rounded bg-white/15 px-3 py-2 font-mono text-xs font-semibold text-white transition-colors hover:bg-white/25 focus:ring-2 focus:ring-white/40"
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white/15 px-3 py-1.5 font-mono text-xs font-semibold text-white transition-colors hover:bg-white/25 focus:ring-2 focus:ring-white/40"
                   >
-                    <Play className="h-3.5 w-3.5 text-emerald-400" /> Read Page
+                    <Play className="h-3.5 w-3.5 text-emerald-400" /> {t.readPage}
                   </button>
                 ) : (
                   <>
@@ -185,15 +191,15 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                       onClick={onTogglePauseSpeech}
                       aria-label={speechState === 'playing' ? 'Pause narrator' : 'Resume narrator'}
                       data-testid="narrator-pause-resume"
-                      className="flex-1 inline-flex items-center justify-center gap-2 rounded bg-white/15 px-3 py-2 font-mono text-xs font-semibold text-white transition-colors hover:bg-white/25 focus:ring-2 focus:ring-white/40"
+                      className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white/15 px-3 py-1.5 font-mono text-xs font-semibold text-white transition-colors hover:bg-white/25 focus:ring-2 focus:ring-white/40"
                     >
                       {speechState === 'playing' ? (
                         <>
-                          <Pause className="h-3.5 w-3.5 text-amber-400" /> Pause
+                          <Pause className="h-3.5 w-3.5 text-amber-400" /> {t.pause}
                         </>
                       ) : (
                         <>
-                          <Play className="h-3.5 w-3.5 text-emerald-400" /> Resume
+                          <Play className="h-3.5 w-3.5 text-emerald-400" /> {t.resume}
                         </>
                       )}
                     </button>
@@ -202,33 +208,38 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                       onClick={onStopSpeech}
                       aria-label="Stop narrator"
                       data-testid="narrator-stop"
-                      className="inline-flex items-center justify-center gap-2 rounded bg-white/10 px-3 py-2 font-mono text-xs font-semibold text-stone-300 transition-colors hover:bg-red-500/20 hover:text-red-300 focus:ring-2 focus:ring-white/40"
+                      className="inline-flex items-center justify-center gap-2 rounded bg-white/10 px-3 py-1.5 font-mono text-xs font-semibold text-stone-300 transition-colors hover:bg-red-500/20 hover:text-red-300 focus:ring-2 focus:ring-white/40"
                     >
-                      <Square className="h-3.5 w-3.5" /> Stop
+                      <Square className="h-3.5 w-3.5" /> {t.stop}
                     </button>
                   </>
                 )}
               </div>
             )}
 
-            {/* Voice selection */}
+            {/* Language-Aware Voice Selection */}
             {availableVoices.length > 0 && (
-              <div className="flex flex-col gap-1 pt-1">
-                <label
-                  htmlFor="a11y-voice-selector"
-                  className="font-mono text-[9px] uppercase tracking-wider text-stone-400"
-                >
-                  Voice
-                </label>
+              <div className="flex flex-col gap-1 pt-0.5">
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="a11y-voice-selector"
+                    className="font-mono text-[9px] uppercase tracking-wider text-stone-400"
+                  >
+                    {t.voiceLabel}
+                  </label>
+                  <span className="font-mono text-[8px] uppercase tracking-wider text-stone-500">
+                    {activeLocale === 'es' ? 'Español prioritario' : 'English prioritized'}
+                  </span>
+                </div>
                 <select
                   id="a11y-voice-selector"
                   data-testid="a11y-voice-select"
                   aria-label="Select narrator voice"
                   value={preferences.voiceURI || ''}
                   onChange={(e) => onUpdatePreferences({ voiceURI: e.target.value || null })}
-                  className="w-full rounded border border-white/10 bg-[#161716] px-2 py-1.5 font-mono text-xs text-white focus:outline-none focus:ring-1 focus:ring-white/40"
+                  className="w-full rounded border border-white/10 bg-[#1a1b1d] px-2 py-1.5 font-mono text-xs text-white focus:outline-none focus:ring-1 focus:ring-white/40"
                 >
-                  <option value="">Default System Voice</option>
+                  <option value="">{t.defaultVoice}</option>
                   {availableVoices.map((v) => (
                     <option key={v.voiceURI} value={v.voiceURI}>
                       {v.name} ({v.lang})
@@ -239,9 +250,9 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
             )}
 
             {/* Speed selection */}
-            <div className="flex flex-col gap-1 pt-1">
+            <div className="flex flex-col gap-1 pt-0.5">
               <span className="font-mono text-[9px] uppercase tracking-wider text-stone-400">
-                Speed
+                {t.speedLabel}
               </span>
               <div className="grid grid-cols-4 gap-1.5">
                 {speedOptions.map((sp) => (
@@ -253,7 +264,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                     onClick={() => onUpdatePreferences({ speed: sp })}
                     className={`rounded border px-2 py-1 font-mono text-xs transition-colors ${
                       preferences.speed === sp
-                        ? 'border-white bg-white text-black font-semibold'
+                        ? 'border-white bg-white font-semibold text-black'
                         : 'border-white/10 bg-white/5 text-stone-300 hover:border-white/30'
                     }`}
                   >
@@ -265,40 +276,36 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
           </div>
 
           {/* Reading Toggles */}
-          <div className="flex flex-col gap-2">
-            {/* Hover Reader */}
+          <div className="flex flex-col gap-1.5">
             <SwitchRow
-              label="Hover Reader"
-              description="Speak and highlight individual words under pointer rest (~150ms)"
+              label={t.hoverReader}
+              description={t.hoverReaderDesc}
               testId="hover-reader-toggle"
               checked={preferences.hoverReader}
               disabled={!hoverSupported}
-              badge={!hoverSupported ? 'Browser unsupported' : undefined}
+              badge={!hoverSupported ? t.browserUnsupported : undefined}
               onChange={(val) => onUpdatePreferences({ hoverReader: val })}
             />
 
-            {/* Spoken-word Highlight */}
             <SwitchRow
-              label="Spoken-word Highlight"
-              description="Highlight current word in real time during narration"
+              label={t.spokenWordHighlight}
+              description={t.spokenWordHighlightDesc}
               testId="spoken-word-highlight-toggle"
               checked={preferences.spokenWordHighlight}
               onChange={(val) => onUpdatePreferences({ spokenWordHighlight: val })}
             />
 
-            {/* Reading Guide */}
             <SwitchRow
-              label="Reading Guide"
-              description="Horizontal pointer-following ruler to track lines"
+              label={t.readingGuide}
+              description={t.readingGuideDesc}
               testId="reading-guide-toggle"
               checked={preferences.readingGuide}
               onChange={(val) => onUpdatePreferences({ readingGuide: val })}
             />
 
-            {/* Reading Mask */}
             <SwitchRow
-              label="Reading Mask"
-              description="Dim page content outside the active reading band"
+              label={t.readingMask}
+              description={t.readingMaskDesc}
               testId="reading-mask-toggle"
               checked={preferences.readingMask}
               onChange={(val) => onUpdatePreferences({ readingMask: val })}
@@ -307,20 +314,20 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
         </section>
 
         {/* SECTION 2: VISION */}
-        <section aria-labelledby="a11y-vision-title" className="flex flex-col gap-4">
+        <section aria-labelledby="a11y-vision-title" className="flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-white/5 pb-1">
             <Eye className="h-3.5 w-3.5 text-stone-400" />
             <h3
               id="a11y-vision-title"
               className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400"
             >
-              // 02 VISION & DISPLAY
+              {t.visionTitle}
             </h3>
           </div>
 
           {/* Text Size */}
           <div className="flex flex-col gap-1.5 rounded border border-white/10 bg-white/5 p-3">
-            <span className="font-mono text-xs text-white">Text Size</span>
+            <span className="font-mono text-xs text-white">{t.textSize}</span>
             <div className="grid grid-cols-3 gap-2">
               {scaleOptions.map((sc) => (
                 <button
@@ -331,7 +338,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                   onClick={() => onUpdatePreferences({ textScale: sc })}
                   className={`rounded border px-2 py-1.5 font-mono text-xs transition-colors ${
                     preferences.textScale === sc
-                      ? 'border-white bg-white text-black font-semibold'
+                      ? 'border-white bg-white font-semibold text-black'
                       : 'border-white/10 bg-white/5 text-stone-300 hover:border-white/30'
                   }`}
                 >
@@ -342,38 +349,34 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
           </div>
 
           {/* Vision Toggles */}
-          <div className="flex flex-col gap-2">
-            {/* Text Spacing */}
+          <div className="flex flex-col gap-1.5">
             <SwitchRow
-              label="Text Spacing"
-              description="Expand letter, word, and line spacing for readability"
+              label={t.textSpacing}
+              description={t.textSpacingDesc}
               testId="text-spacing-toggle"
               checked={preferences.textSpacing}
               onChange={(val) => onUpdatePreferences({ textSpacing: val })}
             />
 
-            {/* Color Safe */}
             <SwitchRow
-              label="Color Safe"
-              description="High-distinction status patterns, symbols, and borders"
+              label={t.colorSafe}
+              description={t.colorSafeDesc}
               testId="color-safe-toggle"
               checked={preferences.colorSafe}
               onChange={(val) => onUpdatePreferences({ colorSafe: val })}
             />
 
-            {/* High Contrast */}
             <SwitchRow
-              label="High Contrast"
-              description="Maximum contrast palette with defined structural borders"
+              label={t.highContrast}
+              description={t.highContrastDesc}
               testId="high-contrast-toggle"
               checked={preferences.highContrast}
               onChange={(val) => onUpdatePreferences({ highContrast: val })}
             />
 
-            {/* Highlight Links */}
             <SwitchRow
-              label="Highlight Links"
-              description="Prominent underline and indicator styling for interactive links"
+              label={t.highlightLinks}
+              description={t.highlightLinksDesc}
               testId="highlight-links-toggle"
               checked={preferences.highlightLinks}
               onChange={(val) => onUpdatePreferences({ highlightLinks: val })}
@@ -382,20 +385,20 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
         </section>
 
         {/* SECTION 3: MOTION */}
-        <section aria-labelledby="a11y-motion-title" className="flex flex-col gap-4">
+        <section aria-labelledby="a11y-motion-title" className="flex flex-col gap-3">
           <div className="flex items-center gap-2 border-b border-white/5 pb-1">
             <Activity className="h-3.5 w-3.5 text-stone-400" />
             <h3
               id="a11y-motion-title"
               className="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-stone-400"
             >
-              // 03 MOTION
+              {t.motionTitle}
             </h3>
           </div>
 
           <SwitchRow
-            label="Reduce Motion"
-            description="Disable non-essential animations, transitions, and autoplay"
+            label={t.reduceMotion}
+            description={t.reduceMotionDesc}
             testId="reduce-motion-toggle"
             checked={preferences.reduceMotion}
             onChange={(val) => onUpdatePreferences({ reduceMotion: val })}
@@ -403,17 +406,17 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
         </section>
 
         {/* SECTION 4: RESET */}
-        <section aria-labelledby="a11y-reset-title" className="mt-auto border-t border-white/10 pt-4 flex flex-col gap-2">
+        <section aria-labelledby="a11y-reset-title" className="mt-auto flex flex-col gap-2 border-t border-white/10 pt-4">
           <button
             type="button"
             data-testid="a11y-reset-btn"
             onClick={onResetPreferences}
             className="inline-flex w-full items-center justify-center gap-2 rounded border border-white/20 bg-transparent px-3 py-2 font-mono text-xs uppercase tracking-wider text-stone-300 transition-colors hover:border-red-400/50 hover:bg-red-500/10 hover:text-red-300 focus:ring-2 focus:ring-white/40"
           >
-            <RotateCcw className="h-3.5 w-3.5" /> Reset Preferences
+            <RotateCcw className="h-3.5 w-3.5" /> {t.resetButton}
           </button>
           <span className="text-center font-mono text-[9px] text-stone-400">
-            Resets all reading, vision, and motion adjustments to default.
+            {t.resetDesc}
           </span>
         </section>
       </div>
@@ -456,7 +459,7 @@ const SwitchRow: React.FC<SwitchRowProps> = ({
           )}
         </div>
         {description && (
-          <span className="font-mono text-[10px] text-stone-400 leading-snug">
+          <span className="font-mono text-[10px] leading-snug text-stone-400">
             {description}
           </span>
         )}
@@ -476,7 +479,7 @@ const SwitchRow: React.FC<SwitchRowProps> = ({
       >
         <span
           aria-hidden="true"
-          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-[#1E1F1E] shadow ring-0 transition duration-200 ease-in-out ${
+          className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-[#141517] shadow ring-0 transition duration-200 ease-in-out ${
             checked ? 'translate-x-4' : 'translate-x-0'
           }`}
         />
