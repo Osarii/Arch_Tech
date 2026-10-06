@@ -2,9 +2,14 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { externalContextService } from '../src/services/externalContextService';
 import { projectService } from '../src/services/projectService';
 import { projectWorkflowService } from '../src/services/projectWorkflowService';
-import { createPortalUser, getPortalSnapshot } from '../src/portal/data';
+import { createPortalUser, getPortalSnapshot, type NewsArticle } from '../src/portal/data';
 import { portalAuth } from '../src/portal/demoAuth';
 import { authService } from '../src/services/authService';
+import {
+  getFeaturedNews,
+  getPublicNews,
+  newsService,
+} from '../src/services/newsService';
 
 describe('portal service layer', () => {
   afterEach(() => {
@@ -121,6 +126,7 @@ describe('portal service layer', () => {
       if (path === '/documents' && !init?.method) return new Response(JSON.stringify([{ id: 'document-1', projectId, name: 'Document', meta: 'PDF' }]), { status: 200 });
       if (path === '/approvals' && !init?.method) return new Response(JSON.stringify([{ id: 'approval-1', projectId, title: 'Approval', status: 'Pending' }]), { status: 200 });
       if (path === '/notifications' && !init?.method) return new Response(JSON.stringify([{ id: 'notification-1', projectId, userId: user.id, message: 'Notice', date: '04 OCT 2026' }]), { status: 200 });
+      if (path === '/news' && !init?.method) return new Response(JSON.stringify([{ id: 'news-1', projectId }]), { status: 200 });
       if (init?.method === 'PATCH' && path === `/users/${user.id}`) return new Response(JSON.stringify({ ...user, projectIds: [] }), { status: 200 });
       if (init?.method === 'DELETE') return new Response(null, { status: 204 });
       throw new Error(`Unexpected request: ${init?.method ?? 'GET'} ${path}`);
@@ -128,7 +134,7 @@ describe('portal service layer', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(projectService.remove(projectId)).resolves.toBe(true);
-    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(6);
+    expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(7);
     expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith(`/users/${user.id}`) && init?.method === 'PATCH')).toBe(true);
     expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith(`/projects/${projectId}`) && init?.method === 'DELETE')).toBe(true);
   });
@@ -410,5 +416,274 @@ describe('portal service layer', () => {
     expect(validated).toBeNull();
     expect(portalAuth.getSession()).toBeNull();
     expect(window.localStorage.getItem('arch-tech-portal-session')).toBeNull();
+  });
+
+  describe('newsService and editorial persistence', () => {
+    it('creates, retrieves, updates, and deletes news articles in local mode', async () => {
+      const created = await newsService.create({
+        projectId: 'zona-franca-la-lima',
+        title: 'New Logistics Hub Phase 2',
+        excerpt: 'Logistics expansion details.',
+        body: 'Full body content regarding logistics expansion.',
+        category: 'Development',
+        cadence: 'weekly',
+        status: 'draft',
+      });
+
+      expect(created.id).toMatch(/^news-/);
+      expect(created.slug).toBe('new-logistics-hub-phase-2');
+      expect(created.status).toBe('draft');
+
+      const fetched = await newsService.get(created.id);
+      expect(fetched?.title).toBe('New Logistics Hub Phase 2');
+
+      const updated = await newsService.update(created.id, { title: 'Updated Logistics Hub Phase 2' });
+      expect(updated?.title).toBe('Updated Logistics Hub Phase 2');
+
+      const bySlug = await newsService.getBySlug(created.slug);
+      expect(bySlug?.id).toBe(created.id);
+
+      const removed = await newsService.remove(created.id);
+      expect(removed).toBe(true);
+      expect(await newsService.get(created.id)).toBeUndefined();
+    });
+
+    it('ensures drafts never appear in listPublished(), listFeatured(), or getPublicNews()', async () => {
+      const draft = await newsService.create({
+        projectId: 'el-cafetal',
+        title: 'Confidential Campus Briefing',
+        status: 'draft',
+        featured: true,
+      });
+
+      const publishedList = await newsService.listPublished();
+      expect(publishedList.some((item) => item.id === draft.id)).toBe(false);
+
+      const featuredList = await newsService.listFeatured();
+      expect(featuredList.some((item) => item.id === draft.id)).toBe(false);
+
+      const publicNews = getPublicNews();
+      expect(publicNews.some((item) => item.id === draft.id)).toBe(false);
+
+      const featuredPublic = getFeaturedNews();
+      expect(featuredPublic.some((item) => item.id === draft.id)).toBe(false);
+
+      // Now publish explicitly
+      const published = await newsService.publish(draft.id);
+      expect(published?.status).toBe('published');
+      expect(published?.publishedAt).toBeDefined();
+
+      const refreshedPublished = await newsService.listPublished();
+      expect(refreshedPublished.some((item) => item.id === draft.id)).toBe(true);
+
+      const refreshedFeatured = await newsService.listFeatured();
+      expect(refreshedFeatured.some((item) => item.id === draft.id)).toBe(true);
+
+      // Unpublish back to draft
+      await newsService.unpublish(draft.id);
+      expect((await newsService.listPublished()).some((item) => item.id === draft.id)).toBe(false);
+    });
+
+    it('orders published articles newest-first by publishedAt', async () => {
+      const older = await newsService.create({
+        projectId: 'waldorf-astoria',
+        title: 'Older Milestone Report',
+        status: 'published',
+        publishedAt: '2026-08-01T10:00:00.000Z',
+      });
+      const newer = await newsService.create({
+        projectId: 'waldorf-astoria',
+        title: 'Newer Milestone Report',
+        status: 'published',
+        publishedAt: '2026-09-01T10:00:00.000Z',
+      });
+
+      const list = await newsService.listPublished('waldorf-astoria');
+      const olderIndex = list.findIndex((item) => item.id === older.id);
+      const newerIndex = list.findIndex((item) => item.id === newer.id);
+
+      expect(newerIndex).toBeLessThan(olderIndex);
+    });
+
+    it('enforces unique slugs automatically when identical titles are created', async () => {
+      const first = await newsService.create({
+        projectId: 'zona-franca-la-lima',
+        title: 'Campus Solar Array Commissioning',
+      });
+      const second = await newsService.create({
+        projectId: 'zona-franca-la-lima',
+        title: 'Campus Solar Array Commissioning',
+      });
+
+      expect(first.slug).toBe('campus-solar-array-commissioning');
+      expect(second.slug).toBe('campus-solar-array-commissioning-2');
+      expect(first.slug).not.toBe(second.slug);
+    });
+
+    it('filters news by project correctly', async () => {
+      const zfllNews = await newsService.create({
+        projectId: 'zona-franca-la-lima',
+        title: 'La Lima Infrastructure Upgrade',
+        status: 'published',
+      });
+      const ecNews = await newsService.create({
+        projectId: 'el-cafetal',
+        title: 'El Cafetal Facility Upgrade',
+        status: 'published',
+      });
+
+      const zfllList = await newsService.listByProject('zona-franca-la-lima');
+      expect(zfllList.some((item) => item.id === zfllNews.id)).toBe(true);
+      expect(zfllList.some((item) => item.id === ecNews.id)).toBe(false);
+    });
+
+    it('maintains n8n automated ingest safety: starts as draft and only publishes on explicit admin action', async () => {
+      const n8nItem = await newsService.create({
+        projectId: 'zona-franca-la-lima',
+        title: 'Drone LIDAR Pointcloud Telemetry',
+        sourceType: 'n8n',
+        sourceUrl: 'http://localhost:5678/workflow/project-automation',
+        sourceLabel: 'n8n Drone Pipeline',
+        category: 'Site',
+        cadence: 'daily',
+      });
+
+      // Must be draft by default
+      expect(n8nItem.sourceType).toBe('n8n');
+      expect(n8nItem.status).toBe('draft');
+      expect((await newsService.listPublished()).some((i) => i.id === n8nItem.id)).toBe(false);
+
+      // Admin archives or publishes
+      await newsService.publish(n8nItem.id);
+      const published = await newsService.get(n8nItem.id);
+      expect(published?.status).toBe('published');
+      expect((await newsService.listPublished()).some((i) => i.id === n8nItem.id)).toBe(true);
+    });
+
+    it('supports JSON Server HTTP CRUD and falls back gracefully when API fails', async () => {
+      vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+
+      const mockArticle: NewsArticle = {
+        id: 'news-http-test-1',
+        projectId: 'zona-franca-la-lima',
+        slug: 'http-news-article',
+        title: 'HTTP News Article',
+        excerpt: 'HTTP excerpt',
+        body: 'HTTP body',
+        category: 'Development',
+        cadence: 'weekly',
+        status: 'published',
+        image: '',
+        featured: false,
+        sourceType: 'manual',
+        createdAt: '2026-10-01T10:00:00.000Z',
+        updatedAt: '2026-10-01T10:00:00.000Z',
+        publishedAt: '2026-10-01T10:00:00.000Z',
+      };
+
+      let currentDb = [mockArticle];
+
+      const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+        const parsedUrl = new URL(url);
+        const path = parsedUrl.pathname;
+
+        if (init?.method === 'POST' && path === '/news') {
+          const body = JSON.parse(String(init.body));
+          currentDb.push(body);
+          return new Response(JSON.stringify(body), { status: 201 });
+        }
+        if (init?.method === 'PATCH' && path === `/news/${mockArticle.id}`) {
+          const body = JSON.parse(String(init.body));
+          currentDb = currentDb.map((item) => (item.id === mockArticle.id ? { ...item, ...body } : item));
+          return new Response(JSON.stringify(currentDb.find((item) => item.id === mockArticle.id)), { status: 200 });
+        }
+        if (init?.method === 'DELETE' && path === `/news/${mockArticle.id}`) {
+          currentDb = currentDb.filter((item) => item.id !== mockArticle.id);
+          return new Response(null, { status: 204 });
+        }
+        if (path === `/news/${mockArticle.id}`) {
+          return new Response(JSON.stringify(mockArticle), { status: 200 });
+        }
+        if (path === '/news') {
+          return new Response(JSON.stringify(currentDb), { status: 200 });
+        }
+        throw new Error(`Unhandled request: ${init?.method ?? 'GET'} ${path}`);
+      });
+      vi.stubGlobal('fetch', fetchMock);
+
+      const list = await newsService.list();
+      expect(list.some((item) => item.id === mockArticle.id)).toBe(true);
+
+      const created = await newsService.create({
+        projectId: 'el-cafetal',
+        title: 'New Remote Article',
+        status: 'published',
+      });
+      expect(created.title).toBe('New Remote Article');
+
+      const updated = await newsService.update(mockArticle.id, { title: 'Patched Remote Title' });
+      expect(updated?.title).toBe('Patched Remote Title');
+
+      const removed = await newsService.remove(mockArticle.id);
+      expect(removed).toBe(true);
+    });
+
+    it('cascades related news deletion when a runtime project is deleted locally and remotely', async () => {
+      // 1. Local cascade test
+      const project = await projectService.create({
+        title: 'Temporary Runtime Zone',
+        category: 'Industrial',
+        phase: 'Design',
+        progress: 10,
+      });
+
+      const news = await newsService.create({
+        projectId: project.id,
+        title: 'Temporary Project Announcement',
+        status: 'published',
+      });
+
+      expect((await newsService.listByProject(project.id)).length).toBe(1);
+
+      await projectService.remove(project.id);
+      expect(await newsService.get(news.id)).toBeUndefined();
+      expect((await newsService.listByProject(project.id)).length).toBe(0);
+
+      // 2. Remote cascade test
+      vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+      const remoteProjectId = 'admin-project-remote-temp';
+      const remoteNewsId = 'news-remote-temp';
+
+      const deletedPaths: string[] = [];
+      const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+        const path = new URL(url).pathname;
+        const isGet = !init?.method || init.method === 'GET';
+        if (isGet && path === `/projects/${remoteProjectId}`) {
+          return new Response(JSON.stringify({ id: remoteProjectId }), { status: 200 });
+        }
+        if (isGet && ['/updates', '/milestones', '/documents', '/approvals', '/notifications'].includes(path)) {
+          return new Response('[]', { status: 200 });
+        }
+        if (isGet && path === '/news') {
+          return new Response(JSON.stringify([{ id: remoteNewsId, projectId: remoteProjectId }]), { status: 200 });
+        }
+        if (isGet && path === '/users') {
+          return new Response('[]', { status: 200 });
+        }
+        if (init?.method === 'DELETE') {
+          deletedPaths.push(path);
+          return new Response(null, { status: 204 });
+        }
+        if (isGet && path === '/projects') {
+          return new Response('[]', { status: 200 });
+        }
+        throw new Error(`Unhandled remote delete mock: ${init?.method} ${path}`);
+      });
+      vi.stubGlobal('fetch', fetchMock);
+
+      await projectService.remove(remoteProjectId);
+      expect(deletedPaths).toContain(`/news/${remoteNewsId}`);
+      expect(deletedPaths).toContain(`/projects/${remoteProjectId}`);
+    });
   });
 });
