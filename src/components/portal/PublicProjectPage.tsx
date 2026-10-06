@@ -22,6 +22,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
             <ArchTechLogo variant="mark" theme="dark" />
           </button>
           <p className="hidden items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500 sm:flex">
+            <ArchTechLogo variant="mark" theme="dark" className="landing-project-detail-mark" />
             <span className="h-px w-8 bg-white/25" aria-hidden="true" />
             <span>Portfolio Showcase / Concept Prototype</span>
             <span className="text-stone-700">/</span>

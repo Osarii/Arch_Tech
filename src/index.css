@@ -767,8 +767,34 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] { background-color: #FF
 .arch-tech-logo-transition .arch-tech-logo-symbol {
   height: 1rem;
 }
+.landing-hero-mark .arch-tech-logo-symbol {
+  height: clamp(10rem, 22vw, 18rem);
+  opacity: 0.12;
+}
+.landing-about-mark .arch-tech-logo-symbol {
+  height: clamp(2.25rem, 4vw, 3.25rem);
+  opacity: 0.78;
+}
+.landing-projects-mark .arch-tech-logo-symbol {
+  height: 2.25rem;
+  opacity: 0.8;
+}
+.news-archive-mark .arch-tech-logo-symbol {
+  height: 1.75rem;
+  opacity: 0.82;
+}
+.landing-project-detail-mark .arch-tech-logo-symbol {
+  height: 1.2rem;
+  opacity: 0.8;
+}
+.landing-footer-mark .arch-tech-logo-symbol {
+  height: clamp(5rem, 9vw, 8rem);
+  opacity: 0.9;
+}
 
 @media (max-width: 639px) {
+  .landing-hero-mark { display: none; }
+  .landing-footer-mark .arch-tech-logo-symbol { height: 4.5rem; }
   .arch-tech-logo-full .arch-tech-logo-lockup {
     width: min(100%, 18rem);
   }

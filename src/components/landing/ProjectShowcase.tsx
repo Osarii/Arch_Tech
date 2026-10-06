@@ -4,6 +4,7 @@ import { getPublicProjects } from '../../portal/data';
 import { ProjectImage } from '../gallery/projectMedia';
 import { Reveal } from '../motion/Reveal';
 import { WireframeToSolid } from '../motion/WireframeToSolid';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 interface ProjectShowcaseProps {
   onOpenProject: (id: string) => void;
@@ -25,7 +26,10 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
         <Reveal variant="fade-up">
           <div className="landing-projects-header grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype</p>
+              <div className="flex items-center gap-3">
+                <ArchTechLogo variant="mark" theme="inherit" className="landing-projects-mark pointer-events-none" />
+                <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype</p>
+              </div>
               <h2 className="landing-projects-heading mt-5 max-w-5xl font-serif font-light tracking-tight">A portfolio built for consequence.</h2>
             </div>
             <p className="max-w-sm text-sm leading-6 text-stone-600">Six official Garnier developments presented through a GARNIER ARCHITECTURE showcase interface. Public facts and project photography remain attributed to their source.</p>
