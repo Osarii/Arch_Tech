@@ -48,7 +48,7 @@ export const TeamSection: React.FC = () => (
         ))}
       </div>
 
-      <Reveal variant="mask" delay={150}>
+      <Reveal variant="fade-up" delay={150}>
         <figure className="mt-12">
           <figcaption className="mb-3 font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Leadership / Garnier &amp; Garnier</figcaption>
           <div className="landing-team-group-frame overflow-hidden border border-white/[0.14] bg-[#111216]">
