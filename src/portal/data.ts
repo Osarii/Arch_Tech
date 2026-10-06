@@ -444,13 +444,13 @@ export const createPortalProjectRecord = (input: CreatePortalProjectInput): Port
   const id = createPortalRecordId('admin-project');
   return {
     id,
-    code: input.code?.trim() || `AT / ${String(getPortalSnapshot().projects.length + 1).padStart(2, '0')}`,
+    code: input.code?.trim() || `GA / ${String(getPortalSnapshot().projects.length + 1).padStart(2, '0')}`,
     title: input.title.trim(),
     category: input.category.trim(),
     phase: input.phase.trim(),
     progress: Math.max(0, Math.min(100, Number(input.progress))),
     nextMilestone: input.nextMilestone?.trim() || 'Project review to be scheduled',
-    summary: input.summary?.trim() || 'Runtime development project created in the ARCH_TECH portal.',
+    summary: input.summary?.trim() || 'Runtime development project created in the GARNIER ARCHITECTURE portal.',
     statement: input.statement?.trim() || 'A project record ready for coordinated development delivery.',
     image: input.image?.startsWith('/projects/') ? input.image : '',
     market: input.market?.trim() || 'Costa Rica',

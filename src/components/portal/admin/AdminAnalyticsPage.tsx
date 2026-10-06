@@ -216,7 +216,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
             </span>
           </div>
           <span className="font-mono text-[9px] opacity-70 uppercase tracking-wider">
-            ARCH_TECH concept telemetry
+            GARNIER ARCHITECTURE concept telemetry
           </span>
         </div>
       </div>
@@ -357,7 +357,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
           Executive KPIs, stage distribution, and deterministic progress telemetry across all active developments.
         </p>
         <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-stone-500">
-          Historical telemetry represents internal ARCH_TECH concept coordination, not official construction contractor records.
+          Historical telemetry represents internal GARNIER ARCHITECTURE concept coordination, not official construction contractor records.
         </p>
       </div>
 

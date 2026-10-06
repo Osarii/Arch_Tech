@@ -69,7 +69,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
           The project register.
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Executive portfolio overview: active projects, milestones, approvals and shared information across the ARCH_TECH platform.
+          Executive portfolio overview: active projects, milestones, approvals and shared information across the GARNIER ARCHITECTURE platform.
         </p>
       </div>
 
