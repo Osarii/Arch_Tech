@@ -120,7 +120,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
               id="a11y-panel-title"
               className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-white"
             >
-              ARCH_TECH // ACCESSIBILITY
+              GARNIER ARCHITECTURE // ACCESSIBILITY
             </h2>
           </div>
           <button

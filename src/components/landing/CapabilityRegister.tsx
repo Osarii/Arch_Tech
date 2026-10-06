@@ -19,7 +19,7 @@ export const CapabilityRegister: React.FC = () => (
             <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">Development capability</p>
             <h2 id="capabilities-title" className="mt-5 max-w-4xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Structure for complex development.</h2>
           </div>
-          <p className="max-w-sm text-sm leading-6 text-stone-600">ARCH_TECH connects site, program, infrastructure, coordination and digital project information into one development framework.</p>
+          <p className="max-w-sm text-sm leading-6 text-stone-600">GARNIER ARCHITECTURE connects site, program, infrastructure, coordination and digital project information into one development framework.</p>
         </div>
       </Reveal>
 

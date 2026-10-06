@@ -4,6 +4,7 @@ import { getPublicProject } from '../../portal/data';
 import { SpatialRail } from '../gallery/SpatialRail';
 import { NavigationProps, NotFoundPage } from './PortalCommon';
 import { Reveal } from '../motion/Reveal';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }> = ({
   projectId,
@@ -16,12 +17,12 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
     <div className="h-screen overflow-y-auto bg-[#0a0b0d] text-[#f4efe8]">
       <header className="border-b border-white/[0.12]">
         <div className="mx-auto grid h-14 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-8 lg:px-12">
-          <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em] transition-opacity hover:opacity-80">
-            ARCH_TECH
+          <button onClick={() => onNavigate('/')} aria-label="GARNIER ARCHITECTURE home" className="transition-opacity hover:opacity-80">
+            <ArchTechLogo variant="full" theme="dark" />
           </button>
           <p className="hidden items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500 sm:flex">
             <span className="h-px w-8 bg-white/25" aria-hidden="true" />
-            <span>ARCH_TECH / Garnier Portfolio Concept</span>
+            <span>Portfolio Showcase / Concept Prototype</span>
             <span className="text-stone-700">/</span>
             <span className="text-stone-300">{project.code}</span>
           </p>

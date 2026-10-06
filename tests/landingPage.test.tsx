@@ -28,7 +28,7 @@ vi.mock('../src/components/layout/Workspace', () => ({
   Workspace: () => <div data-testid="workspace">BIM Workspace</div>,
 }));
 
-describe('ARCH_TECH client architecture portal', () => {
+describe('GARNIER ARCHITECTURE client architecture portal', () => {
   beforeEach(() => {
     window.localStorage.clear();
     resetPortalUsers();
@@ -184,28 +184,28 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(showcaseImage?.startsWith('/projects/zona-franca-la-lima/')).toBe(true);
   });
 
-  it('renders the vector ARCH_TECH mark and full lockup variants', () => {
+  it('renders the supplied GARNIER ARCHITECTURE mark and full lockup variants', () => {
     const { rerender } = render(<ArchTechLogo variant="mark" theme="light" />);
-    expect(document.querySelector('.arch-tech-logo-mark svg')).toBeDefined();
+    expect(document.querySelector('.arch-tech-logo-mark img')?.getAttribute('src')).toBe('/brand/garnier-architecture/03_symbol_monochrome_graphite_transparent.png');
     expect(screen.queryByText('ARCH_TECH')).toBeNull();
 
     rerender(<ArchTechLogo variant="full" theme="dark" />);
-    expect(document.querySelector('.arch-tech-logo-full svg')).toBeDefined();
-    expect(screen.getByText('ARCH_TECH')).toBeDefined();
-    expect(document.querySelector('.arch-tech-logo-wireframe')).toBeDefined();
+    expect(document.querySelector('.arch-tech-logo-full img')?.getAttribute('src')).toBe('/brand/garnier-architecture/04_symbol_monochrome_stone_transparent.png');
+    expect(screen.getByText('GARNIER')).toBeDefined();
+    expect(screen.getByText('ARCHITECTURE')).toBeDefined();
   });
 
-  it('uses the reusable vector brand lockup in landing and portal headers', () => {
+  it('uses the reusable supplied brand lockup in landing and portal headers', () => {
     render(<LandingNavbar onLogin={vi.fn()} />);
-    const landingHome = screen.getByRole('link', { name: 'ARCH_TECH home' });
-    expect(landingHome.querySelector('.arch-tech-logo-full svg')).toBeDefined();
+    const landingHome = screen.getByRole('link', { name: 'GARNIER ARCHITECTURE home' });
+    expect(landingHome.querySelector('.arch-tech-logo-full img')?.getAttribute('src')).toBe('/brand/garnier-architecture/04_symbol_monochrome_stone_transparent.png');
 
     cleanup();
     portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
-    const portalHome = screen.getByRole('button', { name: 'ARCH_TECH home' });
-    expect(portalHome.querySelector('.arch-tech-logo-full svg')).toBeDefined();
-    expect(screen.getByText('Garnier Portfolio Concept')).toBeDefined();
+    const portalHome = screen.getByRole('button', { name: 'GARNIER ARCHITECTURE home' });
+    expect(portalHome.querySelector('.arch-tech-logo-full img')?.getAttribute('src')).toBe('/brand/garnier-architecture/04_symbol_monochrome_stone_transparent.png');
+    expect(screen.getByText('Portfolio Showcase / Concept Prototype')).toBeDefined();
   });
 
   it('routes hero development panels to their public project dossiers', () => {
@@ -1113,7 +1113,7 @@ describe('ARCH_TECH client architecture portal', () => {
     expect(within(footer).getByTestId('footer-about-link').getAttribute('href')).toBe('#about');
     expect(within(footer).getByTestId('footer-team-link').getAttribute('href')).toBe('#team');
     expect(within(footer).getByText('Garnier & Garnier Showcase')).toBeDefined();
-    expect(within(footer).getByText('ARCH_TECH', { selector: '.landing-footer-wordmark-text' })).toBeDefined();
+    expect(within(footer).getByRole('img', { name: 'GARNIER ARCHITECTURE' })).toBeDefined();
   });
 
   it('scrolls from footer directory links and returns to the landing top', () => {

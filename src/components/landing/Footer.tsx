@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 interface FooterProps {
   onLogin: (trigger?: HTMLElement) => void;
@@ -44,7 +45,7 @@ export const Footer: React.FC<FooterProps> = ({ onLogin }) => {
       <div className="mx-auto max-w-7xl">
         <div className="landing-footer-intro grid gap-8 border-b border-white/[0.1] pb-12 lg:grid-cols-[1fr_minmax(20rem,0.68fr)] lg:items-end lg:gap-16">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">ARCH_TECH / closing statement</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">GARNIER ARCHITECTURE / closing statement</p>
             <h2 className="mt-5 max-w-3xl font-serif text-5xl font-light leading-[0.92] tracking-tight text-stone-100 sm:text-7xl lg:text-8xl">Built for complex development.</h2>
           </div>
           <p className="max-w-md text-sm leading-6 text-stone-400">Development, infrastructure and digital project delivery from first opportunity through long-term operation.</p>
@@ -111,12 +112,12 @@ export const Footer: React.FC<FooterProps> = ({ onLogin }) => {
         </div>
 
         <div className="landing-footer-wordmark overflow-hidden border-b border-white/[0.1] py-12 sm:py-16 lg:py-20">
-          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">ARCH_TECH / public development platform</p>
-          <p className="landing-footer-wordmark-text mt-6 max-w-full font-sans font-semibold leading-[0.78] text-stone-100" aria-label="ARCH_TECH">ARCH_TECH</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">GARNIER ARCHITECTURE / public development platform</p>
+          <ArchTechLogo variant="stacked" theme="dark" className="arch-tech-logo-footer mt-6" label="GARNIER ARCHITECTURE" />
         </div>
 
         <div className="flex flex-col gap-6 pt-6 text-[9px] font-mono uppercase tracking-[0.16em] text-stone-600 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <p>© 2026 ARCH_TECH</p>
+          <p>© 2026 GARNIER ARCHITECTURE</p>
           <p>Development / Infrastructure / Digital Delivery</p>
           <p>Concept showcase</p>
           <button

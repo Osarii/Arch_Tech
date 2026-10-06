@@ -18,6 +18,7 @@ import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { bimEditService } from '@/bim/edit/bimEditService';
 import { EditMode } from '@/types/bim';
+import { ArchTechLogo } from '@/components/brand/ArchTechLogo';
 
 export const HeaderBar: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -143,14 +144,9 @@ export const HeaderBar: React.FC = () => {
       {/* Left: Brand & File Actions */}
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-sky-600 to-indigo-500 flex items-center justify-center font-bold text-white text-xs shadow">
-            AT
-          </div>
+          <ArchTechLogo variant="mark" theme="dark" className="arch-tech-logo-workspace" label="GARNIER ARCHITECTURE" />
           <span className="font-semibold text-slate-100 text-sm tracking-tight">
-            <span>ARCH_TECH</span>
-            <span className="ml-1 text-[10px] text-sky-400 font-mono bg-sky-950/70 border border-sky-800 px-1 py-0.5 rounded">
-              OPENBIM WORKSPACE
-            </span>
+            <span className="text-[10px] text-sky-400 font-mono bg-sky-950/70 border border-sky-800 px-1 py-0.5 rounded">OPENBIM WORKSPACE</span>
           </span>
         </div>
 

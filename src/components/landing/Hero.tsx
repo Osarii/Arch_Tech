@@ -16,7 +16,7 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => 
       <div className="landing-hero-grid grid gap-12 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
         <div>
           <Reveal variant="fade-up" delay={40}>
-            <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-stone-500">ARCH_TECH / Garnier Portfolio Concept</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-stone-500">GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype</p>
           </Reveal>
           <Reveal variant="fade-up" delay={120}>
             <h1 className="landing-hero-heading mt-7 max-w-5xl font-serif font-light leading-[0.88] tracking-[-0.045em] text-[#f4efe8]">
@@ -26,7 +26,7 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => 
         </div>
         <div className="landing-hero-support border-l border-white/15 pl-6 lg:mb-3">
           <Reveal variant="fade-up" delay={200}>
-            <p className="max-w-sm text-base leading-7 text-stone-300">ARCH_TECH positions and advances free zones, campuses, districts and infrastructure — from first opportunity through delivery and operation.</p>
+            <p className="max-w-sm text-base leading-7 text-stone-300">GARNIER ARCHITECTURE positions and advances free zones, campuses, districts and infrastructure — from first opportunity through delivery and operation.</p>
             <button
               data-testid="hero-view-projects"
               onClick={onViewProjects}

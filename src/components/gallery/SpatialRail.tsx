@@ -43,7 +43,7 @@ const RailImage: React.FC<{ src?: string; alt: string; loading?: 'eager' | 'lazy
   const [failed, setFailed] = useState(!src);
   useEffect(() => setFailed(!src), [src]);
   if (failed) {
-    return <div data-testid="rail-image-fallback" role="img" aria-label={`${alt} image unavailable`} className={`landing-image-fallback ${className}`}><span>ARCH_TECH / PROJECT MEDIA</span></div>;
+    return <div data-testid="rail-image-fallback" role="img" aria-label={`${alt} image unavailable`} className={`landing-image-fallback ${className}`}><span>GARNIER ARCHITECTURE / PROJECT MEDIA</span></div>;
   }
   return <img src={src} alt={alt} loading={loading} fetchPriority={fetchPriority} decoding="async" onError={() => setFailed(true)} className={className} />;
 };

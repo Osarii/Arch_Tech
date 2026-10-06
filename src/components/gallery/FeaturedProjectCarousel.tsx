@@ -103,7 +103,7 @@ export const FeaturedProjectCarousel: React.FC<FeaturedProjectCarouselProps> = (
   const progressMarkers = useMemo(() => projects.map((project, index) => ({ project, index })), [projects]);
 
   if (!activeProject) {
-    return <div data-testid="hero-gallery" className="landing-image-fallback min-h-[30rem]" role="img" aria-label="Featured project imagery unavailable"><span>ARCH_TECH / DEVELOPMENT PORTFOLIO</span></div>;
+    return <div data-testid="hero-gallery" className="landing-image-fallback min-h-[30rem]" role="img" aria-label="Featured project imagery unavailable"><span>GARNIER ARCHITECTURE / DEVELOPMENT PORTFOLIO</span></div>;
   }
 
   return (

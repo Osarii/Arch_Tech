@@ -392,12 +392,12 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
               <button
                 type="button"
                 onClick={() => navigate('/')}
-                aria-label="ARCH_TECH home"
+                aria-label="GARNIER ARCHITECTURE home"
                 className="flex items-center gap-3 text-left text-[#211E1A]"
               >
-                <ArchTechLogo variant="full" theme="dark" />
+                <ArchTechLogo variant="full" theme="dark" className="arch-tech-logo-portal" />
                 <span className="hidden font-mono text-[8px] uppercase tracking-[0.16em] text-stone-400 sm:inline">
-                  Garnier Portfolio Concept
+                  Portfolio Showcase / Concept Prototype
                 </span>
               </button>
               <span className="hidden rounded border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-stone-300 md:inline-block">
@@ -425,7 +425,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 {dark ? 'Light' : 'Dark'}
               </button>
 
-              {/* Compact ARCH_TECH Accessibility Control */}
+              {/* Compact GARNIER ARCHITECTURE accessibility control */}
               <button
                 ref={a11yTriggerRef}
                 type="button"
@@ -510,7 +510,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
           announcement={announcement}
         />
 
-        {/* Unified ARCH_TECH Accessibility Panel */}
+        {/* Unified GARNIER ARCHITECTURE accessibility panel */}
         <AccessibilityPanel
           isOpen={isA11yPanelOpen}
           onClose={() => setIsA11yPanelOpen(false)}

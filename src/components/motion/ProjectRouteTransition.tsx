@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '../../motion/useReducedMotion';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 export type ProjectTransitionPhase = 'idle' | 'entering' | 'exiting';
 export type ProjectTransitionDirection = 'forward' | 'reverse';
@@ -202,7 +203,8 @@ export const ProjectRouteTransition: React.FC<ProjectRouteTransitionProps> = ({
         {/* Technical Coordinate & Route Metadata Tag */}
         <div className="absolute bottom-6 right-8 flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.22em] text-stone-400/80">
           <span className="h-px w-6 bg-stone-500/40" />
-          <span>ARCH_TECH // {isForward ? 'PROJECT DOSSIER TRANSITION' : 'PORTFOLIO REVERSAL'}</span>
+          <ArchTechLogo variant="mark" theme="dark" className="arch-tech-logo-transition" />
+          <span>{isForward ? 'PROJECT DOSSIER TRANSITION' : 'PORTFOLIO REVERSAL'}</span>
           <span className="text-stone-600">/</span>
           <span className="text-stone-300 font-medium">{isEntering ? 'PHASE: MASK' : 'PHASE: REVEAL'}</span>
         </div>

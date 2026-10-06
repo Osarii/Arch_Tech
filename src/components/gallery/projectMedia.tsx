@@ -60,7 +60,7 @@ export const ProjectImage: React.FC<ProjectImageProps> = ({ project, alt, classN
         aria-label={`${project.title} image unavailable`}
         className={`landing-image-fallback ${className}`}
       >
-        <span>ARCH_TECH / DEVELOPMENT</span>
+        <span>GARNIER ARCHITECTURE / DEVELOPMENT</span>
       </span>
     );
   }

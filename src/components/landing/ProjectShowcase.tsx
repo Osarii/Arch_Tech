@@ -25,10 +25,10 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
         <Reveal variant="fade-up">
           <div className="landing-projects-header grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">ARCH_TECH / Garnier Portfolio Concept</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype</p>
               <h2 className="landing-projects-heading mt-5 max-w-5xl font-serif font-light tracking-tight">A portfolio built for consequence.</h2>
             </div>
-            <p className="max-w-sm text-sm leading-6 text-stone-600">Six official Garnier developments presented through an ARCH_TECH showcase interface. Public facts and project photography remain attributed to their source.</p>
+            <p className="max-w-sm text-sm leading-6 text-stone-600">Six official Garnier developments presented through a GARNIER ARCHITECTURE showcase interface. Public facts and project photography remain attributed to their source.</p>
           </div>
         </Reveal>
 
@@ -41,7 +41,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
               className="landing-projects-featured group mt-12 block w-full text-left"
             >
               <span className="relative block aspect-[16/9] overflow-hidden bg-stone-300 md:aspect-[21/9]">
-                <WireframeToSolid tag="ARCH_TECH // PRINCIPAL-01" trigger="auto" className="h-full w-full">
+                <WireframeToSolid tag="GARNIER ARCHITECTURE // PRINCIPAL-01" trigger="auto" className="h-full w-full">
                   <ProjectImage project={featured} usage="showcase" alt={`${featured.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
                 </WireframeToSolid>
               </span>

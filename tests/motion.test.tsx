@@ -195,7 +195,7 @@ describe('Phase 8A Motion & Interaction System', () => {
       expect(overlay).toBeDefined();
       expect(overlay.getAttribute('data-transition-phase')).toBe('entering');
       expect(overlay.getAttribute('data-transition-direction')).toBe('forward');
-      expect(screen.getByText('ARCH_TECH // PROJECT DOSSIER TRANSITION')).toBeDefined();
+      expect(screen.getByText('PROJECT DOSSIER TRANSITION')).toBeDefined();
       expect(screen.getByText('PHASE: MASK')).toBeDefined();
 
       // Exit phase
@@ -209,7 +209,7 @@ describe('Phase 8A Motion & Interaction System', () => {
         />
       );
       expect(screen.getByTestId('project-route-transition').getAttribute('data-transition-phase')).toBe('exiting');
-      expect(screen.getByText('ARCH_TECH // PORTFOLIO REVERSAL')).toBeDefined();
+      expect(screen.getByText('PORTFOLIO REVERSAL')).toBeDefined();
       expect(screen.getByText('PHASE: REVEAL')).toBeDefined();
 
       // Idle phase returns null

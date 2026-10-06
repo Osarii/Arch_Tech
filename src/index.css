@@ -703,38 +703,71 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] {
   align-items: center;
   display: inline-flex;
   flex: none;
-  gap: 0.6rem;
+  gap: 0.55rem;
   line-height: 1;
+  max-width: 100%;
 }
 .arch-tech-logo-symbol {
   display: block;
-  height: 1.8rem;
-  overflow: visible;
-  width: 2.55rem;
+  flex: none;
+  height: 1.85rem;
+  object-fit: contain;
+  width: auto;
+}
+.arch-tech-logo-mark .arch-tech-logo-symbol {
+  height: 1.65rem;
 }
 .arch-tech-logo-wordmark {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.78rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+  display: flex;
+  flex-direction: column;
+  font-family: Arial, Helvetica, sans-serif;
+  gap: 0.2rem;
+  min-width: 0;
   white-space: nowrap;
 }
-.arch-tech-logo-wireframe {
-  opacity: 0.48;
-  transition: opacity 450ms ease;
+.arch-tech-logo-wordmark-primary {
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.3em;
 }
-.arch-tech-logo:hover .arch-tech-logo-wireframe,
-.arch-tech-logo:focus-visible .arch-tech-logo-wireframe,
-.arch-tech-logo:focus-within .arch-tech-logo-wireframe {
-  opacity: 0.86;
+.arch-tech-logo-wordmark-secondary {
+  font-size: 0.36rem;
+  font-weight: 400;
+  letter-spacing: 0.26em;
 }
-.arch-tech-logo-theme-inherit .arch-tech-logo-wireframe {
-  opacity: 0.42;
+.arch-tech-logo-theme-dark .arch-tech-logo-wordmark {
+  color: #d8d4ca;
 }
-.arch-tech-logo-theme-inherit:hover .arch-tech-logo-wireframe,
-.arch-tech-logo-theme-inherit:focus-visible .arch-tech-logo-wireframe,
-.arch-tech-logo-theme-inherit:focus-within .arch-tech-logo-wireframe {
-  opacity: 0.75;
+.arch-tech-logo-theme-light .arch-tech-logo-wordmark {
+  color: #2b2a27;
+}
+.arch-tech-logo-theme-inherit .arch-tech-logo-wordmark {
+  color: currentColor;
+}
+.arch-tech-logo-stacked {
+  display: block;
+}
+.arch-tech-logo-lockup {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  width: clamp(14rem, 30vw, 22rem);
+}
+.arch-tech-logo-footer .arch-tech-logo-lockup {
+  width: clamp(14rem, 34vw, 25rem);
+}
+.arch-tech-logo-workspace .arch-tech-logo-symbol {
+  height: 1.5rem;
+}
+.arch-tech-logo-transition .arch-tech-logo-symbol {
+  height: 1rem;
+}
+
+@media (max-width: 639px) {
+  .arch-tech-logo-portal .arch-tech-logo-wordmark {
+    display: none;
+  }
 }
 
 @media (min-width: 1024px) and (max-width: 1535px) {

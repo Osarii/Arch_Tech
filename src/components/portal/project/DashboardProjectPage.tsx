@@ -395,7 +395,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
               <Box className="h-6 w-6" />
               <h2 className="mt-8 font-serif text-4xl">Current project model</h2>
               <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-                Open the project model in the existing ARCH_TECH workspace.
+                Open the project model in the existing GARNIER ARCHITECTURE workspace.
               </p>
             </div>
             <button
