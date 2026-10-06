@@ -106,6 +106,13 @@ export function useProjectRouteTransition(
 
       // Midpoint: execute route change while viewport is covered
       const enterTimer = window.setTimeout(() => {
+        if (typeof window !== 'undefined' && typeof window.scrollTo === 'function' && process.env.NODE_ENV !== 'test') {
+          try {
+            window.scrollTo(0, 0);
+          } catch {
+            // Safe fallback
+          }
+        }
         if (typeof document !== 'undefined' && 'startViewTransition' in document) {
           try {
             (document as unknown as { startViewTransition: (cb: () => void) => void }).startViewTransition(() => {
