@@ -487,7 +487,7 @@ html.portal-dark .portal-surface .admin-primary-action,
 html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"],
 html:not(.portal-dark) .portal-surface .admin-primary-action,
 html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"] {
-  background-color: #FFBF00 !important;
+  background-color: #79B791 !important;
   border: 1px solid rgb(0 0 0 / 0.35) !important;
   color: #000000 !important;
   transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
@@ -500,7 +500,7 @@ html:not(.portal-dark) .portal-surface .admin-primary-action:hover,
 html:not(.portal-dark) .portal-surface .admin-primary-action:focus-visible,
 html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"]:hover,
 html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"]:focus-visible {
-  background-color: #79B791 !important;
+  background-color: #ABD1B5 !important;
   border-color: #000000 !important;
   color: #000000 !important;
   outline: none;
