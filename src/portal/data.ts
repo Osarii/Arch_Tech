@@ -75,6 +75,40 @@ export type ProgressSnapshot = {
   progress: number;
 };
 
+export type NewsCategory =
+  | 'Development'
+  | 'Site'
+  | 'Design'
+  | 'Infrastructure'
+  | 'Milestone'
+  | 'Operations'
+  | 'Announcement';
+
+export type NewsCadence = 'daily' | 'weekly' | 'milestone';
+export type NewsStatus = 'draft' | 'published' | 'archived';
+export type NewsSourceType = 'manual' | 'n8n';
+
+export type NewsArticle = {
+  id: string;
+  projectId: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  body: string;
+  category: NewsCategory;
+  cadence: NewsCadence;
+  status: NewsStatus;
+  image: string;
+  featured: boolean;
+  sourceType: NewsSourceType;
+  sourceUrl?: string;
+  sourceLabel?: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+  verifiedAt?: string;
+};
+
 export type PortalProject = PortalProjectRecord & {
   updates: ProjectUpdate[];
   milestones: ProjectMilestone[];
@@ -97,6 +131,7 @@ export type PortalDatabase = {
     date: string;
   }[];
   progressSnapshots: ProgressSnapshot[];
+  news: NewsArticle[];
 };
 
 const PORTAL_STATE_KEY = 'arch-tech-portal-state';
@@ -252,6 +287,43 @@ export const isValidProgressSnapshot = (value: unknown, projectIds: Set<string>)
   );
 };
 
+export const validNewsCategories: NewsCategory[] = [
+  'Development',
+  'Site',
+  'Design',
+  'Infrastructure',
+  'Milestone',
+  'Operations',
+  'Announcement',
+];
+export const validNewsCadences: NewsCadence[] = ['daily', 'weekly', 'milestone'];
+export const validNewsStatuses: NewsStatus[] = ['draft', 'published', 'archived'];
+export const validNewsSourceTypes: NewsSourceType[] = ['manual', 'n8n'];
+
+export const isValidNewsArticle = (value: unknown, projectIds: Set<string>): value is NewsArticle => {
+  if (!isRecord(value)) return false;
+  return (
+    isString(value.id) &&
+    value.id.trim().length > 0 &&
+    isString(value.projectId) &&
+    projectIds.has(value.projectId) &&
+    isString(value.slug) &&
+    value.slug.trim().length > 0 &&
+    isString(value.title) &&
+    value.title.trim().length > 0 &&
+    isString(value.excerpt) &&
+    isString(value.body) &&
+    validNewsCategories.includes(value.category as NewsCategory) &&
+    validNewsCadences.includes(value.cadence as NewsCadence) &&
+    validNewsStatuses.includes(value.status as NewsStatus) &&
+    isString(value.image) &&
+    typeof value.featured === 'boolean' &&
+    validNewsSourceTypes.includes(value.sourceType as NewsSourceType) &&
+    isString(value.createdAt) &&
+    isString(value.updatedAt)
+  );
+};
+
 export const compareSnapshots = (a: ProgressSnapshot, b: ProgressSnapshot): number => {
   const timeA = Date.parse(a.date);
   const timeB = Date.parse(b.date);
@@ -297,6 +369,15 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
     (value): value is ProgressSnapshot => isValidProgressSnapshot(value, projectIds),
   ).sort(compareSnapshots);
 
+  const rawNews = remapProjectRecords(stored.news);
+  const seedNews = portalDb.news ?? [];
+  const news = mergeRecords(
+    seedNews,
+    rawNews,
+    (record) => record.id,
+    (value): value is NewsArticle => isValidNewsArticle(value, projectIds),
+  );
+
   return {
     schemaVersion: PORTAL_SCHEMA_VERSION,
     users: [...inMemoryUsers],
@@ -307,6 +388,7 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
     approvals: mergeRecords(portalDb.approvals, remapProjectRecords(stored.approvals), (record) => `${record.projectId}:${record.title}`, (value): value is ProjectApproval => isValidProjectApproval(value, projectIds)),
     notifications: mergeRecords(portalDb.notifications, storedNotifications, (record) => `${record.userId}:${record.projectId}:${record.message}:${record.date}`, (value): value is PortalDatabase['notifications'][number] => isValidNotification(value, projectIds, userIds)),
     progressSnapshots,
+    news,
   };
 };
 
@@ -422,18 +504,134 @@ export const removePortalUserInMemory = (id: string) => {
 };
 
 export const syncPortalRelations = (
-  relations: Partial<Pick<PortalDatabase, 'updates' | 'milestones' | 'documents' | 'approvals' | 'notifications' | 'progressSnapshots'>>
+  relations: Partial<Pick<PortalDatabase, 'updates' | 'milestones' | 'documents' | 'approvals' | 'notifications' | 'progressSnapshots' | 'news'>>
 ) => updatePortalDatabase((current) => ({
   ...current,
   ...relations,
   ...(relations.progressSnapshots ? { progressSnapshots: relations.progressSnapshots } : {}),
+  ...(relations.news ? { news: relations.news } : {}),
 }));
+
+export const syncPortalNews = (news: NewsArticle[]) =>
+  updatePortalDatabase((current) => ({ ...current, news }));
 
 export const addPortalProgressSnapshot = (snapshot: ProgressSnapshot) =>
   updatePortalDatabase((current) => ({
     ...current,
     progressSnapshots: [...(current.progressSnapshots ?? []), snapshot].sort(compareSnapshots),
   }));
+
+export const slugifyNewsTitle = (title: string): string =>
+  title
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'news-article';
+
+export type CreateNewsInput = {
+  projectId: string;
+  title: string;
+  excerpt?: string;
+  body?: string;
+  category?: NewsCategory;
+  cadence?: NewsCadence;
+  status?: NewsStatus;
+  image?: string;
+  featured?: boolean;
+  sourceType?: NewsSourceType;
+  sourceUrl?: string;
+  sourceLabel?: string;
+  slug?: string;
+  publishedAt?: string;
+  verifiedAt?: string;
+};
+
+export const createPortalNewsRecord = (input: CreateNewsInput, existingNews?: NewsArticle[]): NewsArticle => {
+  const currentNews = existingNews ?? getPortalSnapshot().db.news ?? [];
+  const baseSlug = input.slug?.trim() || slugifyNewsTitle(input.title);
+  let slug = baseSlug;
+  let counter = 1;
+  while (currentNews.some((article) => article.slug === slug)) {
+    counter += 1;
+    slug = `${baseSlug}-${counter}`;
+  }
+
+  const now = new Date().toISOString();
+  const id = createPortalRecordId('news');
+  const isN8n = input.sourceType === 'n8n';
+  const status: NewsStatus = isN8n
+    ? (input.status === 'draft' || !input.status ? 'draft' : input.status)
+    : (input.status ?? 'draft');
+
+  return {
+    id,
+    projectId: input.projectId,
+    slug,
+    title: input.title.trim(),
+    excerpt: input.excerpt?.trim() || input.title.trim(),
+    body: input.body?.trim() || '',
+    category: input.category ?? 'Development',
+    cadence: input.cadence ?? 'weekly',
+    status,
+    image: input.image?.trim() || '',
+    featured: Boolean(input.featured),
+    sourceType: input.sourceType ?? 'manual',
+    sourceUrl: input.sourceUrl?.trim(),
+    sourceLabel: input.sourceLabel?.trim(),
+    createdAt: now,
+    updatedAt: now,
+    publishedAt: status === 'published' ? (input.publishedAt || now) : undefined,
+    verifiedAt: input.verifiedAt,
+  };
+};
+
+export const addPortalNews = (input: CreateNewsInput): NewsArticle => {
+  const record = createPortalNewsRecord(input);
+  updatePortalDatabase((current) => ({
+    ...current,
+    news: [...(current.news ?? []), record],
+  }));
+  return record;
+};
+
+export const updatePortalNewsRecord = (id: string, changes: Partial<NewsArticle>): NewsArticle | undefined => {
+  let updated: NewsArticle | undefined;
+  updatePortalDatabase((current) => {
+    const list = current.news ?? [];
+    const existing = list.find((item) => item.id === id);
+    if (!existing) return current;
+    const nextStatus = changes.status ?? existing.status;
+    const now = new Date().toISOString();
+    updated = {
+      ...existing,
+      ...changes,
+      updatedAt: now,
+      publishedAt:
+        nextStatus === 'published'
+          ? (changes.publishedAt ?? existing.publishedAt ?? now)
+          : nextStatus === 'draft' || nextStatus === 'archived'
+            ? (changes.publishedAt === undefined ? existing.publishedAt : changes.publishedAt)
+            : existing.publishedAt,
+    };
+    return {
+      ...current,
+      news: list.map((item) => (item.id === id ? updated! : item)),
+    };
+  });
+  return updated;
+};
+
+export const deletePortalNewsRecord = (id: string): boolean => {
+  const exists = (getPortalSnapshot().db.news ?? []).some((item) => item.id === id);
+  if (!exists) return false;
+  updatePortalDatabase((current) => ({
+    ...current,
+    news: (current.news ?? []).filter((item) => item.id !== id),
+  }));
+  return true;
+};
 
 export type CreatePortalProjectInput = Pick<PortalProjectRecord, 'title' | 'category' | 'phase' | 'progress'> & Partial<Pick<PortalProjectRecord, 'code' | 'nextMilestone' | 'summary' | 'statement' | 'image' | 'market' | 'developmentType' | 'context' | 'scale' | 'longView' | 'published'>>;
 export type CreatePortalUserInput = Pick<PortalUser, 'name' | 'email' | 'password'> & Partial<Pick<PortalUser, 'role' | 'status' | 'projectIds'>>;
@@ -482,6 +680,7 @@ export const deletePortalProject = (id: string): boolean => {
     approvals: current.approvals.filter((record) => record.projectId !== id),
     notifications: current.notifications.filter((record) => record.projectId !== id),
     progressSnapshots: (current.progressSnapshots ?? []).filter((record) => record.projectId !== id),
+    news: (current.news ?? []).filter((record) => record.projectId !== id),
   }));
   inMemoryUsers = inMemoryUsers.map((user) => ({ ...user, projectIds: user.projectIds.filter((projectId) => projectId !== id) }));
   return true;

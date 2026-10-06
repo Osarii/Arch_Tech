@@ -46,8 +46,8 @@ const hydrateRemoteProjects = async (records: ProjectRecordWithRelations[]): Pro
   }));
 };
 
-const deleteRelatedRecords = async (path: keyof RemoteRelations, projectId: string) => {
-  const records = await apiClient.get<Array<RemoteRelations[typeof path][number] & RemoteRecord>>(`/${path}`);
+const deleteRelatedRecords = async (path: string, projectId: string) => {
+  const records = await apiClient.get<Array<RemoteRecord & { projectId?: string }>>(`/${path}`);
   await Promise.all(records.filter((record) => record.projectId === projectId && record.id !== undefined).map((record) => apiClient.delete(`/${path}/${record.id}`)));
 };
 
@@ -85,7 +85,7 @@ export const projectService = {
     if (!remoteEnabled()) return deletePortalProject(id);
 
     await apiClient.get<PortalProjectRecord>(`/projects/${id}`);
-    for (const path of ['updates', 'milestones', 'documents', 'approvals', 'notifications'] as const) {
+    for (const path of ['updates', 'milestones', 'documents', 'approvals', 'notifications', 'news'] as const) {
       await deleteRelatedRecords(path, id);
     }
     const users = await apiClient.get<PortalUser[]>('/users');
