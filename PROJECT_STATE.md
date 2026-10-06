@@ -19,7 +19,7 @@
 - **Frontend & App Framework**: React 19, TypeScript, Vite 6, Tailwind CSS, Lucide React icons
 - **Routing & Services**: React Router DOM with protected/role/project guards; typed `src/services/` boundary for API, project, user, auth, notification, external context, AI and automation flows
 - **State Management**: Lightweight Zustand (`src/stores/bimStore.ts` for BIM state; `src/portal/data.ts` for portal state snapshot)
-- **Database & Persistence**: `db.json` (showcase seed), `localStorage` (`arch-tech-portal-state`, schema version 3), native STEP-21 IFC persistence
+- **Database & Persistence**: `db.json` (showcase seed), `localStorage` (`arch-tech-portal-state`, schema version 4), native STEP-21 IFC persistence
 - **Testing & Tooling**: Vitest 3.x (unit/domain), Playwright (E2E browser workflows)
 
 ---
@@ -41,7 +41,8 @@ Optional local HTTP persistence is available through `npm run server` (JSON Serv
 ---
 
 ## 4. Multi-Role Portal & User Access Structure
-- **Data Source**: `db.json` serves as the initial seed; runtime mutations persist in `localStorage` under `arch-tech-portal-state` (Schema Version 3).
+- **Data Source**: `db.json` serves as the initial seed; runtime mutations persist in `localStorage` under `arch-tech-portal-state` (Schema Version 4).
+- **Historical Portfolio Analytics (Phase 6)**: Admin Analytics provides historical portfolio and development project progress trends backed by `progressSnapshots` (supported in local persistence and optional JSON Server `/progressSnapshots` endpoint). Historical-to-current progress deltas calculate against comparable project cohorts using each project's earliest valid snapshot baseline, preventing distortion from active projects lacking history. Snapshot dates strictly adhere to canonical `YYYY-MM-DD` format with real calendar date validation. Current project progress remains live data, while historical snapshots represent internal ARCH_TECH concept coordination telemetry. Trend charts are theme-safe across light, dark, and high-contrast modes, distinguishing historical and live checkpoints by shape, line style, and text labels rather than color alone.
 - **Client Role**: Accesses assigned projects, project status, milestones, documents, updates, and pending approvals.
 - **Architect Role**: Accesses architectural drawings, technical specs, and design approval workflows.
 - **Admin Role**: Full portal control—publishes projects, creates new development projects, assigns user roles, and modifies project metadata.
@@ -161,6 +162,7 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - **Portal Application Architecture**: React Router migration, reusable protected/role/project guards, typed services with local fallback, JSON Server setup, synchronized project relation CRUD, external context integration, runtime project/user management, objective Admin/Architect metrics, persistent text scaling and n8n AI/automation workflow definitions.
 - **Phase 4 Accessibility**: Consolidated accessibility panel featuring a Web Speech API browser narrator with pause/resume/stop and route-change cancellation, color-safe high-contrast mode, reading guide/mask, text spacing, link highlighting, and reduced-motion controls with persistent preferences.
 - **Phase 5 Site Intelligence**: Multi-provider environmental and seismic context (OpenStreetMap Nominatim for manual geocoding with caching and rate throttling, Open-Meteo for dynamic coordinates weather, USGS Earthquake Catalog for 30-day seismic context). Includes independent loading/error states, partial failure resilience, stale-state clearing, and explicit data attribution.
+- **Portal Phase 6 Historical Portfolio Analytics**: Historical portfolio and project progress analytics implemented in Admin view. Features schema v4 `progressSnapshots` local persistence and JSON Server endpoint support, comparable baseline project cohort delta calculation, strict canonical `YYYY-MM-DD` calendar date validation, theme-safe SVG charts (light, dark, high contrast, color safe) distinguishable by shape (open circle vs solid diamond) and line style, live current project progress retention, and isolated ARCH_TECH concept coordination historical telemetry.
 
 ---
 
@@ -200,7 +202,7 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint` / `tsc --noEmit`).
-- **Vitest Unit/Domain Tests**: **246 / 246 PASSED** across 18 test files.
+- **Vitest Unit/Domain Tests**: **271 / 271 PASSED** across 19 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, full OpenBIM workflow and AI confirmation flows.
-- **Git Diff**: The current worktree is verified with `git diff --check` after Phase 5 Site Intelligence.
+- **Git Diff**: The current worktree is verified with `git diff --check` after Portal Phase 6 Historical Portfolio Analytics.
