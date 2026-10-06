@@ -28,6 +28,7 @@ export interface PortfolioInsights {
 // Compare by code point so ordering does not depend on the browser locale.
 const compareText = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
 const severityOrder = { priority: 0, attention: 1, info: 2 };
+const LOW_PROGRESS_THRESHOLD = 25;
 
 export const calculatePortfolioInsights = (projects: readonly PortalProject[]): PortfolioInsights => {
   const active = projects.filter((project) => !project.archived);
@@ -49,26 +50,35 @@ export const calculatePortfolioInsights = (projects: readonly PortalProject[]): 
     summary.pendingApprovals += pending.length;
     summary.currentMilestones += current.length;
     summary.upcomingMilestones += upcoming.length;
-    const severity = rejected.length ? 'priority' : pending.length ? 'attention' : 'info';
-    if (severity !== 'info') summary.attentionProjects += 1;
-    const reasons = [
+    const lowProgress = project.progress < LOW_PROGRESS_THRESHOLD;
+    const missingCurrentMilestone = current.length === 0;
+    const prioritySignals = [
       ...rejected.map((item) => `Rejected approval: ${item.title}`).sort(compareText),
-      ...pending.map((item) => `Pending approval: ${item.title}`).sort(compareText),
-      ...current.map((item) => `Current milestone: ${item.label}`).sort(compareText),
-      ...upcoming.map((item) => `Upcoming milestone: ${item.label}`).sort(compareText),
+      ...(pending.length > 1 ? [
+        `Multiple pending approvals: ${pending.length}`,
+        ...pending.map((item) => `Pending approval: ${item.title}`).sort(compareText),
+      ] : []),
+      ...(lowProgress && pending.length ? [`Low progress (${project.progress}%) combined with ${pending.length} pending approval${pending.length === 1 ? '' : 's'}.`] : []),
     ];
-    if (!reasons.length) reasons.push('No pending or rejected approvals, or current or upcoming milestones recorded.');
+    const attentionSignals = [
+      ...(pending.length === 1 ? [`Pending approval: ${pending[0].title}`] : []),
+      ...(lowProgress ? [`Low progress: ${project.progress}% (below ${LOW_PROGRESS_THRESHOLD}%).`] : []),
+      ...(missingCurrentMilestone ? ['No Current milestone is recorded.'] : []),
+    ];
+    const severity = prioritySignals.length ? 'priority' : attentionSignals.length ? 'attention' : 'info';
+    if (severity !== 'info') summary.attentionProjects += 1;
+    const reasons = [...prioritySignals, ...attentionSignals];
+    if (!reasons.length) reasons.push(`Recorded progress is ${project.progress}%, at or above the ${LOW_PROGRESS_THRESHOLD}% low-progress threshold; a Current milestone is recorded and no pending or rejected approvals are open.`);
+    const focusSignals = [...prioritySignals, ...attentionSignals];
     return {
       projectId: project.id,
       projectTitle: project.title,
       progress: project.progress,
       severity,
       reasons,
-      recommendedFocus: rejected.length ? 'Review rejected approvals and coordinate revisions.'
-        : pending.length ? 'Review pending approvals with the responsible stakeholders.'
-          : current.length ? 'Review the recorded current milestones.'
-            : upcoming.length ? 'Review the recorded upcoming milestones.'
-              : 'Review the project record for the next coordination action.',
+      recommendedFocus: focusSignals.length
+        ? `Address these recorded signals: ${focusSignals.join(' ')}.`
+        : 'No actionable portfolio signal is present in the recorded progress, approvals, or Current milestone.',
     };
   }).sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]
     || compareText(a.projectTitle, b.projectTitle) || compareText(a.projectId, b.projectId));

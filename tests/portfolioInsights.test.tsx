@@ -18,8 +18,8 @@ vi.mock('../src/components/portal/PortalShell', () => ({
 
 const project = (id: string, changes: Partial<PortalProject> = {}): PortalProject => ({
   id, code: id, title: `Project ${id}`, category: 'Infrastructure', phase: 'Design',
-  progress: 20, nextMilestone: '', summary: '', statement: '', image: '',
-  updates: [], milestones: [], documents: [], approvals: [], ...changes,
+  progress: 50, nextMilestone: '', summary: '', statement: '', image: '',
+  updates: [], milestones: [{ projectId: id, label: 'Delivery', status: 'Current' }], documents: [], approvals: [], ...changes,
 });
 const pending = project('pending', {
   progress: 40,
@@ -48,6 +48,34 @@ afterEach(() => {
 Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: () => {} });
 
 describe('deterministic portfolio intelligence', () => {
+  it('classifies each requested progress and approval signal with matching reasons and focus', () => {
+    const lowOnly = project('low', { progress: 24 });
+    const noCurrent = project('no-current', { milestones: [{ projectId: 'no-current', label: 'Next', status: 'Upcoming' }] });
+    const multiplePending = project('multiple', { approvals: [
+      { projectId: 'multiple', title: 'Access', status: 'Pending' },
+      { projectId: 'multiple', title: 'Design', status: 'Pending' },
+    ] });
+    const lowAndPending = project('combined', { progress: 10, approvals: [{ projectId: 'combined', title: 'Permit', status: 'Pending' }] });
+    const healthy = project('healthy', { progress: 75 });
+    const result = calculatePortfolioInsights([lowOnly, noCurrent, multiplePending, lowAndPending, healthy]);
+    const byId = Object.fromEntries(result.projects.map((insight) => [insight.projectId, insight]));
+
+    expect(byId.low).toMatchObject({ severity: 'attention', reasons: ['Low progress: 24% (below 25%).'] });
+    expect(byId.low.recommendedFocus).toContain('Low progress: 24%');
+    expect(byId['no-current']).toMatchObject({ severity: 'attention', reasons: ['No Current milestone is recorded.'] });
+    expect(byId['no-current'].recommendedFocus).toContain('No Current milestone is recorded.');
+    expect(byId.multiple).toMatchObject({ severity: 'priority', reasons: ['Multiple pending approvals: 2', 'Pending approval: Access', 'Pending approval: Design'] });
+    expect(byId.multiple.recommendedFocus).toContain('Multiple pending approvals: 2');
+    expect(byId.combined.severity).toBe('priority');
+    expect(byId.combined.reasons).toEqual(expect.arrayContaining([
+      'Low progress (10%) combined with 1 pending approval.',
+      'Pending approval: Permit',
+    ]));
+    expect(byId.combined.recommendedFocus).toContain('Low progress (10%) combined with 1 pending approval.');
+    expect(byId.healthy).toMatchObject({ severity: 'info', reasons: [expect.stringContaining('Recorded progress is 75%')] });
+    expect(byId.healthy.recommendedFocus).toBe('No actionable portfolio signal is present in the recorded progress, approvals, or Current milestone.');
+  });
+
   it('calculates the unweighted average and relation counts from non-archived projects only', () => {
     const archived = project('archived', {
       ...pending, id: 'archived', archived: true, progress: 100,
@@ -55,29 +83,31 @@ describe('deterministic portfolio intelligence', () => {
       milestones: [{ projectId: 'archived', label: 'Ignored', status: 'Current' }],
     });
     const result = calculatePortfolioInsights([pending, priority, project('info'), archived]);
-    expect(result.summary).toEqual({ activeProjects: 3, averageProgress: 140 / 3, pendingApprovals: 1, currentMilestones: 1, upcomingMilestones: 1, attentionProjects: 2 });
+    expect(result.summary).toEqual({ activeProjects: 3, averageProgress: 170 / 3, pendingApprovals: 1, currentMilestones: 3, upcomingMilestones: 1, attentionProjects: 2 });
     expect(result.projects.map((item) => item.projectId)).toEqual(['priority', 'pending', 'info']);
-    expect(result.executiveBrief).toContain('46.7% average recorded progress');
+    expect(result.executiveBrief).toContain('56.7% average recorded progress');
   });
 
   it('explains severity and focus using recorded approvals and milestones', () => {
-    const result = calculatePortfolioInsights([pending, priority, project('info', { progress: 0 })]);
-    expect(result.projects[0]).toMatchObject({ severity: 'priority', reasons: ['Rejected approval: Revision'], recommendedFocus: 'Review rejected approvals and coordinate revisions.' });
-    expect(result.projects[1]).toMatchObject({ severity: 'attention', progress: 40, reasons: ['Pending approval: Design review', 'Current milestone: Design', 'Upcoming milestone: Delivery'] });
+    const result = calculatePortfolioInsights([pending, priority, project('info')]);
+    expect(result.projects[0]).toMatchObject({ severity: 'priority', reasons: ['Rejected approval: Revision'], recommendedFocus: 'Address these recorded signals: Rejected approval: Revision.' });
+    expect(result.projects[1]).toMatchObject({ severity: 'attention', progress: 40, reasons: ['Pending approval: Design review'] });
     expect(result.projects[2].severity).toBe('info');
-    expect(result.projects[2].reasons).toEqual(['No pending or rejected approvals, or current or upcoming milestones recorded.']);
+    expect(result.projects[2].reasons).toEqual(['Recorded progress is 50%, at or above the 25% low-progress threshold; a Current milestone is recorded and no pending or rejected approvals are open.']);
   });
 
-  it('keeps milestone-only and approved projects informational regardless of recorded progress', () => {
+  it('classifies projects without a Current milestone as needing attention', () => {
     const result = calculatePortfolioInsights([
       project('current', { progress: 0, milestones: [{ projectId: 'current', label: 'Survey', status: 'Current' }] }),
       project('upcoming', { milestones: [{ projectId: 'upcoming', label: 'Review', status: 'Upcoming' }] }),
       project('approved', { approvals: [{ projectId: 'approved', title: 'Accepted', status: 'Approved' }] }),
     ]);
-    expect(result.projects.every((item) => item.severity === 'info')).toBe(true);
-    expect(result.projects.find((item) => item.projectId === 'current')?.recommendedFocus).toContain('current milestones');
-    expect(result.projects.find((item) => item.projectId === 'upcoming')?.recommendedFocus).toContain('upcoming milestones');
-    expect(result.summary.attentionProjects).toBe(0);
+    expect(result.projects.find((item) => item.projectId === 'current')?.severity).toBe('attention');
+    expect(result.projects.find((item) => item.projectId === 'upcoming')?.severity).toBe('attention');
+    expect(result.projects.find((item) => item.projectId === 'current')?.reasons).toContain('Low progress: 0% (below 25%).');
+    expect(result.projects.find((item) => item.projectId === 'upcoming')?.reasons).toContain('No Current milestone is recorded.');
+    expect(result.projects.find((item) => item.projectId === 'approved')?.severity).toBe('info');
+    expect(result.summary.attentionProjects).toBe(2);
   });
 
   it('ignores relations belonging to another project', () => {
@@ -85,7 +115,8 @@ describe('deterministic portfolio intelligence', () => {
     expect(result.summary.pendingApprovals).toBe(0);
     expect(result.summary.currentMilestones).toBe(0);
     expect(result.summary.upcomingMilestones).toBe(0);
-    expect(result.projects[0].severity).toBe('info');
+    expect(result.projects[0].severity).toBe('attention');
+    expect(result.projects[0].reasons).toContain('No Current milestone is recorded.');
   });
 
   it('returns finite zero totals for empty or fully archived portfolios', () => {
@@ -131,7 +162,7 @@ describe('portfolio panel and Admin Assistant', () => {
     expect(within(panel).getByText('60.0%')).toBeDefined();
     expect(within(panel).getByRole('heading', { name: 'Attention queue' })).toBeDefined();
     expect(within(panel).getByText('Rejected approval: Revision')).toBeDefined();
-    expect(within(panel).getByText('Upcoming milestone: Delivery')).toBeDefined();
+    expect(within(panel).getByText('Pending approval: Design review')).toBeDefined();
     fireEvent.click(within(panel).getByRole('button', { name: 'Project priority' }));
     expect(navigate).toHaveBeenCalledWith('/admin/projects/priority');
     const bim = screen.getByText('BIM AI Assistant');
