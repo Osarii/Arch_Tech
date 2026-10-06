@@ -30,6 +30,8 @@ import {
 import { getPublicProject } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
 import { projectService } from '../services/projectService';
+import { NewsArchivePage } from '../components/news/NewsArchivePage';
+import { NewsDetailPage } from '../components/news/NewsDetailPage';
 import {
   AccessibleProjectRoute,
   ensureProjectsHydrated,
@@ -115,6 +117,11 @@ const PublicProjectRoute: React.FC<{ onNavigate: (path: string) => void }> = ({ 
   return <PublicProjectPage projectId={projectId} onNavigate={onNavigate} />;
 };
 
+const NewsDetailRoute: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
+  const { updateId = '' } = useParams();
+  return <NewsDetailPage updateId={decodeURIComponent(updateId)} onNavigate={onNavigate} />;
+};
+
 const DashboardProjectRoute: React.FC<{ role: 'client' | 'architect' | 'admin' }> = ({ role }) => {
   const navigate = useNavigate();
   const { projectId = '' } = useParams();
@@ -179,6 +186,8 @@ const RoutedApp: React.FC = () => {
         <Route path="/" element={<RootRoute onLogin={openLogin} onNavigate={handleNavigate} />} />
         <Route path="/login" element={<Navigate to="/?login=1" replace />} />
         <Route path="/projects/:projectId" element={<PublicProjectRoute onNavigate={handleNavigate} />} />
+        <Route path="/news" element={<NewsArchivePage onNavigate={handleNavigate} />} />
+        <Route path="/news/:updateId" element={<NewsDetailRoute onNavigate={handleNavigate} />} />
         <Route path="/403" element={<ForbiddenRoute />} />
         <Route path="/404" element={<NotFoundRoute />} />
         <Route element={<ProtectedRoute />}>

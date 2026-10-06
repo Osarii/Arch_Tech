@@ -5,6 +5,7 @@ import { SpatialRail } from '../gallery/SpatialRail';
 import { NavigationProps, NotFoundPage } from './PortalCommon';
 import { Reveal } from '../motion/Reveal';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
+import { ProjectUpdatesTimeline } from '../news/ProjectUpdatesTimeline';
 
 export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }> = ({
   projectId,
@@ -153,6 +154,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
             </ol>
           </div>
         </section>
+        <ProjectUpdatesTimeline projectId={projectId} onNavigate={onNavigate} />
       </main>
     </div>
   );

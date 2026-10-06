@@ -1,0 +1,11 @@
+import React from 'react';
+import { ArrowUpRight } from 'lucide-react';
+import { getPublicNewsUpdates, newsUpdatePath } from '../../services/newsService';
+
+export const NewsSection: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
+  const updates = getPublicNewsUpdates().slice(0, 3);
+  return <section id="news" aria-labelledby="latest-updates-title" className="landing-news border-b border-black/15 bg-[#EDF4ED] px-6 py-20 text-black sm:px-8 lg:px-12 lg:py-28"><div className="mx-auto max-w-7xl">
+    <div className="grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end"><div><p className="font-mono text-[10px] uppercase tracking-[0.24em] text-[#79B791]">Journal / Project updates</p><h2 id="latest-updates-title" className="mt-5 max-w-4xl font-serif text-5xl font-light tracking-tight sm:text-7xl">Latest updates.</h2></div><button type="button" onClick={() => onNavigate('/news')} className="landing-news-link inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-black transition-colors hover:text-[#79B791]">View all updates <ArrowUpRight className="h-4 w-4" aria-hidden="true" /></button></div>
+    <div className="grid gap-0 lg:grid-cols-3 lg:divide-x lg:divide-black/15">{updates.map((update) => <article key={update.id} className="group border-b border-black/15 py-8 lg:border-b-0 lg:px-8 lg:first:pl-0 lg:last:pr-0"><button type="button" onClick={() => onNavigate(newsUpdatePath(update))} className="block w-full text-left"><div className="aspect-[16/10] overflow-hidden bg-[#ABD1B5]"><img src={update.image} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" /></div><div className="mt-5 flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.16em] text-[#79B791]"><time>{update.date}</time><span aria-hidden="true">/</span><span>{update.projectCategory}</span></div><p className="mt-3 font-mono text-[9px] uppercase tracking-[0.16em] text-black/60">{update.projectTitle}</p><h3 className="mt-3 font-serif text-3xl font-light leading-tight transition-colors group-hover:text-[#79B791]">{update.title}</h3><p className="mt-3 line-clamp-3 text-sm leading-6 text-black/70">{update.body}</p></button></article>)}</div>
+  </div></section>;
+};
