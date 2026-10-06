@@ -1,4 +1,5 @@
 import React from 'react';
+import { PortfolioInsightsPanel } from './PortfolioInsightsPanel';
 import { NavigationProps, PortalAIAssistantView } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
 
@@ -23,6 +24,7 @@ export const AdminAssistantPage: React.FC<Partial<NavigationProps> & { onSignOut
         </p>
       </div>
 
+      <PortfolioInsightsPanel onNavigate={navigate} />
       <PortalAIAssistantView role="admin" onNavigate={navigate} />
     </div>
   );
