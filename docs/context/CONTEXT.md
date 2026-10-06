@@ -5,7 +5,7 @@ This is the only technical context document. Read the named section or current l
 ## 1. Context Router
 
 - Always bootstrap with `AGENTS.md` and `PROJECT_STATE.md`.
-- Route domain work here by section: engine, AI, editing, persistence, analysis, tree, panels, or Zustand state.
+- Route domain work here by section: engine, AI, editing, persistence, analysis, tree, panels, Zustand state, portal analytics, or motion.
 - Keep architectural decisions, tool definitions, and verification commands in `docs/architecture/DECISIONS.md`, `docs/agent-rules/TOOL_INDEX.md`, and `docs/agent-rules/VERIFY_PROFILES.md`; do not duplicate them here.
 - The repository uses That Open Components, Fragments, Three.js, WebIFC, and lightweight Zustand state. Current phase and verification status live in `PROJECT_STATE.md`.
 
@@ -100,3 +100,23 @@ Owns `src/bim/generation/generationService.ts` and `src/bim/generation/ifcAuthor
 
 - Target MacBook Pro 2019 / Intel UHD Graphics 630: DPR <= 1.25, shadows OFF, bloom/SSAO/postprocessing OFF.
 - Prefer direct That Open rendering, local WASM/workers, lightweight state, and non-blocking heavy parsing. Performance takes precedence over decorative graphics.
+
+## 13. Portal Analytics / Intelligence
+
+Owns `src/services/portfolioInsightsService.ts`, `src/services/siteIntelligenceService.ts`, and portal analytics views.
+
+- Historical snapshots persist under schema v4 (`progressSnapshots`) in canonical `YYYY-MM-DD` format with comparable baseline project cohort delta calculations.
+- Site Intelligence provides multi-provider external context via OpenStreetMap Nominatim, Open-Meteo, and USGS Earthquake Catalog with graceful fallback.
+- Portfolio Intelligence (`calculatePortfolioInsights`) evaluates live data deterministically into summary KPIs and project signals (`priority`, `attention`, `info`) based on rejected approvals, multiple pending approvals, low progress, or missing current milestones.
+- Strictly deterministic current-data analysis; does not produce predictive claims or risk scoring.
+
+## 14. Motion / Interaction
+
+Owns `src/motion/` and `src/components/motion/`.
+
+- `src/motion/` is the canonical technical motion layer (`motionSupport.ts`, `useReducedMotion.ts`). All motion components must consume `src/motion/useReducedMotion.ts` for system and persisted accessibility reduced-motion policies.
+- `src/components/motion/` provides visual presentation primitives (`Reveal`, `WireframeToSolid`, `MetricCounter`, `ScrollProgressBar`, `ArchitecturalLine`, `ProjectRouteTransition`).
+- Decorative motion must never block navigation or content visibility. Reduced motion bypasses or settles motion immediately.
+- `ProjectRouteTransition` provides an architectural graphite wipe and CAD sweep line for `/` ↔ `/projects/:projectId` transitions (~560 ms total duration).
+- Public route transition boundaries: strictly scoped to public landing/project navigation; completely bypasses login, portal dashboards (`/dashboard`, `/architect`, `/admin`), BIM workspace (`/workspace`), and error routes.
+- Zero heavy third-party animation frameworks; implemented via vanilla CSS, React state, and Web APIs.

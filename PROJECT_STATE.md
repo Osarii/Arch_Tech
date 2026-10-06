@@ -5,7 +5,10 @@
 ---
 
 ## 1. Project Purpose & Scope
-**Verified application checkpoint:** The current integrated checkpoint is the Git `HEAD` produced by the latest verified run. This reliability pass began from `948101b081f98c75218a130cf9a3252393bb5716`; every task must still resolve its actual `BASE` from current remote `main` before execution.
+**Verified application checkpoint:**
+- Current remote `main`: `4ee4e0d4` (`docs(contract): swap agent tool assignments`).
+- Latest fully verified application implementation: `a4a28d37` (`fix(motion): prevent scroll jumps on project route transitions`). The subsequent commit on `main` is documentation-only.
+- Every task must still resolve its actual `BASE` from current remote `main` before execution.
 
 **ARCH_TECH** is a dual-capability architecture & engineering platform with this product hierarchy:
 1. **Public Identity**: Large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites.
@@ -43,6 +46,11 @@ Optional local HTTP persistence is available through `npm run server` (JSON Serv
 ## 4. Multi-Role Portal & User Access Structure
 - **Data Source**: `db.json` serves as the initial seed; runtime mutations persist in `localStorage` under `arch-tech-portal-state` (Schema Version 4).
 - **Historical Portfolio Analytics (Phase 6)**: Admin Analytics provides historical portfolio and development project progress trends backed by `progressSnapshots` (supported in local persistence and optional JSON Server `/progressSnapshots` endpoint). Historical-to-current progress deltas calculate against comparable project cohorts using each project's earliest valid snapshot baseline, preventing distortion from active projects lacking history. Snapshot dates strictly adhere to canonical `YYYY-MM-DD` format with real calendar date validation. Current project progress remains live data, while historical snapshots represent internal ARCH_TECH concept coordination telemetry. Trend charts are theme-safe across light, dark, and high-contrast modes, distinguishing historical and live checkpoints by shape, line style, and text labels rather than color alone.
+- **Deterministic Portfolio Intelligence (Phase 7A)**: Implemented in Admin Assistant (`src/components/portal/admin/PortfolioInsightsPanel.tsx`, `src/services/portfolioInsightsService.ts`, `tests/portfolioInsights.test.tsx`). Current-data deterministic analysis provides active project count, average progress, pending approvals count, current milestones count, upcoming milestones count, and projects requiring attention. Signal classification:
+  - **PRIORITY**: Rejected approvals, multiple pending approvals, or low progress (< 25%) with pending approval.
+  - **ATTENTION**: Exactly one pending approval, low progress (< 25%), or missing Current milestone.
+  - **INFO**: No actionable signal.
+  Strictly deterministic current-data analysis; NOT predictive risk scoring. BIM AI behavior remains unchanged.
 - **Client Role**: Accesses assigned projects, project status, milestones, documents, updates, and pending approvals.
 - **Architect Role**: Accesses architectural drawings, technical specs, and design approval workflows.
 - **Admin Role**: Full portal control—publishes projects, creates new development projects, assigns user roles, and modifies project metadata.
@@ -110,6 +118,12 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - **Showcase media**: The six isolated local image sets are official Garnier portfolio photographs selected for campus, district, hospitality and institutional scale. This is an explicitly authorized ARCH_TECH concept/prototype use and does not imply official status or affiliation.
 - **Fallbacks**: `ProjectImage` renders a neutral ARCH_TECH development placeholder when a preferred local image is unavailable or fails to decode.
 
+### 8.2 Phase 8 Motion & Interaction System
+- **Technical Foundation**: Canonical technical motion layer lives in `src/motion/motionSupport.ts` and `src/motion/useReducedMotion.ts`. Supports system `prefers-reduced-motion`, persisted accessibility reduce-motion setting (`arch-tech-portal-reduced-motion`), motion settling policies, and deterministic intersection helpers. There is only one canonical reduced-motion implementation; all motion components consume this layer.
+- **Phase 8A — Public Motion Primitives (`src/components/motion/`)**: Includes `Reveal`, `WireframeToSolid`, `MetricCounter`, `ScrollProgressBar`, `ArchitecturalLine`, `useIntersectionReveal`, and `useScrollProgress`. Powers viewport reveals, staggered entrances, architectural image reveals, navbar scroll response, scroll progress, tactile project card feedback, animated metrics, restrained architectural line motion, and signature Wireframe → Solid treatments. Motion style is architectural, corporate, and restrained with zero heavy third-party animation libraries. Reduced-motion settings bypass or flatten decorative motion.
+- **Team Group Photo Fix**: The desktop Garnier leadership group image bug is CLOSED. Canonical `TeamSection.tsx` implementation uses `<Reveal variant="fade-up" delay={150}>` for `/team/garnier-team-group.png`. The previous mask reveal must not be restored as it caused permanent clipping on desktop viewports.
+- **Phase 8B — Public Project Route Transitions**: Implemented for `/` ↔ `/projects/:projectId` navigation (`src/components/motion/ProjectRouteTransition.tsx`, `src/router/AppRouter.tsx`). Features an architectural graphite wipe, technical CAD sweep line, and subtle grid texture (~560 ms total duration). Route change and scroll reset (`window.scrollTo(0, 0)`) execute while the viewport is covered. Features rapid double-trigger protection, native browser View Transition API support where available, and immediate fallback. Strictly scoped to public project navigation; completely bypasses login, portal dashboards (`/dashboard`, `/architect`, `/admin`), BIM workspace (`/workspace`), and error routes.
+
 ---
 
 ## 9. Performance Optimization Status
@@ -132,8 +146,12 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 ### Development Workflow Policy
 - Single-agent sequential execution is the default.
 - `agent/a-main` and `agent/b-main` are optional visual and technical lanes when explicitly requested; lane names do not imply a specific vendor or tool.
-- Both branches were initially created from workflow initialization checkpoint `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`; this does not permanently pin future work to that commit.
+- Canonical assignment:
+  - `agent/a-main` = Visual / UX / Motion agent, operated by Codex.
+  - `agent/b-main` = Technical / Functionality / Data agent, operated by Antigravity.
+- Both branches are synchronized with `main` at `4ee4e0d4`.
 - Every task must resolve its actual `BASE` from current remote `main` before execution.
+- PROMPT_CONTRACT.md remains authoritative for parallel task rules.
 - Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
 - `TARGET` is exclusive write ownership. An agent must never modify a file outside `TARGET`.
 - If another file becomes necessary, stop and report the dependency before editing.
@@ -163,17 +181,25 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - **Phase 4 Accessibility**: Consolidated accessibility panel featuring a Web Speech API browser narrator with pause/resume/stop and route-change cancellation, color-safe high-contrast mode, reading guide/mask, text spacing, link highlighting, and reduced-motion controls with persistent preferences.
 - **Phase 5 Site Intelligence**: Multi-provider environmental and seismic context (OpenStreetMap Nominatim for manual geocoding with caching and rate throttling, Open-Meteo for dynamic coordinates weather, USGS Earthquake Catalog for 30-day seismic context). Includes independent loading/error states, partial failure resilience, stale-state clearing, and explicit data attribution.
 - **Portal Phase 6 Historical Portfolio Analytics**: Historical portfolio and project progress analytics implemented in Admin view. Features schema v4 `progressSnapshots` local persistence and JSON Server endpoint support, comparable baseline project cohort delta calculation, strict canonical `YYYY-MM-DD` calendar date validation, theme-safe SVG charts (light, dark, high contrast, color safe) distinguishable by shape (open circle vs solid diamond) and line style, live current project progress retention, and isolated ARCH_TECH concept coordination historical telemetry.
+- **Portal Phase 7A Deterministic Portfolio Intelligence**: Implemented in Admin Assistant (`src/components/portal/admin/PortfolioInsightsPanel.tsx`, `src/services/portfolioInsightsService.ts`, `tests/portfolioInsights.test.tsx`). Real-time portfolio KPI calculation (active projects, average progress, pending approvals, current/upcoming milestones) and project signal categorization (Priority / Attention / Info) based on rejected/multiple pending approvals, progress thresholds, and milestone status. Strictly deterministic current-data analysis without predictive claims.
+- **Phase 8A Motion & Interaction Foundation**: Integrated architectural motion primitives (`Reveal`, `WireframeToSolid`, `MetricCounter`, `ScrollProgressBar`, `ArchitecturalLine`, `useIntersectionReveal`, `useScrollProgress` in `src/components/motion/`). Unified under canonical `src/motion/` technical layer (`motionSupport.ts`, `useReducedMotion.ts`) with complete system and persistent accessibility reduced-motion compliance. Closed desktop leadership group photo mask issue in `TeamSection.tsx` with stable fade-up reveal.
+- **Phase 8B Public Project Route Transitions**: Architectural curtain transition between landing portfolio and `/projects/:projectId` dossier (`ProjectRouteTransition.tsx`, `AppRouter.tsx`) featuring graphite wipe, CAD sweep line, forward/reverse direction awareness, midpoint route switching, covered scroll reset, double-click suppression, and immediate navigation under reduced motion. Bypasses portal, workspace, login, and error routes.
 
 ---
 
-## 12. Current Priorities
+## 12. Current Priorities & Product Identity
 - Landing and public portfolio experience.
 - Portfolio project presentation and current project assets.
 - Client, Architect and Admin portal quality and access integrity.
 - Performance and visual experience.
 - Landing/portal work must not modify BIM internals unless explicitly requested.
+- Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until explicitly reactivated. It is not the current next development priority.
 
-Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until explicitly reactivated. It is not the current next development priority.
+### Current Product Identity & Approved Next Direction
+- **Current Implemented Product**: The application remains authentically named **ARCH_TECH** across the codebase, portal, workspace, and public landing. The rename has NOT been implemented yet.
+- **Approved Next Direction**: Planned public/product name is **GARNIER ARCHITECTURE**.
+  - Intended logo direction: Original geometric architectural figure featuring an optical illusion / impossible spatial form usable as an independent icon; corporate architecture identity with subtle technology character; graphite / limestone / sandstone palette; no generic house/roof/skyscraper shapes and no neon/cyberpunk styling.
+  - The current `ArchTechLogo.tsx` implementation remains active until the new identity asset is approved and integrated.
 
 ---
 
@@ -184,9 +210,32 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ---
 
-## 14. Future Work
-- Reactivate Phase 6B.3 only through an explicit request.
-- Consider Phase 6C only after the current landing, portfolio, portal, asset, performance and visual priorities are intentionally complete.
+## 14. Next Session / Immediate Plan
+### Next Task: Garnier Architecture Brand Migration
+The next session should begin by auditing the existing ARCH_TECH identity before changing it.
+
+**Planned Scope:**
+1. Audit all user-visible ARCH_TECH references.
+2. Define canonical Garnier Architecture naming.
+3. Finalize the new optical-illusion logo asset.
+4. Replace public identity and logo components.
+5. Update landing/public-project labels.
+6. Update portal-visible branding where appropriate.
+7. Update page metadata/title/favicon/assets.
+8. Update route-transition identity text.
+9. Update documentation only after implementation is real.
+10. Verify desktop/mobile/accessibility after rebrand.
+
+**Important Migration Rules:**
+- **DO NOT** blindly rename internal persistence/storage keys:
+  - `arch-tech-portal-state`
+  - `arch-tech-portal-session`
+  - `arch-tech-portal-theme`
+  - `arch-tech-portal-text-scale`
+  These internal keys currently preserve persisted user/demo state. If ever renamed, implement an explicit backwards-compatible migration first.
+- Do not rename the GitHub repository unless explicitly requested.
+- Do not imply that Garnier Architecture is an official Garnier & Garnier product, partnership, or endorsed production system. The academic/concept prototype framing remains required.
+- **After Rebrand**: Phase 8C advanced public interaction work may continue. Do not begin Phase 8C before the identity migration unless explicitly requested.
 
 ---
 
@@ -202,7 +251,7 @@ Phase 6B.3 (OpenBIM authoring extensions) is intentionally **FROZEN** until expl
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint` / `tsc --noEmit`).
-- **Vitest Unit/Domain Tests**: **271 / 271 PASSED** across 19 test files.
+- **Vitest Unit/Domain Tests**: **307 / 307 PASSED** across 23 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
-- **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, full OpenBIM workflow and AI confirmation flows.
-- **Git Diff**: The current worktree is verified with `git diff --check` after Portal Phase 6 Historical Portfolio Analytics.
+- **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, project route transitions, full OpenBIM workflow and AI confirmation flows.
+- **Git Diff**: Verified clean with `git diff --check`.

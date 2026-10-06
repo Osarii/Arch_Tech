@@ -42,24 +42,26 @@
 
 ### Verified application checkpoint
 
-Last verified application checkpoint:
-
+Current remote main:
 ```text
-ecc9ff9c29a899cb48f58923c15fb10d9a07faee docs: align handoff with current product direction
+4ee4e0d4 docs(contract): swap agent tool assignments
 ```
 
-This checkpoint is historical context, not a persistent claim about the current `main` HEAD. Every task must resolve its actual `BASE` from current remote `main` before execution.
-
-Previous:
+Latest fully verified application implementation:
 ```text
-ed69f2b97a7982eba9dba3d5e00a40d8f26b522c docs: update PROJECT_STATE and README handoff documentation
-d6278f0f feat(media): replace project image packs with new canonical zip assets
-d453bbf6 fix(gallery): polish SpatialRail layout, aspect ratio, and navigation sync
-67922de7 feat(gallery): add original high-performance SpatialRail carousel
-790fbaa4 refactor(gallery): remove ProjectGallery and embla carousel implementation
-b47e5c9c fix(portal): harden workspace and role navigation
-8901ec49 feat(landing): refocus public experience for real estate development
-3956538a fix(phase-6b2): harden persistence semantics and reload safety
+a4a28d37 fix(motion): prevent scroll jumps on project route transitions
+```
+*(The subsequent commit on main is documentation-only).*
+
+Every task must resolve its actual `BASE` from current remote `main` before execution.
+
+Previous checkpoints:
+```text
+c6b63375 feat(motion): add architectural project route transitions
+4ddd7032 fix(team): restore leadership group image on desktop
+b568d12a fix(motion): unify visual and accessibility motion systems
+00cb49d7 feat(motion): add architectural motion and reduced-motion foundation
+f5260b7e feat(portal): add deterministic portfolio insights
 ```
 
 **Always verify remote main before a new implementation task.**
@@ -70,6 +72,7 @@ b47e5c9c fix(portal): harden workspace and role navigation
 
 Core stack:
 - React 19
+- React Router DOM
 - Vite
 - TypeScript
 - Tailwind CSS
@@ -84,8 +87,10 @@ Core stack:
 
 Architecture:
 - React = UI/state
+- React Router = Multi-role routing & public project routes
 - That Open + web-ifc = BIM/IFC
 - Three.js = rendering
+- Motion architecture: `src/motion/` (canonical technical layer & accessibility) + `src/components/motion/` (presentation primitives)
 - No custom CAD engine
 - No backend required for BIM core
 - Existing viewer is the authoritative BIM workspace
@@ -278,12 +283,12 @@ Current public structure:
 
 Current public routes:
 - `/` landing with the login overlay
-- `/projects/:id` public project detail
+- `/projects/:projectId` public project detail
 - `/dashboard`, `/architect`, `/admin` protected role dashboards
 - `/workspace` protected production portal entry, with dev/test legacy query/hash entry
 
 Current portal structure:
-- `db.json` is the demo seed; localStorage holds simulated runtime mutations.
+- `db.json` is the demo seed; localStorage holds simulated runtime mutations under schema version 4.
 - Client, architect and admin roles use the existing session and role guards.
 - Dashboard role navigation targets explicit rendered sections.
 - Quick demo login resolves users from the current portal snapshot.
@@ -296,6 +301,7 @@ src/components/landing/
   Hero.tsx
   ProjectShowcase.tsx
   DevelopmentFrame.tsx
+  TeamSection.tsx
   Footer.tsx
   LandingPage.tsx
 ```
@@ -303,33 +309,40 @@ src/components/landing/
 Relevant application files:
 ```text
 src/App.tsx
+src/router/AppRouter.tsx
 src/portal/data.ts
 src/portal/demoAuth.ts
 src/components/portal/PortalPages.tsx
+src/components/motion/ProjectRouteTransition.tsx
 tests/landingPage.test.tsx
+tests/motion.test.tsx
 ```
 
 Landing assets:
 ```text
-public/projects/<project-slug>/{hero-exterior,aerial-overview,campus-overview,
-masterplan,site-plan,floor-plan,lobby-interior,concept-board}.webp
+public/projects/<project-slug>/
+public/team/
 ```
 
-The public portfolio contains six fictional Costa Rica-oriented development concepts:
+The public portfolio features six showcase projects from Garnier & Garnier's public portfolio:
 
-- Pacific Nexus Free Zone Campus (`pacific-nexus-free-zone`)
-- Summit Point Corporate District (`summit-point-corporate-district`)
-- Mar Vista Hospitality District (`mar-vista-hospitality-district`)
-- Caribbean AI Compute Campus (`caribbean-ai-compute-campus`)
-- Guanacaste Renewable Compute Campus (`guanacaste-renewable-compute-campus`)
-- Pacific Regional Medical Campus (`pacific-regional-medical-campus`)
+1. Zona Franca La Lima (`zona-franca-la-lima`) — free zone / industrial park
+2. El Cafetal (`el-cafetal`) — corporate center / office campus
+3. Santa Ana Country Club (`santa-ana-country-club`) — social and sports club
+4. Waldorf Astoria (`waldorf-astoria`) — hotel and residences
+5. Centro Corporativo La Sabana (`centro-corporativo-sabana`) — corporate office center
+6. Universidad Latina (`universidad-latina`) — educational campus
 
-Residential project data remains private to the portal. Public listings are driven by
-published projects in `db.json` and use the local project image packs above.
+Project facts and public photography are source-oriented; ARCH_TECH updates, milestones, and approvals represent concept coordination data.
 
-Do not invent architects, locations, areas, endorsements or certifications.
+### Portal Intelligence & Analytics
+- **Phase 5 Site Intelligence**: Multi-provider location & environmental data via OpenStreetMap Nominatim, Open-Meteo, and USGS Earthquake Catalog with graceful fallback.
+- **Phase 6 Historical Portfolio Analytics**: Schema v4 `progressSnapshots` in canonical `YYYY-MM-DD` calendar format with comparable project cohort baseline delta calculations.
+- **Phase 7A Deterministic Portfolio Intelligence**: Implemented in Admin Assistant (`src/components/portal/admin/PortfolioInsightsPanel.tsx`, `src/services/portfolioInsightsService.ts`). Analyzes live project metrics deterministically for active project counts, progress averages, pending approvals, and current/upcoming milestones. Categorizes project signals into Priority (rejected/multiple pending approvals, low progress + pending), Attention (single pending approval, low progress, missing current milestone), and Info. Strictly deterministic analysis; no predictive claims.
 
-Current priorities are landing, portfolio, portal, project assets, performance and visual experience. Phase 6B.3 is intentionally **FROZEN** until explicitly reactivated; it is not the current next priority. Landing/portal work must not modify BIM internals unless explicitly requested.
+### Motion & Route Transitions
+- **Phase 8A Motion System**: Restrained architectural motion primitives in `src/components/motion/` (`Reveal`, `WireframeToSolid`, `MetricCounter`, `ScrollProgressBar`, `ArchitecturalLine`, `useIntersectionReveal`, `useScrollProgress`). All primitives consume canonical `src/motion/useReducedMotion.ts`. Team Section leadership group photo bug is closed using `<Reveal variant="fade-up" delay={150}>`.
+- **Phase 8B Project Route Transitions**: Architectural curtain transition (`ProjectRouteTransition.tsx`, `AppRouter.tsx`) between `/` and `/projects/:projectId` featuring graphite wipe, CAD sweep line, ~560 ms duration, covered route change and scroll reset, and immediate navigation under reduced motion. Strictly public; bypasses login, portal dashboards, BIM workspace, and error routes.
 
 ---
 
@@ -357,10 +370,10 @@ The BIM workspace remains separate and authoritative; public landing changes mus
 
 ## 8. LAST VERIFIED TEST STATE
 
-Latest verified application checkpoint (`1f2c4322`, before this documentation-only update):
+Latest FULL verification after integrated Phase 8B:
 
 ```text
-Vitest (Unit/Domain): 134 / 134 PASS across 13 test files
+Vitest (Unit/Domain): 307 / 307 PASS across 23 test files
 Build:                PASS (tsc -b && vite build clean exit code 0)
 Playwright (E2E):     14 / 14 PASS
 git diff --check:     PASS
@@ -432,6 +445,14 @@ unless Bernny explicitly requests it.
 App / route switching:
 ```text
 src/App.tsx
+src/router/AppRouter.tsx
+```
+
+Motion / transitions:
+```text
+src/motion/motionSupport.ts
+src/motion/useReducedMotion.ts
+src/components/motion/*
 ```
 
 Landing:
@@ -524,12 +545,19 @@ The landing should communicate:
 
 The public experience must not visually read as a residential architecture or house-design studio. The BIM workspace remains authoritative for IFC workflows, but landing/portal work must not modify BIM internals unless explicitly requested.
 
+### Current Implementation vs Next Rebrand
+- Currently implemented application name is **ARCH_TECH**. The rebrand has NOT occurred yet.
+- Approved next product direction: **GARNIER ARCHITECTURE**.
+- Planned logo: original geometric architectural figure featuring an optical illusion / impossible spatial form; usable as independent icon; graphite / limestone / sandstone palette.
+- Do NOT rename internal persistence/storage keys (`arch-tech-portal-state`, `arch-tech-portal-session`, `arch-tech-portal-theme`, `arch-tech-portal-text-scale`) without an explicit backwards-compatible migration. Academic/concept prototype framing remains required.
+
 ## PARALLEL DEVELOPMENT POLICY
 
-- `agent/a-main` = visual agent / Claude / Antigravity.
-- `agent/b-main` = technical/functionality agent / VS Code.
-- Both branches were initially created from workflow initialization checkpoint `ecc9ff9c29a899cb48f58923c15fb10d9a07faee`; this does not permanently pin future work to that commit.
+- `agent/a-main` = Visual / UX / Motion agent, operated by Codex.
+- `agent/b-main` = Technical / Functionality / Data agent, operated by Antigravity.
+- Both branches are synchronized with `main` at `4ee4e0d4`.
 - Every task must resolve its actual `BASE` from current remote `main` before execution.
+- PROMPT_CONTRACT.md remains authoritative for parallel task rules.
 - Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
 - `TARGET` is exclusive write ownership. An agent must never modify a file outside `TARGET`.
 - If another file becomes necessary, stop and report the dependency before editing it.
