@@ -64,8 +64,7 @@ const formatDate = (value: string) => new Date(value).toLocaleDateString('en-GB'
 export const getPublicNewsUpdates = (projectId?: string): PublicNewsUpdate[] => {
   const projects = new Map(getPublicProjects().map((project) => [project.id, project]));
   const articles = getPublicNews(projectId);
-  if (articles.length) return articles.flatMap((article) => { const project = projects.get(article.projectId); return project ? [{ id: article.id, slug: article.slug, projectId: article.projectId, date: formatDate(article.publishedAt || article.createdAt), title: article.title, body: article.body || article.excerpt, category: article.category, projectTitle: project.title, projectCategory: project.category, image: article.image || project.image }] : []; });
-  return (getPortalSnapshot().db.updates ?? []).filter((update) => !projectId || update.projectId === projectId).map((update) => { const project = projects.get(update.projectId); return project ? { ...update, id: `${update.projectId}-${update.date}-${update.title}`, projectTitle: project.title, projectCategory: project.category, image: project.image } : null; }).filter((update): update is PublicNewsUpdate => update !== null);
+  return articles.flatMap((article) => { const project = projects.get(article.projectId); return project ? [{ id: article.id, slug: article.slug, projectId: article.projectId, date: formatDate(article.publishedAt || article.createdAt), title: article.title, body: article.body || article.excerpt, category: article.category, projectTitle: project.title, projectCategory: project.category, image: article.image || project.image }] : []; });
 };
 export const getPublicNewsUpdate = (id: string) => getPublicNewsUpdates().find((update) => update.id === id || update.slug === id);
 export const getNewsProject = (projectId: string): PortalProjectRecord | undefined => getPublicProjects().find((project) => project.id === projectId);
