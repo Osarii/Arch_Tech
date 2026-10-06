@@ -940,3 +940,98 @@ html.portal-high-contrast .portal-reading-guide {
 html.portal-reduce-motion .portal-reading-mask {
   transition: none !important;
 }
+
+/* Phase 8A — Architectural Motion & Interaction System */
+:root {
+  --ease-arch: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-arch-sharp: cubic-bezier(0.2, 0, 0, 1);
+}
+
+.arch-interactive-link {
+  position: relative;
+  display: inline-flex;
+}
+
+.arch-interactive-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 260ms var(--ease-arch);
+}
+
+.arch-interactive-link:hover::after,
+.arch-interactive-link:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.arch-interactive-button {
+  transition: transform 180ms var(--ease-arch), background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.arch-interactive-button:active {
+  transform: scale(0.985);
+}
+
+.arch-interactive-card {
+  transition: border-color 300ms var(--ease-arch), box-shadow 300ms var(--ease-arch);
+}
+
+.motion-reveal {
+  backface-visibility: hidden;
+}
+
+/* Reduced motion overrides for Phase 8A */
+@media (prefers-reduced-motion: reduce) {
+  .arch-interactive-link::after {
+    transform: none !important;
+    transition: none !important;
+  }
+  .arch-interactive-button {
+    transform: none !important;
+    transition: none !important;
+  }
+  .arch-interactive-card {
+    transition: none !important;
+  }
+  .motion-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+  .motion-wireframe-container * {
+    transition: none !important;
+  }
+}
+
+html.portal-reduce-motion .arch-interactive-link::after {
+  transform: none !important;
+  transition: none !important;
+}
+
+html.portal-reduce-motion .arch-interactive-button {
+  transform: none !important;
+  transition: none !important;
+}
+
+html.portal-reduce-motion .arch-interactive-card {
+  transition: none !important;
+}
+
+html.portal-reduce-motion .motion-reveal {
+  opacity: 1 !important;
+  transform: none !important;
+  clip-path: none !important;
+  transition: none !important;
+}
+
+html.portal-reduce-motion .motion-wireframe-container * {
+  transition: none !important;
+}

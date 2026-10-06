@@ -3,6 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { getPublicProject } from '../../portal/data';
 import { SpatialRail } from '../gallery/SpatialRail';
 import { NavigationProps, NotFoundPage } from './PortalCommon';
+import { Reveal } from '../motion/Reveal';
 
 export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }> = ({
   projectId,
@@ -15,7 +16,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
     <div className="h-screen overflow-y-auto bg-[#0a0b0d] text-[#f4efe8]">
       <header className="border-b border-white/[0.12]">
         <div className="mx-auto grid h-14 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-8 lg:px-12">
-          <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em]">
+          <button onClick={() => onNavigate('/')} className="font-mono text-sm tracking-[0.24em] transition-opacity hover:opacity-80">
             ARCH_TECH
           </button>
           <p className="hidden items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500 sm:flex">
@@ -26,7 +27,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
           </p>
           <button
             onClick={() => onNavigate('/login')}
-            className="col-start-3 justify-self-end font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white"
+            className="arch-interactive-link col-start-3 justify-self-end font-mono text-[10px] uppercase tracking-[0.18em] text-stone-300 hover:text-white"
           >
             Project Portal
           </button>
@@ -36,21 +37,23 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
         <div className="mx-auto max-w-7xl px-6 pb-8 pt-8 sm:px-8 lg:px-12 lg:pb-10 lg:pt-10">
           <button
             onClick={() => onNavigate('/')}
-            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-white"
+            className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 transition-colors hover:text-white"
           >
-            <ArrowLeft className="h-3.5 w-3.5" /> Development portfolio
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5" /> Development portfolio
           </button>
           <div className="mt-6 grid gap-8 border-t border-white/[0.12] pt-6 lg:grid-cols-[1.45fr_1fr] lg:gap-0 lg:pt-0">
             <div className="lg:py-8 lg:pr-12">
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-                {project.code} / {project.category}
-              </p>
-              <h1 className="mt-4 max-w-3xl font-serif text-4xl font-light leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">
-                {project.title}
-              </h1>
-              <p className="mt-6 max-w-xl border-l border-white/[0.15] pl-5 text-base leading-7 text-stone-300">
-                {project.summary}
-              </p>
+              <Reveal variant="fade-up" delay={50}>
+                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
+                  {project.code} / {project.category}
+                </p>
+                <h1 className="mt-4 max-w-3xl font-serif text-4xl font-light leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">
+                  {project.title}
+                </h1>
+                <p className="mt-6 max-w-xl border-l border-white/[0.15] pl-5 text-base leading-7 text-stone-300">
+                  {project.summary}
+                </p>
+              </Reveal>
             </div>
             <dl className="grid grid-cols-2 gap-x-6 text-sm lg:grid-cols-1 lg:gap-x-0 lg:border-l lg:border-white/[0.12] lg:pl-8">
               {[
@@ -64,11 +67,13 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
                   key={label}
                   className="grid gap-1.5 border-t border-white/[0.1] py-3.5 lg:grid-cols-[7rem_1fr] lg:gap-4 lg:border-t-0 lg:border-b lg:py-4 lg:first:pt-8 lg:last:border-b-0"
                 >
-                  <dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">
-                    <span className="mr-2 text-stone-600">{String(index + 1).padStart(2, '0')}</span>
-                    {label}
-                  </dt>
-                  <dd className="text-stone-200">{value}</dd>
+                  <Reveal variant="fade-up" delay={index * 40}>
+                    <dt className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">
+                      <span className="mr-2 text-stone-600">{String(index + 1).padStart(2, '0')}</span>
+                      {label}
+                    </dt>
+                    <dd className="text-stone-200">{value}</dd>
+                  </Reveal>
                 </div>
               ))}
             </dl>
@@ -76,7 +81,9 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
         </div>
         <div className="mx-auto max-w-7xl px-6 pb-12 sm:px-8 lg:px-12 lg:pb-16">
           <div className="border-t border-white/[0.12] pt-5">
-            <SpatialRail project={project} />
+            <Reveal variant="fade-up" delay={120}>
+              <SpatialRail project={project} />
+            </Reveal>
           </div>
         </div>
         <section
@@ -132,16 +139,15 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
             </div>
             <ol>
               {project.milestones.map((milestone, index) => (
-                <li
-                  key={milestone.label}
-                  className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-baseline gap-4 border-b border-white/[0.1] px-3 py-5 sm:grid-cols-[4rem_minmax(0,1fr)_8rem] sm:gap-6 sm:px-4"
-                >
-                  <span className="font-mono text-sm text-stone-400">{String(index + 1).padStart(2, '0')}</span>
-                  <span className="font-serif text-xl font-light text-stone-100 sm:text-2xl">{milestone.label}</span>
-                  <span className="text-right font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">
-                    {milestone.status}
-                  </span>
-                </li>
+                <Reveal key={milestone.label} variant="fade-up" delay={index * 40} as="li">
+                  <div className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-baseline gap-4 border-b border-white/[0.1] px-3 py-5 sm:grid-cols-[4rem_minmax(0,1fr)_8rem] sm:gap-6 sm:px-4">
+                    <span className="font-mono text-sm text-stone-400">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="font-serif text-xl font-light text-stone-100 sm:text-2xl">{milestone.label}</span>
+                    <span className="text-right font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">
+                      {milestone.status}
+                    </span>
+                  </div>
+                </Reveal>
               ))}
             </ol>
           </div>

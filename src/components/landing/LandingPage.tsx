@@ -7,6 +7,7 @@ import { CapabilityRegister } from './CapabilityRegister';
 import { DevelopmentFrame } from './DevelopmentFrame';
 import { AboutSection } from './AboutSection';
 import { TeamSection } from './TeamSection';
+import { ScrollProgressBar } from '../motion/ScrollProgressBar';
 
 interface LandingPageProps {
   onNavigate: (path: string) => void;
@@ -18,6 +19,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
 
   return (
     <div data-landing-scroll-container className="h-screen w-full overflow-y-auto overflow-x-hidden scroll-smooth bg-[#0a0b0d] font-sans text-[#f4efe8] selection:bg-stone-300 selection:text-black">
+      <ScrollProgressBar />
       <LandingNavbar onLogin={onLogin} />
       <main>
         <Hero onViewProjects={viewProjects} onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
