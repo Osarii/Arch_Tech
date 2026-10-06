@@ -51,7 +51,7 @@ Latest fully verified application implementation:
 ```text
 a4a28d37 fix(motion): prevent scroll jumps on project route transitions
 ```
-*(The subsequent commit on main is documentation-only).*
+*(Commits after this verified application checkpoint are documentation-only unless a newer verified implementation checkpoint is explicitly recorded).*
 
 Current remote `main` must always be resolved live at the start of a new task.
 

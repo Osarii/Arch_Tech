@@ -7,7 +7,7 @@
 ## 1. Project Purpose & Scope
 **Verified application checkpoint:**
 - Documentation refresh base: `4ee4e0d4` (`docs(contract): swap agent tool assignments`).
-- Latest fully verified application implementation: `a4a28d37` (`fix(motion): prevent scroll jumps on project route transitions`). The subsequent commit on `main` is documentation-only.
+- Latest fully verified application implementation: `a4a28d37` (`fix(motion): prevent scroll jumps on project route transitions`). Commits after this verified application checkpoint are documentation-only unless a newer verified implementation checkpoint is explicitly recorded.
 - Current remote `main` must always be resolved live at the start of a new task.
 
 **ARCH_TECH** is a dual-capability architecture & engineering platform with this product hierarchy:
