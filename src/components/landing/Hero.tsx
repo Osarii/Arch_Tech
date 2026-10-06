@@ -19,7 +19,7 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => 
             <p className="font-mono text-[10px] uppercase tracking-[0.26em] text-stone-500">GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype</p>
           </Reveal>
           <Reveal variant="fade-up" delay={120}>
-            <h1 className="landing-hero-heading mt-7 max-w-5xl font-serif font-light leading-[0.88] tracking-[-0.045em] text-[#f4efe8]">
+            <h1 className="landing-hero-heading mt-7 max-w-5xl font-serif font-light leading-[0.88] tracking-[-0.045em] text-[#EDF4ED]">
               Development<br /><span className="landing-hero-title-line">at a larger scale.</span>
             </h1>
           </Reveal>

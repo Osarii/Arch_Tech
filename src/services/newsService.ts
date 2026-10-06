@@ -63,10 +63,12 @@ export type PublicNewsUpdate = ProjectUpdate & { id: string; slug?: string; cate
 const formatDate = (value: string) => new Date(value).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
 export const getPublicNewsUpdates = (projectId?: string): PublicNewsUpdate[] => {
   const projects = new Map(getPublicProjects().map((project) => [project.id, project]));
-  const articles = getPublicNews(projectId);
-  if (articles.length) return articles.flatMap((article) => { const project = projects.get(article.projectId); return project ? [{ id: article.id, slug: article.slug, projectId: article.projectId, date: formatDate(article.publishedAt || article.createdAt), title: article.title, body: article.body || article.excerpt, category: article.category, projectTitle: project.title, projectCategory: project.category, image: article.image || project.image }] : []; });
-  return (getPortalSnapshot().db.updates ?? []).filter((update) => !projectId || update.projectId === projectId).map((update) => { const project = projects.get(update.projectId); return project ? { ...update, id: `${update.projectId}-${update.date}-${update.title}`, projectTitle: project.title, projectCategory: project.category, image: project.image } : null; }).filter((update): update is PublicNewsUpdate => update !== null);
+  const articles = projectId ? getPublicNews(projectId) : getLatestPublishedNews(Number.MAX_SAFE_INTEGER);
+  return articles.flatMap((article) => { const project = projects.get(article.projectId); return project ? [{ id: article.id, slug: article.slug, projectId: article.projectId, date: formatDate(article.publishedAt || article.createdAt), title: article.title, body: article.body || article.excerpt, category: article.category, projectTitle: project.title, projectCategory: project.category, image: article.image || project.image }] : []; });
 };
-export const getPublicNewsUpdate = (id: string) => getPublicNewsUpdates().find((update) => update.id === id || update.slug === id);
+export const getPublicNewsUpdate = (id: string) => {
+  const article = getNewsBySlug(id);
+  return getPublicNewsUpdates().find((update) => update.id === article?.id || update.id === id || update.slug === id);
+};
 export const getNewsProject = (projectId: string): PortalProjectRecord | undefined => getPublicProjects().find((project) => project.id === projectId);
 export const newsUpdatePath = (update: { id: string; slug?: string }) => `/news/${encodeURIComponent(update.slug || update.id)}`;

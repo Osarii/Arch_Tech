@@ -8,6 +8,7 @@ import { DevelopmentFrame } from './DevelopmentFrame';
 import { AboutSection } from './AboutSection';
 import { TeamSection } from './TeamSection';
 import { ScrollProgressBar } from '../motion/ScrollProgressBar';
+import { NewsSection } from '../news/NewsSection';
 
 interface LandingPageProps {
   onNavigate: (path: string) => void;
@@ -18,12 +19,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
   const viewProjects = () => document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' });
 
   return (
-    <div data-landing-scroll-container className="h-screen w-full overflow-y-auto overflow-x-hidden scroll-smooth bg-[#0a0b0d] font-sans text-[#f4efe8] selection:bg-stone-300 selection:text-black">
+    <div data-landing-scroll-container className="landing-surface h-screen w-full overflow-y-auto overflow-x-hidden scroll-smooth bg-[#000000] font-sans text-[#EDF4ED] selection:bg-[#ABD1B5] selection:text-black">
       <ScrollProgressBar />
-      <LandingNavbar onLogin={onLogin} />
+      <LandingNavbar onLogin={onLogin} onNavigate={onNavigate} />
       <main>
         <Hero onViewProjects={viewProjects} onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
         <ProjectShowcase onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
+        <NewsSection onNavigate={onNavigate} />
         <AboutSection />
         <CapabilityRegister />
         <TeamSection />

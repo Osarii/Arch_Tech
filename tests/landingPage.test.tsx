@@ -712,6 +712,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
           { key: 'people', path: '/admin/people' },
           { key: 'approvals', path: '/admin/approvals' },
           { key: 'analytics', path: '/admin/analytics' },
+          { key: 'news', path: '/admin/news' },
           { key: 'assistant', path: '/admin/assistant' },
         ],
       },
@@ -743,6 +744,17 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
         expect(button.getAttribute('aria-current')).toBe('page');
       }
     }
+  });
+
+  it('routes authenticated admins to the editorial News desk', async () => {
+    portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+    window.history.replaceState({}, '', '/admin/news');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('portal-nav-news')).toBeDefined();
+      expect(screen.getByRole('heading', { name: 'Editorial news register.' })).toBeDefined();
+    });
   });
 
   it('redirects an authenticated role away from another role route to 403', async () => {

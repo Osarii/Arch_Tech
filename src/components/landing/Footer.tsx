@@ -41,7 +41,7 @@ export const Footer: React.FC<FooterProps> = ({ onLogin }) => {
   };
 
   return (
-    <footer className="landing-footer border-t border-white/[0.08] bg-[#07080a] px-6 py-16 text-stone-400 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
+    <footer className="landing-footer border-t border-white/[0.08] bg-[#000000] px-6 py-16 text-stone-400 sm:px-8 sm:py-20 lg:px-12 lg:py-24">
       <div className="mx-auto max-w-7xl">
         <div className="landing-footer-intro grid gap-8 border-b border-white/[0.1] pb-12 lg:grid-cols-[1fr_minmax(20rem,0.68fr)] lg:items-end lg:gap-16">
           <div>

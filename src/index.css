@@ -88,6 +88,70 @@
 .landing-navbar-links {
   gap: clamp(1.25rem, 2.4vw, 2.25rem);
 }
+/* Shared Garnier Architecture public surface palette. */
+.landing-surface {
+  background-color: #000000;
+  color: #EDF4ED;
+}
+.landing-surface .landing-projects-section,
+.landing-surface .landing-about,
+.landing-surface #capabilities {
+  background-color: #EDF4ED;
+  color: #000000;
+}
+.landing-surface .landing-hero,
+.landing-surface .landing-team,
+.landing-surface #development,
+.landing-surface .landing-footer {
+  background-color: #000000;
+  color: #EDF4ED;
+}
+.landing-surface .landing-navbar,
+.landing-surface .landing-navbar [class~="bg-[#000000]"] {
+  background-color: #000000 !important;
+}
+.landing-surface .landing-hero [class~="text-stone-100"],
+.landing-surface .landing-hero [class~="text-stone-200"],
+.landing-surface .landing-team [class~="text-stone-100"],
+.landing-surface .landing-team [class~="text-[#EDF4ED]"],
+.landing-surface #development [class~="text-[#EDF4ED]"],
+.landing-surface .landing-footer [class~="text-stone-100"] { color: #EDF4ED !important; }
+.landing-surface .landing-hero [class~="text-stone-300"],
+.landing-surface .landing-hero [class~="text-stone-400"],
+.landing-surface .landing-hero [class~="text-stone-500"],
+.landing-surface .landing-team [class~="text-stone-300"],
+.landing-surface .landing-team [class~="text-stone-400"],
+.landing-surface .landing-team [class~="text-stone-500"],
+.landing-surface #development [class~="text-stone-300"],
+.landing-surface #development [class~="text-stone-400"],
+.landing-surface #development [class~="text-stone-500"],
+.landing-surface .landing-footer [class~="text-stone-300"],
+.landing-surface .landing-footer [class~="text-stone-400"],
+.landing-surface .landing-footer [class~="text-stone-500"],
+.landing-surface .landing-footer [class~="text-stone-600"] { color: #ABD1B5 !important; }
+.landing-surface .landing-projects-section [class~="text-stone-500"],
+.landing-surface .landing-projects-section [class~="text-stone-600"],
+.landing-surface .landing-projects-section [class~="text-stone-700"],
+.landing-surface .landing-about [class~="text-stone-500"],
+.landing-surface .landing-about [class~="text-stone-600"],
+.landing-surface .landing-about [class~="text-stone-700"],
+.landing-surface #capabilities [class~="text-stone-500"],
+.landing-surface #capabilities [class~="text-stone-600"] { color: #000000 !important; }
+.landing-surface .landing-hero [class*="border-white"],
+.landing-surface .landing-team [class*="border-white"],
+.landing-surface #development [class*="border-white"],
+.landing-surface .landing-footer [class*="border-white"] { border-color: rgb(237 244 237 / 0.18) !important; }
+.landing-surface .landing-hero [class*="bg-white"],
+.landing-surface .landing-navbar [class*="bg-white"] { background-color: rgb(237 244 237 / 0.2) !important; }
+.landing-surface .landing-projects-section [class*="border-black"],
+.landing-surface .landing-about [class*="border-black"],
+.landing-surface #capabilities [class*="border-black"] { border-color: rgb(0 0 0 / 0.2) !important; }
+.landing-surface .landing-projects-section [class*="bg-stone-300"] { background-color: #ABD1B5 !important; }
+.landing-surface .landing-navbar .arch-interactive-button:hover { background-color: #ABD1B5 !important; border-color: #ABD1B5 !important; color: #000000 !important; }
+.landing-surface .landing-projects-register-row:hover { background-color: #ABD1B5 !important; }
+.landing-surface .landing-footer-link:hover,
+.landing-surface .landing-footer-link:focus-visible { color: #EDF4ED !important; }
+
 
 @media (max-width: 639px) {
   .landing-team-portrait {
@@ -270,92 +334,118 @@ body {
 }
 
 html.portal-dark .portal-surface {
-  background-color: #0a0b0d !important;
-  color: #f4efe8 !important;
+  --portal-bg: #000000;
+  --portal-text: #EDF4ED;
+  --portal-secondary: #ABD1B5;
+  --portal-green: #79B791;
+  --portal-accent: #FFBF00;
+  background-color: var(--portal-bg) !important;
+  color: var(--portal-text) !important;
 }
 html.portal-dark .portal-surface .portal-header {
-  background-color: #0b0c10 !important;
-  border-color: rgb(255 255 255 / 0.14);
+  background-color: #000000 !important;
+  border-color: rgb(171 209 181 / 0.28) !important;
+  color: #EDF4ED !important;
+}
+html.portal-dark .portal-surface .portal-header > div:last-child {
+  background-color: rgb(121 183 145 / 0.16) !important;
+}
+html.portal-dark .portal-surface [class~="text-black"],
+html.portal-dark .portal-surface [class~="text-[#211E1A]"],
+html.portal-dark .portal-surface [class~="text-[#171714]"] {
+  color: #FFBF00 !important;
 }
 html.portal-dark .portal-surface .text-stone-600,
 html.portal-dark .portal-surface .text-stone-500,
 html.portal-dark .portal-surface .text-stone-400,
 html.portal-dark .portal-surface .text-stone-300,
 html.portal-dark .portal-surface .text-stone-200 {
-  color: #a8a29e !important;
+  color: #ABD1B5 !important;
 }
-html.portal-dark .portal-surface .border-black\/15,
-html.portal-dark .portal-surface .border-black\/10,
-html.portal-dark .portal-surface .border-black\/20,
-html.portal-dark .portal-surface .border-black {
-  border-color: rgb(255 255 255 / 0.14) !important;
+html.portal-dark .portal-surface .text-white,
+html.portal-dark .portal-surface .text-stone-100 {
+  color: #EDF4ED !important;
 }
-html.portal-dark .portal-surface .portal-header button:first-child,
+html.portal-dark .portal-surface [class~="border-black"],
+html.portal-dark .portal-surface [class~="border-black/10"],
+html.portal-dark .portal-surface [class~="border-black/15"],
+html.portal-dark .portal-surface [class~="border-black/20"],
+html.portal-dark .portal-surface [class~="divide-black/15"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgb(171 209 181 / 0.28) !important;
+}
 html.portal-dark .portal-surface .portal-header button:hover,
-html.portal-dark .portal-surface .hover\:text-black:hover,
-html.portal-dark .portal-surface .hover\:text-stone-700:hover {
-  color: #f4efe8 !important;
+html.portal-dark .portal-surface [class~="hover:text-black"]:hover,
+html.portal-dark .portal-surface [class~="hover:text-stone-700"]:hover,
+html.portal-dark .portal-surface [class~="hover:text-stone-500"]:hover {
+  color: #FFBF00 !important;
 }
-html.portal-dark .portal-surface .text-black {
-  color: #f4efe8 !important;
+html.portal-dark .portal-surface [class~="bg-black"] {
+  background-color: #FFBF00 !important;
+  color: #000000 !important;
 }
-html.portal-dark .portal-surface .bg-black {
-  background-color: #f4efe8 !important;
-  color: #0a0b0d !important;
+html.portal-dark .portal-surface [class~="bg-black/15"],
+html.portal-dark .portal-surface [class~="bg-white/5"],
+html.portal-dark .portal-surface [class~="bg-white/10"] {
+  background-color: rgb(121 183 145 / 0.18) !important;
 }
-html.portal-dark .portal-surface .bg-black\/15 {
-  background-color: rgb(255 255 255 / 0.18) !important;
-}
-html.portal-dark .portal-surface .hover\:bg-white\/35:hover {
-  background-color: rgb(255 255 255 / 0.08) !important;
-}
-html.portal-dark .portal-surface .admin-overview-tile {
-  background-color: #111216 !important;
-}
-html.portal-dark .portal-surface .portal-overview-tile {
-  background-color: #111216 !important;
-}
-html.portal-dark .portal-surface .hover\:text-stone-500:hover {
-  color: #f4efe8 !important;
-}
-html.portal-dark .portal-surface .admin-action:hover {
-  color: #f4efe8 !important;
-}
-html.portal-dark .portal-surface .portal-project-thumbnail {
-  border-color: rgb(255 255 255 / 0.14);
-}
+html.portal-dark .portal-surface [class~="bg-[#E6DED2]"],
+html.portal-dark .portal-surface [class~="bg-[#E9E2D7]"],
+html.portal-dark .portal-surface [class~="bg-[#11110f]"],
+html.portal-dark .portal-surface [class~="bg-[#171714]"],
+html.portal-dark .portal-surface [class~="bg-[#161716]"],
+html.portal-dark .portal-surface .admin-overview-tile,
+html.portal-dark .portal-surface .portal-overview-tile,
+html.portal-dark .portal-surface .portal-project-media-frame,
 html.portal-dark .portal-surface .portal-project-thumbnail-fallback {
-  background-color: #111216;
-  color: #a8a29e;
+  background-color: rgb(121 183 145 / 0.14) !important;
+  color: #EDF4ED !important;
 }
-html.portal-dark .portal-surface .portal-project-media-frame {
-  border-color: rgb(255 255 255 / 0.14);
-  background-color: #111216;
-}
-html.portal-dark .portal-surface .portal-status-pending { color: #d38a6c !important; }
-html.portal-dark .portal-surface .portal-status-approved,
-html.portal-dark .portal-surface .portal-status-complete { color: #9aa47a !important; }
-html.portal-dark .portal-surface .portal-status-rejected { color: #d47e73 !important; }
-html.portal-dark .portal-surface .portal-status-upcoming { color: #a8a29e !important; }
-html.portal-dark .portal-surface .portal-status-current { color: #c49a5e !important; }
+html.portal-dark .portal-surface [class~="hover:bg-white/35"]:hover,
 html.portal-dark .portal-surface .portal-project-navigation button:not(:disabled):hover,
 html.portal-dark .portal-surface .portal-project-navigation button:not(:disabled):focus-visible {
-  background-color: #111216;
-  border-color: rgb(255 255 255 / 0.2);
+  background-color: rgb(171 209 181 / 0.18) !important;
+  border-color: rgb(171 209 181 / 0.45) !important;
 }
+html.portal-dark .portal-surface .portal-project-thumbnail,
+html.portal-dark .portal-surface .portal-project-media-frame {
+  border-color: rgb(171 209 181 / 0.3) !important;
+}
+html.portal-dark .portal-surface .portal-progress-track { background-color: rgb(171 209 181 / 0.25) !important; }
+html.portal-dark .portal-surface .portal-progress-fill { background-color: #79B791 !important; }
+html.portal-dark .portal-surface .portal-status-approved,
+html.portal-dark .portal-surface .portal-status-complete { color: #79B791 !important; }
+html.portal-dark .portal-surface .portal-status-current { color: #FFBF00 !important; }
+html.portal-dark .portal-surface .portal-status-upcoming { color: #ABD1B5 !important; }
+html.portal-dark .portal-surface .portal-status-pending { color: #FFBF00 !important; text-decoration: underline; text-decoration-style: dashed; }
+html.portal-dark .portal-surface .portal-status-rejected { color: #ABD1B5 !important; text-decoration: underline; text-decoration-style: wavy; }
+html.portal-dark .portal-surface [class~="bg-amber-500"],
+html.portal-dark .portal-surface [class~="text-amber-400"],
+html.portal-dark .portal-surface [class~="text-amber-500"] { color: #FFBF00 !important; }
+html.portal-dark .portal-surface [class~="bg-amber-500"] { background-color: #FFBF00 !important; }
+html.portal-dark .portal-surface [class~="hover:bg-red-500/20"]:hover,
+html.portal-dark .portal-surface [class~="hover:bg-red-500/10"]:hover { background-color: rgb(171 209 181 / 0.18) !important; }
+html.portal-dark .portal-surface [class~="hover:text-red-300"]:hover { color: #ABD1B5 !important; }
+html.portal-dark .portal-surface .arch-tech-logo-portal {
+  background: #FFBF00;
+  display: block;
+  height: 1.65rem;
+  mask: url('/brand/garnier-architecture/03_symbol_monochrome_graphite_transparent.png') center / contain no-repeat;
+  width: 1.65rem;
+}
+html.portal-dark .portal-surface .arch-tech-logo-portal .arch-tech-logo-symbol { opacity: 0; }
 
 .portal-project-thumbnail {
   aspect-ratio: 4 / 3;
   width: 4.5rem;
-  border: 1px solid rgb(33 30 26 / 0.18);
-  background-color: #E9E2D7;
+  border: 1px solid rgb(0 0 0 / 0.18);
+  background-color: #ABD1B5;
 }
 .portal-project-thumbnail-fallback {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.35rem;
-  color: #68655F;
+  color: #000000;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.5rem;
   letter-spacing: 0.12em;
@@ -365,181 +455,122 @@ html.portal-dark .portal-surface .portal-project-navigation button:not(:disabled
 .portal-project-media-frame {
   min-height: 8rem;
   width: 100%;
-  border: 1px solid rgb(33 30 26 / 0.18);
-  background-color: #E9E2D7;
+  border: 1px solid rgb(0 0 0 / 0.18);
+  background-color: #ABD1B5;
 }
-.portal-project-media-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
-}
-.portal-project-media-grid .portal-project-media-primary {
-  aspect-ratio: 16 / 9;
-  grid-column: 1 / -1;
-}
-.portal-project-media-grid .portal-project-media-frame:not(.portal-project-media-primary) {
-  aspect-ratio: 4 / 3;
-}
-.portal-empty-state {
-  border-color: rgb(33 30 26 / 0.2);
-}
-.portal-project-navigation button {
-  border: 1px solid transparent;
-  padding: 0.35rem 0.45rem;
-  transition: border-color 160ms ease, background-color 160ms ease;
-}
+.portal-project-media-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+.portal-project-media-grid .portal-project-media-primary { aspect-ratio: 16 / 9; grid-column: 1 / -1; }
+.portal-project-media-grid .portal-project-media-frame:not(.portal-project-media-primary) { aspect-ratio: 4 / 3; }
+.portal-empty-state { border-color: rgb(0 0 0 / 0.2); }
+.portal-project-navigation button { border: 1px solid transparent; padding: 0.35rem 0.45rem; transition: border-color 160ms ease, background-color 160ms ease; }
 .portal-project-navigation button:not(:disabled):hover,
-.portal-project-navigation button:not(:disabled):focus-visible {
-  background-color: #E9E2D7;
-  border-color: rgb(45 46 44 / 0.25);
-  outline: none;
-}
-.portal-project-identity {
-  border: 1px solid transparent;
-  transition: border-color 160ms ease, color 160ms ease;
-}
+.portal-project-navigation button:not(:disabled):focus-visible { background-color: #ABD1B5; border-color: rgb(0 0 0 / 0.25); outline: none; }
+.portal-project-identity { border: 1px solid transparent; transition: border-color 160ms ease, color 160ms ease; }
 .portal-project-identity:hover .portal-project-thumbnail,
-.portal-project-identity:focus-visible .portal-project-thumbnail {
-  border-color: currentColor;
-}
-.portal-register-actions {
-  flex-wrap: wrap;
-}
+.portal-project-identity:focus-visible .portal-project-thumbnail { border-color: currentColor; }
+.portal-register-actions { flex-wrap: wrap; }
 
 html:not(.portal-dark) .portal-surface {
-  background-color: #D6CBB9 !important;
-  color: #211E1A !important;
+  --portal-bg: #EDF4ED;
+  --portal-text: #000000;
+  --portal-secondary: #ABD1B5;
+  --portal-green: #79B791;
+  --portal-accent: #FFBF00;
+  background-color: var(--portal-bg) !important;
+  color: var(--portal-text) !important;
 }
 html:not(.portal-dark) .portal-surface .portal-header {
-  background-color: #2D2E2C !important;
-  border-color: rgb(244 239 232 / 0.18) !important;
-  color: #F4EFE8 !important;
+  background-color: #ABD1B5 !important;
+  border-color: rgb(0 0 0 / 0.2) !important;
+  color: #000000 !important;
 }
-html:not(.portal-dark) .portal-surface .portal-header [class~="text-[#211E1A]"],
-html:not(.portal-dark) .portal-surface .portal-header [class~="text-stone-600"],
-html:not(.portal-dark) .portal-surface .portal-header [class~="text-stone-500"] {
-  color: #E8DDCB !important;
-}
-html:not(.portal-dark) .portal-surface .portal-header [class~="border-black/15"] {
-  border-color: rgb(244 239 232 / 0.2) !important;
-}
-html:not(.portal-dark) .portal-surface .admin-overview-tile,
-html:not(.portal-dark) .portal-surface .portal-overview-tile,
-html:not(.portal-dark) .portal-surface [class~="bg-[#E6DED2]"] {
-  background-color: #E9E2D7 !important;
-}
-html:not(.portal-dark) .portal-surface [class~="bg-[#171714]"],
-html:not(.portal-dark) .portal-surface [class~="bg-black"] {
-  background-color: #2D2E2C !important;
-  color: #F4EFE8 !important;
-}
-html:not(.portal-dark) .portal-surface [class~="bg-black/15"] {
-  background-color: rgb(111 115 92 / 0.2) !important;
-}
+html:not(.portal-dark) .portal-surface .portal-header > div:last-child { background-color: rgb(121 183 145 / 0.35) !important; }
+html:not(.portal-dark) .portal-surface [class~="text-black"],
+html:not(.portal-dark) .portal-surface [class~="text-[#211E1A]"],
+html:not(.portal-dark) .portal-surface [class~="text-[#171714]"] { color: #000000 !important; }
+html:not(.portal-dark) .portal-surface .text-stone-600,
+html:not(.portal-dark) .portal-surface .text-stone-500,
+html:not(.portal-dark) .portal-surface .text-stone-400,
+html:not(.portal-dark) .portal-surface .text-stone-300 { color: #000000 !important; }
+html:not(.portal-dark) .portal-surface .text-stone-200,
+html:not(.portal-dark) .portal-surface .text-stone-100,
+html:not(.portal-dark) .portal-surface .text-white { color: #000000 !important; }
 html:not(.portal-dark) .portal-surface [class~="border-black"],
 html:not(.portal-dark) .portal-surface [class~="border-black/10"],
 html:not(.portal-dark) .portal-surface [class~="border-black/15"],
-html:not(.portal-dark) .portal-surface [class~="border-black/20"] {
-  border-color: rgb(33 30 26 / 0.2) !important;
-}
-html:not(.portal-dark) .portal-surface [class~="divide-black/15"] > :not([hidden]) ~ :not([hidden]) {
-  border-color: rgb(33 30 26 / 0.16) !important;
-}
-html:not(.portal-dark) .portal-surface [class~="text-black"],
-html:not(.portal-dark) .portal-surface [class~="text-[#171714]"] {
-  color: #211E1A !important;
-}
-html:not(.portal-dark) .portal-surface [class~="text-stone-600"] {
-  color: #68655F !important;
-}
-html:not(.portal-dark) .portal-surface [class~="text-stone-500"] {
-  color: #68655F !important;
-}
-html:not(.portal-dark) .portal-surface [class~="text-stone-400"] {
-  color: #807B73 !important;
-}
-html:not(.portal-dark) .portal-surface [class~="text-stone-300"] {
-  color: #68655F !important;
-}
-html:not(.portal-dark) .portal-surface [class~="hover:text-black"]:hover,
-html:not(.portal-dark) .portal-surface [class~="hover:text-stone-700"]:hover {
-  color: #211E1A !important;
-}
-html:not(.portal-dark) .portal-surface .portal-header [class~="hover:text-black"]:hover {
-  color: #F4EFE8 !important;
-}
-html:not(.portal-dark) .portal-surface [class~="hover:bg-white/35"]:hover {
-  background-color: #E9E2D7 !important;
-}
-html:not(.portal-dark) .portal-surface [class~="bg-[#11110f]"] {
-  background-color: #E9E2D7 !important;
-  color: #211E1A !important;
-}
-html:not(.portal-dark) .portal-surface [class~="bg-[#11110f]"] [class~="text-white"] {
-  color: #211E1A !important;
-}
-html:not(.portal-dark) .portal-surface .portal-status-pending {
-  color: #A86449 !important;
-}
+html:not(.portal-dark) .portal-surface [class~="border-black/20"],
+html:not(.portal-dark) .portal-surface [class~="divide-black/15"] > :not([hidden]) ~ :not([hidden]) { border-color: rgb(0 0 0 / 0.24) !important; }
+html:not(.portal-dark) .portal-surface [class~="bg-black"] { background-color: #FFBF00 !important; color: #000000 !important; }
+html:not(.portal-dark) .portal-surface [class~="bg-black/15"],
+html:not(.portal-dark) .portal-surface [class~="bg-white/5"],
+html:not(.portal-dark) .portal-surface [class~="bg-white/10"],
+html:not(.portal-dark) .portal-surface [class~="bg-[#E6DED2]"],
+html:not(.portal-dark) .portal-surface [class~="bg-[#E9E2D7]"],
+html:not(.portal-dark) .portal-surface [class~="bg-[#11110f]"],
+html:not(.portal-dark) .portal-surface [class~="bg-[#171714]"],
+html:not(.portal-dark) .portal-surface [class~="bg-[#161716]"],
+html:not(.portal-dark) .portal-surface .admin-overview-tile,
+html:not(.portal-dark) .portal-surface .portal-overview-tile { background-color: #ABD1B5 !important; color: #000000 !important; }
+html:not(.portal-dark) .portal-surface [class~="hover:bg-white/35"]:hover,
+html:not(.portal-dark) .portal-surface .portal-project-navigation button:not(:disabled):hover,
+html:not(.portal-dark) .portal-surface .portal-project-navigation button:not(:disabled):focus-visible { background-color: #79B791 !important; border-color: rgb(0 0 0 / 0.35) !important; }
+html:not(.portal-dark) .portal-surface .portal-progress-track { background-color: rgb(0 0 0 / 0.18) !important; }
+html:not(.portal-dark) .portal-surface .portal-progress-fill { background-color: #79B791 !important; }
 html:not(.portal-dark) .portal-surface .portal-status-approved,
-html:not(.portal-dark) .portal-surface .portal-status-complete {
-  color: #6F735C !important;
+html:not(.portal-dark) .portal-surface .portal-status-complete { color: #79B791 !important; }
+html:not(.portal-dark) .portal-surface .portal-status-current { color: #FFBF00 !important; }
+html:not(.portal-dark) .portal-surface .portal-status-upcoming { color: #000000 !important; }
+html:not(.portal-dark) .portal-surface .portal-status-pending { color: #FFBF00 !important; text-decoration: underline; text-decoration-style: dashed; }
+html:not(.portal-dark) .portal-surface .portal-status-rejected { color: #000000 !important; text-decoration: underline; text-decoration-style: wavy; }
+html:not(.portal-dark) .portal-surface [class~="bg-amber-500"],
+html:not(.portal-dark) .portal-surface [class~="text-amber-400"],
+html:not(.portal-dark) .portal-surface [class~="text-amber-500"] { color: #FFBF00 !important; }
+html:not(.portal-dark) .portal-surface [class~="bg-amber-500"] { background-color: #FFBF00 !important; }
+html:not(.portal-dark) .portal-surface [class~="hover:bg-red-500/20"]:hover,
+html:not(.portal-dark) .portal-surface [class~="hover:bg-red-500/10"]:hover { background-color: rgb(121 183 145 / 0.35) !important; }
+html:not(.portal-dark) .portal-surface [class~="hover:text-red-300"]:hover { color: #000000 !important; }
+html:not(.portal-dark) .portal-surface .arch-tech-logo-portal {
+  background: #000000;
+  display: block;
+  height: 1.65rem;
+  mask: url('/brand/garnier-architecture/03_symbol_monochrome_graphite_transparent.png') center / contain no-repeat;
+  width: 1.65rem;
 }
-html:not(.portal-dark) .portal-surface .portal-status-current {
-  color: #8B6C49 !important;
-}
-html:not(.portal-dark) .portal-surface .portal-status-rejected {
-  color: #9C554A !important;
-}
-html:not(.portal-dark) .portal-surface .portal-status-upcoming {
-  color: #68655F !important;
-}
-html:not(.portal-dark) .portal-surface .portal-register-row:focus-within {
-  background-color: #E9E2D7 !important;
-  color: #211E1A !important;
-}
-html:not(.portal-dark) .portal-surface .portal-register-row:focus-within [class~="text-stone-500"],
-html:not(.portal-dark) .portal-surface .portal-register-row:focus-within [class~="text-stone-600"] {
-  color: #68655F !important;
-}
-html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action {
-  border: 1px solid rgb(45 46 44 / 0.35);
-  color: #2D2E2C !important;
-  padding: 0.4rem 0.55rem;
-}
-html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action:hover {
-  background-color: #2D2E2C !important;
-  color: #F4EFE8 !important;
-}
-html:not(.portal-dark) .portal-surface .portal-progress-track {
-  background-color: #6B6258 !important;
-}
-html:not(.portal-dark) .portal-surface .portal-progress-fill {
-  background-color: #2D2E2C !important;
-}
-/* Keep the KPI register above generic utility overrides so its graphite band is authoritative. */
-html:not(.portal-dark) .portal-surface .admin-kpi-strip {
-  background-color: #2D2E2C !important;
-  border-color: #2D2E2C !important;
-}
-html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile {
-  background-color: transparent !important;
-  color: #F4EFE8 !important;
-}
-html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile {
-  border-left: 1px solid rgb(244 239 232 / 0.18) !important;
-}
+html:not(.portal-dark) .portal-surface .arch-tech-logo-portal .arch-tech-logo-symbol { opacity: 0; }
+
+html:not(.portal-dark) .portal-surface .portal-register-row:focus-within { background-color: #ABD1B5 !important; color: #000000 !important; }
+html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action { border: 1px solid rgb(0 0 0 / 0.35); color: #000000 !important; padding: 0.4rem 0.55rem; }
+html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action:hover { background-color: #000000 !important; color: #EDF4ED !important; }
+html:not(.portal-dark) .portal-surface .admin-kpi-strip { background-color: #79B791 !important; border-color: #79B791 !important; }
+html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile { background-color: #ABD1B5 !important; color: #000000 !important; }
+html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile { border-left: 1px solid rgb(0 0 0 / 0.2) !important; }
 html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
-html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-600"] {
-  color: #B9B4AA !important;
+html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
+html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-600"] { color: #000000 !important; }
+html.portal-dark .portal-surface .admin-primary-action,
+html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"],
+html:not(.portal-dark) .portal-surface .admin-primary-action,
+html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"] {
+  background-color: #79B791 !important;
+  border: 1px solid rgb(0 0 0 / 0.35) !important;
+  color: #000000 !important;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
 }
-[class~="bg-[#11110f]"] {
-  background-color: #111216 !important;
+html.portal-dark .portal-surface .admin-primary-action:hover,
+html.portal-dark .portal-surface .admin-primary-action:focus-visible,
+html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"]:hover,
+html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"]:focus-visible,
+html:not(.portal-dark) .portal-surface .admin-primary-action:hover,
+html:not(.portal-dark) .portal-surface .admin-primary-action:focus-visible,
+html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"]:hover,
+html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"]:focus-visible {
+  background-color: #ABD1B5 !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
+  outline: none;
 }
-html.portal-dark .portal-surface [class~="bg-[#171714]"] {
-  background-color: #f4efe8 !important;
-  color: #0a0b0d !important;
-}
+[class~="bg-[#11110f]"] { background-color: #000000 !important; }
+html.portal-dark .portal-surface [class~="bg-[#171714]"] { background-color: #FFBF00 !important; color: #000000 !important; }
 
 /* Admin keeps the editorial register while giving operational information a usable reading scale. */
 .portal-admin > main {

@@ -54,6 +54,7 @@ export const PORTAL_NAV_ITEMS: Record<PortalRole, NavItemConfig[]> = {
     { key: 'people', label: 'People', path: '/admin/people' },
     { key: 'approvals', label: 'Approvals', path: '/admin/approvals' },
     { key: 'analytics', label: 'Analytics', path: '/admin/analytics' },
+    { key: 'news', label: 'News', path: '/admin/news' },
     { key: 'assistant', label: 'Assistant', path: '/admin/assistant' },
   ],
 };
@@ -386,7 +387,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
   return (
     <PortalShellContext.Provider value={{ insideShell: true, navigate }}>
       <div className={`portal-surface ${role === 'admin' ? 'portal-admin' : ''} h-screen overflow-y-auto bg-[#D6CBB9] text-[#211E1A]`}>
-        <header className="portal-header border-b border-black/10 bg-[#2D2E2C]">
+        <header className="portal-header border-b border-black/20 bg-[#ABD1B5]">
           <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
             <div className="flex items-center gap-4">
               <button
@@ -457,7 +458,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
           </div>
 
           {/* Sub-navigation bar with real routes */}
-          <div className="border-t border-black/10 bg-[#252624]/60">
+          <div className="border-t border-black/15 bg-[#79B791]/35">
             <div className="mx-auto flex max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
               <nav
                 aria-label={`${role} navigation`}
