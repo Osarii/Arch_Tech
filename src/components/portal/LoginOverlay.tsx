@@ -140,17 +140,19 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
         role="dialog"
         aria-modal="true"
         aria-labelledby="client-login-title"
-        className="w-full max-w-lg border border-white/15 bg-[#111216]/95 p-6 text-[#f4efe8] shadow-2xl sm:p-8"
+        className="relative w-full max-w-lg border border-white/15 bg-[#111216]/95 p-6 text-[#f4efe8] shadow-2xl sm:p-8"
       >
         <button
           onClick={onClose}
           aria-label="Close login"
-          className="ml-auto flex h-9 w-9 items-center justify-center border border-white/15 text-stone-300 transition-colors hover:border-white hover:text-white"
+          className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center border border-white/15 text-stone-300 transition-colors hover:border-white hover:text-white sm:right-6 sm:top-6"
         >
           <X className="h-4 w-4" />
         </button>
-        <div className="mt-6">
-          <ArchTechLogo variant="stacked" tone="mint-cream" theme="dark" className="login-overlay-mark mb-6" />
+        <div className="flex flex-col items-center pt-3 text-center">
+          <div className="mb-6 flex justify-center">
+            <ArchTechLogo variant="stacked" theme="dark" className="login-overlay-mark" />
+          </div>
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Private access</p>
           <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">
             Portal Access

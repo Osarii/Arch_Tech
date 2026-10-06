@@ -396,7 +396,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 aria-label="GARNIER ARCHITECTURE home"
                 className="flex items-center gap-3 text-left text-[#211E1A]"
               >
-                <ArchTechLogo variant="mark" tone="black" theme="light" className="arch-tech-logo-portal" />
+                <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="arch-tech-logo-portal" />
                 <span className="hidden font-mono text-[8px] uppercase tracking-[0.16em] text-stone-400 sm:inline">
                   Portfolio Showcase / Concept Prototype
                 </span>

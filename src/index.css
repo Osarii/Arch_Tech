@@ -765,8 +765,13 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] { background-color: #FF
   height: 2rem;
   opacity: 0.82;
 }
+.login-overlay-mark {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
 .login-overlay-mark .arch-tech-logo-stacked {
-  width: min(100%, 11rem);
+  width: clamp(10rem, 36vw, 13.5rem);
 }
 .landing-hero-mark .arch-tech-logo-symbol {
   height: clamp(10rem, 22vw, 18rem);
