@@ -49,13 +49,13 @@ describe('portal persistence recovery', () => {
     const recovered = getPortalSnapshot();
     const persisted = JSON.parse(window.localStorage.getItem(PORTAL_STATE_KEY) ?? 'null');
 
-    expect(recovered.db.schemaVersion).toBe(3);
+    expect(recovered.db.schemaVersion).toBe(4);
     expect(recovered.projects).toHaveLength(6);
-    expect(persisted.schemaVersion).toBe(3);
+    expect(persisted.schemaVersion).toBe(4);
     expect(persisted.projects).toHaveLength(6);
 
     const secondRead = getPortalSnapshot();
-    expect(secondRead.db.schemaVersion).toBe(3);
+    expect(secondRead.db.schemaVersion).toBe(4);
     expect(secondRead.projects).toHaveLength(6);
     expect(secondRead.projects.map((project) => project.id)).toEqual(recovered.projects.map((project) => project.id));
   });
@@ -68,7 +68,7 @@ describe('portal persistence recovery', () => {
 
     const recovered = getPortalSnapshot();
 
-    expect(recovered.db.schemaVersion).toBe(3);
+    expect(recovered.db.schemaVersion).toBe(4);
     expect(recovered.projects).toHaveLength(6);
   });
 
@@ -122,7 +122,7 @@ describe('portal persistence recovery', () => {
 
     const recovered = getPortalSnapshot();
 
-    expect(recovered.db.schemaVersion).toBe(3);
+    expect(recovered.db.schemaVersion).toBe(4);
     expect(recovered.projects).toHaveLength(6);
     expect(recovered.projects.find((project) => project.id === seed.projects[0].id)?.progress).toBe(seed.projects[0].progress);
     expect(recovered.projects.some((project) => project.id === 'admin-project-invalid')).toBe(false);
@@ -130,5 +130,53 @@ describe('portal persistence recovery', () => {
     expect(recovered.db.milestones.some((milestone) => milestone.label === 'Bad milestone')).toBe(false);
     expect(recovered.db.approvals.some((approval) => approval.title === 'Bad approval')).toBe(false);
     expect(recovered.db.notifications.some((notification) => notification.message === 'Bad notification')).toBe(false);
+  });
+
+  it('migrates safely from existing schema v3 state and retains seed progressSnapshots', () => {
+    const seed = getPortalSnapshot();
+    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify({
+      schemaVersion: 3,
+      projects: seed.projects.map((p) => ({ ...p, progress: p.progress })),
+      updates: seed.db.updates,
+      milestones: seed.db.milestones,
+      documents: seed.db.documents,
+      approvals: seed.db.approvals,
+      notifications: seed.db.notifications,
+      // note: v3 had no progressSnapshots
+    }));
+
+    const recovered = getPortalSnapshot();
+    expect(recovered.db.schemaVersion).toBe(4);
+    expect(recovered.projects).toHaveLength(6);
+    expect(recovered.db.updates).toEqual(seed.db.updates);
+    expect(recovered.db.progressSnapshots.length).toBeGreaterThan(0);
+  });
+
+  it('validates progress snapshots, rejecting malformed and orphaned records, while remapping legacy projects', () => {
+    window.localStorage.setItem(PORTAL_STATE_KEY, JSON.stringify({
+      schemaVersion: 3,
+      progressSnapshots: [
+        { id: 'valid-snap-1', projectId: 'zona-franca-la-lima', date: '2026-02-01', progress: 40 },
+        { id: 'legacy-snap-1', projectId: 'pacific-nexus-free-zone', date: '2026-03-01', progress: 45 },
+        { id: 'bad-progress', projectId: 'zona-franca-la-lima', date: '2026-02-01', progress: 105 },
+        { id: 'bad-neg-progress', projectId: 'zona-franca-la-lima', date: '2026-02-01', progress: -5 },
+        { id: 'orphan-project', projectId: 'non-existent-project-xyz', date: '2026-02-01', progress: 50 },
+        { id: '', projectId: 'zona-franca-la-lima', date: '2026-02-01', progress: 50 },
+        { id: 'empty-date', projectId: 'zona-franca-la-lima', date: '', progress: 50 },
+        { notASnapshot: true },
+      ],
+    }));
+
+    const recovered = getPortalSnapshot();
+    expect(recovered.db.schemaVersion).toBe(4);
+    expect(recovered.db.progressSnapshots.some((s) => s.id === 'valid-snap-1' && s.progress === 40)).toBe(true);
+    expect(recovered.db.progressSnapshots.some((s) => s.id === 'legacy-snap-1' && s.projectId === 'zona-franca-la-lima')).toBe(true);
+    expect(recovered.db.progressSnapshots.some((s) => s.id === 'bad-progress')).toBe(false);
+    expect(recovered.db.progressSnapshots.some((s) => s.id === 'bad-neg-progress')).toBe(false);
+    expect(recovered.db.progressSnapshots.some((s) => s.id === 'orphan-project')).toBe(false);
+
+    // Persisted snapshots survive reload
+    const secondRead = getPortalSnapshot();
+    expect(secondRead.db.progressSnapshots.some((s) => s.id === 'valid-snap-1')).toBe(true);
   });
 });

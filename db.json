@@ -448,5 +448,31 @@
       "message": "Corporate campus reference is ready for coordination.",
       "date": "29 SEP 2026"
     }
+  ],
+  "progressSnapshots": [
+    { "id": "snap-zfll-1", "projectId": "zona-franca-la-lima", "date": "2026-01-15", "progress": 35 },
+    { "id": "snap-zfll-2", "projectId": "zona-franca-la-lima", "date": "2026-04-15", "progress": 48 },
+    { "id": "snap-zfll-3", "projectId": "zona-franca-la-lima", "date": "2026-07-15", "progress": 62 },
+    { "id": "snap-zfll-4", "projectId": "zona-franca-la-lima", "date": "2026-09-15", "progress": 70 },
+    { "id": "snap-ec-1", "projectId": "el-cafetal", "date": "2026-01-15", "progress": 30 },
+    { "id": "snap-ec-2", "projectId": "el-cafetal", "date": "2026-04-15", "progress": 42 },
+    { "id": "snap-ec-3", "projectId": "el-cafetal", "date": "2026-07-15", "progress": 55 },
+    { "id": "snap-ec-4", "projectId": "el-cafetal", "date": "2026-09-15", "progress": 64 },
+    { "id": "snap-sacc-1", "projectId": "santa-ana-country-club", "date": "2026-01-15", "progress": 45 },
+    { "id": "snap-sacc-2", "projectId": "santa-ana-country-club", "date": "2026-04-15", "progress": 58 },
+    { "id": "snap-sacc-3", "projectId": "santa-ana-country-club", "date": "2026-07-15", "progress": 70 },
+    { "id": "snap-sacc-4", "projectId": "santa-ana-country-club", "date": "2026-09-15", "progress": 78 },
+    { "id": "snap-wa-1", "projectId": "waldorf-astoria", "date": "2026-01-15", "progress": 20 },
+    { "id": "snap-wa-2", "projectId": "waldorf-astoria", "date": "2026-04-15", "progress": 30 },
+    { "id": "snap-wa-3", "projectId": "waldorf-astoria", "date": "2026-07-15", "progress": 38 },
+    { "id": "snap-wa-4", "projectId": "waldorf-astoria", "date": "2026-09-15", "progress": 46 },
+    { "id": "snap-ccs-1", "projectId": "centro-corporativo-sabana", "date": "2026-01-15", "progress": 15 },
+    { "id": "snap-ccs-2", "projectId": "centro-corporativo-sabana", "date": "2026-04-15", "progress": 24 },
+    { "id": "snap-ccs-3", "projectId": "centro-corporativo-sabana", "date": "2026-07-15", "progress": 32 },
+    { "id": "snap-ccs-4", "projectId": "centro-corporativo-sabana", "date": "2026-09-15", "progress": 39 },
+    { "id": "snap-ul-1", "projectId": "universidad-latina", "date": "2026-01-15", "progress": 25 },
+    { "id": "snap-ul-2", "projectId": "universidad-latina", "date": "2026-04-15", "progress": 36 },
+    { "id": "snap-ul-3", "projectId": "universidad-latina", "date": "2026-07-15", "progress": 48 },
+    { "id": "snap-ul-4", "projectId": "universidad-latina", "date": "2026-09-15", "progress": 57 }
   ]
 }

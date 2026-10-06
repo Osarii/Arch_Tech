@@ -68,6 +68,13 @@ export type PortalProjectRecord = {
   };
 };
 
+export type ProgressSnapshot = {
+  id: string;
+  projectId: string;
+  date: string;
+  progress: number;
+};
+
 export type PortalProject = PortalProjectRecord & {
   updates: ProjectUpdate[];
   milestones: ProjectMilestone[];
@@ -89,10 +96,11 @@ export type PortalDatabase = {
     message: string;
     date: string;
   }[];
+  progressSnapshots: ProgressSnapshot[];
 };
 
 const PORTAL_STATE_KEY = 'arch-tech-portal-state';
-const PORTAL_SCHEMA_VERSION = 3;
+const PORTAL_SCHEMA_VERSION = 4;
 let volatilePortalDatabase: PortalDatabase | null = null;
 export const portalDb = db as PortalDatabase;
 export const portalUser = portalDb.users[0];
@@ -216,6 +224,30 @@ const isValidNotification = (value: unknown, projectIds: Set<string>, userIds: S
   return isString(value.userId) && userIds.has(value.userId) && isString(value.projectId) && projectIds.has(value.projectId) && isString(value.message) && isString(value.date);
 };
 
+export const isValidProgressSnapshot = (value: unknown, projectIds: Set<string>): value is ProgressSnapshot => {
+  if (!isRecord(value)) return false;
+  return (
+    isString(value.id) &&
+    value.id.trim().length > 0 &&
+    isString(value.projectId) &&
+    projectIds.has(value.projectId) &&
+    isString(value.date) &&
+    value.date.trim().length > 0 &&
+    isValidProgress(value.progress)
+  );
+};
+
+export const compareSnapshots = (a: ProgressSnapshot, b: ProgressSnapshot): number => {
+  const timeA = Date.parse(a.date);
+  const timeB = Date.parse(b.date);
+  if (!Number.isNaN(timeA) && !Number.isNaN(timeB) && timeA !== timeB) {
+    return timeA - timeB;
+  }
+  const cmp = a.date.localeCompare(b.date);
+  if (cmp !== 0) return cmp;
+  return a.id.localeCompare(b.id);
+};
+
 const mapProjectId = (id: string) => legacyProjectIdMap[id] ?? id;
 const remapProjectRecords = (value: unknown) => Array.isArray(value)
   ? value.map((record) => isRecord(record) && isString(record.projectId) ? { ...record, projectId: mapProjectId(record.projectId) } : record)
@@ -241,6 +273,15 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
     ? stored.notifications.map((notification) => isRecord(notification) ? { ...notification, ...(isString(notification.userId) ? { userId: legacyUserIdMap[notification.userId] ?? notification.userId } : {}), ...(isString(notification.projectId) ? { projectId: mapProjectId(notification.projectId) } : {}) } : notification)
     : stored.notifications;
 
+  const rawSnapshots = remapProjectRecords(stored.progressSnapshots);
+  const seedSnapshots = portalDb.progressSnapshots ?? [];
+  const progressSnapshots = mergeRecords(
+    seedSnapshots,
+    rawSnapshots,
+    (record) => record.id,
+    (value): value is ProgressSnapshot => isValidProgressSnapshot(value, projectIds),
+  ).sort(compareSnapshots);
+
   return {
     schemaVersion: PORTAL_SCHEMA_VERSION,
     users: [...inMemoryUsers],
@@ -250,6 +291,7 @@ const migratePortalDatabase = (stored: Partial<PortalDatabase>): PortalDatabase 
     documents: mergeRecords(portalDb.documents, remapProjectRecords(stored.documents), (record) => `${record.projectId}:${record.name}`, (value): value is ProjectDocument => isValidProjectDocument(value, projectIds)),
     approvals: mergeRecords(portalDb.approvals, remapProjectRecords(stored.approvals), (record) => `${record.projectId}:${record.title}`, (value): value is ProjectApproval => isValidProjectApproval(value, projectIds)),
     notifications: mergeRecords(portalDb.notifications, storedNotifications, (record) => `${record.userId}:${record.projectId}:${record.message}:${record.date}`, (value): value is PortalDatabase['notifications'][number] => isValidNotification(value, projectIds, userIds)),
+    progressSnapshots,
   };
 };
 
@@ -364,7 +406,19 @@ export const removePortalUserInMemory = (id: string) => {
   inMemoryUsers = inMemoryUsers.filter((user) => user.id !== id);
 };
 
-export const syncPortalRelations = (relations: Pick<PortalDatabase, 'updates' | 'milestones' | 'documents' | 'approvals' | 'notifications'>) => updatePortalDatabase((current) => ({ ...current, ...relations }));
+export const syncPortalRelations = (
+  relations: Partial<Pick<PortalDatabase, 'updates' | 'milestones' | 'documents' | 'approvals' | 'notifications' | 'progressSnapshots'>>
+) => updatePortalDatabase((current) => ({
+  ...current,
+  ...relations,
+  ...(relations.progressSnapshots ? { progressSnapshots: relations.progressSnapshots } : {}),
+}));
+
+export const addPortalProgressSnapshot = (snapshot: ProgressSnapshot) =>
+  updatePortalDatabase((current) => ({
+    ...current,
+    progressSnapshots: [...(current.progressSnapshots ?? []), snapshot].sort(compareSnapshots),
+  }));
 
 export type CreatePortalProjectInput = Pick<PortalProjectRecord, 'title' | 'category' | 'phase' | 'progress'> & Partial<Pick<PortalProjectRecord, 'code' | 'nextMilestone' | 'summary' | 'statement' | 'image' | 'market' | 'developmentType' | 'context' | 'scale' | 'longView' | 'published'>>;
 export type CreatePortalUserInput = Pick<PortalUser, 'name' | 'email' | 'password'> & Partial<Pick<PortalUser, 'role' | 'status' | 'projectIds'>>;
@@ -412,6 +466,7 @@ export const deletePortalProject = (id: string): boolean => {
     documents: current.documents.filter((record) => record.projectId !== id),
     approvals: current.approvals.filter((record) => record.projectId !== id),
     notifications: current.notifications.filter((record) => record.projectId !== id),
+    progressSnapshots: (current.progressSnapshots ?? []).filter((record) => record.projectId !== id),
   }));
   inMemoryUsers = inMemoryUsers.map((user) => ({ ...user, projectIds: user.projectIds.filter((projectId) => projectId !== id) }));
   return true;
