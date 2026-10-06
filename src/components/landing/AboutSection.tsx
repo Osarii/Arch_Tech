@@ -26,7 +26,7 @@ export const AboutSection: React.FC = () => (
           </Reveal>
         </div>
 
-        <Reveal variant="mask" delay={120}>
+        <Reveal variant="fade-up" delay={120}>
           <figure className="landing-about-media overflow-hidden border border-[#000000]/35 bg-[#ABD1B5]">
             <img
               src="/about/garnier-values.webp"
