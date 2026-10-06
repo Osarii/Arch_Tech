@@ -42,7 +42,7 @@
 
 ### Verified application checkpoint
 
-Current remote main:
+Documentation refresh base:
 ```text
 4ee4e0d4 docs(contract): swap agent tool assignments
 ```
@@ -53,7 +53,7 @@ a4a28d37 fix(motion): prevent scroll jumps on project route transitions
 ```
 *(The subsequent commit on main is documentation-only).*
 
-Every task must resolve its actual `BASE` from current remote `main` before execution.
+Current remote `main` must always be resolved live at the start of a new task.
 
 Previous checkpoints:
 ```text
@@ -555,7 +555,7 @@ The public experience must not visually read as a residential architecture or ho
 
 - `agent/a-main` = Visual / UX / Motion agent, operated by Codex.
 - `agent/b-main` = Technical / Functionality / Data agent, operated by Antigravity.
-- Both branches are synchronized with `main` at `4ee4e0d4`.
+- At the start of this handoff refresh, both work branches were synchronized with main at 4ee4e0d4. Branch state must be resolved live before every new task.
 - Every task must resolve its actual `BASE` from current remote `main` before execution.
 - PROMPT_CONTRACT.md remains authoritative for parallel task rules.
 - Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.

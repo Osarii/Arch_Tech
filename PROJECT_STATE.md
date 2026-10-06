@@ -6,9 +6,9 @@
 
 ## 1. Project Purpose & Scope
 **Verified application checkpoint:**
-- Current remote `main`: `4ee4e0d4` (`docs(contract): swap agent tool assignments`).
+- Documentation refresh base: `4ee4e0d4` (`docs(contract): swap agent tool assignments`).
 - Latest fully verified application implementation: `a4a28d37` (`fix(motion): prevent scroll jumps on project route transitions`). The subsequent commit on `main` is documentation-only.
-- Every task must still resolve its actual `BASE` from current remote `main` before execution.
+- Current remote `main` must always be resolved live at the start of a new task.
 
 **ARCH_TECH** is a dual-capability architecture & engineering platform with this product hierarchy:
 1. **Public Identity**: Large-scale developments and infrastructure: free zones, corporate districts, hospitality, healthcare, compute campuses, institutional projects and complex sites.
@@ -149,7 +149,7 @@ Project facts and public photography are source-oriented. ARCH_TECH workflow upd
 - Canonical assignment:
   - `agent/a-main` = Visual / UX / Motion agent, operated by Codex.
   - `agent/b-main` = Technical / Functionality / Data agent, operated by Antigravity.
-- Both branches are synchronized with `main` at `4ee4e0d4`.
+- At the start of this handoff refresh, both work branches were synchronized with `main` at `4ee4e0d4`. Branch state must be resolved live before every new task.
 - Every task must resolve its actual `BASE` from current remote `main` before execution.
 - PROMPT_CONTRACT.md remains authoritative for parallel task rules.
 - Each parallel task must declare `BASE`, `AGENT`, `BRANCH`, `READ`, `TARGET`, `READ-ONLY`, `FORBIDDEN`, `ACCEPTANCE`, `STOP` and `GIT`.
