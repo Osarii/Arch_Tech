@@ -29,7 +29,7 @@ export const PortfolioInsightsPanel: React.FC<{ onNavigate: Navigate }> = ({ onN
         <span className="font-mono text-[10px] tracking-[0.2em] text-stone-500">CURRENT DATA</span>
       </div>
       <p className="mt-3 text-sm leading-6 text-stone-600">
-        Recorded progress and workflow relations for non-archived projects. Priority: rejected approvals. Attention: pending approvals. Milestone status follows the project record.
+        Recorded progress and workflow relations for non-archived projects. Priority: rejected approvals, multiple pending approvals, or low progress with a pending approval. Attention: one pending approval, low progress, or no Current milestone. Milestone status follows the project record.
       </p>
       {status === 'loading' && <p role="status" className="mt-6 text-sm">Loading portfolio intelligence…</p>}
       {status === 'unavailable' && <p role="status" className="mt-6 text-sm">Portfolio intelligence is unavailable. Current project data could not be loaded.</p>}
