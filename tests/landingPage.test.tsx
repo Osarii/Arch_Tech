@@ -1138,7 +1138,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     expect(within(footer).getByTestId('footer-about-link').getAttribute('href')).toBe('#about');
     expect(within(footer).getByTestId('footer-team-link').getAttribute('href')).toBe('#team');
     expect(within(footer).getByText('Garnier & Garnier Showcase')).toBeDefined();
-    expect(within(footer).getByRole('img', { name: 'GARNIER ARCHITECTURE' })).toBeDefined();
+    expect(within(footer).getByText('GARNIER ARCHITECTURE / public development platform')).toBeDefined();
   });
 
   it('scrolls from footer directory links and returns to the landing top', () => {
