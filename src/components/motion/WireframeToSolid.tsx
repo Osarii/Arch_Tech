@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useIntersectionReveal } from './useIntersectionReveal';
-import { useReducedMotion } from './useReducedMotion';
+import { useReducedMotion } from '../../motion/useReducedMotion';
 
 export interface WireframeToSolidProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;

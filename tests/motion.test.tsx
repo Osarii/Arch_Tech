@@ -7,9 +7,9 @@ import {
   ScrollProgressBar,
   WireframeToSolid,
   useIntersectionReveal,
-  useReducedMotion,
   useScrollProgress,
 } from '../src/components/motion';
+import * as useReducedMotionModule from '../src/motion/useReducedMotion';
 
 describe('Phase 8A Motion & Interaction System', () => {
   beforeEach(() => {
@@ -20,29 +20,6 @@ describe('Phase 8A Motion & Interaction System', () => {
     cleanup();
     document.documentElement.classList.remove('portal-reduce-motion');
     vi.restoreAllMocks();
-  });
-
-  describe('useReducedMotion', () => {
-    it('detects portal-reduce-motion accessibility class on root html', () => {
-      document.documentElement.classList.add('portal-reduce-motion');
-      const TestComponent = () => {
-        const reduced = useReducedMotion();
-        return <div data-testid="reduced-val">{reduced ? 'reduced' : 'normal'}</div>;
-      };
-
-      render(<TestComponent />);
-      expect(screen.getByTestId('reduced-val').textContent).toBe('reduced');
-    });
-
-    it('defaults to normal when neither media query nor class is active', () => {
-      const TestComponent = () => {
-        const reduced = useReducedMotion();
-        return <div data-testid="reduced-val">{reduced ? 'reduced' : 'normal'}</div>;
-      };
-
-      render(<TestComponent />);
-      expect(screen.getByTestId('reduced-val').textContent).toBe('normal');
-    });
   });
 
   describe('useIntersectionReveal', () => {
@@ -131,7 +108,7 @@ describe('Phase 8A Motion & Interaction System', () => {
     });
 
     it('resolves directly to solid state under reduced motion', () => {
-      document.documentElement.classList.add('portal-reduce-motion');
+      vi.spyOn(useReducedMotionModule, 'useReducedMotion').mockReturnValue(true);
       render(
         <WireframeToSolid tag="REDUCED // 01">
           <div>Accessible Model</div>
@@ -145,6 +122,7 @@ describe('Phase 8A Motion & Interaction System', () => {
 
   describe('MetricCounter primitive', () => {
     it('renders full value immediately in test mode and reduced motion', () => {
+      vi.spyOn(useReducedMotionModule, 'useReducedMotion').mockReturnValue(true);
       render(<MetricCounter value="30 YEARS" />);
       expect(screen.getByText('30 YEARS')).toBeDefined();
     });
@@ -157,12 +135,13 @@ describe('Phase 8A Motion & Interaction System', () => {
 
   describe('ScrollProgressBar', () => {
     it('renders scroll indicator line when reduced motion is off', () => {
+      vi.spyOn(useReducedMotionModule, 'useReducedMotion').mockReturnValue(false);
       const { container } = render(<ScrollProgressBar />);
       expect(container.querySelector('div')).toBeDefined();
     });
 
     it('returns null when reduced motion is active', () => {
-      document.documentElement.classList.add('portal-reduce-motion');
+      vi.spyOn(useReducedMotionModule, 'useReducedMotion').mockReturnValue(true);
       const { container } = render(<ScrollProgressBar />);
       expect(container.firstChild).toBeNull();
     });

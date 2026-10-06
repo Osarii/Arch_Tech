@@ -1,6 +1,6 @@
 import React from 'react';
 import { useScrollProgress } from './useScrollProgress';
-import { useReducedMotion } from './useReducedMotion';
+import { useReducedMotion } from '../../motion/useReducedMotion';
 
 export interface ScrollProgressBarProps {
   containerSelector?: string;

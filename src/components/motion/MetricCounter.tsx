@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useIntersectionReveal } from './useIntersectionReveal';
-import { useReducedMotion } from './useReducedMotion';
+import { useReducedMotion } from '../../motion/useReducedMotion';
 
 export interface MetricCounterProps {
   value: string;

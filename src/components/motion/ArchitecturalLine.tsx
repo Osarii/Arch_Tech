@@ -1,6 +1,6 @@
 import React from 'react';
 import { useIntersectionReveal } from './useIntersectionReveal';
-import { useReducedMotion } from './useReducedMotion';
+import { useReducedMotion } from '../../motion/useReducedMotion';
 
 export interface ArchitecturalLineProps {
   orientation?: 'horizontal' | 'vertical';

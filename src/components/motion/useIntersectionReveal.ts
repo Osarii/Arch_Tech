@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useReducedMotion } from './useReducedMotion';
+import { useReducedMotion } from '../../motion/useReducedMotion';
+import { isIntersectionVisible } from '../../motion/motionSupport';
 
 export interface IntersectionRevealOptions {
   threshold?: number;
@@ -46,7 +47,7 @@ export function useIntersectionReveal<T extends HTMLElement = HTMLDivElement>(
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (isIntersectionVisible(entry, threshold)) {
             setIsRevealed(true);
             if (triggerOnce) {
               observer.unobserve(entry.target);
