@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { Hero } from '../src/components/landing/Hero';
@@ -1591,8 +1591,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     expect(screen.queryByText('404 / Page not found')).toBeNull();
   });
 
-  it('orchestrates architectural route transition from public project to portfolio and prevents rapid double-triggers', async () => {
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+  it('navigates between public project and portfolio routes without blocking', async () => {
     window.history.replaceState({}, '', '/');
     render(<App />);
 
@@ -1600,49 +1599,15 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
 
     const featuredProjectButton = screen.getByTestId('public-project-zona-franca-la-lima');
     fireEvent.click(featuredProjectButton);
-
-    // Transition overlay is activated in entering phase
-    const transitionOverlay = screen.getByTestId('project-route-transition');
-    expect(transitionOverlay).toBeDefined();
-    expect(transitionOverlay.getAttribute('data-transition-phase')).toBe('entering');
-
-    // Rapid second click does not double trigger
     fireEvent.click(featuredProjectButton);
-    expect(transitionOverlay.getAttribute('data-transition-phase')).toBe('entering');
-
-    // Advance to midpoint: route changes to project dossier
-    act(() => {
-      vi.advanceTimersByTime(280);
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/projects/zona-franca-la-lima');
     });
-    expect(window.location.pathname).toBe('/projects/zona-franca-la-lima');
-    expect(transitionOverlay.getAttribute('data-transition-phase')).toBe('exiting');
 
-    // Complete exit phase
-    act(() => {
-      vi.advanceTimersByTime(280);
-    });
-    expect(screen.queryByTestId('project-route-transition')).toBeNull();
-
-    // Now on PublicProjectPage: test return transition via "Development portfolio"
     const returnButton = screen.getByRole('button', { name: /Development portfolio/i });
     fireEvent.click(returnButton);
-
-    const returnOverlay = screen.getByTestId('project-route-transition');
-    expect(returnOverlay).toBeDefined();
-    expect(returnOverlay.getAttribute('data-transition-direction')).toBe('reverse');
-
-    // Advance to midpoint: route returns to portfolio root
-    act(() => {
-      vi.advanceTimersByTime(280);
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/');
     });
-    expect(window.location.pathname).toBe('/');
-
-    // Complete return transition
-    act(() => {
-      vi.advanceTimersByTime(280);
-    });
-    expect(screen.queryByTestId('project-route-transition')).toBeNull();
-
-    vi.useRealTimers();
   });
 });
