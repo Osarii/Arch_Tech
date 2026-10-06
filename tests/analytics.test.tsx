@@ -6,6 +6,7 @@ import {
 } from '../src/services/analyticsService';
 import {
   resetPortalUsers,
+  isValidSnapshotDate,
   isValidProgressSnapshot,
   compareSnapshots,
   type ProgressSnapshot,
@@ -49,12 +50,29 @@ describe('Phase 6: Portfolio Analytics & Progress History', () => {
       expect(isValidProgressSnapshot({ id: 's3', projectId: 'proj-2', date: '2026-03-15', progress: 100 }, validProjectIds)).toBe(true);
     });
 
-    it('rejects invalid, unparseable, or non-date string values in ProgressSnapshot', () => {
+    it('enforces strict canonical YYYY-MM-DD format and real calendar date validity', () => {
       const validProjectIds = new Set(['proj-1']);
-      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: 'not-a-date', progress: 50 }, validProjectIds)).toBe(false);
+
+      // Reject non-calendar dates, bad formats, and invalid months/days
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '2026-02-30', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '2026-13-01', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '2026-2-3', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '10/05/2026', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: 'March 5 2026', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: 'arbitrary text', progress: 50 }, validProjectIds)).toBe(false);
       expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '   ', progress: 50 }, validProjectIds)).toBe(false);
-      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '2026-99-99', progress: 50 }, validProjectIds)).toBe(false);
       expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: 12345, progress: 50 }, validProjectIds)).toBe(false);
+
+      // Leap day handling: only valid on leap years
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '2026-02-29', progress: 50 }, validProjectIds)).toBe(false);
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '2024-02-29', progress: 50 }, validProjectIds)).toBe(true);
+
+      // Valid canonical dates
+      expect(isValidProgressSnapshot({ id: 's1', projectId: 'proj-1', date: '2026-02-03', progress: 50 }, validProjectIds)).toBe(true);
+      expect(isValidSnapshotDate('2026-02-03')).toBe(true);
+      expect(isValidSnapshotDate('2026-02-30')).toBe(false);
+      expect(isValidSnapshotDate('2024-02-29')).toBe(true);
+      expect(isValidSnapshotDate('2026-02-29')).toBe(false);
     });
 
     it('rejects malformed records and out-of-bound progress values', () => {
@@ -138,6 +156,40 @@ describe('Phase 6: Portfolio Analytics & Progress History', () => {
 
       // Project C is still listed among projects without historical data
       const withoutHistory = analyticsService.projectsWithoutHistoricalData(cohortTestProjects, cohortSnapshots);
+      expect(withoutHistory.map((p) => p.id)).toEqual(['proj-c']);
+    });
+
+    it('calculates comparable baseline cohort across projects whose first history starts at different times', () => {
+      // Project A: Jan baseline 20, current 60
+      // Project B: first history Apr baseline 40, current 80
+      // Project C: no history, current 5
+      const staggeredProjects = [
+        createMockProject('proj-a', 'Project A', 60),
+        createMockProject('proj-b', 'Project B', 80),
+        createMockProject('proj-c', 'Project C', 5),
+      ];
+
+      const staggeredSnapshots: ProgressSnapshot[] = [
+        { id: 's-a1', projectId: 'proj-a', date: '2026-01-15', progress: 20 },
+        { id: 's-a2', projectId: 'proj-a', date: '2026-04-15', progress: 40 },
+        { id: 's-b1', projectId: 'proj-b', date: '2026-04-15', progress: 40 },
+        { id: 's-b2', projectId: 'proj-b', date: '2026-07-15', progress: 60 },
+      ];
+
+      const change = analyticsService.changeBetweenHistoricalAndCurrent(staggeredProjects, staggeredSnapshots);
+
+      // Expected comparable baseline: (20 + 40) / 2 = 30
+      expect(change.baselineAverage).toBe(30);
+
+      // Comparable current: (60 + 80) / 2 = 70
+      // Delta: 70 - 30 = +40
+      expect(change.delta).toBe(40);
+
+      // All-project current average remains: (60 + 80 + 5) / 3 = 48 (Math.round(145/3))
+      expect(change.currentAverage).toBe(Math.round((60 + 80 + 5) / 3));
+
+      // Project C remains in projects without historical data
+      const withoutHistory = analyticsService.projectsWithoutHistoricalData(staggeredProjects, staggeredSnapshots);
       expect(withoutHistory.map((p) => p.id)).toEqual(['proj-c']);
     });
 

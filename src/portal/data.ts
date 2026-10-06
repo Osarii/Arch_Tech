@@ -224,12 +224,20 @@ const isValidNotification = (value: unknown, projectIds: Set<string>, userIds: S
   return isString(value.userId) && userIds.has(value.userId) && isString(value.projectId) && projectIds.has(value.projectId) && isString(value.message) && isString(value.date);
 };
 
-const isValidSnapshotDate = (dateStr: unknown): dateStr is string => {
+export const isValidSnapshotDate = (dateStr: unknown): dateStr is string => {
   if (typeof dateStr !== 'string') return false;
-  const trimmed = dateStr.trim();
-  if (trimmed.length === 0) return false;
-  const parsed = Date.parse(trimmed);
-  return Number.isFinite(parsed) && !Number.isNaN(parsed);
+  const match = dateStr.match(/^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+  if (!match) return false;
+  const year = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10);
+  const day = parseInt(match[3], 10);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCFullYear(year);
+  return (
+    date.getUTCFullYear() === year &&
+    date.getUTCMonth() === month - 1 &&
+    date.getUTCDate() === day
+  );
 };
 
 export const isValidProgressSnapshot = (value: unknown, projectIds: Set<string>): value is ProgressSnapshot => {

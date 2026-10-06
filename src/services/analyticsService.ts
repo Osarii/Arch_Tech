@@ -162,9 +162,19 @@ export const analyticsService = {
   ): PortfolioProgressChange {
     const active = projects.filter((p) => !p.archived);
     const currentAverage = this.currentPortfolioAverage(active);
-    const history = this.portfolioAverageOverTime(snapshots);
 
-    if (!history.length || !snapshots.length) {
+    const cohort: { baseline: number; current: number }[] = [];
+    for (const project of active) {
+      const pSnapshots = this.snapshotsByProject(project.id, snapshots);
+      if (pSnapshots.length > 0) {
+        cohort.push({
+          baseline: pSnapshots[0].progress,
+          current: project.progress,
+        });
+      }
+    }
+
+    if (cohort.length === 0) {
       return {
         delta: null,
         baselineAverage: null,
@@ -172,20 +182,12 @@ export const analyticsService = {
       };
     }
 
-    const recordedProjectIds = new Set(snapshots.map((s) => s.projectId));
-    const cohortProjects = active.filter((p) => recordedProjectIds.has(p.id));
+    const baselineSum = cohort.reduce((sum, c) => sum + c.baseline, 0);
+    const baselineAverage = Math.round((baselineSum / cohort.length) * 10) / 10;
 
-    if (!cohortProjects.length) {
-      return {
-        delta: null,
-        baselineAverage: null,
-        currentAverage,
-      };
-    }
+    const cohortCurrentSum = cohort.reduce((sum, c) => sum + c.current, 0);
+    const cohortCurrentAverage = Math.round((cohortCurrentSum / cohort.length) * 10) / 10;
 
-    const baselineAverage = history[0].averageProgress;
-    const cohortTotal = cohortProjects.reduce((sum, p) => sum + p.progress, 0);
-    const cohortCurrentAverage = Math.round((cohortTotal / cohortProjects.length) * 10) / 10;
     const delta = Math.round((cohortCurrentAverage - baselineAverage) * 10) / 10;
 
     return {
