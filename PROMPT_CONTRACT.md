@@ -36,7 +36,7 @@ NONE | STATUS | DIFF | COMMIT
 ## Field Specifications
 - **TASK**: Specific, single-responsibility technical objective.
 - **BASE**: Required for parallel work. Must match the branch origin or the task must stop for reconciliation.
-- **AGENT**: Required for parallel work. `agent/a-main` is visual / Claude / Antigravity; `agent/b-main` is technical/functionality / VS Code.
+- **AGENT**: Required for parallel work. `agent/a-main` is visual / UX / motion agent, operated by Codex; `agent/b-main` is technical / functionality / data agent, operated by Antigravity.
 - **BRANCH**: Required for parallel work. Agents commit and push only to the assigned branch until sequential integration to `main`.
 - **READ**: Minimal named section or exact current `docs/context/CONTEXT.md:Lx-Ly`; never load all context by default.
 - **TARGET**: Strict writable scope. Modifying files outside this scope without prior authorization violates the contract.
