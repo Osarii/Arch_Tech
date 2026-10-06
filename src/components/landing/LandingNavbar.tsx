@@ -39,7 +39,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({ onLogin, onNavigat
       }`}
     >
       <div className="landing-navbar-inner mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-        <a href="#hero" aria-label="GARNIER ARCHITECTURE home" className="text-stone-100 transition-opacity hover:opacity-90"><ArchTechLogo variant="mark" theme="dark" /></a>
+        <a href="#hero" aria-label="GARNIER ARCHITECTURE home" className="text-stone-100 transition-opacity hover:opacity-90"><ArchTechLogo variant="mark" tone="mint-cream" theme="dark" /></a>
         <div className="landing-navbar-links hidden items-center gap-9 lg:flex">
           <button onClick={viewProjects} className="arch-interactive-link font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400 transition-colors hover:text-white">Projects</button>
           <button data-testid="capabilities-link" onClick={viewCapabilities} className="arch-interactive-link font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400 transition-colors hover:text-white">Capabilities</button>

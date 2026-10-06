@@ -1,6 +1,7 @@
 import React from 'react';
 import { Reveal } from '../motion/Reveal';
 import { MetricCounter } from '../motion/MetricCounter';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 export const aboutFacts = [
   { value: '30 YEARS', label: 'Real-estate development experience' },
@@ -26,8 +27,9 @@ export const AboutSection: React.FC = () => (
           </Reveal>
         </div>
 
-        <Reveal variant="mask" delay={120}>
-          <figure className="landing-about-media overflow-hidden border border-[#000000]/35 bg-[#ABD1B5]">
+        <Reveal variant="fade-up" delay={120}>
+          <figure className="landing-about-media relative overflow-hidden border border-[#000000]/35 bg-[#ABD1B5]">
+            <ArchTechLogo variant="mark" tone="full-color" theme="inherit" className="landing-about-mark pointer-events-none absolute right-4 top-4 z-10" />
             <img
               src="/about/garnier-values.webp"
               alt="Interior workplace environment from the official Garnier public portfolio"

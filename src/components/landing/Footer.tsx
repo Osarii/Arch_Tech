@@ -1,6 +1,5 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 interface FooterProps {
   onLogin: (trigger?: HTMLElement) => void;
@@ -113,7 +112,6 @@ export const Footer: React.FC<FooterProps> = ({ onLogin }) => {
 
         <div className="landing-footer-wordmark overflow-hidden border-b border-white/[0.1] py-12 sm:py-16 lg:py-20">
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">GARNIER ARCHITECTURE / public development platform</p>
-          <ArchTechLogo variant="stacked" theme="dark" className="arch-tech-logo-footer mt-6" label="GARNIER ARCHITECTURE" />
         </div>
 
         <div className="flex flex-col gap-6 pt-6 text-[9px] font-mono uppercase tracking-[0.16em] text-stone-600 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">

@@ -425,15 +425,6 @@ html.portal-dark .portal-surface [class~="bg-amber-500"] { background-color: #FF
 html.portal-dark .portal-surface [class~="hover:bg-red-500/20"]:hover,
 html.portal-dark .portal-surface [class~="hover:bg-red-500/10"]:hover { background-color: rgb(171 209 181 / 0.18) !important; }
 html.portal-dark .portal-surface [class~="hover:text-red-300"]:hover { color: #ABD1B5 !important; }
-html.portal-dark .portal-surface .arch-tech-logo-portal {
-  background: #FFBF00;
-  display: block;
-  height: 1.65rem;
-  mask: url('/brand/garnier-architecture/09_symbol_black.png') center / contain no-repeat;
-  -webkit-mask: url('/brand/garnier-architecture/09_symbol_black.png') center / contain no-repeat;
-  width: 1.65rem;
-}
-html.portal-dark .portal-surface .arch-tech-logo-portal .arch-tech-logo-symbol { opacity: 0; }
 
 .portal-project-thumbnail {
   aspect-ratio: 4 / 3;
@@ -530,15 +521,6 @@ html:not(.portal-dark) .portal-surface [class~="bg-amber-500"] { background-colo
 html:not(.portal-dark) .portal-surface [class~="hover:bg-red-500/20"]:hover,
 html:not(.portal-dark) .portal-surface [class~="hover:bg-red-500/10"]:hover { background-color: rgb(121 183 145 / 0.35) !important; }
 html:not(.portal-dark) .portal-surface [class~="hover:text-red-300"]:hover { color: #000000 !important; }
-html:not(.portal-dark) .portal-surface .arch-tech-logo-portal {
-  background: #000000;
-  display: block;
-  height: 1.65rem;
-  mask: url('/brand/garnier-architecture/09_symbol_black.png') center / contain no-repeat;
-  -webkit-mask: url('/brand/garnier-architecture/09_symbol_black.png') center / contain no-repeat;
-  width: 1.65rem;
-}
-html:not(.portal-dark) .portal-surface .arch-tech-logo-portal .arch-tech-logo-symbol { opacity: 0; }
 
 html:not(.portal-dark) .portal-surface .portal-register-row:focus-within { background-color: #ABD1B5 !important; color: #000000 !important; }
 html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action { border: 1px solid rgb(0 0 0 / 0.35); color: #000000 !important; padding: 0.4rem 0.55rem; }
@@ -769,8 +751,56 @@ html.portal-dark .portal-surface [class~="bg-[#171714]"] { background-color: #FF
 .arch-tech-logo-transition .arch-tech-logo-symbol {
   height: 1rem;
 }
+.arch-tech-logo-portal .arch-tech-logo-symbol {
+  height: 1.65rem;
+  width: 1.65rem;
+}
+.news-header-lockup .arch-tech-logo-lockup {
+  width: clamp(12rem, 20vw, 16rem);
+}
+.news-header-mark .arch-tech-logo-symbol {
+  height: 1.65rem;
+}
+.landing-news-mark .arch-tech-logo-symbol {
+  height: 2rem;
+  opacity: 0.82;
+}
+.login-overlay-mark {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+}
+.login-overlay-mark .arch-tech-logo-stacked {
+  width: clamp(10rem, 36vw, 13.5rem);
+}
+.landing-hero-mark .arch-tech-logo-symbol {
+  height: clamp(10rem, 22vw, 18rem);
+  opacity: 0.12;
+}
+.landing-about-mark .arch-tech-logo-symbol {
+  height: clamp(2.25rem, 4vw, 3.25rem);
+  opacity: 0.78;
+}
+.landing-projects-mark .arch-tech-logo-symbol {
+  height: 2.25rem;
+  opacity: 0.8;
+}
+.news-archive-mark .arch-tech-logo-symbol {
+  height: 1.75rem;
+  opacity: 0.82;
+}
+.landing-project-detail-mark .arch-tech-logo-symbol {
+  height: 1.2rem;
+  opacity: 0.8;
+}
+.landing-footer-mark .arch-tech-logo-symbol {
+  height: clamp(5rem, 9vw, 8rem);
+  opacity: 0.9;
+}
 
 @media (max-width: 639px) {
+  .landing-hero-mark { display: none; }
+  .landing-footer-mark .arch-tech-logo-symbol { height: 4.5rem; }
   .arch-tech-logo-full .arch-tech-logo-lockup {
     width: min(100%, 18rem);
   }
