@@ -27,7 +27,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
           <div className="landing-projects-header grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <div className="flex items-center gap-3">
-                <ArchTechLogo variant="mark" theme="inherit" className="landing-projects-mark pointer-events-none" />
+                <ArchTechLogo variant="mark" tone="muted-teal" theme="inherit" className="landing-projects-mark pointer-events-none" />
                 <p className="font-mono text-[10px] uppercase tracking-[0.24em] text-stone-500">GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype</p>
               </div>
               <h2 className="landing-projects-heading mt-5 max-w-5xl font-serif font-light tracking-tight">A portfolio built for consequence.</h2>

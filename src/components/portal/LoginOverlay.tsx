@@ -3,6 +3,7 @@ import { ArrowRight, X } from 'lucide-react';
 import { getPortalSnapshot, PortalRole } from '../../portal/data';
 import { portalAuth } from '../../portal/demoAuth';
 import { authService } from '../../services/authService';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 
 export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSuccess: () => void }> = ({
   open,
@@ -149,6 +150,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
           <X className="h-4 w-4" />
         </button>
         <div className="mt-6">
+          <ArchTechLogo variant="stacked" tone="mint-cream" theme="dark" className="login-overlay-mark mb-6" />
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Private access</p>
           <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">
             Portal Access

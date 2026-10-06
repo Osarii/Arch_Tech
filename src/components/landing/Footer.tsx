@@ -114,8 +114,8 @@ export const Footer: React.FC<FooterProps> = ({ onLogin }) => {
         <div className="landing-footer-wordmark overflow-hidden border-b border-white/[0.1] py-12 sm:py-16 lg:py-20">
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-stone-600">GARNIER ARCHITECTURE / public development platform</p>
           <div className="flex flex-wrap items-end gap-8">
-            <ArchTechLogo variant="mark" theme="dark" className="landing-footer-mark mt-6" />
-            <ArchTechLogo variant="stacked" theme="dark" className="arch-tech-logo-footer mt-6" label="GARNIER ARCHITECTURE" />
+            <ArchTechLogo variant="mark" tone="mint-cream" theme="dark" className="landing-footer-mark mt-6" />
+            <ArchTechLogo variant="stacked" tone="mint-cream" theme="dark" className="arch-tech-logo-footer mt-6" label="GARNIER ARCHITECTURE" />
           </div>
         </div>
 

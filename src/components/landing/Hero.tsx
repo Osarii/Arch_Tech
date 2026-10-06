@@ -14,7 +14,7 @@ const sectors = ['Free zones', 'Industrial / logistics', 'Compute + energy infra
 export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => (
   <section id="hero" className="landing-hero relative overflow-hidden border-b border-white/[0.08] px-6 pb-20 pt-32 sm:px-8 lg:px-12 lg:pb-28 lg:pt-40">
     <div className="landing-hero-mark pointer-events-none absolute right-[-2rem] top-24 hidden sm:block" aria-hidden="true">
-      <ArchTechLogo variant="mark" theme="dark" />
+      <ArchTechLogo variant="mark" tone="celadon" theme="dark" />
     </div>
     <div className="relative z-10 mx-auto max-w-7xl">
       <div className="landing-hero-grid grid gap-12 lg:grid-cols-[1.25fr_0.75fr] lg:items-end">
