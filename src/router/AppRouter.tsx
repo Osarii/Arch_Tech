@@ -7,6 +7,7 @@ import {
   AdminApprovalsPage,
   AdminAssistantPage,
   AdminOverviewPage,
+  AdminNewsPage,
   AdminPeoplePage,
   AdminProjectsPage,
   ArchitectApprovalsPage,
@@ -229,6 +230,7 @@ const RoutedApp: React.FC = () => {
               <Route path="/admin/people" element={<AdminPeoplePage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
               <Route path="/admin/approvals" element={<AdminApprovalsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
               <Route path="/admin/analytics" element={<AdminAnalyticsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
+              <Route path="/admin/news" element={<AdminNewsPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
               <Route path="/admin/assistant" element={<AdminAssistantPage onNavigate={handleNavigate} onSignOut={handleSignOut} />} />
               <Route element={<AccessibleProjectRoute role="admin" />}>
                 <Route path="/admin/projects/:projectId" element={<DashboardProjectRoute role="admin" />} />

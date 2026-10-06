@@ -27,3 +27,4 @@ export { AdminPeoplePage } from './admin/AdminPeoplePage';
 export { AdminApprovalsPage } from './admin/AdminApprovalsPage';
 export { AdminAnalyticsPage } from './admin/AdminAnalyticsPage';
 export { AdminAssistantPage } from './admin/AdminAssistantPage';
+export { AdminNewsPage } from './admin/AdminNewsPage';

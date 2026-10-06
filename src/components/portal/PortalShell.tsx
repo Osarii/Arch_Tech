@@ -54,6 +54,7 @@ export const PORTAL_NAV_ITEMS: Record<PortalRole, NavItemConfig[]> = {
     { key: 'people', label: 'People', path: '/admin/people' },
     { key: 'approvals', label: 'Approvals', path: '/admin/approvals' },
     { key: 'analytics', label: 'Analytics', path: '/admin/analytics' },
+    { key: 'news', label: 'News', path: '/admin/news' },
     { key: 'assistant', label: 'Assistant', path: '/admin/assistant' },
   ],
 };
