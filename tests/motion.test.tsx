@@ -1,12 +1,15 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   ArchitecturalLine,
   MetricCounter,
+  ProjectRouteTransition,
   Reveal,
   ScrollProgressBar,
   WireframeToSolid,
+  isProjectRouteTransition,
   useIntersectionReveal,
+  useProjectRouteTransition,
   useScrollProgress,
 } from '../src/components/motion';
 import * as useReducedMotionModule from '../src/motion/useReducedMotion';
@@ -154,6 +157,183 @@ describe('Phase 8A Motion & Interaction System', () => {
 
       rerender(<ArchitecturalLine orientation="vertical" />);
       expect(container.firstChild).toBeDefined();
+    });
+  });
+
+  describe('Phase 8B Project Route Transition', () => {
+    it('isProjectRouteTransition identifies forward, reverse, and ineligible transitions', () => {
+      // Forward: Landing -> public project
+      expect(isProjectRouteTransition('/', '/projects/zona-franca-la-lima')).toBe('forward');
+      expect(isProjectRouteTransition('', '/projects/el-cafetal')).toBe('forward');
+
+      // Reverse: Public project -> Landing (Development portfolio return)
+      expect(isProjectRouteTransition('/projects/zona-franca-la-lima', '/')).toBe('reverse');
+      expect(isProjectRouteTransition('/projects/el-cafetal', '')).toBe('reverse');
+
+      // Ineligible routes: portal, login, workspace, errors
+      expect(isProjectRouteTransition('/', '/dashboard')).toBeNull();
+      expect(isProjectRouteTransition('/', '/login')).toBeNull();
+      expect(isProjectRouteTransition('/projects/zona-franca-la-lima', '/login')).toBeNull();
+      expect(isProjectRouteTransition('/projects/zona-franca-la-lima', '/workspace')).toBeNull();
+      expect(isProjectRouteTransition('/dashboard', '/dashboard/projects/zona-franca-la-lima')).toBeNull();
+      expect(isProjectRouteTransition('/', '/404')).toBeNull();
+      expect(isProjectRouteTransition('/projects/zona-franca-la-lima', '/projects/zona-franca-la-lima')).toBeNull();
+    });
+
+    it('ProjectRouteTransition renders overlay, graphite curtain, and technical line when active', () => {
+      const { rerender } = render(
+        <ProjectRouteTransition
+          state={{
+            phase: 'entering',
+            direction: 'forward',
+            targetPath: '/projects/zona-franca-la-lima',
+          }}
+        />
+      );
+
+      const overlay = screen.getByTestId('project-route-transition');
+      expect(overlay).toBeDefined();
+      expect(overlay.getAttribute('data-transition-phase')).toBe('entering');
+      expect(overlay.getAttribute('data-transition-direction')).toBe('forward');
+      expect(screen.getByText('ARCH_TECH // PROJECT DOSSIER TRANSITION')).toBeDefined();
+      expect(screen.getByText('PHASE: MASK')).toBeDefined();
+
+      // Exit phase
+      rerender(
+        <ProjectRouteTransition
+          state={{
+            phase: 'exiting',
+            direction: 'reverse',
+            targetPath: '/',
+          }}
+        />
+      );
+      expect(screen.getByTestId('project-route-transition').getAttribute('data-transition-phase')).toBe('exiting');
+      expect(screen.getByText('ARCH_TECH // PORTFOLIO REVERSAL')).toBeDefined();
+      expect(screen.getByText('PHASE: REVEAL')).toBeDefined();
+
+      // Idle phase returns null
+      rerender(
+        <ProjectRouteTransition
+          state={{
+            phase: 'idle',
+            direction: 'forward',
+            targetPath: null,
+          }}
+        />
+      );
+      expect(screen.queryByTestId('project-route-transition')).toBeNull();
+    });
+
+    it('ProjectRouteTransition returns null when reduced motion is enabled', () => {
+      vi.spyOn(useReducedMotionModule, 'useReducedMotion').mockReturnValue(true);
+      render(
+        <ProjectRouteTransition
+          state={{
+            phase: 'entering',
+            direction: 'forward',
+            targetPath: '/projects/zona-franca-la-lima',
+          }}
+        />
+      );
+      expect(screen.queryByTestId('project-route-transition')).toBeNull();
+    });
+
+    it('useProjectRouteTransition orchestrates entering, midpoint navigation, and exit phases', () => {
+      vi.useFakeTimers();
+      const navigate = vi.fn();
+      const { result } = renderHook(() => useProjectRouteTransition(navigate, '/'));
+
+      expect(result.current.isTransitioning).toBe(false);
+      expect(result.current.transitionState.phase).toBe('idle');
+
+      let accepted = false;
+      act(() => {
+        accepted = result.current.navigateWithTransition('/projects/zona-franca-la-lima');
+      });
+
+      expect(accepted).toBe(true);
+      expect(result.current.isTransitioning).toBe(true);
+      expect(result.current.transitionState.phase).toBe('entering');
+      expect(result.current.transitionState.direction).toBe('forward');
+      // Navigation should not have occurred yet before midpoint
+      expect(navigate).not.toHaveBeenCalled();
+
+      // Rapid clicks are blocked during active transition
+      let doubleTrigger = false;
+      act(() => {
+        doubleTrigger = result.current.navigateWithTransition('/projects/el-cafetal');
+      });
+      expect(doubleTrigger).toBe(false);
+
+      // Fast-forward to midpoint (280ms)
+      act(() => {
+        vi.advanceTimersByTime(280);
+      });
+      expect(navigate).toHaveBeenCalledWith('/projects/zona-franca-la-lima');
+      expect(result.current.transitionState.phase).toBe('exiting');
+
+      // Fast-forward through exit phase (another 280ms)
+      act(() => {
+        vi.advanceTimersByTime(280);
+      });
+      expect(result.current.transitionState.phase).toBe('idle');
+      expect(result.current.isTransitioning).toBe(false);
+
+      vi.useRealTimers();
+    });
+
+    it('useProjectRouteTransition navigates immediately without transition under reduced motion', () => {
+      vi.spyOn(useReducedMotionModule, 'useReducedMotion').mockReturnValue(true);
+      const navigate = vi.fn();
+      const { result } = renderHook(() => useProjectRouteTransition(navigate, '/'));
+
+      act(() => {
+        result.current.navigateWithTransition('/projects/zona-franca-la-lima');
+      });
+
+      expect(navigate).toHaveBeenCalledWith('/projects/zona-franca-la-lima');
+      expect(result.current.transitionState.phase).toBe('idle');
+      expect(result.current.isTransitioning).toBe(false);
+    });
+
+    it('useProjectRouteTransition navigates non-project routes immediately without animation', () => {
+      const navigate = vi.fn();
+      const { result } = renderHook(() => useProjectRouteTransition(navigate, '/'));
+
+      act(() => {
+        result.current.navigateWithTransition('/dashboard');
+      });
+
+      expect(navigate).toHaveBeenCalledWith('/dashboard');
+      expect(result.current.transitionState.phase).toBe('idle');
+      expect(result.current.isTransitioning).toBe(false);
+    });
+
+    it('supports native View Transition API when available at midpoint', () => {
+      vi.useFakeTimers();
+      const navigate = vi.fn();
+      const startViewTransition = vi.fn().mockImplementation((cb: () => void) => cb());
+      (document as unknown as { startViewTransition: typeof startViewTransition }).startViewTransition = startViewTransition;
+
+      const { result } = renderHook(() => useProjectRouteTransition(navigate, '/projects/zona-franca-la-lima'));
+
+      act(() => {
+        result.current.navigateWithTransition('/');
+      });
+
+      expect(result.current.transitionState.direction).toBe('reverse');
+
+      // Advance to midpoint
+      act(() => {
+        vi.advanceTimersByTime(280);
+      });
+
+      expect(startViewTransition).toHaveBeenCalled();
+      expect(navigate).toHaveBeenCalledWith('/');
+
+      delete (document as unknown as { startViewTransition?: typeof startViewTransition }).startViewTransition;
+      vi.useRealTimers();
     });
   });
 });

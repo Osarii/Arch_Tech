@@ -1,6 +1,7 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LandingPage } from '../components/landing/LandingPage';
+import { ProjectRouteTransition, useProjectRouteTransition } from '../components/motion';
 import {
   AdminAnalyticsPage,
   AdminApprovalsPage,
@@ -133,6 +134,7 @@ const DashboardProjectRoute: React.FC<{ role: 'client' | 'architect' | 'admin' }
 const RoutedApp: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { transitionState, navigateWithTransition } = useProjectRouteTransition(navigate, location.pathname);
   const [loginOpen, setLoginOpen] = useState(() => new URLSearchParams(location.search).get('login') === '1');
   const loginTriggerRef = useRef<HTMLElement | null>(null);
 
@@ -162,7 +164,7 @@ const RoutedApp: React.FC = () => {
       if (location.pathname !== '/') navigate('/?login=1', { replace: true });
       return;
     }
-    navigate(path);
+    navigateWithTransition(path);
   };
 
   const handleSignOut = () => {
@@ -172,6 +174,7 @@ const RoutedApp: React.FC = () => {
 
   return (
     <>
+      <ProjectRouteTransition state={transitionState} />
       <Routes>
         <Route path="/" element={<RootRoute onLogin={openLogin} onNavigate={handleNavigate} />} />
         <Route path="/login" element={<Navigate to="/?login=1" replace />} />
