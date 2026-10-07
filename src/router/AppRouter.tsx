@@ -2,7 +2,7 @@ import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LandingPage } from '../components/landing/LandingPage';
-import { useReducedMotion } from '../components/motion';
+import { useReducedMotion } from '../motion/useReducedMotion';
 import {
   AdminAnalyticsPage,
   AdminApprovalsPage,

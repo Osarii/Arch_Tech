@@ -1,14 +1,12 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  ArchitecturalLine,
-  MetricCounter,
-  Reveal,
-  ScrollProgressBar,
-  WireframeToSolid,
-  useIntersectionReveal,
-  useScrollProgress,
-} from '../src/components/motion';
+import { ArchitecturalLine } from '../src/components/motion/ArchitecturalLine';
+import { MetricCounter } from '../src/components/motion/MetricCounter';
+import { Reveal } from '../src/components/motion/Reveal';
+import { ScrollProgressBar } from '../src/components/motion/ScrollProgressBar';
+import { WireframeToSolid } from '../src/components/motion/WireframeToSolid';
+import { useIntersectionReveal } from '../src/components/motion/useIntersectionReveal';
+import { useScrollProgress } from '../src/components/motion/useScrollProgress';
 import { navigateWithViewTransition } from '../src/router/AppRouter';
 import * as useReducedMotionModule from '../src/motion/useReducedMotion';
 

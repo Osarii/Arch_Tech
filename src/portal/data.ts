@@ -137,8 +137,7 @@ export type PortalDatabase = {
 const PORTAL_STATE_KEY = 'arch-tech-portal-state';
 const PORTAL_SCHEMA_VERSION = 4;
 let volatilePortalDatabase: PortalDatabase | null = null;
-export const portalDb = db as PortalDatabase;
-export const portalUser = portalDb.users[0];
+const portalDb = db as PortalDatabase;
 let inMemoryUsers: PortalUser[] = portalDb.users.map((user) => ({ ...user, projectIds: [...user.projectIds] }));
 
 const legacyUserIdMap: Record<string, string> = {
@@ -161,8 +160,6 @@ const isString = (value: unknown): value is string => typeof value === 'string';
 const isValidProgress = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 100;
 const isRuntimeProjectId = (id: unknown): id is string => isString(id) && id.startsWith('admin-project-');
 const isSafeAssetPath = (asset: unknown): asset is string => typeof asset === 'string' && asset.startsWith('/projects/') && !asset.includes('/arch_');
-export const validRoles: PortalRole[] = ['client', 'architect', 'admin'];
-export const validUserStatuses: PortalUser['status'][] = ['active', 'inactive'];
 const validMilestoneStatuses: ProjectMilestone['status'][] = ['Complete', 'Current', 'Upcoming'];
 const validApprovalStatuses: ProjectApproval['status'][] = ['Approved', 'Pending', 'Rejected'];
 
@@ -298,9 +295,9 @@ export const validNewsCategories: NewsCategory[] = [
 ];
 export const validNewsCadences: NewsCadence[] = ['daily', 'weekly', 'milestone'];
 export const validNewsStatuses: NewsStatus[] = ['draft', 'published', 'archived'];
-export const validNewsSourceTypes: NewsSourceType[] = ['manual', 'n8n'];
+const validNewsSourceTypes: NewsSourceType[] = ['manual', 'n8n'];
 
-export const isValidNewsArticle = (value: unknown, projectIds: Set<string>): value is NewsArticle => {
+const isValidNewsArticle = (value: unknown, projectIds: Set<string>): value is NewsArticle => {
   if (!isRecord(value)) return false;
   return (
     isString(value.id) &&
@@ -519,13 +516,7 @@ export const syncPortalRelations = (
 export const syncPortalNews = (news: NewsArticle[]) =>
   updatePortalDatabase((current) => ({ ...current, news }));
 
-export const addPortalProgressSnapshot = (snapshot: ProgressSnapshot) =>
-  updatePortalDatabase((current) => ({
-    ...current,
-    progressSnapshots: [...(current.progressSnapshots ?? []), snapshot].sort(compareSnapshots),
-  }));
-
-export const slugifyNewsTitle = (title: string): string =>
+const slugifyNewsTitle = (title: string): string =>
   title
     .toLowerCase()
     .trim()
@@ -707,8 +698,6 @@ export const createPortalUser = (input: CreatePortalUserInput): PortalUser => {
   return user;
 };
 export const getPortalUser = (email: string) => inMemoryUsers.find((user) => user.email.toLowerCase() === email.trim().toLowerCase());
-
-export const portalProjects: PortalProject[] = getPortalSnapshot().projects;
 
 export const getPortalProject = (id: string) => getPortalSnapshot().projects.find((project) => project.id === id);
 

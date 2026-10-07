@@ -49,15 +49,15 @@ export const portalStatusClass = (status: string) =>
             ? 'portal-status-current'
             : '';
 
-export const uniqueProjectMedia = (project: PortalProject) =>
+const uniqueProjectMedia = (project: PortalProject) =>
   [project.image, ...(project.media?.gallery ?? []), project.media?.aerial, project.media?.campusOverview, project.media?.masterplan]
     .filter((path, index, paths): path is string => Boolean(path) && paths.indexOf(path) === index)
     .slice(0, 3);
 
-export const projectRoute = (role: PortalRole, id: string) =>
+const projectRoute = (role: PortalRole, id: string) =>
   `${role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard'}/projects/${id}`;
 
-export const ProjectThumbnail: React.FC<{ project: PortalProject }> = ({ project }) => {
+const ProjectThumbnail: React.FC<{ project: PortalProject }> = ({ project }) => {
   const { t } = useTranslation('portal');
   const image = getPreferredProjectImage(project);
   const [imageAvailable, setImageAvailable] = useState(Boolean(image));
@@ -81,7 +81,7 @@ export const ProjectThumbnail: React.FC<{ project: PortalProject }> = ({ project
   );
 };
 
-export const ProjectMediaFrame: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
+const ProjectMediaFrame: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
   const { t } = useTranslation('common');
   const [imageAvailable, setImageAvailable] = useState(Boolean(src));
   if (!imageAvailable) {
@@ -485,7 +485,7 @@ export const ProjectRows: React.FC<{
   );
 };
 
-export const DEFAULT_NEW_PROJECT_CATEGORY = 'Development · New project';
+const DEFAULT_NEW_PROJECT_CATEGORY = 'Development · New project';
 
 export const CreateProjectModal: React.FC<{
   open: boolean;

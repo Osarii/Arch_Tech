@@ -12,7 +12,7 @@ import {
   PendingWriteProposal,
 } from '@/types/bim';
 
-export interface ToolExecutionResult {
+interface ToolExecutionResult {
   success: boolean;
   data?: any;
   error?: string;

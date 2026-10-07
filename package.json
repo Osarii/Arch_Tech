@@ -23,7 +23,6 @@
     "@thatopen/components-front": "^3.4.4",
     "@thatopen/fragments": "^3.4.7",
     "camera-controls": "^3.1.2",
-    "clsx": "^2.1.1",
     "i18next": "^26.4.2",
     "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^1.16.0",
@@ -31,7 +30,6 @@
     "react-dom": "^19.0.0",
     "react-i18next": "^17.0.16",
     "react-router-dom": "^7.18.4",
-    "tailwind-merge": "^3.0.2",
     "three": "^0.182.0",
     "three-mesh-bvh": "^0.9.9",
     "web-ifc": "^0.0.78",
@@ -39,7 +37,6 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.50.1",
-    "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.13.5",
     "@types/react": "^19.0.10",
