@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   BarChart3,
   Layers,
@@ -10,6 +11,7 @@ import {
 import { useBimStore } from '@/stores/bimStore';
 
 export const BimAnalysisPanel: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const analysisData = useBimStore((s) => s.analysisData);
   const modelMetadata = useBimStore((s) => s.modelMetadata);
 
@@ -17,7 +19,7 @@ export const BimAnalysisPanel: React.FC = () => {
     return (
       <div className="flex-1 p-6 text-center text-slate-500 text-xs">
         <BarChart3 className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-        <p>Load an IFC model to view BIM structural analysis.</p>
+        <p>{t('loadModelForAnalysis', 'Load an IFC model to view BIM structural analysis.')}</p>
       </div>
     );
   }
@@ -33,7 +35,7 @@ export const BimAnalysisPanel: React.FC = () => {
         <div className="bg-[#171a24] p-2.5 rounded-lg border border-[#252b3a]">
           <span className="text-[10px] text-slate-400 block flex items-center space-x-1">
             <Box className="w-3 h-3 text-sky-400" />
-            <span>Elements</span>
+            <span>{t('elementsLabel', 'Elements')}</span>
           </span>
           <span className="text-base font-bold text-slate-100 font-mono mt-0.5 block">
             {totalElements}
@@ -43,7 +45,7 @@ export const BimAnalysisPanel: React.FC = () => {
         <div className="bg-[#171a24] p-2.5 rounded-lg border border-[#252b3a]">
           <span className="text-[10px] text-slate-400 block flex items-center space-x-1">
             <Layers className="w-3 h-3 text-emerald-400" />
-            <span>Levels</span>
+            <span>{t('levelsLabel', 'Levels')}</span>
           </span>
           <span className="text-base font-bold text-slate-100 font-mono mt-0.5 block">
             {analysisData.totalStoreys}
@@ -53,7 +55,7 @@ export const BimAnalysisPanel: React.FC = () => {
         <div className="bg-[#171a24] p-2.5 rounded-lg border border-[#252b3a]">
           <span className="text-[10px] text-slate-400 block flex items-center space-x-1">
             <Palette className="w-3 h-3 text-amber-400" />
-            <span>Materials</span>
+            <span>{t('materialsLabel', 'Materials')}</span>
           </span>
           <span className="text-base font-bold text-slate-100 font-mono mt-0.5 block">
             {analysisData.totalMaterials}
@@ -65,35 +67,44 @@ export const BimAnalysisPanel: React.FC = () => {
       <div className="border border-[#222736] rounded-lg bg-[#151722] p-3 space-y-2.5">
         <h4 className="font-semibold text-slate-200 text-xs flex items-center space-x-1.5 border-b border-[#252b3c] pb-2">
           <Ruler className="w-3.5 h-3.5 text-sky-400" />
-          <span>Real IFC Quantities Takeoff</span>
+          <span>{t('realIfcQuantitiesTakeoff', 'Real IFC Quantities Takeoff')}</span>
         </h4>
 
         <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
           <div className="bg-[#1b1f2c] p-2 rounded border border-[#282f42]">
-            <span className="text-[10px] text-slate-400 block">Gross Wall Area</span>
+            <span className="text-[10px] text-slate-400 block">{t('grossWallArea', 'Gross Wall Area')}</span>
             <span className="text-slate-100 font-semibold text-xs mt-0.5 block">
-              {quantities.totalWallGrossArea > 0 ? `${quantities.totalWallGrossArea} m²` : 'Extracted from geometry'}
+              {quantities.totalWallGrossArea > 0
+                ? t('areaFormatM2', '{{val}} m²', { val: quantities.totalWallGrossArea })
+                : t('extractedFromGeometry', 'Extracted from geometry')}
             </span>
           </div>
 
           <div className="bg-[#1b1f2c] p-2 rounded border border-[#282f42]">
-            <span className="text-[10px] text-slate-400 block">Total Slab Area</span>
+            <span className="text-[10px] text-slate-400 block">{t('totalSlabArea', 'Total Slab Area')}</span>
             <span className="text-slate-100 font-semibold text-xs mt-0.5 block">
-              {quantities.totalSlabArea > 0 ? `${quantities.totalSlabArea} m²` : 'Extracted from geometry'}
+              {quantities.totalSlabArea > 0
+                ? t('areaFormatM2', '{{val}} m²', { val: quantities.totalSlabArea })
+                : t('extractedFromGeometry', 'Extracted from geometry')}
             </span>
           </div>
 
           <div className="bg-[#1b1f2c] p-2 rounded border border-[#282f42]">
-            <span className="text-[10px] text-slate-400 block">Total Volume</span>
+            <span className="text-[10px] text-slate-400 block">{t('totalVolume', 'Total Volume')}</span>
             <span className="text-slate-100 font-semibold text-xs mt-0.5 block">
-              {quantities.totalVolume > 0 ? `${quantities.totalVolume} m³` : 'Standard Qto'}
+              {quantities.totalVolume > 0
+                ? t('volumeFormatM3', '{{val}} m³', { val: quantities.totalVolume })
+                : t('standardQto', 'Standard Qto')}
             </span>
           </div>
 
           <div className="bg-[#1b1f2c] p-2 rounded border border-[#282f42]">
-            <span className="text-[10px] text-slate-400 block">Doors & Windows</span>
+            <span className="text-[10px] text-slate-400 block">{t('doorsAndWindows', 'Doors & Windows')}</span>
             <span className="text-slate-100 font-semibold text-xs mt-0.5 block">
-              {quantities.totalDoorsCount} doors / {quantities.totalWindowsCount} win
+              {t('doorsAndWindowsCounts', '{{doors}} doors / {{windows}} win', {
+                doors: quantities.totalDoorsCount,
+                windows: quantities.totalWindowsCount,
+              })}
             </span>
           </div>
         </div>
@@ -103,7 +114,7 @@ export const BimAnalysisPanel: React.FC = () => {
       <div className="border border-[#222736] rounded-lg bg-[#151722] p-3 space-y-2.5">
         <h4 className="font-semibold text-slate-200 text-xs flex items-center space-x-1.5 border-b border-[#252b3c] pb-2">
           <BarChart3 className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Category Breakdown</span>
+          <span>{t('categoryBreakdown', 'Category Breakdown')}</span>
         </h4>
 
         <div className="space-y-2">
@@ -114,7 +125,7 @@ export const BimAnalysisPanel: React.FC = () => {
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="text-slate-300 font-medium">{cat}</span>
                   <span className="font-mono text-slate-400">
-                    {count} ({percentage}%)
+                    {t('categoryPercentage', '{{count}} ({{percentage}}%)', { count, percentage })}
                   </span>
                 </div>
                 <div className="w-full h-1.5 rounded-full bg-[#202535] overflow-hidden">
@@ -133,7 +144,7 @@ export const BimAnalysisPanel: React.FC = () => {
       <div className="border border-[#222736] rounded-lg bg-[#151722] p-3 space-y-2.5">
         <h4 className="font-semibold text-slate-200 text-xs flex items-center space-x-1.5 border-b border-[#252b3c] pb-2">
           <Building className="w-3.5 h-3.5 text-amber-400" />
-          <span>Storey Distribution</span>
+          <span>{t('storeyDistribution', 'Storey Distribution')}</span>
         </h4>
 
         <div className="space-y-2">
@@ -147,7 +158,7 @@ export const BimAnalysisPanel: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-slate-200">{storeyName}</span>
                   <span className="font-mono text-[10px] text-sky-400 bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-800">
-                    {storeyTotal} items
+                    {t('itemsCount', '{{count}} items', { count: storeyTotal })}
                   </span>
                 </div>
 
@@ -174,7 +185,7 @@ export const BimAnalysisPanel: React.FC = () => {
         <div className="border border-[#222736] rounded-lg bg-[#151722] p-3 space-y-2">
           <h4 className="font-semibold text-slate-200 text-xs flex items-center space-x-1.5 border-b border-[#252b3c] pb-2">
             <Palette className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Extracted IFC Materials ({materials.length})</span>
+            <span>{t('extractedIfcMaterials', 'Extracted IFC Materials ({{count}})', { count: materials.length })}</span>
           </h4>
 
           <div className="flex flex-wrap gap-1">

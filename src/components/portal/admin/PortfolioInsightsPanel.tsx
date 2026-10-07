@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { portfolioInsightsService, type PortfolioInsights } from '../../../services/portfolioInsightsService';
 import type { Navigate } from '../PortalCommon';
 
 export const PortfolioInsightsPanel: React.FC<{ onNavigate: Navigate }> = ({ onNavigate }) => {
+  const { t } = useTranslation('admin');
   const [insights, setInsights] = useState<PortfolioInsights | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'unavailable'>('loading');
 
@@ -23,26 +25,26 @@ export const PortfolioInsightsPanel: React.FC<{ onNavigate: Navigate }> = ({ onN
   const summary = insights?.summary;
 
   return (
-    <section aria-label="Portfolio intelligence" className="border-b border-black/15 pb-8">
+    <section aria-label={t('portfolioIntelligence', 'Portfolio intelligence')} className="border-b border-black/15 pb-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h2 className="font-serif text-3xl">Portfolio intelligence</h2>
-        <span className="font-mono text-[10px] tracking-[0.2em] text-stone-500">CURRENT DATA</span>
+        <h2 className="font-serif text-3xl">{t('portfolioIntelligence', 'Portfolio intelligence')}</h2>
+        <span className="font-mono text-[10px] tracking-[0.2em] text-stone-500">{t('currentData', 'CURRENT DATA')}</span>
       </div>
       <p className="mt-3 text-sm leading-6 text-stone-600">
-        Recorded progress and workflow relations for non-archived projects. Priority: rejected approvals, multiple pending approvals, or low progress with a pending approval. Attention: one pending approval, low progress, or no Current milestone. Milestone status follows the project record.
+        {t('portfolioIntelligenceDesc', 'Recorded progress and workflow relations for non-archived projects. Priority: rejected approvals, multiple pending approvals, or low progress with a pending approval. Attention: one pending approval, low progress, or no Current milestone. Milestone status follows the project record.')}
       </p>
-      {status === 'loading' && <p role="status" className="mt-6 text-sm">Loading portfolio intelligence…</p>}
-      {status === 'unavailable' && <p role="status" className="mt-6 text-sm">Portfolio intelligence is unavailable. Current project data could not be loaded.</p>}
+      {status === 'loading' && <p role="status" className="mt-6 text-sm">{t('loadingPortfolioIntelligence', 'Loading portfolio intelligence…')}</p>}
+      {status === 'unavailable' && <p role="status" className="mt-6 text-sm">{t('portfolioIntelligenceUnavailable', 'Portfolio intelligence is unavailable. Current project data could not be loaded.')}</p>}
       {status === 'ready' && insights && summary && (
         <div className="mt-6 space-y-8">
           <dl className="grid grid-cols-2 gap-6 sm:grid-cols-3">
             {[
-              ['Active projects', summary.activeProjects],
-              ['Average progress', summary.activeProjects ? `${summary.averageProgress.toFixed(1)}%` : '—'],
-              ['Pending approvals', summary.pendingApprovals],
-              ['Current milestones', summary.currentMilestones],
-              ['Upcoming milestones', summary.upcomingMilestones],
-              ['Attention projects', summary.attentionProjects],
+              [t('activeProjects', 'Active projects'), summary.activeProjects],
+              [t('averageProgress', 'Average progress'), summary.activeProjects ? `${summary.averageProgress.toFixed(1)}%` : '—'],
+              [t('pendingApprovals', 'Pending approvals'), summary.pendingApprovals],
+              [t('currentMilestones', 'Current milestones'), summary.currentMilestones],
+              [t('upcomingMilestones', 'Upcoming milestones'), summary.upcomingMilestones],
+              [t('attentionProjects', 'Attention projects'), summary.attentionProjects],
             ].map(([label, value]) => (
               <div key={label} className="border-t border-black/15 pt-3">
                 <dt className="text-xs text-stone-500">{label}</dt>
@@ -51,11 +53,11 @@ export const PortfolioInsightsPanel: React.FC<{ onNavigate: Navigate }> = ({ onN
             ))}
           </dl>
           <div>
-            <h3 className="font-serif text-xl">Executive brief</h3>
+            <h3 className="font-serif text-xl">{t('executiveBrief', 'Executive brief')}</h3>
             <p className="mt-2 text-sm leading-6 text-stone-600">{insights.executiveBrief}</p>
           </div>
           <div>
-            <h3 className="font-serif text-xl">Attention queue</h3>
+            <h3 className="font-serif text-xl">{t('attentionQueue', 'Attention queue')}</h3>
             {attention.length ? (
               <ol className="mt-3 space-y-3">
                 {attention.map((project) => (
@@ -65,19 +67,21 @@ export const PortfolioInsightsPanel: React.FC<{ onNavigate: Navigate }> = ({ onN
                   </li>
                 ))}
               </ol>
-            ) : <p className="mt-2 text-sm text-stone-600">{summary.activeProjects ? 'No projects have pending or rejected approvals.' : 'No active projects to review.'}</p>}
+            ) : <p className="mt-2 text-sm text-stone-600">{summary.activeProjects ? t('noProjectsPendingRejected', 'No projects have pending or rejected approvals.') : t('noActiveProjectsReview', 'No active projects to review.')}</p>}
           </div>
           {insights.projects.length > 0 && (
             <div>
-              <h3 className="font-serif text-xl">Project reasons</h3>
+              <h3 className="font-serif text-xl">{t('projectReasons', 'Project reasons')}</h3>
               <div className="mt-3 space-y-4">
                 {insights.projects.map((project) => (
                   <article key={project.projectId} className="border-t border-black/15 pt-4">
-                    <h4 className="text-sm font-medium">{project.projectTitle} · {project.progress}% recorded progress · {project.severity}</h4>
+                    <h4 className="text-sm font-medium">
+                      {project.projectTitle} · {t('recordedProgressSeverity', '{{progress}}% recorded progress · {{severity}}', { progress: project.progress, severity: project.severity })}
+                    </h4>
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-stone-600">
                       {project.reasons.map((reason, index) => <li key={`${index}-${reason}`}>{reason}</li>)}
                     </ul>
-                    <p className="mt-3 text-sm"><span className="font-medium">Recommended focus: </span>{project.recommendedFocus}</p>
+                    <p className="mt-3 text-sm"><span className="font-medium">{t('recommendedFocus', 'Recommended focus:')} </span>{project.recommendedFocus}</p>
                   </article>
                 ))}
               </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PortalProject } from '../../portal/data';
 
 /**
@@ -49,6 +50,7 @@ interface ProjectImageProps {
 }
 
 export const ProjectImage: React.FC<ProjectImageProps> = ({ project, alt, className = '', loading = 'lazy', fetchPriority = 'low', usage = 'carousel' }) => {
+  const { t } = useTranslation('common');
   const [failed, setFailed] = useState(false);
   const src = getProjectImage(project, usage);
 
@@ -57,9 +59,10 @@ export const ProjectImage: React.FC<ProjectImageProps> = ({ project, alt, classN
       <span
         data-testid={`project-image-fallback-${project.id}`}
         role="img"
-        aria-label={`${project.title} image unavailable`}
+        aria-label={t('projectMedia.imageUnavailable', '{{title}} image unavailable', { title: project.title })}
         className={`landing-image-fallback ${className}`}
       >
+        {/* i18next-instrument-ignore */}
         <span>GARNIER ARCHITECTURE / DEVELOPMENT</span>
       </span>
     );

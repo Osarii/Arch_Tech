@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   SlidersHorizontal,
   ChevronDown,
@@ -22,6 +23,7 @@ import { EditInspectorPanel } from './EditInspectorPanel';
 import { AiAssistantPanel } from './AiAssistantPanel';
 
 export const PropertiesPanel: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const isPropsOpen = useBimStore((s) => s.isPropsOpen);
   const rightPanelTab = useBimStore((s) => s.rightPanelTab);
   const setRightPanelTab = useBimStore((s) => s.setRightPanelTab);
@@ -63,7 +65,7 @@ export const PropertiesPanel: React.FC = () => {
           }`}
         >
           <SlidersHorizontal className="w-3.5 h-3.5" />
-          <span>Properties & Data</span>
+          <span>{t('propertiesAndData', 'Properties & Data')}</span>
         </button>
 
         <button
@@ -76,7 +78,7 @@ export const PropertiesPanel: React.FC = () => {
           }`}
         >
           <BarChart3 className="w-3.5 h-3.5" />
-          <span>Analysis</span>
+          <span>{t('analysis', 'Analysis')}</span>
         </button>
 
         <button
@@ -89,7 +91,7 @@ export const PropertiesPanel: React.FC = () => {
           }`}
         >
           <Filter className="w-3.5 h-3.5" />
-          <span>Filters</span>
+          <span>{t('filters', 'Filters')}</span>
         </button>
 
         <button
@@ -100,10 +102,10 @@ export const PropertiesPanel: React.FC = () => {
               ? 'border-amber-500 text-amber-300 bg-[#151722]'
               : 'border-transparent hover:text-slate-200 hover:bg-[#12141a]'
           }`}
-          title="Non-Destructive Element Editor"
+          title={t('nonDestructiveEditorTitle', 'Non-Destructive Element Editor')}
         >
           <Pencil className="w-3.5 h-3.5" />
-          <span>Editor</span>
+          <span>{t('editor', 'Editor')}</span>
         </button>
 
         <button
@@ -114,10 +116,10 @@ export const PropertiesPanel: React.FC = () => {
               ? 'border-purple-500 text-purple-300 bg-[#151722]'
               : 'border-transparent hover:text-slate-200 hover:bg-[#12141a]'
           }`}
-          title="BIM AI Assistant"
+          title={t('bimAiAssistantTitle', 'BIM AI Assistant')}
         >
           <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-          <span>AI</span>
+          <span>{t('aiTab', 'AI')}</span>
         </button>
       </div>
 
@@ -135,7 +137,7 @@ export const PropertiesPanel: React.FC = () => {
           {/* Properties Header info */}
           <div className="h-9 px-3 border-b border-[#222630] flex items-center justify-between font-semibold text-slate-300 bg-[#151722]">
             <div className="flex items-center space-x-1.5">
-              <span>Element Inspector</span>
+              <span>{t('elementInspector', 'Element Inspector')}</span>
             </div>
             {selectedElement && (
               <span
@@ -163,7 +165,7 @@ export const PropertiesPanel: React.FC = () => {
                     <button
                       onClick={() => handleCopyGuid(selectedElement.globalId)}
                       className="flex items-center space-x-1 text-[10px] font-mono text-slate-400 hover:text-slate-200 transition"
-                      title="Copy GlobalId"
+                      title={t('copyGlobalIdTitle', 'Copy GlobalId')}
                     >
                       {copiedId ? (
                         <Check className="w-3 h-3 text-emerald-400" />
@@ -184,7 +186,7 @@ export const PropertiesPanel: React.FC = () => {
                   {selectedElement.storey && (
                     <div className="mt-2 flex items-center space-x-1.5 text-[11px] text-slate-400">
                       <Layers className="w-3 h-3 text-emerald-400" />
-                      <span>Level: {selectedElement.storey}</span>
+                      <span>{t('levelPrefix', 'Level:')} {selectedElement.storey}</span>
                     </div>
                   )}
 
@@ -268,27 +270,27 @@ export const PropertiesPanel: React.FC = () => {
                 <div className="border border-[#222734] rounded-lg bg-[#151720] p-3 space-y-2">
                   <h4 className="font-semibold text-slate-200 text-xs flex items-center space-x-1.5">
                     <Building className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Model Overview</span>
+                    <span>{t('modelOverview', 'Model Overview')}</span>
                   </h4>
                   <div className="space-y-1.5 text-[11px]">
                     <div className="flex justify-between">
-                      <span className="text-slate-400">File Name:</span>
+                      <span className="text-slate-400">{t('fileName', 'File Name:')}</span>
                       <span className="text-slate-200 font-mono truncate max-w-[160px]">
                         {modelMetadata.name}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">IFC Schema:</span>
+                      <span className="text-slate-400">{t('ifcSchema', 'IFC Schema:')}</span>
                       <span className="text-sky-400 font-mono">{modelMetadata.schema}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">File Size:</span>
+                      <span className="text-slate-400">{t('fileSize', 'File Size:')}</span>
                       <span className="text-slate-200 font-mono">
-                        {(modelMetadata.sizeBytes / 1024 / 1024).toFixed(2)} MB
+                        {t('mbFormat', '{{size}} MB', { size: (modelMetadata.sizeBytes / 1024 / 1024).toFixed(2) })}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Total Elements:</span>
+                      <span className="text-slate-400">{t('totalElements', 'Total Elements:')}</span>
                       <span className="text-slate-200 font-mono font-medium">
                         {modelMetadata.elementCount}
                       </span>
@@ -300,41 +302,41 @@ export const PropertiesPanel: React.FC = () => {
                 <div className="border border-[#222734] rounded-lg bg-[#151720] p-3">
                   <h4 className="font-semibold text-slate-300 text-xs mb-2.5 flex items-center space-x-1.5">
                     <Box className="w-3.5 h-3.5 text-sky-400" />
-                    <span>Category Breakdown</span>
+                    <span>{t('categoryBreakdown', 'Category Breakdown')}</span>
                   </h4>
                   <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
                     <div className="bg-[#1a1e28] p-2 rounded border border-[#262c3b]">
-                      <span className="text-slate-400 text-[10px] block">Walls</span>
+                      <span className="text-slate-400 text-[10px] block">{t('catWalls', 'Walls')}</span>
                       <span className="text-slate-100 font-semibold text-sm">
                         {modelMetadata.counts.walls}
                       </span>
                     </div>
                     <div className="bg-[#1a1e28] p-2 rounded border border-[#262c3b]">
-                      <span className="text-slate-400 text-[10px] block">Doors</span>
+                      <span className="text-slate-400 text-[10px] block">{t('catDoors', 'Doors')}</span>
                       <span className="text-slate-100 font-semibold text-sm">
                         {modelMetadata.counts.doors}
                       </span>
                     </div>
                     <div className="bg-[#1a1e28] p-2 rounded border border-[#262c3b]">
-                      <span className="text-slate-400 text-[10px] block">Windows</span>
+                      <span className="text-slate-400 text-[10px] block">{t('catWindows', 'Windows')}</span>
                       <span className="text-slate-100 font-semibold text-sm">
                         {modelMetadata.counts.windows}
                       </span>
                     </div>
                     <div className="bg-[#1a1e28] p-2 rounded border border-[#262c3b]">
-                      <span className="text-slate-400 text-[10px] block">Slabs</span>
+                      <span className="text-slate-400 text-[10px] block">{t('catSlabs', 'Slabs')}</span>
                       <span className="text-slate-100 font-semibold text-sm">
                         {modelMetadata.counts.slabs}
                       </span>
                     </div>
                     <div className="bg-[#1a1e28] p-2 rounded border border-[#262c3b]">
-                      <span className="text-slate-400 text-[10px] block">Columns</span>
+                      <span className="text-slate-400 text-[10px] block">{t('catColumns', 'Columns')}</span>
                       <span className="text-slate-100 font-semibold text-sm">
                         {modelMetadata.counts.columns}
                       </span>
                     </div>
                     <div className="bg-[#1a1e28] p-2 rounded border border-[#262c3b]">
-                      <span className="text-slate-400 text-[10px] block">Storeys</span>
+                      <span className="text-slate-400 text-[10px] block">{t('catStoreys', 'Storeys')}</span>
                       <span className="text-slate-100 font-semibold text-sm">
                         {modelMetadata.counts.storeys}
                       </span>
@@ -344,13 +346,13 @@ export const PropertiesPanel: React.FC = () => {
 
                 <div className="bg-sky-950/30 border border-sky-900/40 rounded p-2.5 text-[11px] text-sky-300 flex items-start space-x-2">
                   <Info className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
-                  <p>Click on any 3D element in the viewport or tree to inspect its IFC attributes and property sets.</p>
+                  <p>{t('clickToInspectHint', 'Click on any 3D element in the viewport or tree to inspect its IFC attributes and property sets.')}</p>
                 </div>
               </div>
             ) : (
               <div className="p-6 text-center text-slate-500">
                 <Info className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-                <p>Select an element or load an IFC model to view properties.</p>
+                <p>{t('selectElementPrompt', 'Select an element or load an IFC model to view properties.')}</p>
               </div>
             )}
           </div>

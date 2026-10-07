@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Move,
   RotateCw,
@@ -27,6 +28,7 @@ const PRESET_COLORS = [
 ];
 
 export const EditInspectorPanel: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const selectedElement = useBimStore((s) => s.selectedElement);
   const changeSet = useBimStore((s) => s.changeSet);
 
@@ -66,7 +68,7 @@ export const EditInspectorPanel: React.FC = () => {
     return (
       <div className="flex-1 p-6 text-center text-slate-500 text-xs">
         <Sliders className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-        <p>Select any BIM element in the 3D viewport to inspect and edit its non-destructive properties.</p>
+        <p>{t('selectElementToEditPrompt', 'Select any BIM element in the 3D viewport to inspect and edit its non-destructive properties.')}</p>
       </div>
     );
   }
@@ -168,12 +170,12 @@ export const EditInspectorPanel: React.FC = () => {
           </span>
           {isDeleted && (
             <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800 uppercase font-semibold">
-              Marked Deleted
+              {t('markedDeleted', 'Marked Deleted')}
             </span>
           )}
           {hasModifications && !isDeleted && (
             <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 uppercase">
-              Modified
+              {t('modifiedBadge', 'Modified')}
             </span>
           )}
         </div>
@@ -188,17 +190,17 @@ export const EditInspectorPanel: React.FC = () => {
         <div className="flex items-center justify-between border-b border-[#252b3c] pb-2">
           <div className="flex items-center space-x-1.5 font-semibold text-slate-200">
             <Move className="w-3.5 h-3.5 text-sky-400" />
-            <span>Position Transform (Meters)</span>
+            <span>{t('positionTransformMeters', 'Position Transform (Meters)')}</span>
           </div>
           {(transform.x !== 0 || transform.y !== 0 || transform.z !== 0) && (
             <button
               onClick={handleResetTransform}
               data-testid="btn-reset-transform"
               className="text-[10px] text-sky-400 hover:text-sky-200 flex items-center space-x-1"
-              title="Reset position and rotation to [0, 0, 0]"
+              title={t('resetTransformTitle', 'Reset position and rotation to [0, 0, 0]')}
             >
               <RotateCcw className="w-2.5 h-2.5" />
-              <span>Reset</span>
+              <span>{t('reset', 'Reset')}</span>
             </button>
           )}
         </div>
@@ -206,8 +208,8 @@ export const EditInspectorPanel: React.FC = () => {
         {/* Translation X Axis */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="font-mono font-semibold text-sky-400">X (East/West)</span>
-            <span className="font-mono text-slate-300">{transform.x.toFixed(2)} m</span>
+            <span className="font-mono font-semibold text-sky-400">{t('axisXLabel', 'X (East/West)')}</span>
+            <span className="font-mono text-slate-300">{t('meterFormat', '{{val}} m', { val: transform.x.toFixed(2) })}</span>
           </div>
           <div className="flex items-center space-x-1">
             <button
@@ -215,7 +217,7 @@ export const EditInspectorPanel: React.FC = () => {
               data-testid="btn-move-x-sub-1"
               className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
             >
-              -1m
+              {t('minusOneMeter', '-1m')}
             </button>
             <button
               onClick={() => handleStepMove('x', -0.1)}
@@ -242,7 +244,7 @@ export const EditInspectorPanel: React.FC = () => {
               data-testid="btn-move-x-add-1"
               className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
             >
-              +1m
+              {t('plusOneMeter', '+1m')}
             </button>
           </div>
         </div>
@@ -250,15 +252,15 @@ export const EditInspectorPanel: React.FC = () => {
         {/* Translation Y Axis */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="font-mono font-semibold text-emerald-400">Y (Elevation)</span>
-            <span className="font-mono text-slate-300">{transform.y.toFixed(2)} m</span>
+            <span className="font-mono font-semibold text-emerald-400">{t('axisYLabel', 'Y (Elevation)')}</span>
+            <span className="font-mono text-slate-300">{t('meterFormat', '{{val}} m', { val: transform.y.toFixed(2) })}</span>
           </div>
           <div className="flex items-center space-x-1">
             <button
               onClick={() => handleStepMove('y', -1)}
               className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
             >
-              -1m
+              {t('minusOneMeter', '-1m')}
             </button>
             <button
               onClick={() => handleStepMove('y', -0.1)}
@@ -284,7 +286,7 @@ export const EditInspectorPanel: React.FC = () => {
               onClick={() => handleStepMove('y', 1)}
               className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
             >
-              +1m
+              {t('plusOneMeter', '+1m')}
             </button>
           </div>
         </div>
@@ -292,15 +294,15 @@ export const EditInspectorPanel: React.FC = () => {
         {/* Translation Z Axis */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="font-mono font-semibold text-amber-400">Z (North/South)</span>
-            <span className="font-mono text-slate-300">{transform.z.toFixed(2)} m</span>
+            <span className="font-mono font-semibold text-amber-400">{t('axisZLabel', 'Z (North/South)')}</span>
+            <span className="font-mono text-slate-300">{t('meterFormat', '{{val}} m', { val: transform.z.toFixed(2) })}</span>
           </div>
           <div className="flex items-center space-x-1">
             <button
               onClick={() => handleStepMove('z', -1)}
               className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
             >
-              -1m
+              {t('minusOneMeter', '-1m')}
             </button>
             <button
               onClick={() => handleStepMove('z', -0.1)}
@@ -326,7 +328,7 @@ export const EditInspectorPanel: React.FC = () => {
               onClick={() => handleStepMove('z', 1)}
               className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
             >
-              +1m
+              {t('plusOneMeter', '+1m')}
             </button>
           </div>
         </div>
@@ -337,9 +339,9 @@ export const EditInspectorPanel: React.FC = () => {
         <div className="flex items-center justify-between border-b border-[#252b3c] pb-2">
           <div className="flex items-center space-x-1.5 font-semibold text-slate-200">
             <RotateCw className="w-3.5 h-3.5 text-amber-400" />
-            <span>Rotation (Degrees)</span>
+            <span>{t('rotationDegrees', 'Rotation (Degrees)')}</span>
           </div>
-          <span className="font-mono text-slate-300 text-[11px]">{transform.rotationY}°</span>
+          <span className="font-mono text-slate-300 text-[11px]">{t('degreeFormat', '{{val}}°', { val: transform.rotationY })}</span>
         </div>
 
         <div className="flex items-center space-x-1">
@@ -348,13 +350,13 @@ export const EditInspectorPanel: React.FC = () => {
             data-testid="btn-rotate-sub-45"
             className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
           >
-            -45°
+            {t('minus45Deg', '-45°')}
           </button>
           <button
             onClick={() => handleStepRotate(-15)}
             className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
           >
-            -15°
+            {t('minus15Deg', '-15°')}
           </button>
           <input
             type="number"
@@ -368,14 +370,14 @@ export const EditInspectorPanel: React.FC = () => {
             onClick={() => handleStepRotate(15)}
             className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
           >
-            +15°
+            {t('plus15Deg', '+15°')}
           </button>
           <button
             onClick={() => handleStepRotate(45)}
             data-testid="btn-rotate-add-45"
             className="px-2 py-1 rounded bg-[#1c202d] hover:bg-[#252b3c] text-slate-300 font-mono text-[11px] border border-[#2b3346]"
           >
-            +45°
+            {t('plus45Deg', '+45°')}
           </button>
         </div>
       </div>
@@ -385,7 +387,7 @@ export const EditInspectorPanel: React.FC = () => {
         <div className="flex items-center justify-between border-b border-[#252b3c] pb-2">
           <div className="flex items-center space-x-1.5 font-semibold text-slate-200">
             <Palette className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Visual Appearance Overrides</span>
+            <span>{t('visualAppearanceOverrides', 'Visual Appearance Overrides')}</span>
           </div>
           {override.color && (
             <button
@@ -393,14 +395,14 @@ export const EditInspectorPanel: React.FC = () => {
               data-testid="btn-reset-color"
               className="text-[10px] text-sky-400 hover:text-sky-200"
             >
-              Reset Color
+              {t('resetColor', 'Reset Color')}
             </button>
           )}
         </div>
 
         {/* Color Palette Swatches */}
         <div className="space-y-1">
-          <span className="text-[11px] text-slate-400">Color Palette</span>
+          <span className="text-[11px] text-slate-400">{t('colorPalette', 'Color Palette')}</span>
           <div className="flex items-center gap-1.5 flex-wrap">
             {PRESET_COLORS.map((c) => {
               const isSelected = override.color?.toLowerCase() === c.hex.toLowerCase();
@@ -425,7 +427,7 @@ export const EditInspectorPanel: React.FC = () => {
         {/* Opacity Slider */}
         <div className="space-y-1 pt-1">
           <div className="flex items-center justify-between text-[11px]">
-            <span className="text-slate-400">Opacity / Transparency</span>
+            <span className="text-slate-400">{t('opacityTransparency', 'Opacity / Transparency')}</span>
             <span className="font-mono text-slate-300">
               {Math.round((override.opacity ?? 1.0) * 100)}%
             </span>
@@ -447,7 +449,7 @@ export const EditInspectorPanel: React.FC = () => {
       <div className="border border-[#222736] rounded-lg bg-[#151722] p-3 space-y-2">
         <h4 className="font-semibold text-slate-200 text-xs border-b border-[#252b3c] pb-2 flex items-center space-x-1.5">
           <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-          <span>Non-Destructive Actions</span>
+          <span>{t('nonDestructiveActions', 'Non-Destructive Actions')}</span>
         </h4>
 
         <div className="grid grid-cols-2 gap-2 pt-1">
@@ -463,12 +465,12 @@ export const EditInspectorPanel: React.FC = () => {
             {isDeleted ? (
               <>
                 <Eye className="w-3.5 h-3.5" />
-                <span>Restore Element</span>
+                <span>{t('restoreElement', 'Restore Element')}</span>
               </>
             ) : (
               <>
                 <EyeOff className="w-3.5 h-3.5" />
-                <span>Temp Delete</span>
+                <span>{t('tempDelete', 'Temp Delete')}</span>
               </>
             )}
           </button>
@@ -477,10 +479,10 @@ export const EditInspectorPanel: React.FC = () => {
             onClick={handleDuplicate}
             data-testid="btn-duplicate"
             className="flex items-center justify-center space-x-1.5 py-1.5 px-2 rounded-lg bg-[#1d2230] hover:bg-[#283042] text-slate-200 text-xs font-medium border border-[#2e374d] transition"
-            title="Create visual duplicate instance (+1.5m X)"
+            title={t('duplicateInstanceTitle', 'Create visual duplicate instance (+1.5m X)')}
           >
             <Copy className="w-3.5 h-3.5 text-sky-400" />
-            <span>Duplicate</span>
+            <span>{t('duplicate', 'Duplicate')}</span>
           </button>
         </div>
       </div>
@@ -489,46 +491,46 @@ export const EditInspectorPanel: React.FC = () => {
       {hasModifications && (
         <div className="border border-[#242b3c] rounded-lg bg-[#171a25] p-3 space-y-2">
           <div className="flex items-center justify-between border-b border-[#283042] pb-1.5">
-            <span className="font-semibold text-slate-200 text-xs">Diff Comparison</span>
+            <span className="font-semibold text-slate-200 text-xs">{t('diffComparison', 'Diff Comparison')}</span>
             <button
               onClick={handleResetElement}
               data-testid="btn-reset-element-changes"
               className="text-[10px] text-rose-400 hover:text-rose-200 flex items-center space-x-1 font-mono"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>Reset Element</span>
+              <span>{t('resetElement', 'Reset Element')}</span>
             </button>
           </div>
 
           <div className="space-y-1 text-[11px] font-mono">
             <div className="flex justify-between">
-              <span className="text-slate-400">Position:</span>
+              <span className="text-slate-400">{t('positionLabel', 'Position:')}</span>
               <span className="text-slate-200">
-                [0, 0, 0] → [{transform.x}, {transform.y}, {transform.z}]
+                {t('positionTransition', '[0, 0, 0] → [{{x}}, {{y}}, {{z}}]', { x: transform.x, y: transform.y, z: transform.z })}
               </span>
             </div>
             {transform.rotationY !== 0 && (
               <div className="flex justify-between">
-                <span className="text-slate-400">Rotation:</span>
-                <span className="text-slate-200">0° → {transform.rotationY}°</span>
+                <span className="text-slate-400">{t('rotationLabel', 'Rotation:')}</span>
+                <span className="text-slate-200">{t('rotationTransition', '0° → {{deg}}°', { deg: transform.rotationY })}</span>
               </div>
             )}
             {override.color && (
               <div className="flex justify-between">
-                <span className="text-slate-400">Color Override:</span>
+                <span className="text-slate-400">{t('colorOverrideLabel', 'Color Override:')}</span>
                 <span className="text-sky-400">{override.color}</span>
               </div>
             )}
             {override.opacity !== 1.0 && (
               <div className="flex justify-between">
-                <span className="text-slate-400">Opacity:</span>
+                <span className="text-slate-400">{t('opacityLabel', 'Opacity:')}</span>
                 <span className="text-amber-400">{Math.round((override.opacity ?? 1) * 100)}%</span>
               </div>
             )}
             {isDeleted && (
               <div className="flex justify-between text-rose-400 font-semibold">
-                <span>Status:</span>
-                <span>Temporarily Hidden</span>
+                <span>{t('statusLabel', 'Status:')}</span>
+                <span>{t('temporarilyHidden', 'Temporarily Hidden')}</span>
               </div>
             )}
           </div>

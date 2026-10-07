@@ -23,6 +23,7 @@ import {
 } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
 import { useLocale } from '../../../portal/locale';
+import { useTranslation } from 'react-i18next';
 
 export interface DashboardProjectPageProps extends Partial<NavigationProps> {
   projectId: string;
@@ -40,6 +41,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
   homePath = '/dashboard',
   role = 'client',
 }) => {
+  const { t } = useTranslation(['portal', 'admin']);
   const { portalCommon } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
@@ -231,7 +233,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         onClick={() => navigate(homePath)}
         className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500 hover:text-black"
       >
-        <ArrowLeft className="h-3.5 w-3.5" /> All projects
+        <ArrowLeft className="h-3.5 w-3.5" /> {t('allProjects', 'All projects')}
       </button>
 
       <div className="mt-8 grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
@@ -249,7 +251,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
           <div className="portal-progress-track mt-3 h-px bg-black/15">
             <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
           </div>
-          <p className="mt-3 text-xs text-stone-500">Next: {project.nextMilestone}</p>
+          <p className="mt-3 text-xs text-stone-500">{t('nextLabel', 'Next: {{milestone}}', { milestone: project.nextMilestone })}</p>
         </div>
       </div>
 
@@ -334,7 +336,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                       <p className="mt-1 font-mono text-[9px] uppercase tracking-wider text-stone-500">{doc.meta}</p>
                     </div>
                   </div>
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">Available</span>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{t('available', 'Available')}</span>
                 </div>
               ))
             ) : (
@@ -351,7 +353,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                   <p className="font-serif text-2xl">{appr.title}</p>
                   <span className="flex items-center gap-3">
                     <span className={`${portalStatusClass(appr.status)} font-mono text-[9px] uppercase tracking-wider`}>
-                      {appr.status}
+                      {t(`statuses.${appr.status.toLowerCase()}`, appr.status)}
                     </span>
                     {role === 'client' && appr.status === 'Pending' && (
                       <>
@@ -359,13 +361,13 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                           onClick={() => void respondToProjectApproval(appr.title, 'Approved')}
                           className="border border-black px-3 py-2 font-mono text-[9px] uppercase"
                         >
-                          Approve
+                          {t('approve', 'Approve')}
                         </button>
                         <button
                           onClick={() => void respondToProjectApproval(appr.title, 'Rejected')}
                           className="border border-black/15 px-3 py-2 font-mono text-[9px] uppercase text-stone-500"
                         >
-                          Reject
+                          {t('reject', 'Reject')}
                         </button>
                       </>
                     )}
@@ -379,7 +381,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                         }
                         className="border border-black px-3 py-2 font-mono text-[9px] uppercase"
                       >
-                        {appr.status === 'Approved' ? 'Reopen' : 'Resolve'}
+                        {appr.status === 'Approved' ? t('reopen', 'Reopen') : t('resolve', 'Resolve')}
                       </button>
                     )}
                   </span>
@@ -395,9 +397,9 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
           <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <Box className="h-6 w-6" />
-              <h2 className="mt-8 font-serif text-4xl">Current project model</h2>
+              <h2 className="mt-8 font-serif text-4xl">{t('currentProjectModel', 'Current project model')}</h2>
               <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-                Open the project model in the existing GARNIER ARCHITECTURE workspace.
+                {t('currentProjectModelDesc', 'Open the project model in the existing GARNIER ARCHITECTURE workspace.')}
               </p>
             </div>
             <button
@@ -405,7 +407,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
               onClick={handleOpenWorkspace}
               className="group inline-flex items-center justify-between gap-12 bg-[#171714] px-6 py-4 font-mono text-[10px] uppercase tracking-[0.2em] text-white transition-transform active:translate-y-px"
             >
-              Open 3D Model <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              {t('open3dModel', 'Open 3D Model')} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </div>
         )}
@@ -417,28 +419,28 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
           <div className="flex items-end justify-between gap-6">
             <div>
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
-                {role === 'admin' ? 'Administration' : 'Studio management'}
+                {role === 'admin' ? t('administration', 'Administration') : t('studioManagement', 'Studio management')}
               </p>
-              <h2 className="mt-4 font-serif text-4xl">Project controls.</h2>
+              <h2 className="mt-4 font-serif text-4xl">{t('projectControlsTitle', 'Project controls.')}</h2>
             </div>
             {role === 'admin' && (
               <div className="flex flex-wrap items-center justify-end gap-3">
                 <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">
-                  {project.published ? 'Public portfolio' : 'Private project'}
+                  {project.published ? t('publicPortfolio', 'Public portfolio') : t('privateProject', 'Private project')}
                 </span>
                 <button
                   data-testid="toggle-publication"
                   onClick={() => void togglePublication()}
                   className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]"
                 >
-                  {project.published ? 'Remove from public portfolio' : 'Publish to public portfolio'}
+                  {project.published ? t('removeFromPublic', 'Remove from public portfolio') : t('publishToPublic', 'Publish to public portfolio')}
                 </button>
                 <button
                   data-testid="delete-project"
                   onClick={() => void deleteProject()}
                   className="border border-black/20 px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]"
                 >
-                  Delete runtime project
+                  {t('deleteRuntimeProject', 'Delete runtime project')}
                 </button>
               </div>
             )}
@@ -448,9 +450,9 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
             <div className="space-y-4">
               {role === 'admin' && (
                 <label className="block font-mono text-[9px] uppercase text-stone-500">
-                  Project title
+                  {t('projectTitle', 'Project title')}
                   <input
-                    aria-label="Project title"
+                    aria-label={t('projectTitle', 'Project title')}
                     value={projectTitle || project.title}
                     onChange={(event) => setProjectTitle(event.target.value)}
                     className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"
@@ -458,9 +460,9 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                 </label>
               )}
               <label className="block font-mono text-[9px] uppercase text-stone-500">
-                Progress / phase
+                {t('progressPhase', 'Progress / phase')}
                 <input
-                  aria-label="Project progress"
+                  aria-label={t('projectProgress', 'Project progress')}
                   type="number"
                   min={0}
                   max={100}
@@ -473,7 +475,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                     setProgress(value);
                     setProgressError(
                       value.trim() !== '' && (!Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100)
-                        ? 'Progress must be a number from 0 to 100.'
+                        ? t('progressValidation', 'Progress must be a number from 0 to 100.')
                         : '',
                     );
                   }}
@@ -485,40 +487,40 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                   </p>
                 )}
                 <select
-                  aria-label="Project phase"
+                  aria-label={t('projectPhase', 'Project phase')}
                   value={phase || project.phase}
                   onChange={(event) => setPhase(event.target.value)}
                   className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"
                 >
-                  <option>Brief and site study</option>
-                  <option>Concept design</option>
-                  <option>Design development</option>
-                  <option>Documentation</option>
+                  <option value="Brief and site study">{t('phases.brief', 'Brief and site study')}</option>
+                  <option value="Concept design">{t('phases.concept', 'Concept design')}</option>
+                  <option value="Design development">{t('phases.development', 'Design development')}</option>
+                  <option value="Documentation">{t('phases.documentation', 'Documentation')}</option>
                 </select>
               </label>
               <button
                 onClick={() => void saveStatus()}
                 className="bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em] text-white"
               >
-                Save status
+                {t('saveStatus', 'Save status')}
               </button>
             </div>
 
             <div className="space-y-4">
               <label className="block font-mono text-[9px] uppercase text-stone-500">
-                Create project update
+                {t('createProjectUpdate', 'Create project update')}
                 <input
-                  aria-label="Update title"
+                  aria-label={t('updateTitle', 'Update title')}
                   value={updateTitle}
                   onChange={(event) => setUpdateTitle(event.target.value)}
-                  placeholder="Update title"
+                  placeholder={t('updateTitle', 'Update title')}
                   className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"
                 />
                 <textarea
-                  aria-label="Update body"
+                  aria-label={t('updateBody', 'Update body')}
                   value={updateBody}
                   onChange={(event) => setUpdateBody(event.target.value)}
-                  placeholder="What changed?"
+                  placeholder={t('whatChanged', 'What changed?')}
                   className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"
                 />
               </label>
@@ -526,18 +528,18 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                 onClick={addUpdate}
                 className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]"
               >
-                Publish update
+                {t('publishUpdate', 'Publish update')}
               </button>
             </div>
 
             <div className="space-y-4">
               <label className="block font-mono text-[9px] uppercase text-stone-500">
-                Manage milestones
+                {t('manageMilestones', 'Manage milestones')}
                 <input
-                  aria-label="New milestone"
+                  aria-label={t('newMilestone', 'New milestone')}
                   value={milestone}
                   onChange={(event) => setMilestone(event.target.value)}
-                  placeholder="Milestone name"
+                  placeholder={t('milestoneName', 'Milestone name')}
                   className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"
                 />
               </label>
@@ -545,18 +547,18 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                 onClick={addMilestone}
                 className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]"
               >
-                Add milestone
+                {t('addMilestone', 'Add milestone')}
               </button>
             </div>
 
             <div className="space-y-4">
               <label className="block font-mono text-[9px] uppercase text-stone-500">
-                Issue document
+                {t('issueDocument', 'Issue document')}
                 <input
-                  aria-label="New document"
+                  aria-label={t('newDocument', 'New document')}
                   value={documentName}
                   onChange={(event) => setDocumentName(event.target.value)}
-                  placeholder="Document name"
+                  placeholder={t('documentName', 'Document name')}
                   className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"
                 />
               </label>
@@ -564,18 +566,18 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                 onClick={addDocument}
                 className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]"
               >
-                Add document
+                {t('addDocument', 'Add document')}
               </button>
             </div>
 
             <div className="space-y-4">
               <label className="block font-mono text-[9px] uppercase text-stone-500">
-                Client approval request
+                {t('clientApprovalRequest', 'Client approval request')}
                 <input
-                  aria-label="New approval"
+                  aria-label={t('newApproval', 'New approval')}
                   value={approvalTitle}
                   onChange={(event) => setApprovalTitle(event.target.value)}
-                  placeholder="Approval request"
+                  placeholder={t('approvalRequest', 'Approval request')}
                   className="mt-2 w-full border-b border-black/20 bg-transparent py-3 text-sm outline-none"
                 />
               </label>
@@ -583,12 +585,12 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                 onClick={requestApproval}
                 className="border border-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.16em]"
               >
-                Request approval
+                {t('requestApproval', 'Request approval')}
               </button>
             </div>
 
             <div>
-              <p className="font-mono text-[9px] uppercase text-stone-500">Project activity</p>
+              <p className="font-mono text-[9px] uppercase text-stone-500">{t('projectActivity', 'Project activity')}</p>
               {project.updates.slice(0, 3).map((update) => (
                 <p key={update.date + update.title} className="mt-4 text-sm text-stone-600">
                   {update.date} · {update.title}

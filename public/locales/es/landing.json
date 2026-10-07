@@ -1,0 +1,89 @@
+{
+  "capabilitiesSection": {
+    "eyebrow": "02 // CAPACIDADES",
+    "heading": "Capacidades arquitectónicas.",
+    "items": {
+      "generate": {
+        "description": "Sintetice pórticos estructurales de múltiples niveles a partir de parámetros paramétricos con estrictas reglas de jerarquía espacial. Un asistente secundario contextualizado gestiona consultas espaciales y síntesis de niveles antes de que una validación semántica aislada garantice una exportación IFC limpia y verificada.",
+        "lead": "Síntesis paramétrica de edificaciones y persistencia aislada ISO 10303-21.",
+        "specs": {
+          "0": "Modelado IFC4 Determinista",
+          "1": "Asistente Secundario Contextualizado",
+          "2": "Exportación Idempotente STEP-21"
+        },
+        "title": "Generar y exportar"
+      },
+      "inspect": {
+        "description": "Cargue y analice archivos ISO 16739 IFC4 e IFC2x3 directamente en la memoria del navegador mediante WebAssembly nativo. Recorra árboles completos de contención espacial, consulte conjuntos de propiedades y genere planos de planta 2D ortogonales a cotas de nivel sin dependencias en la nube.",
+        "lead": "Análisis espacial en el cliente y extracción de propiedades.",
+        "specs": {
+          "0": "Ingesta de IFC4 e IFC2x3",
+          "1": "Corte 2D Nivel por Nivel",
+          "2": "Inspector Completo de Atributos y Psets"
+        },
+        "title": "Inspeccionar IFC"
+      },
+      "modify": {
+        "description": "Ejecute traslaciones de coordenadas 3D, rotaciones vectoriales relativas y eliminación de elementos. Cada modificación queda aislada en una capa proxy no destructiva y registrada cronológicamente en un ChangeSet JSON inmutable con capacidad completa de deshacer y rehacer.",
+        "lead": "Transformaciones proxy no destructivas y registros de auditoría transaccionales.",
+        "specs": {
+          "0": "Capa Proxy Transaccional",
+          "1": "Deltas de Coordenadas Relativas",
+          "2": "Historial de ChangeSet en JSON"
+        },
+        "title": "Modificar modelos"
+      }
+    },
+    "module": "MÓDULO {{index}}",
+    "subtitle": "TRES MÓDULOS PRINCIPALES DE OPENBIM"
+  },
+  "finalCta": {
+    "body": "Diseñe, inspeccione y modifique modelos IFC directamente en su navegador.",
+    "enterWorkspace": "INGRESAR AL ESPACIO DE TRABAJO",
+    "eyebrow": "COMIENCE A TRABAJAR",
+    "heading": "Abra su modelo.",
+    "standards": "100% WebAssembly en el Cliente · Estándar Abierto IFC4 e IFC2x3"
+  },
+  "productPreview": {
+    "captionDesc": "ÁRBOL ESPACIAL BIM, INSPECTOR DE ELEMENTOS Y VISOR 3D",
+    "captionFig": "FIG 02.00 // BIM LAB V1 RUNTIME",
+    "enterWorkspace": "INGRESAR AL ESPACIO DE TRABAJO",
+    "enterWorkspaceArrow": "INGRESAR AL ESPACIO DE TRABAJO →",
+    "eyebrow": "01 // EL ESPACIO DE TRABAJO",
+    "heading": "Un solo espacio de trabajo.",
+    "screenshotAlt": "Captura del Espacio de Trabajo BIM de Arch_Tech",
+    "subheading": "IFC desde la inspección hasta la exportación."
+  },
+  "technology": {
+    "coreStack": "STACK TECNOLÓGICO PRINCIPAL",
+    "runtime": "RUNTIME EN EL CLIENTE // ISO 16739"
+  },
+  "workflow": {
+    "eyebrow": "03 // FLUJO DE TRABAJO",
+    "heading": "La línea de ingeniería.",
+    "lifecycle": "CICLO DE VIDA DETERMINISTA DE CUATRO ETAPAS",
+    "phase": "FASE {{number}}",
+    "steps": {
+      "edit": {
+        "description": "Aplique traslaciones 3D, rotaciones relativas o generación paramétrica de niveles a una capa proxy transaccional.",
+        "phase": "EDITAR",
+        "subtitle": "Ediciones No Destructivas"
+      },
+      "export": {
+        "description": "Ejecute verificación semántica aislada antes de exportar archivos IFC puros ISO 10303-21.",
+        "phase": "EXPORTAR",
+        "subtitle": "Persistencia STEP-21"
+      },
+      "import": {
+        "description": "Transmita archivos .ifc locales a la memoria WebAssembly de web-ifc. Cero transmisión a la nube.",
+        "phase": "IMPORTAR",
+        "subtitle": "Ingesta WASM en el Cliente"
+      },
+      "inspect": {
+        "description": "Recorra la jerarquía del proyecto, consulte propiedades de entidades y genere planos 2D ortogonales.",
+        "phase": "INSPECCIONAR",
+        "subtitle": "Coordinación Espacial"
+      }
+    }
+  }
+}

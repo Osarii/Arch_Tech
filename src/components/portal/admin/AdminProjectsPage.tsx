@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot } from '../../../portal/data';
 import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
@@ -15,6 +16,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('admin');
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const { adminPortal } = useLocale();
@@ -102,18 +104,21 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
         )}
       </div>
 
-      <section id="portal-section-projects" aria-label="Project portfolio register">
+      <section id="portal-section-projects" aria-label={t('projectPortfolioRegister', 'Project portfolio register')}>
         <div className="mb-6 flex items-end justify-between gap-6">
           <div>
             <h2 className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-              All projects / assignments
+              {t('allProjectsAssignments', 'All projects / assignments')}
             </h2>
             <p className="mt-1 text-sm text-stone-600">
-              {filteredProjects.length} of {activeProjects.length} active projects
+              {t('showingActiveProjects', '{{filtered}} of {{total}} active projects', {
+                filtered: filteredProjects.length,
+                total: activeProjects.length,
+              })}
             </p>
           </div>
           <span className="font-mono text-[10px] text-stone-500">
-            {activeProjects.length.toString().padStart(2, '0')} active
+            {activeProjects.length.toString().padStart(2, '0')} {t('active', 'active')}
           </span>
         </div>
 
@@ -121,21 +126,21 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
         <div
           className="portal-register-toolbar mb-7 grid gap-3 border-y border-black/15 py-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
           role="search"
-          aria-label="Filter project register"
+          aria-label={t('filterProjectRegister', 'Filter project register')}
         >
           <label className="sr-only" htmlFor="admin-project-search">
-            Search projects
+            {t('searchProjects', 'Search projects')}
           </label>
           <input
             id="admin-project-search"
             value={projectSearch}
             onChange={(event) => setProjectSearch(event.target.value)}
-            placeholder="Search title, code, category or phase"
+            placeholder={t('searchPlaceholder', 'Search title, code, category or phase')}
             className="min-w-0 border-b border-black/20 bg-transparent px-0 py-2 text-sm outline-none placeholder:text-stone-500 focus:border-black"
           />
 
           <label className="sr-only" htmlFor="admin-project-filter">
-            Filter projects
+            {t('filterProjects', 'Filter projects')}
           </label>
           <select
             id="admin-project-filter"
@@ -143,8 +148,8 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
             onChange={(event) => setProjectFilter(event.target.value)}
             className="border border-black/20 bg-transparent px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] outline-none"
           >
-            <option value="all">All projects</option>
-            <option value="pending">Pending approval</option>
+            <option value="all">{t('allProjects', 'All projects')}</option>
+            <option value="pending">{t('pendingApproval', 'Pending approval')}</option>
             {projectPhases.map((phaseOption) => (
               <option key={phaseOption} value={phaseOption}>
                 {phaseOption}
@@ -153,7 +158,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
           </select>
 
           <label className="sr-only" htmlFor="admin-project-sort">
-            Sort projects
+            {t('sortProjects', 'Sort projects')}
           </label>
           <select
             id="admin-project-sort"
@@ -161,10 +166,10 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
             onChange={(event) => setProjectSort(event.target.value as typeof projectSort)}
             className="border border-black/20 bg-transparent px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] outline-none"
           >
-            <option value="name">Name A–Z</option>
-            <option value="progress-desc">Progress high → low</option>
-            <option value="progress-asc">Progress low → high</option>
-            <option value="phase">Phase</option>
+            <option value="name">{t('sortName', 'Name A–Z')}</option>
+            <option value="progress-desc">{t('sortProgressDesc', 'Progress high → low')}</option>
+            <option value="progress-asc">{t('sortProgressAsc', 'Progress low → high')}</option>
+            <option value="phase">{t('sortPhase', 'Phase')}</option>
           </select>
 
           {filtersActive && (
@@ -173,7 +178,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
               onClick={clearProjectFilters}
               className="border border-black/20 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors hover:bg-black hover:text-white"
             >
-              Clear filters
+              {t('clearFilters', 'Clear filters')}
             </button>
           )}
         </div>
@@ -186,7 +191,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
             detailPath={(id) => `/admin/projects/${id}`}
           />
         ) : (
-          <PortalEmptyState message="No projects match the current search and filters." />
+          <PortalEmptyState message={t('noProjectsMatch', 'No projects match the current search and filters.')} />
         )}
       </section>
 

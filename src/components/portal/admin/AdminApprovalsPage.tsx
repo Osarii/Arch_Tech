@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot } from '../../../portal/data';
 import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
@@ -10,6 +11,7 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('admin');
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const { adminPortal } = useLocale();
@@ -57,10 +59,12 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
       <section id="portal-section-approvals" aria-labelledby="admin-pending-approvals-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="admin-pending-approvals-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Pending project reviews
+            {t('pendingProjectReviews', 'Pending project reviews')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {pendingApprovals.length.toString().padStart(2, '0')} awaiting action
+            {t('awaitingActionCount', '{{count}} awaiting action', {
+              count: pendingApprovals.length,
+            })}
           </span>
         </div>
 
@@ -79,25 +83,25 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
                     {approval.projectTitle} · {approval.title}
                   </button>
                   <p className="mt-1 text-xs text-stone-500">
-                    Decision pending in development workflow
+                    {t('decisionPendingWorkflow', 'Decision pending in development workflow')}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="portal-status-pending font-mono text-[9px] uppercase tracking-[0.14em]">
-                    Pending
+                    {t('pending', 'Pending')}
                   </span>
                   <button
                     onClick={() => navigate(`/admin/projects/${approval.projectId}`)}
                     className="border border-black px-4 py-1.5 font-mono text-[9px] uppercase tracking-[0.14em] hover:bg-black hover:text-white"
                   >
-                    Review
+                    {t('review', 'Review')}
                   </button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <PortalEmptyState message="No project decisions are currently waiting for review." />
+          <PortalEmptyState message={t('noProjectDecisionsWaiting', 'No project decisions are currently waiting for review.')} />
         )}
       </section>
 
@@ -106,10 +110,10 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
         <div>
           <div className="mb-6 flex items-center justify-between">
             <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
-              Global approvals register
+              {t('globalApprovalsRegister', 'Global approvals register')}
             </h2>
             <span className="font-mono text-[9px] uppercase text-stone-500">
-              {allApprovals.length} total
+              {t('totalCount', '{{count}} total', { count: allApprovals.length })}
             </span>
           </div>
           <div className="divide-y divide-black/10 border-y border-black/10">
@@ -133,9 +137,9 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
         <div>
           <div className="mb-6 flex items-center justify-between">
             <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
-              Platform notification context
+              {t('platformNotificationContext', 'Platform notification context')}
             </h2>
-            <span className="font-mono text-[9px] uppercase text-stone-500">Audit log</span>
+            <span className="font-mono text-[9px] uppercase text-stone-500">{t('auditLog', 'Audit log')}</span>
           </div>
           <div className="divide-y divide-black/10 border-y border-black/10">
             {notifications.map((notification) => (

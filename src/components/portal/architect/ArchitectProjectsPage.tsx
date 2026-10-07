@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
 import { useLocale } from '../../../portal/locale';
@@ -11,6 +12,7 @@ export const ArchitectProjectsPage: React.FC<Partial<NavigationProps> & { onSign
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('architect');
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const { architectPortal, portalCommon } = useLocale();
@@ -46,10 +48,13 @@ export const ArchitectProjectsPage: React.FC<Partial<NavigationProps> & { onSign
       <section id="portal-section-projects" aria-labelledby="architect-projects-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="architect-projects-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Assigned project register
+            {t('assignedProjectRegister', 'Assigned project register')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {projects.length.toString().padStart(2, '0')} active · {projectsForReview.length.toString().padStart(2, '0')} decisions pending
+            {t('activeAndPending', '{{active}} active · {{pending}} decisions pending', {
+              active: projects.length.toString().padStart(2, '0'),
+              pending: projectsForReview.length.toString().padStart(2, '0'),
+            })}
           </span>
         </div>
 
@@ -74,10 +79,10 @@ export const ArchitectProjectsPage: React.FC<Partial<NavigationProps> & { onSign
                   <div className="portal-progress-track h-px bg-black/15">
                     <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
                   </div>
-                  <p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p>
+                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next:')} {project.nextMilestone}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase">
-                      Client response pending
+                      {t('clientResponsePending', 'Client response pending')}
                     </p>
                   )}
                 </div>
@@ -99,7 +104,7 @@ export const ArchitectProjectsPage: React.FC<Partial<NavigationProps> & { onSign
             ))}
           </div>
         ) : (
-          <PortalEmptyState message="No projects currently assigned to this studio." />
+          <PortalEmptyState message={t('noProjectsStudio', 'No projects currently assigned to this studio.')} />
         )}
       </section>
     </div>

@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Filter,
   Search,
@@ -14,6 +15,7 @@ import { bimEngine } from '@/bim/engine/BimEngine';
 import { BimFilterService } from '@/bim/filter/bimFilterService';
 
 export const AdvancedFilterPanel: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const modelMetadata = useBimStore((s) => s.modelMetadata);
   const categories = useBimStore((s) => s.categories);
   const storeys = useBimStore((s) => s.storeys);
@@ -73,7 +75,7 @@ export const AdvancedFilterPanel: React.FC = () => {
     return (
       <div className="flex-1 p-6 text-center text-slate-500 text-xs">
         <Filter className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-        <p>Load an IFC model to use advanced multi-faceted filters.</p>
+        <p>{t('loadModelForFilter', 'Load an IFC model to use advanced multi-faceted filters.')}</p>
       </div>
     );
   }
@@ -84,17 +86,19 @@ export const AdvancedFilterPanel: React.FC = () => {
       <div className="p-2.5 rounded-lg bg-[#181b26] border border-[#272d3e] flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <CheckCircle2 className="w-4 h-4 text-sky-400" />
-          <span className="font-medium text-slate-200">
-            Matches: <span className="font-mono text-sky-300 font-bold" data-testid="filter-match-count">{matchedIds.length}</span> / {allElementIds.length}
+          <span className="font-medium text-slate-200 flex items-center space-x-1">
+            <span>{t('matchesLabel', 'Matches:')}</span>
+            <span className="font-mono text-sky-300 font-bold" data-testid="filter-match-count">{matchedIds.length}</span>
+            <span>{t('ofTotalCount', '/ {{total}}', { total: allElementIds.length })}</span>
           </span>
         </div>
         <button
           onClick={handleReset}
           className="flex items-center space-x-1 px-2 py-0.5 rounded text-[11px] text-slate-400 hover:text-slate-200 hover:bg-[#202534] transition"
-          title="Reset all filter fields"
+          title={t('resetAllFilterFieldsTooltip', 'Reset all filter fields')}
         >
           <RotateCcw className="w-3 h-3 text-sky-400" />
-          <span>Reset</span>
+          <span>{t('reset', 'Reset')}</span>
         </button>
       </div>
 
@@ -102,7 +106,7 @@ export const AdvancedFilterPanel: React.FC = () => {
       <div className="space-y-1">
         <label className="text-[11px] font-semibold text-slate-300 flex items-center space-x-1.5">
           <Box className="w-3.5 h-3.5 text-sky-400" />
-          <span>IFC Category / Type</span>
+          <span>{t('ifcCategoryType', 'IFC Category / Type')}</span>
         </label>
         <select
           value={filterCriteria.type || ''}
@@ -112,7 +116,7 @@ export const AdvancedFilterPanel: React.FC = () => {
           }
           className="w-full bg-[#151722] border border-[#262c3e] rounded px-2.5 py-1.5 text-slate-200 text-xs focus:outline-none focus:border-sky-500"
         >
-          <option value="">All Categories ({categories.length})</option>
+          <option value="">{t('allCategoriesCount', 'All Categories ({{count}})', { count: categories.length })}</option>
           {categories.map((cat) => (
             <option key={cat} value={cat}>
               {cat}
@@ -125,7 +129,7 @@ export const AdvancedFilterPanel: React.FC = () => {
       <div className="space-y-1">
         <label className="text-[11px] font-semibold text-slate-300 flex items-center space-x-1.5">
           <Layers className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Building Storey</span>
+          <span>{t('buildingStorey', 'Building Storey')}</span>
         </label>
         <select
           value={filterCriteria.storey || ''}
@@ -135,7 +139,7 @@ export const AdvancedFilterPanel: React.FC = () => {
           }
           className="w-full bg-[#151722] border border-[#262c3e] rounded px-2.5 py-1.5 text-slate-200 text-xs focus:outline-none focus:border-sky-500"
         >
-          <option value="">All Storeys ({storeys.length})</option>
+          <option value="">{t('allStoreysCount', 'All Storeys ({{count}})', { count: storeys.length })}</option>
           {storeys.map((s) => (
             <option key={s} value={s}>
               {s}
@@ -148,11 +152,11 @@ export const AdvancedFilterPanel: React.FC = () => {
       <div className="space-y-1">
         <label className="text-[11px] font-semibold text-slate-300 flex items-center space-x-1.5">
           <Search className="w-3.5 h-3.5 text-amber-400" />
-          <span>Element Name / Tag</span>
+          <span>{t('elementNameTag', 'Element Name / Tag')}</span>
         </label>
         <input
           type="text"
-          placeholder="Filter by name (e.g. Wall, Door 01)"
+          placeholder={t('filterByNamePlaceholder', 'Filter by name (e.g. Wall, Door 01)')}
           value={filterCriteria.nameQuery || ''}
           data-testid="filter-input-name"
           onChange={(e) => setFilterCriteria({ ...filterCriteria, nameQuery: e.target.value })}
@@ -165,7 +169,7 @@ export const AdvancedFilterPanel: React.FC = () => {
         <div className="space-y-1">
           <label className="text-[11px] font-semibold text-slate-300 flex items-center space-x-1.5">
             <Palette className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Associated Material</span>
+            <span>{t('associatedMaterial', 'Associated Material')}</span>
           </label>
           <select
             value={filterCriteria.material || ''}
@@ -175,7 +179,7 @@ export const AdvancedFilterPanel: React.FC = () => {
             }
             className="w-full bg-[#151722] border border-[#262c3e] rounded px-2.5 py-1.5 text-slate-200 text-xs focus:outline-none focus:border-sky-500"
           >
-            <option value="">All Materials ({materials.length})</option>
+            <option value="">{t('allMaterialsCount', 'All Materials ({{count}})', { count: materials.length })}</option>
             {materials.map((m) => (
               <option key={m} value={m}>
                 {m}
@@ -189,12 +193,12 @@ export const AdvancedFilterPanel: React.FC = () => {
       <div className="space-y-1.5 border-t border-[#222738] pt-2.5">
         <label className="text-[11px] font-semibold text-slate-300 flex items-center space-x-1.5">
           <Sliders className="w-3.5 h-3.5 text-purple-400" />
-          <span>Property Set Value</span>
+          <span>{t('propertySetValue', 'Property Set Value')}</span>
         </label>
         <div className="grid grid-cols-2 gap-2">
           <input
             type="text"
-            placeholder="Property (e.g. LoadBearing)"
+            placeholder={t('propertyPlaceholder', 'Property (e.g. LoadBearing)')}
             value={filterCriteria.propertyName || ''}
             onChange={(e) =>
               setFilterCriteria({ ...filterCriteria, propertyName: e.target.value || undefined })
@@ -203,7 +207,7 @@ export const AdvancedFilterPanel: React.FC = () => {
           />
           <input
             type="text"
-            placeholder="Value (e.g. true)"
+            placeholder={t('valuePlaceholder', 'Value (e.g. true)')}
             value={filterCriteria.propertyValue || ''}
             onChange={(e) =>
               setFilterCriteria({ ...filterCriteria, propertyValue: e.target.value || '' })
@@ -221,7 +225,7 @@ export const AdvancedFilterPanel: React.FC = () => {
           data-testid="filter-btn-isolate"
           className="w-full py-2 px-3 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-xs transition shadow-sm disabled:opacity-40"
         >
-          Isolate Matches in 3D ({matchedIds.length})
+          {t('isolateMatchesCount', 'Isolate Matches in 3D ({{count}})', { count: matchedIds.length })}
         </button>
 
         <button
@@ -230,7 +234,7 @@ export const AdvancedFilterPanel: React.FC = () => {
           data-testid="filter-btn-select"
           className="w-full py-1.5 px-3 rounded-lg bg-[#1e2332] hover:bg-[#272e42] text-slate-200 font-medium text-xs transition border border-[#2d354a] disabled:opacity-40"
         >
-          Select Matches in 3D
+          {t('selectMatchesIn3d', 'Select Matches in 3D')}
         </button>
       </div>
     </div>

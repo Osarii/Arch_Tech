@@ -1,0 +1,16 @@
+{
+  "actionCancelled": "Action Cancelled",
+  "assistantTimestamp": "AI Assistant • {{time}}",
+  "bimAiAssistant": "BIM AI Assistant",
+  "chatPlaceholder": "Ask AI e.g. 'Move #44 by 1m in X'...",
+  "clearHistoryTooltip": "Clear Conversation History",
+  "confirmAndApply": "Confirm & Apply",
+  "executedAndRecorded": "Executed & Recorded in Change Set",
+  "offlineEngine": "Offline Deterministic Engine",
+  "phaseBadge": "Phase 6B.1",
+  "remoteEngine": "Remote n8n / offline fallback",
+  "toolExecuted": "Executed",
+  "toolProposalCreated": "Proposal created",
+  "userTimestamp": "User • {{time}}",
+  "writeActionConfirmation": "WRITE ACTION CONFIRMATION"
+}

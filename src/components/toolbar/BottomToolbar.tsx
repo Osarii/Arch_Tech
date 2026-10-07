@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   MousePointer,
   Ruler,
@@ -18,6 +19,7 @@ import { bimEngine } from '@/bim/engine/BimEngine';
 import { ToolType, MeasurementType } from '@/types/bim';
 
 export const BottomToolbar: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const activeTool = useBimStore((s) => s.activeTool);
   const setActiveTool = useBimStore((s) => s.setActiveTool);
   const selectedElement = useBimStore((s) => s.selectedElement);
@@ -131,17 +133,17 @@ export const BottomToolbar: React.FC = () => {
             ? 'bg-emerald-600 text-white font-semibold'
             : 'bg-[#1a1e28] text-slate-300 hover:bg-[#222838] border border-[#2a3040]'
         }`}
-        title={is2DMode ? 'Exit 2D Floor Plan (Return to 3D Orbit)' : 'Switch to 2D Top-Down Floor Plan'}
+        title={is2DMode ? t('exit2DFloorPlanTitle', 'Exit 2D Floor Plan (Return to 3D Orbit)') : t('switchTo2DTitle', 'Switch to 2D Top-Down Floor Plan')}
       >
         {is2DMode ? (
           <>
             <Compass className="w-3.5 h-3.5" />
-            <span>2D ({activeFloorPlanStorey || 'Plan'})</span>
+            <span>{t('plan2D', '2D ({{name}})', { name: activeFloorPlanStorey || t('planDefault', 'Plan') })}</span>
           </>
         ) : (
           <>
             <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            <span>2D Plan</span>
+            <span>{t('plan2DDefault', '2D Plan')}</span>
           </>
         )}
       </button>
@@ -158,10 +160,10 @@ export const BottomToolbar: React.FC = () => {
               ? 'bg-sky-600 text-white shadow-sm'
               : 'text-slate-300 hover:bg-[#1e2330] hover:text-slate-100'
           }`}
-          title="Select & Inspect Element (Click 3D element)"
+          title={t('selectInspectTitle', 'Select & Inspect Element (Click 3D element)')}
         >
           <MousePointer className="w-3.5 h-3.5" />
-          <span>Select</span>
+          <span>{t('selectTool', 'Select')}</span>
         </button>
 
         <button
@@ -172,10 +174,10 @@ export const BottomToolbar: React.FC = () => {
               ? 'bg-sky-600 text-white shadow-sm'
               : 'text-slate-300 hover:bg-[#1e2330] hover:text-slate-100'
           }`}
-          title="Measure (Distance, Area, Angle)"
+          title={t('measureTitle', 'Measure (Distance, Area, Angle)')}
         >
           <Ruler className="w-3.5 h-3.5" />
-          <span>Measure</span>
+          <span>{t('measureTool', 'Measure')}</span>
         </button>
 
         <button
@@ -186,10 +188,10 @@ export const BottomToolbar: React.FC = () => {
               ? 'bg-sky-600 text-white shadow-sm'
               : 'text-slate-300 hover:bg-[#1e2330] hover:text-slate-100'
           }`}
-          title="Section / Cut Planes (X, Y, Z Orthogonal)"
+          title={t('sectionTitle', 'Section / Cut Planes (X, Y, Z Orthogonal)')}
         >
           <Scissors className="w-3.5 h-3.5" />
-          <span>Section</span>
+          <span>{t('sectionTool', 'Section')}</span>
         </button>
       </div>
 
@@ -202,43 +204,43 @@ export const BottomToolbar: React.FC = () => {
               onClick={() => handleCreateOrthogonalPlane('x')}
               data-testid="section-btn-x"
               className="px-2 py-1 rounded bg-[#1c2130] hover:bg-[#252c40] text-sky-300 text-xs font-mono font-medium border border-sky-800/60 transition"
-              title="Add X-Axis Orthogonal Section Plane"
+              title={t('cutXTitle', 'Add X-Axis Orthogonal Section Plane')}
             >
-              Cut X
+              {t('cutX', 'Cut X')}
             </button>
             <button
               onClick={() => handleCreateOrthogonalPlane('y')}
               data-testid="section-btn-y"
               className="px-2 py-1 rounded bg-[#1c2130] hover:bg-[#252c40] text-emerald-300 text-xs font-mono font-medium border border-emerald-800/60 transition"
-              title="Add Y-Axis (Horizontal) Section Plane"
+              title={t('cutYTitle', 'Add Y-Axis (Horizontal) Section Plane')}
             >
-              Cut Y
+              {t('cutY', 'Cut Y')}
             </button>
             <button
               onClick={() => handleCreateOrthogonalPlane('z')}
               data-testid="section-btn-z"
               className="px-2 py-1 rounded bg-[#1c2130] hover:bg-[#252c40] text-amber-300 text-xs font-mono font-medium border border-amber-800/60 transition"
-              title="Add Z-Axis Orthogonal Section Plane"
+              title={t('cutZTitle', 'Add Z-Axis Orthogonal Section Plane')}
             >
-              Cut Z
+              {t('cutZ', 'Cut Z')}
             </button>
             <button
               onClick={handleAddClippingPlane}
               className="flex items-center space-x-1 px-2 py-1 rounded bg-sky-950/70 border border-sky-800/80 text-sky-300 hover:bg-sky-900 text-xs font-medium transition"
-              title="Click in 3D scene to place custom section plane"
+              title={t('freeSectionTitle', 'Click in 3D scene to place custom section plane')}
             >
               <Plus className="w-3 h-3" />
-              <span>Free</span>
+              <span>{t('freeSection', 'Free')}</span>
             </button>
             {sectionPlaneCount > 0 && (
               <button
                 onClick={handleClearClippingPlanes}
                 data-testid="section-btn-clear"
                 className="flex items-center space-x-1 px-2 py-1 rounded bg-rose-950/60 border border-rose-800/80 text-rose-300 hover:bg-rose-900 text-xs font-medium transition"
-                title="Delete all section planes"
+                title={t('deleteAllSectionPlanesTitle', 'Delete all section planes')}
               >
                 <Trash2 className="w-3 h-3" />
-                <span>Clear ({sectionPlaneCount})</span>
+                <span>{t('clearWithCount', 'Clear ({{count}})', { count: sectionPlaneCount })}</span>
               </button>
             )}
           </div>
@@ -258,9 +260,9 @@ export const BottomToolbar: React.FC = () => {
                   ? 'bg-sky-600 text-white font-medium'
                   : 'text-slate-300 hover:bg-[#1e2330]'
               }`}
-              title="Measure 2-point 3D distance"
+              title={t('measureDistanceTitle', 'Measure 2-point 3D distance')}
             >
-              Distance
+              {t('distance', 'Distance')}
             </button>
             <button
               onClick={() => handleMeasureModeChange('area')}
@@ -270,9 +272,9 @@ export const BottomToolbar: React.FC = () => {
                   ? 'bg-sky-600 text-white font-medium'
                   : 'text-slate-300 hover:bg-[#1e2330]'
               }`}
-              title="Measure surface area"
+              title={t('measureAreaTitle', 'Measure surface area')}
             >
-              Area
+              {t('area', 'Area')}
             </button>
             <button
               onClick={() => handleMeasureModeChange('angle')}
@@ -282,18 +284,18 @@ export const BottomToolbar: React.FC = () => {
                   ? 'bg-sky-600 text-white font-medium'
                   : 'text-slate-300 hover:bg-[#1e2330]'
               }`}
-              title="Measure angle between 3 points"
+              title={t('measureAngleTitle', 'Measure angle between 3 points')}
             >
-              Angle
+              {t('angle', 'Angle')}
             </button>
             <button
               onClick={handleClearMeasurements}
               data-testid="measure-btn-clear"
               className="flex items-center space-x-1 px-2 py-1 rounded bg-rose-950/60 border border-rose-800/80 text-rose-300 hover:bg-rose-900 text-xs font-medium transition"
-              title="Clear active measurements"
+              title={t('clearActiveMeasurementsTitle', 'Clear active measurements')}
             >
               <Trash2 className="w-3 h-3" />
-              <span>Clear</span>
+              <span>{t('clearMeasurements', 'Clear')}</span>
             </button>
           </div>
         </>
@@ -308,10 +310,10 @@ export const BottomToolbar: React.FC = () => {
           disabled={!selectedElement}
           data-testid="action-hide"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
-          title="Hide Selected Element"
+          title={t('hideSelectedTitle', 'Hide Selected Element')}
         >
           <EyeOff className="w-3.5 h-3.5 text-amber-400" />
-          <span>Hide</span>
+          <span>{t('hide', 'Hide')}</span>
         </button>
 
         <button
@@ -319,20 +321,20 @@ export const BottomToolbar: React.FC = () => {
           disabled={!selectedElement}
           data-testid="action-isolate"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
-          title="Isolate Selected Element"
+          title={t('isolateSelectedTitle', 'Isolate Selected Element')}
         >
           <Layers className="w-3.5 h-3.5 text-sky-400" />
-          <span>Isolate</span>
+          <span>{t('isolate', 'Isolate')}</span>
         </button>
 
         <button
           onClick={handleShowAll}
           data-testid="action-show-all"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition"
-          title="Show All Elements"
+          title={t('showAllTitle', 'Show All Elements')}
         >
           <Eye className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Show All</span>
+          <span>{t('showAll', 'Show All')}</span>
         </button>
       </div>
 
@@ -344,10 +346,10 @@ export const BottomToolbar: React.FC = () => {
           onClick={handleFitModel}
           data-testid="action-fit"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition"
-          title="Fit Entire Model to Screen"
+          title={t('fitModelTitle', 'Fit Entire Model to Screen')}
         >
           <Maximize className="w-3.5 h-3.5" />
-          <span>Fit</span>
+          <span>{t('fit', 'Fit')}</span>
         </button>
 
         <button
@@ -355,10 +357,10 @@ export const BottomToolbar: React.FC = () => {
           disabled={!selectedElement}
           data-testid="action-focus"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
-          title="Focus Selected Element"
+          title={t('focusSelectedTitle', 'Focus Selected Element')}
         >
           <Target className="w-3.5 h-3.5 text-sky-400" />
-          <span>Focus</span>
+          <span>{t('focus', 'Focus')}</span>
         </button>
       </div>
     </div>

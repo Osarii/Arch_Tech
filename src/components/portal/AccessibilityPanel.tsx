@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   X,
   Play,
@@ -50,6 +51,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
 }) => {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const { t: translate } = useTranslation('accessibility');
   const { locale: contextLocale } = useLocale();
   const activeLocale = propLocale ?? contextLocale;
   const t = a11yPanelTranslations[activeLocale];
@@ -133,7 +135,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
             ref={closeButtonRef}
             type="button"
             onClick={handleClose}
-            aria-label="Close accessibility panel"
+            aria-label={translate('closePanel', 'Close accessibility panel')}
             data-testid="a11y-close-btn"
             className="rounded p-1 text-stone-400 hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/40"
           >
@@ -178,7 +180,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                   <button
                     type="button"
                     onClick={onStartSpeech}
-                    aria-label="Start reading page"
+                    aria-label={translate('startReading', 'Start reading page')}
                     data-testid="narrator-start"
                     className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white/15 px-3 py-1.5 font-mono text-xs font-semibold text-white transition-colors hover:bg-white/25 focus:ring-2 focus:ring-white/40"
                   >
@@ -189,7 +191,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                     <button
                       type="button"
                       onClick={onTogglePauseSpeech}
-                      aria-label={speechState === 'playing' ? 'Pause narrator' : 'Resume narrator'}
+                      aria-label={speechState === 'playing' ? translate('pauseNarrator', 'Pause narrator') : translate('resumeNarrator', 'Resume narrator')}
                       data-testid="narrator-pause-resume"
                       className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white/15 px-3 py-1.5 font-mono text-xs font-semibold text-white transition-colors hover:bg-white/25 focus:ring-2 focus:ring-white/40"
                     >
@@ -206,7 +208,7 @@ export const AccessibilityPanel: React.FC<AccessibilityPanelProps> = ({
                     <button
                       type="button"
                       onClick={onStopSpeech}
-                      aria-label="Stop narrator"
+                      aria-label={translate('stopNarrator', 'Stop narrator')}
                       data-testid="narrator-stop"
                       className="inline-flex items-center justify-center gap-2 rounded bg-white/10 px-3 py-1.5 font-mono text-xs font-semibold text-stone-300 transition-colors hover:bg-red-500/20 hover:text-red-300 focus:ring-2 focus:ring-white/40"
                     >

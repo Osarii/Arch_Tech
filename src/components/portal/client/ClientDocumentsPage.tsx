@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FileText } from 'lucide-react';
 import { getPortalSnapshot, getPortalUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
@@ -12,6 +13,7 @@ export const ClientDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOu
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('client');
   const { clientPortal, portalCommon } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
@@ -55,10 +57,10 @@ export const ClientDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOu
       <section id="portal-section-documents" aria-labelledby="client-documents-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="client-documents-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Available deliverables
+            {t('availableDeliverables', 'Available deliverables')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {documents.length.toString().padStart(2, '0')} documents issued
+            {t('documentsIssued', '{{count}} documents issued', { count: documents.length })}
           </span>
         </div>
 
@@ -76,13 +78,13 @@ export const ClientDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOu
                   <div>
                     <p className="font-serif text-2xl leading-tight">{document.name}</p>
                     <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-stone-500">
-                      {document.projectTitle} ({document.projectCode}) · {document.meta}
+                      {t('documentProjectInfo', '{{title}} ({{code}}) · {{meta}}', { title: document.projectTitle, code: document.projectCode, meta: document.meta })}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">Available</span>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{t('available', 'Available')}</span>
                   <button
                     onClick={() => navigate(`/dashboard/projects/${document.projectId}`)}
                     className="border border-black/20 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:border-black"

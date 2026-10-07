@@ -1,0 +1,89 @@
+{
+  "capabilitiesSection": {
+    "eyebrow": "02 // CAPABILITIES",
+    "heading": "Architectural capabilities.",
+    "items": {
+      "generate": {
+        "description": "Synthesize multi-storey structural frames from parametric parameters with strict spatial hierarchy rules. A secondary grounded assistant handles spatial queries and storey synthesis before detached round-trip semantic validation ensures clean, verified IFC export.",
+        "lead": "Parametric building synthesis and detached ISO 10303-21 persistence.",
+        "specs": {
+          "0": "Deterministic IFC4 Authoring",
+          "1": "Secondary Grounded Assistant",
+          "2": "Idempotent STEP-21 Export"
+        },
+        "title": "Generate & export"
+      },
+      "inspect": {
+        "description": "Load and parse ISO 16739 IFC4 and IFC2x3 files directly in browser memory via native WebAssembly. Traverse full spatial containment trees, query property sets, and generate orthographic 2D floor plans at storey elevations without cloud dependencies.",
+        "lead": "Client-side spatial parsing and property extraction.",
+        "specs": {
+          "0": "IFC4 & IFC2x3 Ingestion",
+          "1": "Storey-by-Storey 2D Slicing",
+          "2": "Full Attribute & Pset Inspector"
+        },
+        "title": "Inspect IFC"
+      },
+      "modify": {
+        "description": "Execute 3D coordinate translations, relative vector rotations, and element deletions. Every modification is isolated in a non-destructive proxy layer and logged chronologically in an immutable JSON ChangeSet with full undo and redo capability.",
+        "lead": "Non-destructive proxy transforms and transactional audit logs.",
+        "specs": {
+          "0": "Transactional Proxy Layer",
+          "1": "Relative Coordinate Deltas",
+          "2": "JSON ChangeSet History"
+        },
+        "title": "Modify models"
+      }
+    },
+    "module": "MODULE {{index}}",
+    "subtitle": "THREE CORE OPENBIM MODULES"
+  },
+  "finalCta": {
+    "body": "Design, inspect and modify IFC models directly in your browser.",
+    "enterWorkspace": "ENTER WORKSPACE",
+    "eyebrow": "START WORKING",
+    "heading": "Open your model.",
+    "standards": "100% Client-Side WebAssembly · Open Standard IFC4 & IFC2x3"
+  },
+  "productPreview": {
+    "captionDesc": "SPATIAL BIM TREE, ELEMENT INSPECTOR & 3D VIEWPORT",
+    "captionFig": "FIG 02.00 // BIM LAB V1 RUNTIME",
+    "enterWorkspace": "ENTER WORKSPACE",
+    "enterWorkspaceArrow": "ENTER WORKSPACE →",
+    "eyebrow": "01 // THE WORKSPACE",
+    "heading": "One workspace.",
+    "screenshotAlt": "Arch_Tech BIM Workspace Screenshot",
+    "subheading": "IFC from inspection to export."
+  },
+  "technology": {
+    "coreStack": "CORE TECHNOLOGY STACK",
+    "runtime": "CLIENT-SIDE RUNTIME // ISO 16739"
+  },
+  "workflow": {
+    "eyebrow": "03 // WORKFLOW",
+    "heading": "The engineering pipeline.",
+    "lifecycle": "FOUR-STAGE DETERMINISTIC LIFECYCLE",
+    "phase": "PHASE {{number}}",
+    "steps": {
+      "edit": {
+        "description": "Apply 3D translations, relative rotations, or parametric storey generation to a transactional proxy layer.",
+        "phase": "EDIT",
+        "subtitle": "Non-Destructive Edits"
+      },
+      "export": {
+        "description": "Execute detached semantic verification before exporting pure ISO 10303-21 IFC files.",
+        "phase": "EXPORT",
+        "subtitle": "STEP-21 Persistence"
+      },
+      "import": {
+        "description": "Stream local .ifc file into web-ifc WebAssembly memory. Zero cloud transmission.",
+        "phase": "IMPORT",
+        "subtitle": "Client WASM Ingestion"
+      },
+      "inspect": {
+        "description": "Traverse project hierarchy, query entity properties, and slice orthographic 2D floor plans.",
+        "phase": "INSPECT",
+        "subtitle": "Spatial Coordination"
+      }
+    }
+  }
+}

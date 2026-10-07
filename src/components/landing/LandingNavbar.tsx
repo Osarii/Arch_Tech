@@ -49,7 +49,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
       }`}
     >
       <div className="landing-navbar-inner mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-        <a href="#hero" aria-label="GARNIER ARCHITECTURE home" className="text-stone-100 transition-opacity hover:opacity-90">
+        <a href="#hero" aria-label={t.homeAria || 'GARNIER ARCHITECTURE home'} className="text-stone-100 transition-opacity hover:opacity-90">
           <ArchTechLogo variant="mark" tone="mint-cream" theme="dark" />
         </a>
 
@@ -74,9 +74,10 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
           <div
             data-testid="lang-selector"
             role="group"
-            aria-label="Language selection"
+            aria-label={t.langSelection || 'Language selection'}
             className="flex items-center rounded border border-white/20 bg-white/5 p-0.5 font-mono text-[9px] uppercase tracking-wider text-stone-300"
           >
+            {/* i18next-instrument-ignore */}
             <button
               type="button"
               data-testid="lang-btn-en"
@@ -88,6 +89,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
             >
               EN
             </button>
+            {/* i18next-instrument-ignore */}
             <button
               type="button"
               data-testid="lang-btn-es"
@@ -111,7 +113,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
             className="inline-flex items-center gap-1.5 rounded border border-white/20 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-300 transition-colors hover:border-white hover:text-white focus:outline-none focus:ring-1 focus:ring-white/40"
           >
             <Sliders className="h-3.5 w-3.5 text-stone-400" />
-            <span className="hidden xl:inline">A11y</span>
+            <span className="hidden xl:inline">{t.a11yShort || 'A11y'}</span>
           </button>
 
           <button
@@ -151,8 +153,9 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
           </button>
 
           <div className="flex items-center justify-between border-y border-white/10 py-3">
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">Language / Idioma</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">{t.langToggle || 'Language / Idioma'}</span>
             <div className="flex items-center rounded border border-white/20 bg-white/5 p-0.5 font-mono text-[9px] uppercase tracking-wider text-stone-300">
+              {/* i18next-instrument-ignore */}
               <button
                 type="button"
                 data-testid="mobile-lang-btn-en"
@@ -161,6 +164,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
               >
                 EN
               </button>
+              {/* i18next-instrument-ignore */}
               <button
                 type="button"
                 data-testid="mobile-lang-btn-es"

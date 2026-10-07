@@ -1,0 +1,59 @@
+{
+  "carousel": {
+    "ariaLabel": "Carrusel de desarrollos destacados",
+    "chooseProject": "Seleccionar proyecto destacado",
+    "fallbackAria": "Imágenes de proyecto destacado no disponibles",
+    "imageContext": "Contexto de desarrollo de {{title}}",
+    "nextProject": "Siguiente proyecto destacado",
+    "openDossier": "Abrir expediente del proyecto {{title}}",
+    "prevProject": "Anterior proyecto destacado",
+    "roleDescription": "carrusel",
+    "showProject": "Mostrar {{title}}",
+    "slideLabel": "{{current}} de {{total}}: {{title}}",
+    "slideRole": "diapositiva",
+    "viewDossier": "Ver expediente"
+  },
+  "dashboard": "Panel de Control",
+  "gallery": {
+    "imageUnavailable": "Imagen no disponible para {{alt}}"
+  },
+  "login": {
+    "authorizedAccess": "Acceso autorizado a proyectos.",
+    "close": "Cerrar inicio de sesión",
+    "confirmPassword": "Confirmar contraseña",
+    "createAccount": "Crear cuenta",
+    "description": "Revise el avance de proyectos, actualizaciones, documentos y el modelo actual.",
+    "email": "Correo electrónico",
+    "enterPortal": "Ingresar al portal",
+    "errorInvalidCredentials": "Compruebe el correo y la contraseña.",
+    "errorRegisterFailed": "No se pudo completar el registro.",
+    "errorRegisterValidation": "Ingrese su nombre, un correo válido, contraseña de al menos 8 caracteres y confirmación coincidente.",
+    "name": "Nombre",
+    "orCredentials": "— o use credenciales manualmente —",
+    "password": "Contraseña",
+    "privateAccess": "Acceso privado",
+    "quickAccess": "Acceso rápido",
+    "register": "Registrarse",
+    "roleAccess": "Acceso {{role}}",
+    "signIn": "Iniciar sesión",
+    "title": "Acceso al Portal"
+  },
+  "openingWorkspace": "Abriendo espacio de trabajo del modelo…",
+  "projectMedia": {
+    "imageUnavailable": "Imagen no disponible para {{title}}"
+  },
+  "projects": "Proyectos",
+  "rail": {
+    "closeFullscreen": "Cerrar vista en pantalla completa",
+    "developmentMedia": "Medios de Desarrollo Spatial Rail",
+    "fullscreenViewer": "Visor de pantalla completa",
+    "inspect": "Inspeccionar",
+    "nextFullscreen": "Siguiente imagen en pantalla completa",
+    "nextSlide": "Siguiente diapositiva",
+    "openFullscreen": "Abrir vista en pantalla completa de {{label}}",
+    "prevFullscreen": "Imagen anterior en pantalla completa",
+    "prevSlide": "Diapositiva anterior"
+  },
+  "returnToDashboard": "Regresar al panel de control del cliente",
+  "returnToPortfolio": "Regresar al portafolio arquitectónico"
+}

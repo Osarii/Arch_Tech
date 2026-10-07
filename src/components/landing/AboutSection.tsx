@@ -37,7 +37,7 @@ export const AboutSection: React.FC = () => {
               <ArchTechLogo variant="mark" tone="full-color" theme="inherit" className="landing-about-mark pointer-events-none absolute right-4 top-4 z-10" />
               <img
                 src="/about/garnier-values.webp"
-                alt="Interior workplace environment from the official Garnier public portfolio"
+                alt={t.mediaAlt || 'Interior workplace environment from the official Garnier public portfolio'}
                 loading="lazy"
                 decoding="async"
                 className="h-full w-full object-cover"

@@ -59,7 +59,7 @@ export const TeamSection: React.FC = () => {
             <div className="landing-team-group-frame overflow-hidden border border-white/[0.14] bg-[#79B791]">
               <img
                 src="/team/garnier-team-group.png"
-                alt="Garnier & Garnier leadership team gathered in an outdoor courtyard"
+                alt={t.groupPhotoAlt || 'Garnier & Garnier leadership team gathered in an outdoor courtyard'}
                 loading="lazy"
                 decoding="async"
                 className="landing-team-group-image h-full w-full object-cover"

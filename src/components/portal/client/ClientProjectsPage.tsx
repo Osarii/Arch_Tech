@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot, getPortalUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
 import { projectService } from '../../../services/projectService';
@@ -11,6 +12,7 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('client');
   const { clientPortal, portalCommon } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
@@ -45,10 +47,10 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
       <section id="portal-section-projects" aria-labelledby="client-projects-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="client-projects-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Project register
+            {t('projectRegister', 'Project register')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {projects.length.toString().padStart(2, '0')} active developments
+            {t('activeDevelopments', '{{count}} active developments', { count: projects.length })}
           </span>
         </div>
 
@@ -74,7 +76,7 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
                   <div className="portal-progress-track h-px bg-black/15">
                     <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
                   </div>
-                  <p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p>
+                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next: {{milestone}}', { milestone: project.nextMilestone })}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase tracking-[0.12em]">
                       {clientPortal.pendingDecision}

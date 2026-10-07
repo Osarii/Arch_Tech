@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FileText } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot, getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
 import { useLocale } from '../../../portal/locale';
@@ -12,6 +13,7 @@ export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSig
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('architect');
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const { architectPortal, portalCommon } = useLocale();
@@ -53,10 +55,10 @@ export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSig
       <section id="portal-section-documents" aria-labelledby="architect-documents-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="architect-documents-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Studio deliverables
+            {t('studioDeliverables', 'Studio deliverables')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {documents.length.toString().padStart(2, '0')} issued
+            {t('issuedCount', '{{count}} issued', { count: documents.length })}
           </span>
         </div>
 
@@ -79,13 +81,13 @@ export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSig
                       {document.name}
                     </button>
                     <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-stone-500">
-                      {document.projectTitle} ({document.projectCode}) · {document.meta}
+                      {`${document.projectTitle} (${document.projectCode}) · ${document.meta}`}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">Issued</span>
+                  <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{t('issued', 'Issued')}</span>
                   <button
                     onClick={() => navigate(`/architect/projects/${document.projectId}`)}
                     className="border border-black px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:bg-black hover:text-white"
@@ -97,7 +99,7 @@ export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSig
             ))}
           </div>
         ) : (
-          <PortalEmptyState message="No documents have been issued for this studio's assigned developments." />
+          <PortalEmptyState message={t('noDocumentsIssued', "No documents have been issued for this studio's assigned developments.")} />
         )}
       </section>
     </div>

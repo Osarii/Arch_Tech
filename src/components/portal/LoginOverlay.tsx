@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowRight, X } from 'lucide-react';
 import { getPortalSnapshot, PortalRole } from '../../portal/data';
 import { portalAuth } from '../../portal/demoAuth';
@@ -10,6 +11,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
   onClose,
   onSuccess,
 }) => {
+  const { t } = useTranslation('common');
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,7 +52,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
     if (!authService.isRemote()) {
       const session = portalAuth.signIn(email, password);
       if (!session) {
-        setError('Check the email and password.');
+        setError(t('login.errorInvalidCredentials', 'Check the email and password.'));
         return;
       }
       setError('');
@@ -61,21 +63,21 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
       .signIn(email, password)
       .then((session) => {
         if (!session) {
-          setError('Check the email and password.');
+          setError(t('login.errorInvalidCredentials', 'Check the email and password.'));
           return;
         }
         setError('');
         onSuccess();
       })
       .catch((err) => {
-        setError(err instanceof Error && err.message ? err.message : 'Check the email and password.');
+        setError(err instanceof Error && err.message ? err.message : t('login.errorInvalidCredentials', 'Check the email and password.'));
       });
   };
 
   const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!registerName.trim() || !email.trim() || password.length < 8 || password !== confirmPassword) {
-      setError('Enter your name, a valid email, a password of at least 8 characters and a matching confirmation.');
+      setError(t('login.errorRegisterValidation', 'Enter your name, a valid email, a password of at least 8 characters and a matching confirmation.'));
       return;
     }
     try {
@@ -91,7 +93,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
       onSuccess();
     } catch (registrationError) {
       setError(
-        registrationError instanceof Error ? registrationError.message : 'Registration could not be completed.',
+        registrationError instanceof Error ? registrationError.message : t('login.errorRegisterFailed', 'Registration could not be completed.'),
       );
     }
   };
@@ -144,7 +146,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
       >
         <button
           onClick={onClose}
-          aria-label="Close login"
+          aria-label={t('login.close', 'Close login')}
           className="absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center border border-white/15 text-stone-300 transition-colors hover:border-white hover:text-white sm:right-6 sm:top-6"
         >
           <X className="h-4 w-4" />
@@ -153,17 +155,17 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
           <div className="mb-6 flex justify-center">
             <ArchTechLogo variant="stacked" theme="dark" className="login-overlay-mark" />
           </div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Private access</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{t('login.privateAccess', 'Private access')}</p>
           <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">
-            Portal Access
+            {t('login.title', 'Portal Access')}
           </h1>
           <p className="mt-4 max-w-sm text-sm leading-6 text-stone-400">
-            Review project progress, updates, documents and the current model.
+            {t('login.description', 'Review project progress, updates, documents and the current model.')}
           </p>
 
           {showQuickAccess && (
             <div className="mt-8 border-y border-white/10 py-5">
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Quick access</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('login.quickAccess', 'Quick access')}</p>
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {(['client', 'architect', 'admin'] as PortalRole[]).map((role) => (
                   <button
@@ -173,12 +175,12 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
                     onClick={() => handleQuickLogin(role)}
                     className="border border-white/20 px-2 py-3 font-mono text-[9px] uppercase tracking-[0.12em] text-stone-200 transition-colors hover:border-white hover:bg-white hover:text-black"
                   >
-                    {`${role[0].toUpperCase()}${role.slice(1)} access`}
+                    {t('login.roleAccess', '{{role}} access', { role: role[0].toUpperCase() + role.slice(1) })}
                   </button>
                 ))}
               </div>
               <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">
-                — or use credentials manually —
+                {t('login.orCredentials', '— or use credentials manually —')}
               </p>
             </div>
           )}
@@ -193,7 +195,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
               aria-pressed={mode === 'login'}
               className={mode === 'login' ? 'text-white' : 'text-stone-500'}
             >
-              Sign in
+              {t('login.signIn', 'Sign in')}
             </button>
             <button
               type="button"
@@ -204,14 +206,14 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
               aria-pressed={mode === 'register'}
               className={mode === 'register' ? 'text-white' : 'text-stone-500'}
             >
-              Register
+              {t('login.register', 'Register')}
             </button>
           </div>
 
           <form onSubmit={mode === 'login' ? handleSubmit : handleRegister} className="mt-8 space-y-7">
             {mode === 'register' && (
               <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
-                Name
+                {t('login.name', 'Name')}
                 <input
                   data-testid="register-name"
                   type="text"
@@ -222,7 +224,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
               </label>
             )}
             <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
-              Email
+              {t('login.email', 'Email')}
               <input
                 data-testid="login-email"
                 type="email"
@@ -232,7 +234,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
               />
             </label>
             <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
-              Password
+              {t('login.password', 'Password')}
               <input
                 data-testid="login-password"
                 type="password"
@@ -243,7 +245,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
             </label>
             {mode === 'register' && (
               <label className="block font-mono text-[10px] uppercase tracking-[0.18em] text-stone-400">
-                Confirm password
+                {t('login.confirmPassword', 'Confirm password')}
                 <input
                   data-testid="register-confirm-password"
                   type="password"
@@ -263,11 +265,11 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
               type="submit"
               className="group flex w-full items-center justify-between bg-[#f4efe8] px-6 py-4 font-mono text-[10px] uppercase tracking-[0.2em] text-black transition-transform duration-200 active:translate-y-px"
             >
-              {mode === 'login' ? 'Enter portal' : 'Create account'}{' '}
+              {mode === 'login' ? t('login.enterPortal', 'Enter portal') : t('login.createAccount', 'Create account')}{' '}
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </button>
           </form>
-          <p className="mt-6 font-mono text-[10px] leading-5 text-stone-500">Authorized project access.</p>
+          <p className="mt-6 font-mono text-[10px] leading-5 text-stone-500">{t('login.authorizedAccess', 'Authorized project access.')}</p>
         </div>
       </div>
     </div>

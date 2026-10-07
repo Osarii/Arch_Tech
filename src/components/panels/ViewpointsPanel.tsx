@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Camera,
   Bookmark,
@@ -13,6 +14,7 @@ import { bimEngine } from '@/bim/engine/BimEngine';
 import { BimViewpoint } from '@/types/bim';
 
 export const ViewpointsPanel: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const viewpoints = useBimStore((s) => s.viewpoints);
   const addViewpoint = useBimStore((s) => s.addViewpoint);
   const deleteViewpoint = useBimStore((s) => s.deleteViewpoint);
@@ -41,7 +43,7 @@ export const ViewpointsPanel: React.FC = () => {
       <div className="p-2.5 border-b border-[#222630] flex items-center justify-between bg-[#151720]">
         <div className="flex items-center space-x-1.5 text-slate-300">
           <Bookmark className="w-3.5 h-3.5 text-sky-400" />
-          <span className="font-medium text-[11px]">Saved Viewpoints ({viewpoints.length})</span>
+          <span className="font-medium text-[11px]">{t('savedViewpointsCount', 'Saved Viewpoints ({{count}})', { count: viewpoints.length })}</span>
         </div>
 
         {modelMetadata && (
@@ -49,10 +51,10 @@ export const ViewpointsPanel: React.FC = () => {
             onClick={() => setIsCreating(true)}
             data-testid="btn-save-viewpoint"
             className="flex items-center space-x-1 px-2.5 py-1 rounded bg-sky-600 hover:bg-sky-500 text-white font-medium text-[11px] transition shadow-sm"
-            title="Save current camera angle and selection as a viewpoint"
+            title={t('saveViewpointTooltip', 'Save current camera angle and selection as a viewpoint')}
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>Save View</span>
+            <span>{t('saveView', 'Save View')}</span>
           </button>
         )}
       </div>
@@ -62,12 +64,12 @@ export const ViewpointsPanel: React.FC = () => {
         <div className="p-3 bg-[#181b26] border-b border-[#2a3042] space-y-2.5">
           <h4 className="font-semibold text-slate-200 text-xs flex items-center space-x-1.5">
             <Camera className="w-3.5 h-3.5 text-sky-400" />
-            <span>Capture New Viewpoint</span>
+            <span>{t('captureNewViewpoint', 'Capture New Viewpoint')}</span>
           </h4>
 
           <input
             type="text"
-            placeholder="Viewpoint title (e.g. North Elevation, Roof Detail)"
+            placeholder={t('viewpointTitlePlaceholder', 'Viewpoint title (e.g. North Elevation, Roof Detail)')}
             value={title}
             data-testid="input-viewpoint-title"
             onChange={(e) => setTitle(e.target.value)}
@@ -76,7 +78,7 @@ export const ViewpointsPanel: React.FC = () => {
 
           <input
             type="text"
-            placeholder="Optional description / notes"
+            placeholder={t('viewpointDescPlaceholder', 'Optional description / notes')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             className="w-full bg-[#12141c] border border-[#2b3142] rounded px-2.5 py-1.5 text-slate-200 placeholder-slate-500 text-xs focus:outline-none focus:border-sky-500"
@@ -87,7 +89,7 @@ export const ViewpointsPanel: React.FC = () => {
               onClick={() => setIsCreating(false)}
               className="px-2.5 py-1 rounded text-slate-400 hover:text-slate-200 text-[11px] transition"
             >
-              Cancel
+              {t('cancel', 'Cancel')}
             </button>
             <button
               onClick={handleSaveViewpoint}
@@ -95,7 +97,7 @@ export const ViewpointsPanel: React.FC = () => {
               data-testid="btn-confirm-save-viewpoint"
               className="px-3 py-1 rounded bg-sky-600 hover:bg-sky-500 text-white font-medium text-[11px] transition disabled:opacity-40"
             >
-              Save Viewpoint
+              {t('saveViewpointBtn', 'Save Viewpoint')}
             </button>
           </div>
         </div>
@@ -129,7 +131,7 @@ export const ViewpointsPanel: React.FC = () => {
                     deleteViewpoint(vp.id);
                   }}
                   className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded transition"
-                  title="Delete Viewpoint"
+                  title={t('deleteViewpointTitle', 'Delete Viewpoint')}
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -145,7 +147,7 @@ export const ViewpointsPanel: React.FC = () => {
                 {vp.selectedElements.length > 0 && (
                   <span className="flex items-center space-x-1 bg-[#1e2230] px-1.5 py-0.5 rounded border border-[#2a3042]">
                     <Box className="w-2.5 h-2.5 text-emerald-400" />
-                    <span>{vp.selectedElements.length} selected</span>
+                    <span>{t('selectedElementsCount', '{{count}} selected', { count: vp.selectedElements.length })}</span>
                   </span>
                 )}
 
@@ -165,9 +167,9 @@ export const ViewpointsPanel: React.FC = () => {
         ) : (
           <div className="p-6 text-center text-slate-500">
             <Camera className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-            <p>No viewpoints saved yet.</p>
+            <p>{t('noViewpointsSaved', 'No viewpoints saved yet.')}</p>
             <p className="text-[11px] text-slate-600 mt-1">
-              Position the 3D camera and click "Save View" to capture key angles.
+              {t('saveViewpointHint', 'Position the 3D camera and click "Save View" to capture key angles.')}
             </p>
           </div>
         )}

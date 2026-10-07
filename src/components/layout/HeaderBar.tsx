@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FolderOpen,
   Box,
@@ -21,6 +22,7 @@ import { EditMode } from '@/types/bim';
 import { ArchTechLogo } from '@/components/brand/ArchTechLogo';
 
 export const HeaderBar: React.FC = () => {
+  const { t } = useTranslation(['workspace', 'common']);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modelMetadata = useBimStore((s) => s.modelMetadata);
@@ -146,7 +148,7 @@ export const HeaderBar: React.FC = () => {
         <div className="flex items-center space-x-2">
           <ArchTechLogo variant="mark" tone="mint-cream" theme="dark" className="arch-tech-logo-workspace" label="GARNIER ARCHITECTURE" />
           <span className="font-semibold text-slate-100 text-sm tracking-tight">
-            <span className="text-[10px] text-sky-400 font-mono bg-sky-950/70 border border-sky-800 px-1 py-0.5 rounded">OPENBIM WORKSPACE</span>
+            <span className="text-[10px] text-sky-400 font-mono bg-sky-950/70 border border-sky-800 px-1 py-0.5 rounded">{t('openbimWorkspaceBadge', 'OPENBIM WORKSPACE')}</span>
           </span>
         </div>
 
@@ -157,10 +159,10 @@ export const HeaderBar: React.FC = () => {
             onClick={handleOpenFileClick}
             disabled={loading.isBusy}
             className="flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#181b24] hover:bg-[#202532] text-slate-200 text-xs font-medium border border-[#2a3040] transition disabled:opacity-50"
-            title="Open local .ifc file"
+            title={t('openLocalIfcTooltip', 'Open local .ifc file')}
           >
             <FolderOpen className="w-3.5 h-3.5 text-sky-400" />
-            <span>Open IFC</span>
+            <span>{t('openIfc', 'Open IFC')}</span>
           </button>
 
           <button
@@ -168,30 +170,30 @@ export const HeaderBar: React.FC = () => {
             disabled={loading.isBusy}
             data-testid="header-btn-sample-fast"
             className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-[#1c202a] text-slate-300 hover:text-sky-300 text-xs transition disabled:opacity-50"
-            title="Load IfcOpenHouse Sample Model (IFC4, 111KB)"
+            title={t('sampleFastTooltip', 'Load IfcOpenHouse Sample Model (IFC4, 111KB)')}
           >
             <Box className="w-3.5 h-3.5 text-slate-400" />
-            <span>Sample (Fast)</span>
+            <span>{t('sampleFast', 'Sample (Fast)')}</span>
           </button>
 
           <button
             onClick={() => handleLoadSample('/sample.ifc', 'BasicHouse.ifc')}
             disabled={loading.isBusy}
             className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-[#1c202a] text-slate-300 hover:text-sky-300 text-xs transition disabled:opacity-50"
-            title="Load Complete Revit House IFC (50MB, 1500 Psets)"
+            title={t('sampleHouseTooltip', 'Load Complete Revit House IFC (50MB, 1500 Psets)')}
           >
             <Box className="w-3.5 h-3.5 text-amber-400" />
-            <span>Sample (House)</span>
+            <span>{t('sampleHouse', 'Sample (House)')}</span>
           </button>
 
           {modelMetadata && (
             <button
               onClick={handleUnload}
               className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-rose-950/40 text-rose-400 text-xs transition"
-              title="Close Active Model"
+              title={t('closeActiveModelTooltip', 'Close Active Model')}
             >
               <XCircle className="w-3.5 h-3.5" />
-              <span>Close</span>
+              <span>{t('closeModel', 'Close')}</span>
             </button>
           )}
         </div>
@@ -204,7 +206,7 @@ export const HeaderBar: React.FC = () => {
             <span className="text-slate-500">•</span>
             <span className="text-sky-400 font-mono">{modelMetadata.schema}</span>
             <span className="text-slate-500">•</span>
-            <span>{modelMetadata.elementCount} elements</span>
+            <span>{t('elementsCount', '{{count}} elements', { count: modelMetadata.elementCount })}</span>
           </div>
         )}
 
@@ -214,13 +216,13 @@ export const HeaderBar: React.FC = () => {
             className="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-700/80 text-[11px] text-emerald-300"
           >
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-semibold font-mono">2D: {activeFloorPlanStorey}</span>
+            <span className="font-semibold font-mono">{t('floorPlan2dLabel', '2D: {{storey}}', { storey: activeFloorPlanStorey })}</span>
             <button
               onClick={() => bimEngine.exitFloorPlan()}
               className="ml-1 text-[10px] text-emerald-400 hover:text-emerald-100 underline"
-              title="Exit 2D Plan Mode"
+              title={t('exit2DPlanModeTooltip', 'Exit 2D Plan Mode')}
             >
-              Exit
+              {t('exit', 'Exit')}
             </button>
           </div>
         )}
@@ -239,10 +241,10 @@ export const HeaderBar: React.FC = () => {
                   ? 'bg-sky-600 text-white font-medium shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
-              title="Inspect Mode (Read-Only Analysis, Slicing, Measurements)"
+              title={t('inspectModeTooltip', 'Inspect Mode (Read-Only Analysis, Slicing, Measurements)')}
             >
               <Eye className="w-3.5 h-3.5" />
-              <span>Inspect</span>
+              <span>{t('inspect', 'Inspect')}</span>
             </button>
             <button
               onClick={() => handleSetMode('edit')}
@@ -252,10 +254,10 @@ export const HeaderBar: React.FC = () => {
                   ? 'bg-amber-600 text-white font-semibold shadow-sm'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
-              title="Edit Mode (Non-Destructive Transforms, Overrides, Actions)"
+              title={t('editModeTooltip', 'Edit Mode (Non-Destructive Transforms, Overrides, Actions)')}
             >
               <Pencil className="w-3.5 h-3.5" />
-              <span>Edit</span>
+              <span>{t('edit', 'Edit')}</span>
             </button>
           </div>
 
@@ -267,16 +269,16 @@ export const HeaderBar: React.FC = () => {
                 disabled={!canUndo}
                 data-testid="header-btn-undo"
                 className="p-1 text-slate-300 hover:text-white disabled:opacity-30 disabled:hover:text-slate-300 transition"
-                title="Undo (Ctrl+Z)"
+                title={t('undoTooltip', 'Undo (Ctrl+Z)')}
               >
-                <Undo2 className="w-3.5 h-3.5" />
+                <Undo2 className="w-3 h-3" />
               </button>
               <button
                 onClick={() => bimEditService.redo()}
                 disabled={!canRedo}
                 data-testid="header-btn-redo"
                 className="p-1 text-slate-300 hover:text-white disabled:opacity-30 disabled:hover:text-slate-300 transition"
-                title="Redo (Ctrl+Shift+Z)"
+                title={t('redoTooltip', 'Redo (Ctrl+Shift+Z)')}
               >
                 <Redo2 className="w-3.5 h-3.5" />
               </button>
@@ -285,11 +287,11 @@ export const HeaderBar: React.FC = () => {
                 onClick={() => setLeftPanelTab('changes')}
                 data-testid="header-changes-badge"
                 className="px-1.5 py-0.5 rounded bg-purple-950/80 border border-purple-800 text-[10px] font-mono text-purple-300 hover:bg-purple-900 transition flex items-center space-x-1"
-                title="View non-destructive change set"
+                title={t('viewNonDestructiveChangeSet', 'View non-destructive change set')}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
                 <span>
-                  {changeSet.length} {changeSet.length === 1 ? 'edit' : 'edits'}
+                  {t('editsCount', '{{count}} edits', { count: changeSet.length })}
                 </span>
               </button>
             </div>
@@ -303,7 +305,7 @@ export const HeaderBar: React.FC = () => {
         <button
           onClick={handleToggleCamera}
           className="flex items-center space-x-1.5 px-2 py-1 rounded bg-[#181b24] hover:bg-[#202532] text-xs text-slate-300 border border-[#2a3040] transition"
-          title={`Switch Camera Projection (Currently: ${cameraMode})`}
+          title={t('switchCameraProjectionTooltip', 'Switch Camera Projection (Currently: {{mode}})', { mode: cameraMode })}
         >
           <Camera className="w-3.5 h-3.5 text-sky-400" />
           <span className="font-mono text-[11px] capitalize">{cameraMode}</span>
@@ -318,7 +320,7 @@ export const HeaderBar: React.FC = () => {
                 ? 'bg-sky-950 text-sky-300 border border-sky-800'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-[#181b24]'
             }`}
-            title="Toggle Spatial Tree Panel"
+            title={t('toggleSpatialTreePanel', 'Toggle Spatial Tree Panel')}
           >
             <Layers className="w-3.5 h-3.5" />
           </button>
@@ -330,7 +332,7 @@ export const HeaderBar: React.FC = () => {
                 ? 'bg-sky-950 text-sky-300 border border-sky-800'
                 : 'text-slate-400 hover:text-slate-200 hover:bg-[#181b24]'
             }`}
-            title="Toggle Properties Panel"
+            title={t('togglePropertiesPanel', 'Toggle Properties Panel')}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
           </button>
@@ -346,7 +348,7 @@ export const HeaderBar: React.FC = () => {
                 ? 'bg-purple-950 text-purple-300 border border-purple-800'
                 : 'text-purple-400 hover:text-purple-200 hover:bg-[#1d1627]'
             }`}
-            title="Open AI BIM Assistant"
+            title={t('openAiBimAssistant', 'Open AI BIM Assistant')}
           >
             <Sparkles className="w-3.5 h-3.5" />
           </button>
@@ -357,7 +359,7 @@ export const HeaderBar: React.FC = () => {
           onClick={togglePerfOpen}
           data-testid="header-perf-toggle"
           className="flex items-center space-x-1.5 px-2 py-1 rounded bg-[#141720] hover:bg-[#1b202c] border border-[#262c3b] text-xs font-mono transition"
-          title="Toggle Diagnostics Overlay"
+          title={t('toggleDiagnosticsOverlay', 'Toggle Diagnostics Overlay')}
         >
           <Activity
             className={`w-3.5 h-3.5 ${
@@ -377,7 +379,7 @@ export const HeaderBar: React.FC = () => {
                 : 'text-rose-300'
             }
           >
-            {perfStats.fps} FPS
+            {t('fpsFormat', '{{fps}} FPS', { fps: perfStats.fps })}
           </span>
         </button>
       </div>

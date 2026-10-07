@@ -7,11 +7,13 @@ import { userService } from '../../../services/userService';
 import { NavigationProps, PortalEmptyState, portalStatusClass } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
 import { useLocale } from '../../../portal/locale';
+import { useTranslation } from 'react-i18next';
 
 export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('client');
   const { clientPortal } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
@@ -88,10 +90,10 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
       <section aria-labelledby="pending-approvals-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="pending-approvals-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Pending client decisions
+            {t('pendingClientDecisions', 'Pending client decisions')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {pendingApprovals.length.toString().padStart(2, '0')} requiring attention
+            {t('requiringAttention', '{{count}} requiring attention', { count: pendingApprovals.length })}
           </span>
         </div>
 
@@ -105,7 +107,7 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
                 <div>
                   <div className="flex items-center gap-3">
                     <span className="portal-status-pending font-mono text-[9px] uppercase tracking-[0.14em]">
-                      Pending response
+                      {t('pendingResponse', 'Pending response')}
                     </span>
                     <span className="font-mono text-[10px] text-stone-500">
                       {approval.projectTitle} ({approval.projectCode})
@@ -113,7 +115,7 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
                   </div>
                   <p className="mt-2 font-serif text-3xl">{approval.title}</p>
                   <p className="mt-1 text-xs text-stone-600">
-                    Decision required to advance this project milestone into the active documentation queue.
+                    {t('decisionRequiredMilestone', 'Decision required to advance this project milestone into the active documentation queue.')}
                   </p>
                 </div>
 
@@ -122,19 +124,19 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
                     onClick={() => respondToApproval(approval.projectId, approval.title, 'Approved')}
                     className="bg-black px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-white hover:bg-stone-800"
                   >
-                    Approve
+                    {t('approve', 'Approve')}
                   </button>
                   <button
                     onClick={() => respondToApproval(approval.projectId, approval.title, 'Rejected')}
                     className="border border-black/20 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] hover:border-black"
                   >
-                    Request changes
+                    {t('requestChanges', 'Request changes')}
                   </button>
                   <button
                     onClick={() => navigate(`/dashboard/projects/${approval.projectId}`)}
                     className="font-mono text-[9px] uppercase tracking-[0.12em] text-stone-500 hover:text-black ml-2"
                   >
-                    View dossier →
+                    {t('viewDossier', 'View dossier →')}
                   </button>
                 </div>
               </div>
@@ -149,10 +151,10 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
       <section className="border-t border-black/15 pt-10" aria-labelledby="resolved-approvals-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="resolved-approvals-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Resolved decisions history
+            {t('resolvedDecisionsHistory', 'Resolved decisions history')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {resolvedApprovals.length.toString().padStart(2, '0')} recorded
+            {t('recordedDecisions', '{{count}} recorded', { count: resolvedApprovals.length })}
           </span>
         </div>
 
@@ -168,13 +170,13 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
                   <span className="ml-3 font-mono text-[10px] text-stone-500">{approval.projectTitle}</span>
                 </div>
                 <span className={`${portalStatusClass(approval.status)} font-mono text-[9px] uppercase tracking-[0.14em]`}>
-                  {approval.status}
+                  {t(`statuses.${approval.status.toLowerCase()}`, approval.status)}
                 </span>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-stone-600">No resolved approvals recorded yet.</p>
+          <p className="text-sm text-stone-600">{t('noResolvedApprovals', 'No resolved approvals recorded yet.')}</p>
         )}
       </section>
     </div>

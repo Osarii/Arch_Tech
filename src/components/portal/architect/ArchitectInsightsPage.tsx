@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot, getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
 import { useLocale } from '../../../portal/locale';
@@ -11,6 +12,7 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('architect');
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const { architectPortal } = useLocale();
@@ -61,39 +63,43 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
       </div>
 
       {/* KPI Workload Strip */}
-      <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Studio workload summary">
+      <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('workloadSummaryAria', 'Studio workload summary')}>
         <div className="portal-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Active assignments</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('activeAssignments', 'Active assignments')}</p>
           <p className="mt-3 font-serif text-4xl">{totalProjects.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">developments in studio</p>
+          <p className="mt-1 text-xs text-stone-600">{t('developmentsInStudio', 'developments in studio')}</p>
         </div>
 
         <div className="portal-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Studio progress</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('studioProgress', 'Studio progress')}</p>
           <p className="mt-3 font-serif text-4xl">{averageProgress}%</p>
-          <p className="mt-1 text-xs text-stone-600">average completion</p>
+          <p className="mt-1 text-xs text-stone-600">{t('averageCompletion', 'average completion')}</p>
         </div>
 
         <div className="portal-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Client decisions</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('clientDecisions', 'Client decisions')}</p>
           <p className="mt-3 font-serif text-4xl">{pendingApprovalsCount.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">{resolvedApprovalsCount} resolved sign-offs</p>
+          <p className="mt-1 text-xs text-stone-600">
+            {t('resolvedSignOffs', '{{count}} resolved sign-offs', { count: resolvedApprovalsCount })}
+          </p>
         </div>
 
         <div className="portal-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Milestone sequence</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('milestoneSequence', 'Milestone sequence')}</p>
           <p className="mt-3 font-serif text-4xl">{upcomingMilestonesCount.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">{completeMilestonesCount} completed</p>
+          <p className="mt-1 text-xs text-stone-600">
+            {t('completedCount', '{{count}} completed', { count: completeMilestonesCount })}
+          </p>
         </div>
       </section>
 
       {/* Development Phases */}
-      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[1fr_1.4fr]" aria-label="Phase concentration">
+      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[1fr_1.4fr]" aria-label={t('phaseConcentrationAria', 'Phase concentration')}>
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Phase concentration</p>
-          <h2 className="mt-4 font-serif text-3xl">Active studio stages.</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('phaseConcentration', 'Phase concentration')}</p>
+          <h2 className="mt-4 font-serif text-3xl">{t('activeStudioStages', 'Active studio stages.')}</h2>
           <p className="mt-3 text-sm text-stone-600">
-            Workload distribution across architectural phases from brief and site study through documentation.
+            {t('phaseConcentrationDesc', 'Workload distribution across architectural phases from brief and site study through documentation.')}
           </p>
         </div>
 
@@ -102,7 +108,7 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
             <div key={phase} className="border-l border-black/20 pl-4 py-2">
               <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{phase}</p>
               <p className="mt-2 font-serif text-3xl">{String(count).padStart(2, '0')}</p>
-              <p className="mt-1 text-xs text-stone-600">project{count === 1 ? '' : 's'}</p>
+              <p className="mt-1 text-xs text-stone-600">{t('projectsCount', '{{count}} project(s)', { count })}</p>
             </div>
           ))}
         </div>
@@ -111,8 +117,8 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
       {/* Project Progress Signal */}
       <section className="space-y-6">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Studio delivery breakdown</p>
-          <h2 className="mt-2 font-serif text-3xl">Progress by development.</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('studioDeliveryBreakdown', 'Studio delivery breakdown')}</p>
+          <h2 className="mt-2 font-serif text-3xl">{t('progressByDevelopment', 'Progress by development.')}</h2>
         </div>
 
         <div className="space-y-4 divide-y divide-black/15 border-y border-black/15">
@@ -120,11 +126,11 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
             <div key={project.id} className="pt-4 pb-4 grid gap-3 sm:grid-cols-[1fr_200px_auto] sm:items-center">
               <div>
                 <p className="font-serif text-2xl">{project.title}</p>
-                <p className="text-xs text-stone-600">{project.phase} · Next: {project.nextMilestone}</p>
+                <p className="text-xs text-stone-600">{project.phase} · {t('nextLabel', 'Next:')} {project.nextMilestone}</p>
               </div>
               <div>
                 <div className="flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500 mb-1.5">
-                  <span>Completion</span>
+                  <span>{t('completion', 'Completion')}</span>
                   <span>{project.progress}%</span>
                 </div>
                 <div className="portal-progress-track h-px bg-black/15">
@@ -136,7 +142,7 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
                   onClick={() => navigate(`/architect/projects/${project.id}`)}
                   className="border border-black px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:bg-black hover:text-white"
                 >
-                  Manage
+                  {t('manage', 'Manage')}
                 </button>
               </div>
             </div>
@@ -147,16 +153,16 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
       {/* Deliverables summary */}
       <section className="flex flex-wrap items-center justify-between gap-4 border-t border-black/15 pt-8">
         <div>
-          <p className="font-serif text-xl">Technical packages & deliverables</p>
+          <p className="font-serif text-xl">{t('technicalPackages', 'Technical packages & deliverables')}</p>
           <p className="text-xs text-stone-600">
-            {totalDeliverables} drawings, specs, and documents currently issued across assigned work.
+            {t('deliverablesIssuedDesc', '{{count}} drawings, specs, and documents currently issued across assigned work.', { count: totalDeliverables })}
           </p>
         </div>
         <button
           onClick={() => navigate('/architect/documents')}
           className="border border-black px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] hover:bg-black hover:text-white"
         >
-          View deliverables →
+          {t('viewDeliverables', 'View deliverables →')}
         </button>
       </section>
     </div>

@@ -1,30 +1,32 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const Workflow: React.FC = () => {
+  const { t } = useTranslation('landing');
   const steps = [
     {
       number: '01',
-      phase: 'IMPORT',
-      subtitle: 'Client WASM Ingestion',
-      description: 'Stream local .ifc file into web-ifc WebAssembly memory. Zero cloud transmission.',
+      phase: t('workflow.steps.import.phase', 'IMPORT'),
+      subtitle: t('workflow.steps.import.subtitle', 'Client WASM Ingestion'),
+      description: t('workflow.steps.import.description', 'Stream local .ifc file into web-ifc WebAssembly memory. Zero cloud transmission.'),
     },
     {
       number: '02',
-      phase: 'INSPECT',
-      subtitle: 'Spatial Coordination',
-      description: 'Traverse project hierarchy, query entity properties, and slice orthographic 2D floor plans.',
+      phase: t('workflow.steps.inspect.phase', 'INSPECT'),
+      subtitle: t('workflow.steps.inspect.subtitle', 'Spatial Coordination'),
+      description: t('workflow.steps.inspect.description', 'Traverse project hierarchy, query entity properties, and slice orthographic 2D floor plans.'),
     },
     {
       number: '03',
-      phase: 'EDIT',
-      subtitle: 'Non-Destructive Edits',
-      description: 'Apply 3D translations, relative rotations, or parametric storey generation to a transactional proxy layer.',
+      phase: t('workflow.steps.edit.phase', 'EDIT'),
+      subtitle: t('workflow.steps.edit.subtitle', 'Non-Destructive Edits'),
+      description: t('workflow.steps.edit.description', 'Apply 3D translations, relative rotations, or parametric storey generation to a transactional proxy layer.'),
     },
     {
       number: '04',
-      phase: 'EXPORT',
-      subtitle: 'STEP-21 Persistence',
-      description: 'Execute detached semantic verification before exporting pure ISO 10303-21 IFC files.',
+      phase: t('workflow.steps.export.phase', 'EXPORT'),
+      subtitle: t('workflow.steps.export.subtitle', 'STEP-21 Persistence'),
+      description: t('workflow.steps.export.description', 'Execute detached semantic verification before exporting pure ISO 10303-21 IFC files.'),
     },
   ];
 
@@ -35,14 +37,14 @@ export const Workflow: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-white/[0.08] mb-16">
           <div>
             <div className="text-stone-500 font-mono text-xs uppercase tracking-[0.25em] mb-3">
-              03 // WORKFLOW
+              {t('workflow.eyebrow', '03 // WORKFLOW')}
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-[#f4efe8] font-sans">
-              The engineering pipeline.
+              {t('workflow.heading', 'The engineering pipeline.')}
             </h2>
           </div>
           <div className="text-stone-400 font-mono text-xs uppercase tracking-widest">
-            FOUR-STAGE DETERMINISTIC LIFECYCLE
+            {t('workflow.lifecycle', 'FOUR-STAGE DETERMINISTIC LIFECYCLE')}
           </div>
         </div>
 
@@ -60,7 +62,7 @@ export const Workflow: React.FC = () => {
                     {idx + 1}
                   </div>
                   <span className="font-mono text-xs text-stone-400 tracking-widest uppercase">
-                    PHASE {step.number}
+                    {t('workflow.phase', 'PHASE {{number}}', { number: step.number })}
                   </span>
                 </div>
 

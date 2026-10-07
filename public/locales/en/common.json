@@ -1,0 +1,59 @@
+{
+  "carousel": {
+    "ariaLabel": "Featured development carousel",
+    "chooseProject": "Choose featured project",
+    "fallbackAria": "Featured project imagery unavailable",
+    "imageContext": "{{title}} development context",
+    "nextProject": "Next featured project",
+    "openDossier": "Open {{title}} project dossier",
+    "prevProject": "Previous featured project",
+    "roleDescription": "carousel",
+    "showProject": "Show {{title}}",
+    "slideLabel": "{{current}} of {{total}}: {{title}}",
+    "slideRole": "slide",
+    "viewDossier": "View dossier"
+  },
+  "dashboard": "Dashboard",
+  "gallery": {
+    "imageUnavailable": "{{alt}} image unavailable"
+  },
+  "login": {
+    "authorizedAccess": "Authorized project access.",
+    "close": "Close login",
+    "confirmPassword": "Confirm password",
+    "createAccount": "Create account",
+    "description": "Review project progress, updates, documents and the current model.",
+    "email": "Email",
+    "enterPortal": "Enter portal",
+    "errorInvalidCredentials": "Check the email and password.",
+    "errorRegisterFailed": "Registration could not be completed.",
+    "errorRegisterValidation": "Enter your name, a valid email, a password of at least 8 characters and a matching confirmation.",
+    "name": "Name",
+    "orCredentials": "— or use credentials manually —",
+    "password": "Password",
+    "privateAccess": "Private access",
+    "quickAccess": "Quick access",
+    "register": "Register",
+    "roleAccess": "{{role}} access",
+    "signIn": "Sign in",
+    "title": "Portal Access"
+  },
+  "openingWorkspace": "Opening model workspace…",
+  "projectMedia": {
+    "imageUnavailable": "{{title}} image unavailable"
+  },
+  "projects": "Projects",
+  "rail": {
+    "closeFullscreen": "Close fullscreen view",
+    "developmentMedia": "Spatial Rail Development Media",
+    "fullscreenViewer": "Fullscreen viewer",
+    "inspect": "Inspect",
+    "nextFullscreen": "Next fullscreen image",
+    "nextSlide": "Next slide",
+    "openFullscreen": "Open fullscreen view of {{label}}",
+    "prevFullscreen": "Previous fullscreen image",
+    "prevSlide": "Previous slide"
+  },
+  "returnToDashboard": "Return to client dashboard",
+  "returnToPortfolio": "Return to architectural portfolio"
+}

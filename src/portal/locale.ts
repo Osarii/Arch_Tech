@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import i18n from '../i18n';
 
 export type SiteLocale = 'en' | 'es';
 
@@ -6,14 +7,16 @@ export const STORAGE_KEY_LOCALE = 'arch-tech-locale';
 export const SUPPORTED_LOCALES: SiteLocale[] = ['en', 'es'];
 
 export function getStoredLocale(): SiteLocale {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') {
+    return i18n.language?.startsWith('es') ? 'es' : 'en';
+  }
   try {
     const saved = window.localStorage.getItem(STORAGE_KEY_LOCALE);
     if (saved === 'es' || saved === 'en') return saved;
   } catch {
     // LocalStorage quota or access error
   }
-  return 'en';
+  return i18n.language?.startsWith('es') ? 'es' : 'en';
 }
 
 const listeners = new Set<(locale: SiteLocale) => void>();
@@ -27,6 +30,9 @@ export function setStoredLocale(locale: SiteLocale): void {
   } catch {
     // LocalStorage error fallback
   }
+  if (i18n.language !== locale) {
+    i18n.changeLanguage(locale);
+  }
   listeners.forEach((listener) => listener(locale));
 }
 
@@ -36,6 +42,11 @@ export function subscribeLocale(listener: (locale: SiteLocale) => void): () => v
     listeners.delete(listener);
   };
 }
+
+i18n.on('languageChanged', (lng: string) => {
+  const norm: SiteLocale = lng.startsWith('es') ? 'es' : 'en';
+  listeners.forEach((listener) => listener(norm));
+});
 
 export const landingTranslations = {
   en: {
@@ -48,6 +59,10 @@ export const landingTranslations = {
       projectPortal: 'Project Portal',
       a11yControls: 'Accessibility controls',
       toggleMenu: 'Toggle menu',
+      homeAria: 'GARNIER ARCHITECTURE home',
+      langSelection: 'Language selection',
+      a11yShort: 'A11y',
+      langToggle: 'Language / Idioma',
     },
     hero: {
       eyebrow: 'GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype',
@@ -75,6 +90,7 @@ export const landingTranslations = {
       market: 'Market',
       stage: 'Stage',
       scale: 'Scale',
+      numberLabel: 'No.',
     },
     news: {
       eyebrow: 'Journal / Project updates',
@@ -90,6 +106,7 @@ export const landingTranslations = {
         'Its public work spans industrial parks and free trade zones, corporate and commercial environments, hospitality and other complex development typologies. The group participates across design, construction, sales and promotion through an integrated development process.',
       sourceCaption: 'Public source image / Garnier & Garnier',
       factualContext: 'Factual context adapted from the official public source / garnier.cr',
+      mediaAlt: 'Interior workplace environment from the official Garnier public portfolio',
       facts: [
         { value: '30 YEARS', label: 'Real-estate development experience' },
         { value: 'COSTA RICA', label: 'Primary market' },
@@ -117,6 +134,7 @@ export const landingTranslations = {
       description:
         'A multidisciplinary leadership group connecting strategy, engineering, finance, new business, people and sustainability.',
       leadershipCaption: 'Leadership / Garnier & Garnier',
+      groupPhotoAlt: 'Garnier & Garnier leadership team gathered in an outdoor courtyard',
     },
     development: {
       eyebrow: 'The development lifecycle',
@@ -142,6 +160,7 @@ export const landingTranslations = {
         'Development, infrastructure and digital project delivery from first opportunity through long-term operation.',
       directoryEyebrow: 'Directory',
       directoryHeading: 'A clear route through the public experience.',
+      footerDirectory: 'Footer directory',
       exploreGroup: 'Explore',
       platformGroup: 'Platform',
       contextGroup: 'Context',
@@ -168,6 +187,10 @@ export const landingTranslations = {
       projectPortal: 'Portal de Proyectos',
       a11yControls: 'Controles de accesibilidad',
       toggleMenu: 'Alternar menú',
+      homeAria: 'GARNIER ARCHITECTURE inicio',
+      langSelection: 'Selección de idioma',
+      a11yShort: 'Accesibilidad',
+      langToggle: 'Idioma / Language',
     },
     hero: {
       eyebrow: 'GARNIER ARCHITECTURE / Muestra de Portafolio / Prototipo Conceptual',
@@ -195,6 +218,7 @@ export const landingTranslations = {
       market: 'Mercado',
       stage: 'Etapa',
       scale: 'Escala',
+      numberLabel: 'N.º',
     },
     news: {
       eyebrow: 'Boletín / Actualizaciones de proyecto',
@@ -210,6 +234,7 @@ export const landingTranslations = {
         'Su trabajo público abarca parques industriales y zonas francas, entornos corporativos y comerciales, hotelería y otras tipologías de desarrollo complejas. El grupo participa en diseño, construcción, ventas y promoción a través de un proceso integral de desarrollo.',
       sourceCaption: 'Imagen de fuente pública / Garnier & Garnier',
       factualContext: 'Contexto fáctico adaptado de la fuente pública oficial / garnier.cr',
+      mediaAlt: 'Ambiente de trabajo interior del portafolio público oficial de Garnier',
       facts: [
         { value: '30 AÑOS', label: 'Experiencia en desarrollo inmobiliario' },
         { value: 'COSTA RICA', label: 'Mercado principal' },
@@ -237,6 +262,7 @@ export const landingTranslations = {
       description:
         'Un grupo de liderazgo multidisciplinario que conecta estrategia, ingeniería, finanzas, nuevos negocios, talento humano y sostenibilidad.',
       leadershipCaption: 'Liderazgo / Garnier & Garnier',
+      groupPhotoAlt: 'Equipo de liderazgo de Garnier & Garnier reunido en un patio exterior',
     },
     development: {
       eyebrow: 'El ciclo de vida del desarrollo',
@@ -262,6 +288,7 @@ export const landingTranslations = {
         'Desarrollo, infraestructura y entrega digital de proyectos desde la primera oportunidad hasta la operación a largo plazo.',
       directoryEyebrow: 'Directorio',
       directoryHeading: 'Una ruta clara por la experiencia pública.',
+      footerDirectory: 'Directorio del pie de página',
       exploreGroup: 'Explorar',
       platformGroup: 'Plataforma',
       contextGroup: 'Contexto',
@@ -304,6 +331,7 @@ export const portalAiTranslations = {
     workspaceHeading: '3D Engineering Workspace',
     workspaceSubtitle: 'Open the live WebGL workspace to inspect fragments, property sets, and visual model modifications.',
     openWorkspace: 'Open 3D Model →',
+    openModel: 'Open 3D Model →',
     quickPrompts: {
       client: ['Calculate model quantities', 'Show all elements', 'Isolate walls'],
       architect: [
@@ -343,6 +371,7 @@ export const portalAiTranslations = {
     workspaceHeading: 'Espacio de Trabajo 3D',
     workspaceSubtitle: 'Abra el espacio de trabajo WebGL interactivo para inspeccionar fragmentos, propiedades y modificaciones visuales del modelo.',
     openWorkspace: 'Abrir Modelo 3D →',
+    openModel: 'Abrir Modelo 3D →',
     quickPrompts: {
       client: ['Calcular cantidades del modelo', 'Mostrar todos los elementos', 'Aislar muros'],
       architect: [
@@ -496,6 +525,7 @@ export const publicNewsTranslations = {
 export const publicProjectTranslations = {
   en: {
     showcaseEyebrow: 'Portfolio Showcase / Concept Prototype',
+    homeAria: 'GARNIER ARCHITECTURE home',
     projectPortal: 'Project Portal',
     developmentPortfolio: 'Development portfolio',
     briefEyebrow: '01 / Brief',
@@ -522,6 +552,7 @@ export const publicProjectTranslations = {
   },
   es: {
     showcaseEyebrow: 'Muestra de Portafolio / Prototipo Conceptual',
+    homeAria: 'GARNIER ARCHITECTURE inicio',
     projectPortal: 'Portal de Proyectos',
     developmentPortfolio: 'Portafolio de desarrollo',
     briefEyebrow: '01 / Resumen',
@@ -551,6 +582,7 @@ export const publicProjectTranslations = {
 export const portalShellTranslations = {
   en: {
     showcaseEyebrow: 'Portfolio Showcase / Concept Prototype',
+    homeAria: 'GARNIER ARCHITECTURE home',
     roles: {
       admin: 'Executive Administration',
       architect: 'Architect Studio',
@@ -583,6 +615,7 @@ export const portalShellTranslations = {
   },
   es: {
     showcaseEyebrow: 'Muestra de Portafolio / Prototipo Conceptual',
+    homeAria: 'GARNIER ARCHITECTURE inicio',
     roles: {
       admin: 'Administración Ejecutiva',
       architect: 'Taller de Arquitectura',

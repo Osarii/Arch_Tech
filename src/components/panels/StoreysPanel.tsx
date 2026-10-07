@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Layers,
   MapPin,
@@ -14,6 +15,7 @@ import { bimEngine } from '@/bim/engine/BimEngine';
 import { StoreyData } from '@/types/bim';
 
 export const StoreysPanel: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const storeysData = useBimStore((s) => s.storeysData);
   const activeFloorPlanStorey = useBimStore((s) => s.activeFloorPlanStorey);
   const is2DMode = useBimStore((s) => s.is2DMode);
@@ -55,16 +57,16 @@ export const StoreysPanel: React.FC = () => {
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="font-semibold text-emerald-200">
-              2D Plan: <span className="font-mono text-white">{activeFloorPlanStorey}</span>
+              {t('plan2DPrefix', '2D Plan:')} <span className="font-mono text-white">{activeFloorPlanStorey}</span>
             </span>
           </div>
           <button
             onClick={() => bimEngine.exitFloorPlan()}
             className="flex items-center space-x-1 px-2 py-0.5 rounded bg-emerald-900/80 hover:bg-emerald-800 text-emerald-100 text-[11px] font-medium transition"
-            title="Switch back to 3D Orbit View"
+            title={t('switchBackTo3DOrbitTitle', 'Switch back to 3D Orbit View')}
           >
             <Compass className="w-3 h-3" />
-            <span>Exit 2D</span>
+            <span>{t('exit2D', 'Exit 2D')}</span>
           </button>
         </div>
       )}
@@ -73,15 +75,15 @@ export const StoreysPanel: React.FC = () => {
       <div className="p-2.5 border-b border-[#222630] flex items-center justify-between bg-[#151720]">
         <div className="flex items-center space-x-1.5 text-slate-300">
           <Layers className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="font-medium text-[11px]">Building Storeys ({storeysData.length})</span>
+          <span className="font-medium text-[11px]">{t('buildingStoreysCount', 'Building Storeys ({{count}})', { count: storeysData.length })}</span>
         </div>
         <button
           onClick={handleRestoreAll}
           className="flex items-center space-x-1 px-2 py-1 rounded bg-[#1c202a] hover:bg-[#252b39] text-slate-300 text-[11px] transition border border-[#2b3140]"
-          title="Restore visibility and framing of all building storeys"
+          title={t('restoreAllStoreysTitle', 'Restore visibility and framing of all building storeys')}
         >
           <RotateCcw className="w-3 h-3 text-sky-400" />
-          <span>Restore All</span>
+          <span>{t('restoreAll', 'Restore All')}</span>
         </button>
       </div>
 
@@ -108,17 +110,17 @@ export const StoreysPanel: React.FC = () => {
                       <span>{storey.name}</span>
                       {isPlanActive && (
                         <span className="font-mono text-[9px] px-1 py-0.2 rounded bg-emerald-600 text-white font-normal uppercase">
-                          Active 2D
+                          {t('active2D', 'Active 2D')}
                         </span>
                       )}
                     </h4>
                     <div className="flex items-center space-x-2 text-[11px] text-slate-400 mt-0.5">
                       <span className="flex items-center space-x-1">
                         <MapPin className="w-3 h-3 text-slate-500" />
-                        <span className="font-mono">Elev: {storey.elevation}m</span>
+                        <span className="font-mono">{t('elevationMeters', 'Elev: {{elevation}}m', { elevation: storey.elevation })}</span>
                       </span>
                       <span>•</span>
-                      <span>{storey.elementCount} elements</span>
+                      <span>{t('elementCountFormat', '{{count}} elements', { count: storey.elementCount })}</span>
                     </div>
                   </div>
 
@@ -126,7 +128,7 @@ export const StoreysPanel: React.FC = () => {
                   <button
                     onClick={() => handleToggleStorey(storey.name, storey.elementIds)}
                     className="p-1 hover:bg-[#202533] rounded text-slate-400 hover:text-slate-200 transition"
-                    title={`Toggle ${storey.name} visibility`}
+                    title={t('toggleStoreyVisibilityTitle', 'Toggle {{name}} visibility', { name: storey.name })}
                   >
                     {isHidden ? (
                       <EyeOff className="w-3.5 h-3.5 text-slate-500" />
@@ -157,24 +159,24 @@ export const StoreysPanel: React.FC = () => {
                         ? 'bg-emerald-600 text-white'
                         : 'bg-emerald-950/70 hover:bg-emerald-900/90 text-emerald-300 border border-emerald-800/80'
                     }`}
-                    title="Generate 2D Top-Down Orthographic Floor Plan"
+                    title={t('generateFloorPlanTitle', 'Generate 2D Top-Down Orthographic Floor Plan')}
                   >
                     <Sparkles className="w-3 h-3" />
-                    <span>2D Floor Plan</span>
+                    <span>{t('floorPlan2D', '2D Floor Plan')}</span>
                   </button>
 
                   <button
                     onClick={() => handleIsolateStorey(storey)}
                     className="px-2 py-1 rounded bg-[#1f2432] hover:bg-[#2a3144] text-slate-200 text-[11px] transition border border-[#2b3242]"
-                    title="Isolate this storey in 3D"
+                    title={t('isolateStoreyTitle', 'Isolate this storey in 3D')}
                   >
-                    <span>Isolate</span>
+                    <span>{t('isolate', 'Isolate')}</span>
                   </button>
 
                   <button
                     onClick={() => handleFitStorey(storey)}
                     className="p-1 rounded bg-[#1f2432] hover:bg-[#2a3144] text-slate-300 transition border border-[#2b3242]"
-                    title="Fit camera to storey elements"
+                    title={t('fitCameraStoreyTitle', 'Fit camera to storey elements')}
                   >
                     <Maximize2 className="w-3 h-3" />
                   </button>
@@ -185,7 +187,7 @@ export const StoreysPanel: React.FC = () => {
         ) : (
           <div className="p-6 text-center text-slate-500">
             <Layers className="w-8 h-8 mx-auto mb-2 text-slate-600" />
-            <p>No storeys detected in active model.</p>
+            <p>{t('noStoreysDetected', 'No storeys detected in active model.')}</p>
           </div>
         )}
       </div>

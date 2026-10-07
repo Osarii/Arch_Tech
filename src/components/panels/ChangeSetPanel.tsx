@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ListFilter,
   RotateCcw,
@@ -28,6 +29,7 @@ import { IfcPersistenceService } from '@/bim/persistence/ifcPersistenceService';
 import { BimChange, BimChangeType, PersistenceResult } from '@/types/bim';
 
 export const ChangeSetPanel: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const changeSet = useBimStore((s) => s.changeSet);
   const canUndo = useBimStore((s) => s.canUndo);
   const canRedo = useBimStore((s) => s.canRedo);
@@ -202,7 +204,7 @@ export const ChangeSetPanel: React.FC = () => {
         <div className="flex items-center space-x-1.5 text-slate-300">
           <ListFilter className="w-3.5 h-3.5 text-purple-400" />
           <span className="font-medium text-[11px]">
-            Change Set ({changeSet.length})
+            {t('changeSetCount', 'Change Set ({{count}})', { count: changeSet.length })}
           </span>
         </div>
 
@@ -213,7 +215,7 @@ export const ChangeSetPanel: React.FC = () => {
             disabled={!canUndo}
             data-testid="btn-changeset-undo"
             className="p-1 rounded bg-[#1c202a] hover:bg-[#252b39] text-slate-300 disabled:opacity-40 disabled:hover:bg-[#1c202a] border border-[#2b3140] transition"
-            title="Undo latest change (Ctrl+Z)"
+            title={t('undoLatestChange', 'Undo latest change (Ctrl+Z)')}
           >
             <Undo2 className="w-3 h-3" />
           </button>
@@ -222,7 +224,7 @@ export const ChangeSetPanel: React.FC = () => {
             disabled={!canRedo}
             data-testid="btn-changeset-redo"
             className="p-1 rounded bg-[#1c202a] hover:bg-[#252b39] text-slate-300 disabled:opacity-40 disabled:hover:bg-[#1c202a] border border-[#2b3140] transition"
-            title="Redo undone change"
+            title={t('redoUndoneChange', 'Redo undone change')}
           >
             <Redo2 className="w-3 h-3" />
           </button>
@@ -231,10 +233,10 @@ export const ChangeSetPanel: React.FC = () => {
               onClick={handleResetAll}
               data-testid="btn-changeset-reset-all"
               className="flex items-center space-x-1 px-2 py-0.5 rounded bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/80 text-[10px] font-medium transition"
-              title="Reset all changes and restore original IFC model"
+              title={t('resetAllChangesTooltip', 'Reset all changes and restore original IFC model')}
             >
               <RotateCcw className="w-2.5 h-2.5" />
-              <span>Reset All</span>
+              <span>{t('resetAll', 'Reset All')}</span>
             </button>
           )}
         </div>
@@ -243,8 +245,8 @@ export const ChangeSetPanel: React.FC = () => {
       {/* Phase 4 Persistence Action Strip */}
       <div className="p-2 border-b border-[#222630] bg-[#12141c] space-y-1.5">
         <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium">
-          <span>IFC Persistence & JSON</span>
-          <span className="text-[10px] text-slate-500 font-mono">Phase 4</span>
+          <span>{t('ifcPersistenceAndJson', 'IFC Persistence & JSON')}</span>
+          <span className="text-[10px] text-slate-500 font-mono">{t('phase4', 'Phase 4')}</span>
         </div>
 
         <div className="grid grid-cols-2 gap-1.5">
@@ -253,20 +255,20 @@ export const ChangeSetPanel: React.FC = () => {
             disabled={changeSet.length === 0}
             data-testid="btn-export-changeset-json"
             className="flex items-center justify-center space-x-1 px-2 py-1 rounded bg-[#171a24] hover:bg-[#202534] disabled:opacity-40 text-slate-300 border border-[#272d3d] text-[10px] transition"
-            title="Export Change Set as JSON"
+            title={t('exportJsonTooltip', 'Export Change Set as JSON')}
           >
             <Download className="w-3 h-3 text-sky-400" />
-            <span>Export JSON</span>
+            <span>{t('exportJson', 'Export JSON')}</span>
           </button>
 
           <button
             onClick={handleImportJsonClick}
             data-testid="btn-import-changeset-json"
             className="flex items-center justify-center space-x-1 px-2 py-1 rounded bg-[#171a24] hover:bg-[#202534] text-slate-300 border border-[#272d3d] text-[10px] transition"
-            title="Import Change Set from JSON file"
+            title={t('importJsonTooltip', 'Import Change Set from JSON file')}
           >
             <Upload className="w-3 h-3 text-purple-400" />
-            <span>Import JSON</span>
+            <span>{t('importJson', 'Import JSON')}</span>
           </button>
         </div>
 
@@ -276,10 +278,10 @@ export const ChangeSetPanel: React.FC = () => {
             disabled={changeSet.length === 0}
             data-testid="btn-export-new-ifc"
             className="flex items-center justify-center space-x-1 px-2 py-1.5 rounded bg-emerald-950/70 hover:bg-emerald-900/80 disabled:opacity-40 text-emerald-300 border border-emerald-800 text-[10px] font-medium transition"
-            title="Export changes to a NEW .ifc file (never overwrites original)"
+            title={t('exportIfcTooltip', 'Export changes to a NEW .ifc file (never overwrites original)')}
           >
             <FileCheck className="w-3 h-3" />
-            <span>Export .ifc</span>
+            <span>{t('exportIfc', 'Export .ifc')}</span>
           </button>
 
           <button
@@ -287,10 +289,10 @@ export const ChangeSetPanel: React.FC = () => {
             disabled={changeSet.length === 0}
             data-testid="btn-save-reload-ifc"
             className="flex items-center justify-center space-x-1 px-2 py-1.5 rounded bg-sky-950/70 hover:bg-sky-900/80 disabled:opacity-40 text-sky-300 border border-sky-800 text-[10px] font-medium transition"
-            title="Persist changes to new IFC and reload automatically in viewer"
+            title={t('saveReloadIfcTooltip', 'Persist changes to new IFC and reload automatically in viewer')}
           >
             <Save className="w-3 h-3" />
-            <span>Save & Reload</span>
+            <span>{t('saveAndReload', 'Save & Reload')}</span>
           </button>
         </div>
 
@@ -301,7 +303,7 @@ export const ChangeSetPanel: React.FC = () => {
             className="mt-2 p-2 rounded bg-[#151922] border border-[#2b3345] space-y-1 text-[10px]"
           >
             <div className="flex items-center justify-between font-semibold">
-              <span className="text-slate-200">Persistence Audit:</span>
+              <span className="text-slate-200">{t('persistenceAudit', 'Persistence Audit:')}</span>
               <span
                 className={
                   persistenceResult.success
@@ -309,22 +311,22 @@ export const ChangeSetPanel: React.FC = () => {
                     : 'text-amber-400'
                 }
               >
-                {persistenceResult.success ? 'Success' : 'Partial'}
+                {persistenceResult.success ? t('success', 'Success') : t('partial', 'Partial')}
               </span>
             </div>
             <div className="flex items-center space-x-3 text-slate-300">
               <span className="flex items-center space-x-1">
                 <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                <span>Persisted: {persistenceResult.persistedCount}</span>
+                <span>{t('persistedCount', 'Persisted: {{count}}', { count: persistenceResult.persistedCount })}</span>
               </span>
               <span className="flex items-center space-x-1">
                 <HelpCircle className="w-3 h-3 text-amber-400" />
-                <span>Unsupported: {persistenceResult.unsupportedCount}</span>
+                <span>{t('unsupportedCount', 'Unsupported: {{count}}', { count: persistenceResult.unsupportedCount })}</span>
               </span>
               {persistenceResult.failedCount > 0 && (
                 <span className="flex items-center space-x-1">
                   <AlertCircle className="w-3 h-3 text-rose-400" />
-                  <span>Failed: {persistenceResult.failedCount}</span>
+                  <span>{t('failedCount', 'Failed: {{count}}', { count: persistenceResult.failedCount })}</span>
                 </span>
               )}
             </div>
@@ -365,18 +367,18 @@ export const ChangeSetPanel: React.FC = () => {
                       }`}
                       title={
                         persistable
-                          ? 'Persistable to real IFC geometry/structure'
-                          : 'Viewport styling only (transient)'
+                          ? t('persistableTooltip', 'Persistable to real IFC geometry/structure')
+                          : t('viewportOnlyTooltip', 'Viewport styling only (transient)')
                       }
                     >
-                      {persistable ? 'IFC Persistable' : 'Viewport Only'}
+                      {persistable ? t('ifcPersistable', 'IFC Persistable') : t('viewportOnly', 'Viewport Only')}
                     </span>
                   </div>
 
                   <button
                     onClick={(e) => handleRevertElement(e, change.elementId)}
                     className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-[#202534] text-slate-400 hover:text-slate-200 transition"
-                    title="Revert all changes for this element"
+                    title={t('revertElementTooltip', 'Revert all changes for this element')}
                   >
                     <RotateCcw className="w-3 h-3" />
                   </button>
@@ -394,13 +396,18 @@ export const ChangeSetPanel: React.FC = () => {
                 {change.type === 'move' && (
                   <div className="mt-1.5 p-1.5 rounded bg-[#10121a] border border-[#1e2330] font-mono text-[10px] grid grid-cols-2 gap-1">
                     <span className="text-slate-500">
-                      Orig: [{change.originalValue?.x ?? 0}m,{' '}
-                      {change.originalValue?.y ?? 0}m,{' '}
-                      {change.originalValue?.z ?? 0}m]
+                      {t('origCoordFormat', 'Orig: [{{x}}m, {{y}}m, {{z}}m]', {
+                        x: change.originalValue?.x ?? 0,
+                        y: change.originalValue?.y ?? 0,
+                        z: change.originalValue?.z ?? 0,
+                      })}
                     </span>
                     <span className="text-sky-300 font-semibold">
-                      New: [{change.newValue.x}m, {change.newValue.y}m,{' '}
-                      {change.newValue.z}m]
+                      {t('newCoordFormat', 'New: [{{x}}m, {{y}}m, {{z}}m]', {
+                        x: change.newValue.x,
+                        y: change.newValue.y,
+                        z: change.newValue.z,
+                      })}
                     </span>
                   </div>
                 )}
@@ -408,17 +415,17 @@ export const ChangeSetPanel: React.FC = () => {
                 {change.type === 'rotate' && (
                   <div className="mt-1.5 p-1.5 rounded bg-[#10121a] border border-[#1e2330] font-mono text-[10px] grid grid-cols-2 gap-1">
                     <span className="text-slate-500">
-                      Orig: {change.originalValue?.rotationY ?? 0}°
+                      {t('origDegFormat', 'Orig: {{deg}}°', { deg: change.originalValue?.rotationY ?? 0 })}
                     </span>
                     <span className="text-amber-300 font-semibold">
-                      New: {change.newValue.rotationY}°
+                      {t('newDegFormat', 'New: {{deg}}°', { deg: change.newValue.rotationY })}
                     </span>
                   </div>
                 )}
 
                 {change.type === 'color' && (
                   <div className="mt-1.5 flex items-center space-x-2 text-[10px]">
-                    <span className="text-slate-500">Override:</span>
+                    <span className="text-slate-500">{t('overrideLabel', 'Override:')}</span>
                     <div
                       className="w-3.5 h-3.5 rounded border border-white/20"
                       style={{ backgroundColor: change.newValue.color }}
@@ -442,10 +449,9 @@ export const ChangeSetPanel: React.FC = () => {
         ) : (
           <div className="h-48 flex flex-col items-center justify-center text-center p-4 text-slate-500 space-y-2">
             <Sliders className="w-8 h-8 opacity-30" />
-            <p className="text-[11px]">No changes recorded yet.</p>
+            <p className="text-[11px]">{t('noChangesRecorded', 'No changes recorded yet.')}</p>
             <p className="text-[10px] text-slate-600 max-w-[200px]">
-              Switch to Edit Mode and transform elements or apply overrides to build
-              a Change Set.
+              {t('switchEditModePrompt', 'Switch to Edit Mode and transform elements or apply overrides to build a Change Set.')}
             </p>
           </div>
         )}

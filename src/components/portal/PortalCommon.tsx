@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowRight, Bot, Cpu, Send, Sparkles, X } from 'lucide-react';
 import {
   PortalProject,
@@ -51,11 +52,13 @@ export const projectRoute = (role: PortalRole, id: string) =>
   `${role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard'}/projects/${id}`;
 
 export const ProjectThumbnail: React.FC<{ project: PortalProject }> = ({ project }) => {
+  const { t } = useTranslation('portal');
   const image = getPreferredProjectImage(project);
   const [imageAvailable, setImageAvailable] = useState(Boolean(image));
   if (!imageAvailable) {
     return (
-      <span className="portal-project-thumbnail portal-project-thumbnail-fallback" aria-label="Project image unavailable">
+      <span className="portal-project-thumbnail portal-project-thumbnail-fallback" aria-label={t('projectImageUnavailable', 'Project image unavailable')}>
+        {/* i18next-instrument-ignore */}
         <span>ARCH / PROJECT</span>
       </span>
     );
@@ -73,10 +76,12 @@ export const ProjectThumbnail: React.FC<{ project: PortalProject }> = ({ project
 };
 
 export const ProjectMediaFrame: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
+  const { t } = useTranslation('common');
   const [imageAvailable, setImageAvailable] = useState(Boolean(src));
   if (!imageAvailable) {
     return (
-      <div className={`portal-project-media-frame portal-project-thumbnail-fallback ${className}`} role="img" aria-label={`${alt} image unavailable`}>
+      <div className={`portal-project-media-frame portal-project-thumbnail-fallback ${className}`} role="img" aria-label={t('gallery.imageUnavailable', '{{alt}} image unavailable', { alt })}>
+        {/* i18next-instrument-ignore */}
         <span>ARCH / PROJECT</span>
       </div>
     );
@@ -146,6 +151,7 @@ const getWeatherCodeLabel = (code: number): string => {
 };
 
 export const ExternalContextPanel: React.FC = () => {
+  const { t } = useTranslation('portal');
   const [query, setQuery] = useState('San José, Costa Rica');
   const [resolvedLocation, setResolvedLocation] = useState<ResolvedLocation | null>(null);
   const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -174,7 +180,7 @@ export const ExternalContextPanel: React.FC = () => {
 
     if (!cleanQuery) {
       setLocationStatus('error');
-      setLocationError('Enter a location to analyze.');
+      setLocationError(t('siteIntelligence.enterLocation', 'Enter a location to analyze.'));
       return;
     }
 
@@ -187,7 +193,7 @@ export const ExternalContextPanel: React.FC = () => {
       setLocationStatus('idle');
     } catch (err) {
       setLocationStatus('error');
-      setLocationError(err instanceof ExternalContextError ? err.message : 'Location search is temporarily unavailable.');
+      setLocationError(err instanceof ExternalContextError ? err.message : t('siteIntelligence.locationUnavailable', 'Location search is temporarily unavailable.'));
       return;
     }
 
@@ -207,7 +213,7 @@ export const ExternalContextPanel: React.FC = () => {
       setWeatherError(
         weatherResult.reason instanceof ExternalContextError
           ? weatherResult.reason.message
-          : 'Weather is temporarily unavailable.',
+          : t('siteIntelligence.weatherUnavailable', 'Weather is temporarily unavailable.'),
       );
     }
 
@@ -219,17 +225,17 @@ export const ExternalContextPanel: React.FC = () => {
       setSeismicError(
         seismicResult.reason instanceof ExternalContextError
           ? seismicResult.reason.message
-          : 'Seismic context is temporarily unavailable.',
+          : t('siteIntelligence.seismicUnavailable', 'Seismic context is temporarily unavailable.'),
       );
     }
   };
 
   return (
-    <section aria-label="Site intelligence and external context" className="border-b border-black/15 py-8">
+    <section aria-label={t('siteIntelligence.title', 'Site intelligence and external context')} className="border-b border-black/15 py-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Site intelligence · External context</p>
-          <p className="mt-2 text-sm text-stone-600">Environmental and seismic context across project coordinates.</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('siteIntelligence.eyebrow', 'Site intelligence · External context')}</p>
+          <p className="mt-2 text-sm text-stone-600">{t('siteIntelligence.subtitle', 'Environmental and seismic context across project coordinates.')}</p>
         </div>
       </div>
 
@@ -238,8 +244,8 @@ export const ExternalContextPanel: React.FC = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Enter location (e.g. San José, Costa Rica)"
-          aria-label="Location for site intelligence"
+          placeholder={t('siteIntelligence.placeholder', 'Enter location (e.g. San José, Costa Rica)')}
+          aria-label={t('siteIntelligence.locationAria', 'Location for site intelligence')}
           data-testid="site-intelligence-input"
           className="min-w-[260px] flex-1 border border-black/20 bg-white/70 px-3 py-2 text-xs text-stone-800 placeholder:text-stone-400 focus:border-black focus:outline-none"
         />
@@ -250,10 +256,10 @@ export const ExternalContextPanel: React.FC = () => {
           className="border border-black/20 bg-black px-4 py-2 font-mono text-[9px] uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {locationStatus === 'loading'
-            ? 'Locating…'
+            ? t('siteIntelligence.locating', 'Locating…')
             : weatherStatus === 'loading' || seismicStatus === 'loading'
-              ? 'Analyzing…'
-              : 'Analyze Site'}
+              ? t('siteIntelligence.analyzing', 'Analyzing…')
+              : t('siteIntelligence.analyzeSite', 'Analyze Site')}
         </button>
         <button
           type="button"
@@ -263,13 +269,13 @@ export const ExternalContextPanel: React.FC = () => {
           aria-hidden="true"
           tabIndex={-1}
         >
-          Load context
+          {t('siteIntelligence.loadContext', 'Load context')}
         </button>
       </form>
 
       {locationStatus === 'error' && (
         <p role="alert" data-testid="site-intelligence-location-error" className="mt-4 text-sm text-stone-600">
-          {locationError ?? 'Location search is temporarily unavailable.'}
+          {locationError ?? t('siteIntelligence.locationUnavailable', 'Location search is temporarily unavailable.')}
         </p>
       )}
 
@@ -279,11 +285,15 @@ export const ExternalContextPanel: React.FC = () => {
           className="mt-4 flex flex-wrap items-center justify-between gap-2 border-l-2 border-stone-800 bg-stone-100/60 px-3 py-2 text-xs"
         >
           <div>
-            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Resolved Location: </span>
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{t('siteIntelligence.resolvedLocation', 'Resolved Location:')} </span>
             <span className="font-semibold text-stone-800">{resolvedLocation.displayName}</span>
           </div>
           <div className="font-mono text-[10px] text-stone-500">
-            {resolvedLocation.latitude.toFixed(4)}°, {resolvedLocation.longitude.toFixed(4)}°
+            {resolvedLocation.latitude.toFixed(4)}
+            {/* i18next-instrument-ignore */}
+            °, {resolvedLocation.longitude.toFixed(4)}
+            {/* i18next-instrument-ignore */}
+            °
           </div>
         </div>
       )}
@@ -292,27 +302,34 @@ export const ExternalContextPanel: React.FC = () => {
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           {/* Weather Card */}
           <div data-testid="site-intelligence-weather" className="border border-black/10 bg-white/40 p-4">
-            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Live Weather Context</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">{t('siteIntelligence.liveWeather', 'Live Weather Context')}</p>
             {weatherStatus === 'loading' && (
-              <p role="status" className="mt-3 text-xs text-stone-500">Gathering current atmospheric conditions…</p>
+              <p role="status" className="mt-3 text-xs text-stone-500">{t('siteIntelligence.gatheringAtmospheric', 'Gathering current atmospheric conditions…')}</p>
             )}
             {weatherStatus === 'error' && (
               <p role="alert" data-testid="site-intelligence-weather-error" className="mt-3 text-xs text-stone-600">
-                {weatherError ?? 'Weather is temporarily unavailable.'}
+                {weatherError ?? t('siteIntelligence.weatherUnavailable', 'Weather is temporarily unavailable.')}
               </p>
             )}
             {weather && (
               <div className="mt-3 space-y-2">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-serif text-3xl font-light text-stone-900">{weather.temperature}°C</span>
-                  <span className="text-xs text-stone-600">· {getWeatherCodeLabel(weather.weatherCode)} (WMO {weather.weatherCode})</span>
+                  <span className="font-serif text-3xl font-light text-stone-900">
+                    {weather.temperature}
+                    {/* i18next-instrument-ignore */}
+                    °C
+                  </span>
+                  <span className="text-xs text-stone-600">
+                    {/* i18next-instrument-ignore */}
+                    · {getWeatherCodeLabel(weather.weatherCode)} (WMO {weather.weatherCode})
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 border-t border-black/5 pt-2 font-mono text-[11px] text-stone-600">
-                  <div>Precipitation: {weather.precipitation != null ? `${weather.precipitation} mm` : 'N/A'}</div>
-                  <div>Wind: {weather.windSpeed != null ? `${weather.windSpeed} km/h` : 'N/A'}</div>
+                  <div>{t('siteIntelligence.precipitation', 'Precipitation: {{val}}', { val: weather.precipitation != null ? `${weather.precipitation} mm` : 'N/A' })}</div>
+                  <div>{t('siteIntelligence.wind', 'Wind: {{val}}', { val: weather.windSpeed != null ? `${weather.windSpeed} km/h` : 'N/A' })}</div>
                 </div>
                 {weather.observedAt && (
-                  <p className="font-mono text-[10px] text-stone-400">Observed: {weather.observedAt}</p>
+                  <p className="font-mono text-[10px] text-stone-400">{t('siteIntelligence.observed', 'Observed: {{val}}', { val: weather.observedAt })}</p>
                 )}
               </div>
             )}
@@ -321,46 +338,47 @@ export const ExternalContextPanel: React.FC = () => {
           {/* Seismic Card */}
           <div data-testid="site-intelligence-seismic" className="border border-black/10 bg-white/40 p-4">
             <div className="flex items-center justify-between">
-              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">Recent Seismic Context</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">{t('siteIntelligence.recentSeismic', 'Recent Seismic Context')}</p>
+              {/* i18next-instrument-ignore */}
               <span className="font-mono text-[9px] text-stone-400">300 km · 30 days</span>
             </div>
             {seismicStatus === 'loading' && (
-              <p role="status" className="mt-3 text-xs text-stone-500">Querying USGS earthquake catalog…</p>
+              <p role="status" className="mt-3 text-xs text-stone-500">{t('siteIntelligence.queryingUsgs', 'Querying USGS earthquake catalog…')}</p>
             )}
             {seismicStatus === 'error' && (
               <p role="alert" data-testid="site-intelligence-seismic-error" className="mt-3 text-xs text-stone-600">
-                {seismicError ?? 'Seismic context is temporarily unavailable.'}
+                {seismicError ?? t('siteIntelligence.seismicUnavailable', 'Seismic context is temporarily unavailable.')}
               </p>
             )}
             {seismic && (
               <div className="mt-3 space-y-2">
                 <div className="flex items-baseline gap-2">
                   <span className="font-serif text-3xl font-light text-stone-900">{seismic.eventCount}</span>
-                  <span className="text-xs text-stone-600">events recorded within 300 km</span>
+                  <span className="text-xs text-stone-600">{t('siteIntelligence.eventsRecorded', 'events recorded within 300 km')}</span>
                 </div>
                 {seismic.eventCount === 0 ? (
-                  <p className="text-xs text-stone-500">No seismic events recorded within 300 km in the last 30 days.</p>
+                  <p className="text-xs text-stone-500">{t('siteIntelligence.noEvents', 'No seismic events recorded within 300 km in the last 30 days.')}</p>
                 ) : (
                   <div className="space-y-1.5 border-t border-black/5 pt-2 font-mono text-[11px] text-stone-600">
                     {seismic.strongest && (
                       <div>
-                        <span className="uppercase text-stone-400">Strongest:</span> M{seismic.strongest.magnitude.toFixed(1)} · {seismic.strongest.place} ({seismic.strongest.distanceKm} km)
+                        <span className="uppercase text-stone-400">{t('siteIntelligence.strongest', 'Strongest:')}</span>{` M${seismic.strongest.magnitude.toFixed(1)} · ${seismic.strongest.place} (${seismic.strongest.distanceKm} km)`}
                       </div>
                     )}
                     {seismic.nearest && (
                       <div>
-                        <span className="uppercase text-stone-400">Nearest:</span> M{seismic.nearest.magnitude.toFixed(1)} · {seismic.nearest.place} ({seismic.nearest.distanceKm} km)
+                        <span className="uppercase text-stone-400">{t('siteIntelligence.nearest', 'Nearest:')}</span>{` M${seismic.nearest.magnitude.toFixed(1)} · ${seismic.nearest.place} (${seismic.nearest.distanceKm} km)`}
                       </div>
                     )}
                     {seismic.mostRecent && (
                       <div>
-                        <span className="uppercase text-stone-400">Recent:</span> M{seismic.mostRecent.magnitude.toFixed(1)} · {seismic.mostRecent.place}
+                        <span className="uppercase text-stone-400">{t('siteIntelligence.recent', 'Recent:')}</span> M{seismic.mostRecent.magnitude.toFixed(1)} · {seismic.mostRecent.place}
                       </div>
                     )}
                   </div>
                 )}
                 <p className="pt-2 font-mono text-[9px] leading-tight text-stone-400">
-                  Contextual seismic observations for site planning; not a structural safety assessment or predictive hazard guarantee.
+                  {t('siteIntelligence.disclaimer', 'Contextual seismic observations for site planning; not a structural safety assessment or predictive hazard guarantee.')}
                 </p>
               </div>
             )}
@@ -369,13 +387,14 @@ export const ExternalContextPanel: React.FC = () => {
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono text-[9px] uppercase tracking-[0.1em] text-stone-400">
-        <span>Data sources:</span>
+        <span>{t('siteIntelligence.dataSources', 'Data sources:')}</span>
         <a
           href="https://www.openstreetmap.org/copyright"
           target="_blank"
           rel="noopener noreferrer"
           className="underline hover:text-stone-600"
         >
+          {/* i18next-instrument-ignore */}
           © OpenStreetMap contributors
         </a>
         <span>·</span>
@@ -385,6 +404,7 @@ export const ExternalContextPanel: React.FC = () => {
           rel="noopener noreferrer"
           className="underline hover:text-stone-600"
         >
+          {/* i18next-instrument-ignore */}
           Weather data by Open-Meteo.com
         </a>
         <span>·</span>
@@ -394,6 +414,7 @@ export const ExternalContextPanel: React.FC = () => {
           rel="noopener noreferrer"
           className="underline hover:text-stone-600"
         >
+          {/* i18next-instrument-ignore */}
           USGS Earthquake Hazards Program
         </a>
       </div>
@@ -406,48 +427,51 @@ export const ProjectRows: React.FC<{
   onNavigate: Navigate;
   detailPath: (id: string) => string;
   onOpenWorkspace?: () => void;
-}> = ({ projects, onNavigate, detailPath, onOpenWorkspace }) => (
-  <div className="divide-y divide-black/15 border-y border-black/15">
-    {projects.map((project) => (
-      <div
-        key={project.id}
-        className="portal-register-row group grid w-full gap-5 py-5 text-left transition-colors hover:bg-white/35 sm:grid-cols-[minmax(0,1fr)_150px_180px_auto] sm:items-center sm:px-3"
-      >
-        <ProjectIdentityButton project={project} onNavigate={onNavigate} detailPath={detailPath} />
-        <span className="text-xs text-stone-600">
-          <span className="block">{project.phase}</span>
-          {project.approvals.some((approval) => approval.status === 'Pending') && (
-            <span className="portal-status-pending mt-2 block font-mono text-[9px] uppercase tracking-[0.12em]">Approval pending</span>
-          )}
-        </span>
-        <span>
-          <span className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
-            <span>Progress</span>
-            <span>{project.progress}%</span>
+}> = ({ projects, onNavigate, detailPath, onOpenWorkspace }) => {
+  const { t } = useTranslation('portal');
+  return (
+    <div className="divide-y divide-black/15 border-y border-black/15">
+      {projects.map((project) => (
+        <div
+          key={project.id}
+          className="portal-register-row group grid w-full gap-5 py-5 text-left transition-colors hover:bg-white/35 sm:grid-cols-[minmax(0,1fr)_150px_180px_auto] sm:items-center sm:px-3"
+        >
+          <ProjectIdentityButton project={project} onNavigate={onNavigate} detailPath={detailPath} />
+          <span className="text-xs text-stone-600">
+            <span className="block">{project.phase}</span>
+            {project.approvals.some((approval) => approval.status === 'Pending') && (
+              <span className="portal-status-pending mt-2 block font-mono text-[9px] uppercase tracking-[0.12em]">{t('approvalPending', 'Approval pending')}</span>
+            )}
           </span>
-          <span className="portal-progress-track block h-px bg-black/15">
-            <span className="portal-progress-fill block h-px bg-black" style={{ width: `${project.progress}%` }} />
+          <span>
+            <span className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
+              <span>{t('progress', 'Progress')}</span>
+              <span>{project.progress}%</span>
+            </span>
+            <span className="portal-progress-track block h-px bg-black/15">
+              <span className="portal-progress-fill block h-px bg-black" style={{ width: `${project.progress}%` }} />
+            </span>
           </span>
-        </span>
-        <span className="portal-register-actions flex items-center gap-3">
-          <button onClick={() => onNavigate(detailPath(project.id))} className="admin-action font-mono text-[9px] uppercase tracking-[0.12em] text-stone-600 hover:text-black">
-            Open
-          </button>
-          {onOpenWorkspace && (
-            <button
-              data-testid={`admin-open-model-${project.id}`}
-              onClick={onOpenWorkspace}
-              className="admin-action font-mono text-[9px] uppercase tracking-[0.12em] text-stone-600 hover:text-black"
-            >
-              Model
+          <span className="portal-register-actions flex items-center gap-3">
+            <button onClick={() => onNavigate(detailPath(project.id))} className="admin-action font-mono text-[9px] uppercase tracking-[0.12em] text-stone-600 hover:text-black">
+              {t('open', 'Open')}
             </button>
-          )}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-        </span>
-      </div>
-    ))}
-  </div>
-);
+            {onOpenWorkspace && (
+              <button
+                data-testid={`admin-open-model-${project.id}`}
+                onClick={onOpenWorkspace}
+                className="admin-action font-mono text-[9px] uppercase tracking-[0.12em] text-stone-600 hover:text-black"
+              >
+                {t('model', 'Model')}
+              </button>
+            )}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 export const DEFAULT_NEW_PROJECT_CATEGORY = 'Development · New project';
 
@@ -457,6 +481,7 @@ export const CreateProjectModal: React.FC<{
   onSuccess: (feedback: string) => void;
   triggerRef?: React.RefObject<HTMLButtonElement | null>;
 }> = ({ open, onClose, onSuccess, triggerRef }) => {
+  const { t } = useTranslation('admin');
   const [newProject, setNewProject] = useState({
     title: '',
     category: DEFAULT_NEW_PROJECT_CATEGORY,
@@ -506,7 +531,7 @@ export const CreateProjectModal: React.FC<{
     const category = newProject.category.trim();
     const progress = Number(newProject.progress);
     if (!title || !category || newProject.progress.trim() === '' || !Number.isFinite(progress) || progress < 0 || progress > 100) {
-      setCreateError('Enter a project title, category, and a progress value from 0 to 100.');
+      setCreateError(t('enterProjectValidation', 'Enter a project title, category, and a progress value from 0 to 100.'));
       return;
     }
     setCreateError('');
@@ -517,9 +542,9 @@ export const CreateProjectModal: React.FC<{
       setNewProject({ title: '', category: DEFAULT_NEW_PROJECT_CATEGORY, phase: 'Brief and site study', progress: '0' });
       onClose();
       triggerRef?.current?.focus();
-      onSuccess('Project created and added to the register.');
+      onSuccess(t('projectCreatedSuccess', 'Project created and added to the register.'));
     } catch (error) {
-      setCreateError(error instanceof Error ? error.message : 'Project could not be created.');
+      setCreateError(error instanceof Error ? error.message : t('projectCreateError', 'Project could not be created.'));
     } finally {
       setCreatingProject(false);
     }
@@ -544,8 +569,8 @@ export const CreateProjectModal: React.FC<{
       >
         <div className="flex items-start justify-between gap-6">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Administration</p>
-            <h2 id="create-project-title" className="mt-4 font-serif text-4xl">New project.</h2>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('portal:administration', 'Administration')}</p>
+            <h2 id="create-project-title" className="mt-4 font-serif text-4xl">{t('newProjectTitle', 'New project.')}</h2>
           </div>
           <button
             type="button"
@@ -554,7 +579,7 @@ export const CreateProjectModal: React.FC<{
               onClose();
               triggerRef?.current?.focus();
             }}
-            aria-label="Close create project"
+            aria-label={t('closeCreateProject', 'Close create project')}
             className="border border-white/20 p-2 text-stone-300 disabled:opacity-50"
           >
             <X className="h-4 w-4" />
@@ -562,7 +587,7 @@ export const CreateProjectModal: React.FC<{
         </div>
         <div className="mt-8 space-y-5">
           <label className="block font-mono text-[9px] uppercase text-stone-400">
-            Title
+            {t('title', 'Title')}
             <input
               required
               disabled={creatingProject}
@@ -572,7 +597,7 @@ export const CreateProjectModal: React.FC<{
             />
           </label>
           <label className="block font-mono text-[9px] uppercase text-stone-400">
-            Category
+            {t('category', 'Category')}
             <input
               required
               disabled={creatingProject}
@@ -583,21 +608,21 @@ export const CreateProjectModal: React.FC<{
           </label>
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="block font-mono text-[9px] uppercase text-stone-400">
-              Phase
+              {t('phase', 'Phase')}
               <select
                 disabled={creatingProject}
                 value={newProject.phase}
                 onChange={(event) => setNewProject({ ...newProject, phase: event.target.value })}
                 className="mt-2 w-full border-b border-white/20 bg-[#11110f] py-3 text-sm text-white outline-none"
               >
-                <option>Brief and site study</option>
-                <option>Concept design</option>
-                <option>Design development</option>
-                <option>Documentation</option>
+                <option value="Brief and site study">{t('phases.brief', 'Brief and site study')}</option>
+                <option value="Concept design">{t('phases.concept', 'Concept design')}</option>
+                <option value="Design development">{t('phases.development', 'Design development')}</option>
+                <option value="Documentation">{t('phases.documentation', 'Documentation')}</option>
               </select>
             </label>
             <label className="block font-mono text-[9px] uppercase text-stone-400">
-              Initial progress
+              {t('initialProgress', 'Initial progress')}
               <input
                 required
                 disabled={creatingProject}
@@ -619,7 +644,7 @@ export const CreateProjectModal: React.FC<{
           type="submit"
           className="mt-8 w-full bg-[#f4efe8] px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-black disabled:opacity-50"
         >
-          {creatingProject ? 'Creating project…' : 'Create project'}
+          {creatingProject ? t('creatingProject', 'Creating project…') : t('createProject', 'Create project')}
         </button>
       </form>
     </div>
@@ -814,7 +839,7 @@ export const PortalAIAssistantView: React.FC<{
           onClick={() => onNavigate('/workspace')}
           className="bg-black px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white hover:bg-stone-800"
         >
-          Open 3D Model →
+          {aiT.openModel || 'Open 3D Model →'}
         </button>
       </div>
     </div>
@@ -826,32 +851,36 @@ export const ProjectNavigation: React.FC<{
   next?: PortalProject;
   onNavigate: Navigate;
   role: PortalRole;
-}> = ({ previous, next, onNavigate, role }) => (
-  <nav aria-label="Project navigation" className="portal-project-navigation grid gap-3 border-y border-black/15 py-4 sm:grid-cols-2">
-    <button
-      type="button"
-      data-testid="previous-project"
-      disabled={!previous}
-      onClick={() => previous && onNavigate(projectRoute(role, previous.id))}
-      className="text-left disabled:cursor-not-allowed disabled:opacity-40"
-    >
-      <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">← Previous project</span>
-      <span className="mt-1 block font-serif text-xl">{previous?.title ?? 'First project in scope'}</span>
-    </button>
-    <button
-      type="button"
-      data-testid="next-project"
-      disabled={!next}
-      onClick={() => next && onNavigate(projectRoute(role, next.id))}
-      className="text-left sm:text-right"
-    >
-      <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">Next project →</span>
-      <span className="mt-1 block font-serif text-xl">{next?.title ?? 'Last project in scope'}</span>
-    </button>
-  </nav>
-);
+}> = ({ previous, next, onNavigate, role }) => {
+  const { t } = useTranslation('portal');
+  return (
+    <nav aria-label={t('projectNavigation', 'Project navigation')} className="portal-project-navigation grid gap-3 border-y border-black/15 py-4 sm:grid-cols-2">
+      <button
+        type="button"
+        data-testid="previous-project"
+        disabled={!previous}
+        onClick={() => previous && onNavigate(projectRoute(role, previous.id))}
+        className="text-left disabled:cursor-not-allowed disabled:opacity-40"
+      >
+        <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{t('prevProject', '← Previous project')}</span>
+        <span className="mt-1 block font-serif text-xl">{previous?.title ?? t('firstProjectInScope', 'First project in scope')}</span>
+      </button>
+      <button
+        type="button"
+        data-testid="next-project"
+        disabled={!next}
+        onClick={() => next && onNavigate(projectRoute(role, next.id))}
+        className="text-left sm:text-right"
+      >
+        <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{t('nextProject', 'Next project →')}</span>
+        <span className="mt-1 block font-serif text-xl">{next?.title ?? t('lastProjectInScope', 'Last project in scope')}</span>
+      </button>
+    </nav>
+  );
+};
 
 export const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project }) => {
+  const { t } = useTranslation('portal');
   const media = uniqueProjectMedia(project);
   const facts: [string, string][] = [
     ['Market', project.market],
@@ -901,8 +930,8 @@ export const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project 
         </dl>
         <section aria-labelledby="project-latest-activity">
           <div className="flex items-center justify-between gap-4">
-            <h2 id="project-latest-activity" className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Latest activity</h2>
-            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Overview</span>
+            <h2 id="project-latest-activity" className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('latestActivity', 'Latest activity')}</h2>
+            <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{t('overview', 'Overview')}</span>
           </div>
           {activity.length ? (
             <div className="mt-4 divide-y divide-black/15 border-y border-black/15">
@@ -912,7 +941,7 @@ export const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project 
                     <p className="font-serif text-xl">{item.label}</p>
                     {item.status && (
                       <span className={`${portalStatusClass(item.status)} shrink-0 font-mono text-[9px] uppercase tracking-[0.12em]`}>
-                        {item.status}
+                        {t(`statuses.${item.status.toLowerCase()}`, item.status)}
                       </span>
                     )}
                   </div>
@@ -923,7 +952,7 @@ export const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project 
               ))}
             </div>
           ) : (
-            <p className="mt-4 text-sm text-stone-600">No recent project activity.</p>
+            <p className="mt-4 text-sm text-stone-600">{t('noRecentActivity', 'No recent project activity.')}</p>
           )}
         </section>
       </div>
@@ -967,13 +996,14 @@ export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => {
 };
 
 export const ForbiddenPage: React.FC<NavigationProps> = ({ onNavigate }) => {
+  const { t } = useTranslation('portal');
   const session = portalAuth.getSession();
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">403 / Access restricted</p>
-      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">Access restricted.</h1>
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">{t('forbidden.eyebrow', '403 / Access restricted')}</p>
+      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">{t('forbidden.title', 'Access restricted.')}</h1>
       <p className="mt-3 max-w-md text-sm text-[#57534E]">
-        You do not have authorization to view this workspace, project or resource.
+        {t('forbidden.subtitle', 'You do not have authorization to view this workspace, project or resource.')}
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
         {session && (
@@ -982,7 +1012,7 @@ export const ForbiddenPage: React.FC<NavigationProps> = ({ onNavigate }) => {
             data-testid="return-workspace"
             className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
           >
-            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return to authorized workspace
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('forbidden.returnWorkspace', 'Return to authorized workspace')}
           </button>
         )}
         <button
@@ -990,7 +1020,7 @@ export const ForbiddenPage: React.FC<NavigationProps> = ({ onNavigate }) => {
           data-testid="return-home"
           className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
         >
-          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Public home
+          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('forbidden.publicHome', 'Public home')}
         </button>
       </div>
     </main>
@@ -998,13 +1028,14 @@ export const ForbiddenPage: React.FC<NavigationProps> = ({ onNavigate }) => {
 };
 
 export const ServiceUnavailablePage: React.FC<NavigationProps & { onRetry?: () => void; message?: string }> = ({ onNavigate, onRetry, message }) => {
+  const { t } = useTranslation('portal');
   const session = portalAuth.getSession();
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">503 / Service unavailable</p>
-      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">Service temporarily unavailable.</h1>
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">{t('serviceUnavailable.eyebrow', '503 / Service unavailable')}</p>
+      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">{t('serviceUnavailable.title', 'Service temporarily unavailable.')}</h1>
       <p className="mt-3 max-w-md text-sm text-[#57534E]">
-        {message || 'Unable to load remote project and account records. Please check the network connection and try again.'}
+        {message || t('serviceUnavailable.defaultMessage', 'Unable to load remote project and account records. Please check the network connection and try again.')}
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
         {onRetry && (
@@ -1013,7 +1044,7 @@ export const ServiceUnavailablePage: React.FC<NavigationProps & { onRetry?: () =
             data-testid="retry-service"
             className="inline-flex items-center gap-2 border border-black/20 bg-stone-900 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white hover:bg-black"
           >
-            Retry connection
+            {t('serviceUnavailable.retry', 'Retry connection')}
           </button>
         )}
         {session && (
@@ -1022,7 +1053,7 @@ export const ServiceUnavailablePage: React.FC<NavigationProps & { onRetry?: () =
             data-testid="return-workspace"
             className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
           >
-            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return to workspace
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('serviceUnavailable.returnWorkspace', 'Return to workspace')}
           </button>
         )}
         <button
@@ -1030,7 +1061,7 @@ export const ServiceUnavailablePage: React.FC<NavigationProps & { onRetry?: () =
           data-testid="return-home"
           className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
         >
-          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Public home
+          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('serviceUnavailable.publicHome', 'Public home')}
         </button>
       </div>
     </main>

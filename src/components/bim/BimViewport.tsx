@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useBimStore } from '@/stores/bimStore';
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
@@ -6,6 +7,7 @@ import { Box, UploadCloud, Compass, AlertCircle, RefreshCw } from 'lucide-react'
 import { StandardViewDirection } from '@/types/bim';
 
 export const BimViewport: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const containerRef = useRef<HTMLDivElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
@@ -87,8 +89,8 @@ export const BimViewport: React.FC = () => {
       {isDragOver && (
         <div className="absolute inset-0 z-40 bg-sky-950/60 backdrop-blur-sm border-2 border-dashed border-sky-400 flex flex-col items-center justify-center pointer-events-none">
           <UploadCloud className="w-16 h-16 text-sky-400 animate-bounce mb-3" />
-          <p className="text-sky-200 font-medium text-lg">Drop IFC file to load</p>
-          <p className="text-sky-400/80 text-sm mt-1">Accepts standard .ifc building models</p>
+          <p className="text-sky-200 font-medium text-lg">{t('dropIfcFileToLoad', 'Drop IFC file to load')}</p>
+          <p className="text-sky-400/80 text-sm mt-1">{t('acceptsStandardIfc', 'Accepts standard .ifc building models')}</p>
         </div>
       )}
 
@@ -99,9 +101,9 @@ export const BimViewport: React.FC = () => {
             <div className="w-12 h-12 rounded-lg bg-sky-950/70 border border-sky-800/60 flex items-center justify-center mx-auto mb-4 text-sky-400">
               <Box className="w-6 h-6" />
             </div>
-            <h2 className="text-base font-semibold text-slate-100 mb-1.5">No BIM Model Loaded</h2>
+            <h2 className="text-base font-semibold text-slate-100 mb-1.5">{t('noBimModelLoaded', 'No BIM Model Loaded')}</h2>
             <p className="text-xs text-slate-400 mb-5 leading-relaxed">
-              Drag and drop any <span className="text-sky-300 font-mono">.ifc</span> file into the viewport, or open a sample model below.
+              {t('dragAndDropPrompt', 'Drag and drop any .ifc file into the viewport, or open a sample model below.')}
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
               <button
@@ -113,7 +115,7 @@ export const BimViewport: React.FC = () => {
                 className="px-3 py-2 rounded bg-sky-600 hover:bg-sky-500 text-white text-xs font-medium shadow-sm transition flex items-center justify-center space-x-1.5"
               >
                 <Box className="w-3.5 h-3.5" />
-                <span>Load Sample (Fast, 111KB)</span>
+                <span>{t('loadSampleFast', 'Load Sample (Fast, 111KB)')}</span>
               </button>
               <button
                 onClick={async () => {
@@ -124,7 +126,7 @@ export const BimViewport: React.FC = () => {
                 className="px-3 py-2 rounded bg-[#1f2430] hover:bg-[#282f40] text-slate-200 text-xs font-medium border border-[#2e3648] transition flex items-center justify-center space-x-1.5"
               >
                 <Box className="w-3.5 h-3.5 text-amber-400" />
-                <span>Load House (Full, 50MB)</span>
+                <span>{t('loadHouseFull', 'Load House (Full, 50MB)')}</span>
               </button>
             </div>
           </div>
@@ -138,9 +140,9 @@ export const BimViewport: React.FC = () => {
             <div className="flex items-center space-x-3 mb-4">
               <RefreshCw className="w-5 h-5 text-sky-400 animate-spin" />
               <div>
-                <h3 className="text-xs font-semibold text-slate-200">Loading IFC Model</h3>
+                <h3 className="text-xs font-semibold text-slate-200">{t('loadingIfcModel', 'Loading IFC Model')}</h3>
                 <p className="text-[11px] text-slate-400 font-mono truncate max-w-[240px]">
-                  {loading.filename || 'Processing geometry...'}
+                  {loading.filename || t('processingGeometry', 'Processing geometry...')}
                 </p>
               </div>
             </div>
@@ -167,7 +169,7 @@ export const BimViewport: React.FC = () => {
           <div className="bg-rose-950/90 border border-rose-800 text-rose-200 p-3 rounded-lg shadow-lg flex items-start space-x-2 text-xs">
             <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
             <div className="flex-1">
-              <p className="font-semibold text-rose-300">Model Loading Error</p>
+              <p className="font-semibold text-rose-300">{t('modelLoadingError', 'Model Loading Error')}</p>
               <p className="text-[11px] text-rose-200/90 mt-0.5">{loading.error}</p>
             </div>
             <button
@@ -187,10 +189,10 @@ export const BimViewport: React.FC = () => {
             <button
               onClick={() => setShowViewMenu(!showViewMenu)}
               className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md bg-[#161922]/90 hover:bg-[#1f2330] text-slate-300 text-xs font-mono border border-[#282e3e] shadow-md transition backdrop-blur-sm"
-              title="Camera View Angle"
+              title={t('cameraViewAngleTooltip', 'Camera View Angle')}
             >
               <Compass className="w-3.5 h-3.5 text-sky-400" />
-              <span>View</span>
+              <span>{t('view', 'View')}</span>
             </button>
 
             {showViewMenu && (

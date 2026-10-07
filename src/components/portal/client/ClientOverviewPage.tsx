@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, FileText, Layers, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot, getPortalUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
 import { projectService } from '../../../services/projectService';
@@ -17,6 +18,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('client');
   const { clientPortal, portalCommon } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
@@ -61,13 +63,13 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
   const respondToApproval = async (projectId: string, title: string, status: 'Approved' | 'Rejected') => {
     try {
       const updated = await projectWorkflowService.updateApproval(projectId, title, status);
-      if (!updated) throw new Error('Approval could not be read back after saving.');
+      if (!updated) throw new Error(t('approvalReadBackError', 'Approval could not be read back after saving.'));
       setOperationFailed(false);
-      setOperationFeedback(status === 'Approved' ? 'Approval recorded.' : 'Changes requested.');
+      setOperationFeedback(status === 'Approved' ? t('approvalRecorded', 'Approval recorded.') : t('changesRequested', 'Changes requested.'));
       refresh();
     } catch (error) {
       setOperationFailed(true);
-      setOperationFeedback(error instanceof Error ? error.message : 'Approval could not be saved.');
+      setOperationFeedback(error instanceof Error ? error.message : t('approvalSaveError', 'Approval could not be saved.'));
     }
   };
 
@@ -87,7 +89,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
       </div>
 
       {/* Overview Signal Tiles */}
-      <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Portfolio summary">
+      <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('summaryAria', 'Portfolio summary')}>
         <button
           type="button"
           onClick={() => navigate('/dashboard/projects')}
@@ -165,7 +167,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                   <div className="portal-progress-track h-px bg-black/15">
                     <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
                   </div>
-                  <p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p>
+                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next:')} {project.nextMilestone}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase tracking-[0.12em]">
                       {clientPortal.pendingDecision}
@@ -190,20 +192,20 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
             ))}
           </div>
         ) : (
-          <PortalEmptyState message="No active projects assigned to your account." />
+          <PortalEmptyState message={t('noAssignedProjects', 'No active projects assigned to your account.')} />
         )}
       </section>
 
       {/* Decisions & Milestones summary */}
-      <section className="grid gap-12 border-t border-black/15 py-10 lg:grid-cols-2" aria-label="Client decisions">
+      <section className="grid gap-12 border-t border-black/15 py-10 lg:grid-cols-2" aria-label={t('decisionsAria', 'Client decisions')}>
         <div>
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring your attention</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('decisionsAttention', 'Decisions requiring your attention')}</p>
             <button
               onClick={() => navigate('/dashboard/approvals')}
               className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500 hover:text-black"
             >
-              All approvals →
+              {t('allApprovals', 'All approvals →')}
             </button>
           </div>
           {pendingApprovals.length ? (
@@ -214,26 +216,26 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                     <p className="font-serif text-xl">{approval.title}</p>
                     <p className="mt-1 text-xs text-stone-500">{approval.projectTitle}</p>
                   </div>
-                  <span className="portal-status-pending font-mono text-[9px] uppercase tracking-[0.14em]">Pending</span>
+                  <span className="portal-status-pending font-mono text-[9px] uppercase tracking-[0.14em]">{t('pending', 'Pending')}</span>
                 </div>
                 <div className="mt-3 flex gap-2">
                   <button
                     onClick={() => respondToApproval(approval.projectId, approval.title, 'Approved')}
                     className="bg-black px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-white"
                   >
-                    Approve
+                    {t('approve', 'Approve')}
                   </button>
                   <button
                     onClick={() => respondToApproval(approval.projectId, approval.title, 'Rejected')}
                     className="border border-black/20 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em]"
                   >
-                    Request changes
+                    {t('requestChanges', 'Request changes')}
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            <p className="mt-5 text-sm text-stone-600">No decisions are waiting for you.</p>
+            <p className="mt-5 text-sm text-stone-600">{t('noDecisionsWaiting', 'No decisions are waiting for you.')}</p>
           )}
           {operationFeedback && (
             <p role={operationFailed ? 'alert' : 'status'} className="mt-3 text-sm text-stone-600">
@@ -244,18 +246,18 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
 
         <div>
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>
-            <span className="font-mono text-[9px] uppercase text-stone-500">Active roadmap</span>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('upcomingMilestones', 'Upcoming milestones')}</p>
+            <span className="font-mono text-[9px] uppercase text-stone-500">{t('activeRoadmap', 'Active roadmap')}</span>
           </div>
           {upcomingMilestones.length ? (
             upcomingMilestones.slice(0, 4).map((milestone) => (
               <p key={`${milestone.projectId}-${milestone.label}`} className="mt-5 flex justify-between gap-5 border-b border-black/10 pb-3 text-sm">
                 <span>{milestone.projectTitle} · {milestone.label}</span>
-                <span className="font-mono text-[9px] uppercase text-stone-500">Upcoming</span>
+                <span className="font-mono text-[9px] uppercase text-stone-500">{t('upcoming', 'Upcoming')}</span>
               </p>
             ))
           ) : (
-            <p className="mt-5 text-sm text-stone-600">Milestones will appear here as projects advance.</p>
+            <p className="mt-5 text-sm text-stone-600">{t('milestonesAppear', 'Milestones will appear here as projects advance.')}</p>
           )}
         </div>
       </section>
@@ -263,7 +265,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
       {/* Recent Updates & Notifications */}
       <section className="grid gap-12 border-t border-black/15 py-10 lg:grid-cols-2">
         <div id="portal-section-updates">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent project updates</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('recentUpdates', 'Recent project updates')}</p>
           {updates.length ? (
             updates.map((update) => (
               <button
@@ -277,12 +279,12 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
               </button>
             ))
           ) : (
-            <p className="mt-5 text-sm text-stone-600">No recent updates.</p>
+            <p className="mt-5 text-sm text-stone-600">{t('noRecentUpdates', 'No recent updates.')}</p>
           )}
         </div>
 
         <div id="portal-section-notifications">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Notifications</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('notifications', 'Notifications')}</p>
           {notifications.length ? (
             notifications.map((notification) => (
               <button
@@ -291,26 +293,26 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                 className="mt-5 flex w-full justify-between gap-5 border-b border-black/10 pb-4 text-left text-sm hover:text-stone-700"
               >
                 <span>{notification.message}</span>
-                <span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date} · Open</span>
+                <span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date} · {t('open', 'Open')}</span>
               </button>
             ))
           ) : (
-            <p className="mt-5 text-sm text-stone-600">You are up to date.</p>
+            <p className="mt-5 text-sm text-stone-600">{t('upToDate', 'You are up to date.')}</p>
           )}
         </div>
       </section>
 
       {/* Deeper Workspaces Grid */}
       <section className="border-t border-black/15 pt-10">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Workspaces & services</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('workspacesAndServices', 'Workspaces & services')}</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <button
             onClick={() => navigate('/dashboard/projects')}
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <Layers className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-xl">Project Register</p>
-            <p className="mt-1 text-xs text-stone-600">Full portfolio of assigned developments and details.</p>
+            <p className="mt-4 font-serif text-xl">{t('projectRegister', 'Project Register')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('projectRegisterDesc', 'Full portfolio of assigned developments and details.')}</p>
           </button>
 
           <button
@@ -318,8 +320,8 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <FileText className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-xl">Document Vault</p>
-            <p className="mt-1 text-xs text-stone-600">Aggregated deliverables, specs and official references.</p>
+            <p className="mt-4 font-serif text-xl">{t('documentVault', 'Document Vault')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('documentVaultDesc', 'Aggregated deliverables, specs and official references.')}</p>
           </button>
 
           <button
@@ -327,8 +329,8 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <CheckCircle2 className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-xl">Approvals</p>
-            <p className="mt-1 text-xs text-stone-600">Dedicated decision queue and change requests.</p>
+            <p className="mt-4 font-serif text-xl">{t('approvals', 'Approvals')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('approvalsDesc', 'Dedicated decision queue and change requests.')}</p>
           </button>
 
           <button
@@ -336,8 +338,8 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <Sparkles className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-xl">AI Assistant</p>
-            <p className="mt-1 text-xs text-stone-600">Natural language BIM intelligence and model queries.</p>
+            <p className="mt-4 font-serif text-xl">{t('aiAssistant', 'AI Assistant')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('aiAssistantDesc', 'Natural language BIM intelligence and model queries.')}</p>
           </button>
         </div>
       </section>

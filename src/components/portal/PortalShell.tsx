@@ -166,7 +166,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
               <button
                 type="button"
                 onClick={() => navigate('/')}
-                aria-label="GARNIER ARCHITECTURE home"
+                aria-label={portalShell.homeAria || 'GARNIER ARCHITECTURE home'}
                 className="flex items-center gap-3 text-left text-[#211E1A]"
               >
                 <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="arch-tech-logo-portal" />

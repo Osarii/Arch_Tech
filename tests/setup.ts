@@ -1,3 +1,5 @@
+import '../src/i18n';
+
 // Polyfill WebGPU globals for Node/JSDOM test runner
 if (typeof (globalThis as any).GPUShaderStage === 'undefined') {
   (globalThis as any).GPUShaderStage = {

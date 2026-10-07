@@ -251,7 +251,9 @@ The next session should begin by auditing the existing ARCH_TECH identity before
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint` / `tsc --noEmit`).
-- **Vitest Unit/Domain Tests**: **307 / 307 PASSED** across 23 test files.
+- **i18n Verification**: **SUCCESS** (`npm run i18n:check` — 0 issues, 100% Spanish translation coverage across all 880 keys).
+- **Vitest Unit/Domain Tests**: **339 / 339 PASSED** across 26 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
 - **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, project route transitions, full OpenBIM workflow and AI confirmation flows.
 - **Git Diff**: Verified clean with `git diff --check`.
+

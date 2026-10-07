@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot, getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
 import { useLocale } from '../../../portal/locale';
@@ -12,6 +13,7 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('architect');
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const { architectPortal } = useLocale();
@@ -50,13 +52,13 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
   ) => {
     try {
       const updated = await projectWorkflowService.updateApproval(projectId, title, status);
-      if (!updated) throw new Error('Approval could not be read back after saving.');
+      if (!updated) throw new Error(t('approvalReadBackError', 'Approval could not be read back after saving.'));
       setOperationFailed(false);
-      setOperationFeedback(status === 'Approved' ? 'Approval marked as resolved.' : 'Approval reopened.');
+      setOperationFeedback(status === 'Approved' ? t('approvalResolved', 'Approval marked as resolved.') : t('approvalReopened', 'Approval reopened.'));
       refresh();
     } catch (error) {
       setOperationFailed(true);
-      setOperationFeedback(error instanceof Error ? error.message : 'Approval could not be updated.');
+      setOperationFeedback(error instanceof Error ? error.message : t('approvalUpdateError', 'Approval could not be updated.'));
     }
   };
 
@@ -91,10 +93,10 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
       <section aria-labelledby="architect-review-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="architect-review-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Projects awaiting client decisions
+            {t('projectsAwaitingDecisions', 'Projects awaiting client decisions')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {projectsForReview.length.toString().padStart(2, '0')} projects
+            {t('projectsCount', '{{count}} projects', { count: projectsForReview.length })}
           </span>
         </div>
 
@@ -110,19 +112,21 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
                   {project.title}
                 </button>
                 <p className="mt-2 text-xs text-stone-600">
-                  {project.approvals.filter((a) => a.status === 'Pending').length} decision(s) pending client review
+                  {t('decisionsPendingReviewCount', '{{count}} decision(s) pending client review', {
+                    count: project.approvals.filter((a) => a.status === 'Pending').length,
+                  })}
                 </p>
                 <button
                   onClick={() => navigate(`/architect/projects/${project.id}`)}
                   className="mt-4 inline-flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.14em] text-stone-600 hover:text-black"
                 >
-                  <span>Open dossier →</span>
+                  <span>{t('openDossier', 'Open dossier →')}</span>
                 </button>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-stone-600">No project decisions are waiting for review.</p>
+          <p className="text-sm text-stone-600">{t('noDecisionsWaitingReview', 'No project decisions are waiting for review.')}</p>
         )}
       </section>
 
@@ -130,10 +134,10 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
       <section id="portal-section-approvals" aria-labelledby="architect-queue-title" className="border-t border-black/15 pt-10">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="architect-queue-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Pending client approvals queue
+            {t('pendingApprovalsQueue', 'Pending client approvals queue')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {pendingApprovals.length.toString().padStart(2, '0')} pending
+            {t('pendingCount', '{{count}} pending', { count: pendingApprovals.length })}
           </span>
         </div>
 
@@ -153,31 +157,31 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
                     {approval.projectTitle} · {approval.title}
                   </button>
                   <p className="mt-1 text-xs text-stone-500">
-                    {approval.projectCode} · Client response pending
+                    {approval.projectCode} · {t('clientResponsePending', 'Client response pending')}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className="portal-status-pending font-mono text-[9px] uppercase tracking-[0.12em]">
-                    Pending
+                    {t('pending', 'Pending')}
                   </span>
                   <button
                     onClick={() => respondToApproval(approval.projectId, approval.title, 'Approved')}
                     className="border border-black px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:bg-black hover:text-white"
                   >
-                    Resolve
+                    {t('resolve', 'Resolve')}
                   </button>
                   <button
                     onClick={() => navigate(`/architect/projects/${approval.projectId}`)}
                     className="border border-black/20 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:border-black"
                   >
-                    View
+                    {t('view', 'View')}
                   </button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <PortalEmptyState message="All client decisions across your studio projects have been resolved." />
+          <PortalEmptyState message={t('allClientDecisionsResolved', 'All client decisions across your studio projects have been resolved.')} />
         )}
       </section>
 
@@ -185,10 +189,10 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
       <section className="border-t border-black/15 pt-10" aria-labelledby="architect-resolved-title">
         <div className="mb-6 flex items-center justify-between">
           <h2 id="architect-resolved-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            Resolved approvals history
+            {t('resolvedApprovalsHistory', 'Resolved approvals history')}
           </h2>
           <span className="font-mono text-[10px] text-stone-500">
-            {resolvedApprovals.length.toString().padStart(2, '0')} recorded
+            {t('recordedCount', '{{count}} recorded', { count: resolvedApprovals.length })}
           </span>
         </div>
 
@@ -211,14 +215,14 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
                     onClick={() => respondToApproval(approval.projectId, approval.title, 'Pending')}
                     className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
                   >
-                    Reopen
+                    {t('reopen', 'Reopen')}
                   </button>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-sm text-stone-600">No resolved approvals recorded yet.</p>
+          <p className="text-sm text-stone-600">{t('noResolvedApprovalsRecorded', 'No resolved approvals recorded yet.')}</p>
         )}
       </section>
     </div>

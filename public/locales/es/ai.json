@@ -1,0 +1,16 @@
+{
+  "actionCancelled": "Acción Cancelada",
+  "assistantTimestamp": "Asistente IA • {{time}}",
+  "bimAiAssistant": "Asistente BIM IA",
+  "chatPlaceholder": "Pregunte a la IA p. ej. 'Mover #44 por 1m en X'...",
+  "clearHistoryTooltip": "Limpiar Historial de Conversación",
+  "confirmAndApply": "Confirmar y Aplicar",
+  "executedAndRecorded": "Ejecutado y Registrado en Change Set",
+  "offlineEngine": "Motor Determinista Offline",
+  "phaseBadge": "Fase 6B.1",
+  "remoteEngine": "n8n Remoto / Fallback Offline",
+  "toolExecuted": "Ejecutado",
+  "toolProposalCreated": "Propuesta creada",
+  "userTimestamp": "Usuario • {{time}}",
+  "writeActionConfirmation": "CONFIRMACIÓN DE ACCIÓN DE ESCRITURA"
+}

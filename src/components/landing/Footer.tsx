@@ -62,7 +62,7 @@ export const Footer: React.FC<FooterProps> = ({ onLogin }) => {
             <p className="mt-5 max-w-xs font-serif text-2xl font-light leading-tight text-stone-300">{t.directoryHeading}</p>
           </div>
 
-          <nav aria-label="Footer directory" className="grid gap-10 sm:grid-cols-3">
+          <nav aria-label={t.footerDirectory || 'Footer directory'} className="grid gap-10 sm:grid-cols-3">
             {footerGroups.map((group) => (
               <div key={group.label}>
                 <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{group.label}</p>

@@ -1,4 +1,5 @@
 import React, { Suspense, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { LandingPage } from '../components/landing/LandingPage';
 import { useReducedMotion } from '../components/motion';
@@ -74,6 +75,7 @@ export const navigateWithViewTransition = (
 
 const WorkspaceRoute: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('common');
   const session = portalAuth.getSession();
   return (
     <div className="relative h-full w-full">
@@ -81,11 +83,11 @@ const WorkspaceRoute: React.FC = () => {
         onClick={() => navigate(session ? roleHome(session.role) : '/')}
         data-testid="btn-back-to-landing"
         className="fixed bottom-4 left-4 z-50 flex items-center space-x-1 rounded border border-white/10 bg-[#181c26]/90 px-2 py-1 font-mono text-[11px] text-stone-300 shadow-sm backdrop-blur transition hover:bg-[#222736] hover:text-white"
-        title={session ? 'Return to client dashboard' : 'Return to architectural portfolio'}
+        title={session ? t('returnToDashboard', 'Return to client dashboard') : t('returnToPortfolio', 'Return to architectural portfolio')}
       >
-        <span>← {session ? 'Dashboard' : 'Projects'}</span>
+        <span>← {session ? t('dashboard', 'Dashboard') : t('projects', 'Projects')}</span>
       </button>
-      <Suspense fallback={<div className="flex h-full items-center justify-center bg-[#0d0f12] font-mono text-xs text-stone-400">Opening model workspace…</div>}>
+      <Suspense fallback={<div className="flex h-full items-center justify-center bg-[#0d0f12] font-mono text-xs text-stone-400">{t('openingWorkspace', 'Opening model workspace…')}</div>}>
         <Workspace />
       </Suspense>
     </div>

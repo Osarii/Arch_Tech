@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot, type ProgressSnapshot } from '../../../portal/data';
 import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
@@ -25,16 +26,17 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
   title,
   description,
   points,
-  emptyMessage = 'No historical telemetry recorded.',
+  emptyMessage,
   testId,
 }) => {
+  const { t } = useTranslation('admin');
   const chartId = useId();
   const descId = `${chartId}-desc`;
 
   if (!points.length) {
     return (
       <div data-testid={testId} className="border border-black/15 bg-black/[0.02] p-8 text-center">
-        <p className="font-mono text-xs uppercase tracking-wider text-stone-500">{emptyMessage}</p>
+        <p className="font-mono text-xs uppercase tracking-wider text-stone-500">{emptyMessage ?? t('noHistoricalTelemetry', 'No historical telemetry recorded.')}</p>
       </div>
     );
   }
@@ -209,15 +211,15 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
           <div className="flex items-center gap-4 font-mono">
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-current bg-transparent" />
-              Historical checkpoint
+              {t('historicalCheckpoint', 'Historical checkpoint')}
             </span>
             <span className="flex items-center gap-1.5">
               <span className="inline-block h-2.5 w-2.5 rotate-45 bg-current" />
-              Live registered progress
+              {t('liveRegisteredProgress', 'Live registered progress')}
             </span>
           </div>
           <span className="font-mono text-[9px] opacity-70 uppercase tracking-wider">
-            GARNIER ARCHITECTURE concept telemetry
+            {t('conceptTelemetry', 'GARNIER ARCHITECTURE concept telemetry')}
           </span>
         </div>
       </div>
@@ -225,22 +227,22 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
       {/* Accessible fallback summary */}
       <details className="mt-2 text-xs text-stone-600">
         <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-stone-500 hover:text-stone-800">
-          Accessible tabular breakdown
+          {t('accessibleTabularBreakdown', 'Accessible tabular breakdown')}
         </summary>
         <div className="mt-2 overflow-x-auto border border-black/15 bg-white/40 p-2">
           <table className="w-full text-left font-mono text-[10px]">
             <thead>
               <tr className="border-b border-black/10">
-                <th className="pb-1">Checkpoint</th>
-                <th className="pb-1">Status</th>
-                <th className="pb-1 text-right">Progress</th>
+                <th className="pb-1">{t('checkpoint', 'Checkpoint')}</th>
+                <th className="pb-1">{t('status', 'Status')}</th>
+                <th className="pb-1 text-right">{t('progress', 'Progress')}</th>
               </tr>
             </thead>
             <tbody>
               {coords.map((c, i) => (
                 <tr key={i} className="border-b border-black/5 last:border-0">
                   <td className="py-1">{c.label}</td>
-                  <td className="py-1">{c.isLive ? 'Live / Current' : 'Historical'}</td>
+                  <td className="py-1">{c.isLive ? t('liveCurrent', 'Live / Current') : t('historical', 'Historical')}</td>
                   <td className="py-1 text-right font-semibold">{c.safeVal}%</td>
                 </tr>
               ))}
@@ -258,6 +260,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
 }) => {
   const { insideShell } = usePortalShell();
   const { adminPortal } = useLocale();
+  const { t } = useTranslation('admin');
 
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [snapshots, setSnapshots] = useState<ProgressSnapshot[]>(() => getPortalSnapshot().db.progressSnapshots ?? []);
@@ -325,7 +328,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
       isLive: false,
     })),
     ...(activeProjects.length
-      ? [{ label: 'Current', value: analytics.currentAverage, isLive: true }]
+      ? [{ label: t('currentLabel', 'Current'), value: analytics.currentAverage, isLive: true }]
       : []),
   ];
 
@@ -341,7 +344,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
           value: s.progress,
           isLive: false,
         })),
-        { label: 'Current', value: selectedProject.progress, isLive: true },
+        { label: t('currentLabel', 'Current'), value: selectedProject.progress, isLive: true },
       ]
     : [];
 
@@ -359,41 +362,41 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
           {adminPortal.analyticsSubtitle}
         </p>
         <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-stone-500">
-          Historical telemetry represents internal GARNIER ARCHITECTURE concept coordination, not official construction contractor records.
+          {t('telemetryDisclaimer', 'Historical telemetry represents internal GARNIER ARCHITECTURE concept coordination, not official construction contractor records.')}
         </p>
       </div>
 
       {/* KPI Overview Strip */}
-      <section className="admin-kpi-strip grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Portfolio overview">
+      <section className="admin-kpi-strip grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('portfolioOverviewAria', 'Portfolio overview')}>
         <div className="admin-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Active projects</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('activeProjects', 'Active projects')}</p>
           <p className="mt-3 font-serif text-5xl">{activeProjects.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-sm text-stone-600">currently active</p>
+          <p className="mt-1 text-sm text-stone-600">{t('currentlyActive', 'currently active')}</p>
         </div>
 
         <div className="admin-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Current average progress</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('currentAverageProgress', 'Current average progress')}</p>
           <p className="mt-3 font-serif text-5xl">{analytics.currentAverage}%</p>
-          <p className="mt-1 text-sm text-stone-600">across active work</p>
+          <p className="mt-1 text-sm text-stone-600">{t('acrossActiveWork', 'across active work')}</p>
         </div>
 
         <div className="admin-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Pending approvals</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('pendingApprovals', 'Pending approvals')}</p>
           <p className="mt-3 font-serif text-5xl">{pendingApprovals.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-sm text-stone-600">requiring review</p>
+          <p className="mt-1 text-sm text-stone-600">{t('requiringReview', 'requiring review')}</p>
         </div>
 
         <div className="admin-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Portfolio progress change</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{t('portfolioProgressChange', 'Portfolio progress change')}</p>
           <p className="mt-3 font-serif text-5xl">
             {analytics.progressChange.delta !== null
               ? `${analytics.progressChange.delta >= 0 ? '+' : ''}${analytics.progressChange.delta}%`
-              : 'N/A'}
+              : t('notAvailable', 'N/A')}
           </p>
           <p className="mt-1 text-sm text-stone-600">
             {analytics.progressChange.baselineAverage !== null
-              ? `from ${analytics.progressChange.baselineAverage}% baseline`
-              : 'no historical baseline'}
+              ? t('fromBaseline', 'from {{baseline}}% baseline', { baseline: analytics.progressChange.baselineAverage })
+              : t('noHistoricalBaseline', 'no historical baseline')}
           </p>
         </div>
       </section>
@@ -405,27 +408,31 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
           className="border border-amber-900/20 bg-amber-500/10 p-4 text-xs text-amber-900"
           role="status"
         >
-          <p className="font-mono uppercase tracking-wider font-semibold">Remote Telemetry Notice</p>
+          <p className="font-mono uppercase tracking-wider font-semibold">{t('remoteTelemetryNotice', 'Remote Telemetry Notice')}</p>
           <p className="mt-1">
-            Historical progress snapshots could not be synchronized ({snapshotError}). Showing live project status.
+            {t('snapshotSyncError', 'Historical progress snapshots could not be synchronized ({{error}}). Showing live project status.', { error: snapshotError })}
           </p>
         </div>
       )}
 
       {/* Portfolio Historical Trend */}
-      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[0.8fr_1.2fr]" aria-label="Portfolio trend">
+      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[0.8fr_1.2fr]" aria-label={t('portfolioTrendAria', 'Portfolio trend')}>
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Portfolio trend</p>
-          <h2 className="mt-4 font-serif text-4xl">Coordination evolution.</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('portfolioTrend', 'Portfolio trend')}</p>
+          <h2 className="mt-4 font-serif text-4xl">{t('coordinationEvolution', 'Coordination evolution.')}</h2>
           <p className="mt-4 max-w-sm text-sm leading-6 text-stone-600">
-            Deterministic portfolio average progress tracked across internal review milestones, connecting to current registered status.
+            {t('coordinationEvolutionDesc', 'Deterministic portfolio average progress tracked across internal review milestones, connecting to current registered status.')}
           </p>
           {analytics.strongestMovement && (
             <div className="mt-6 border-l-2 border-stone-800 pl-4 py-1">
-              <p className="font-mono text-[10px] uppercase tracking-wider text-stone-500">Strongest progress movement</p>
+              <p className="font-mono text-[10px] uppercase tracking-wider text-stone-500">{t('strongestProgressMovement', 'Strongest progress movement')}</p>
               <p className="mt-1 font-serif text-lg font-medium">{analytics.strongestMovement.project.title}</p>
               <p className="font-mono text-xs text-stone-600">
-                +{analytics.strongestMovement.delta}% gain (from {analytics.strongestMovement.baselineProgress}% to {analytics.strongestMovement.currentProgress}%)
+                {t('strongestGain', '+{{delta}}% gain (from {{baseline}}% to {{current}}%)', {
+                  delta: analytics.strongestMovement.delta,
+                  baseline: analytics.strongestMovement.baselineProgress,
+                  current: analytics.strongestMovement.currentProgress,
+                })}
               </p>
             </div>
           )}
@@ -433,27 +440,27 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
         <div>
           <TrendLineChart
             testId="portfolio-trend-chart"
-            title="Portfolio average progress over time"
-            description="Chronological chart displaying historical average coordination progress leading to current registered status."
+            title={t('portfolioTrendChartTitle', 'Portfolio average progress over time')}
+            description={t('portfolioTrendChartDesc', 'Chronological chart displaying historical average coordination progress leading to current registered status.')}
             points={portfolioTrendPoints}
-            emptyMessage="No historical portfolio snapshots recorded."
+            emptyMessage={t('noHistoricalPortfolioSnapshots', 'No historical portfolio snapshots recorded.')}
           />
         </div>
       </section>
 
       {/* Project Historical Trend with Selector */}
-      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[0.8fr_1.2fr]" aria-label="Project trend">
+      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[0.8fr_1.2fr]" aria-label={t('projectTrendAria', 'Project trend')}>
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Development trajectory</p>
-          <h2 className="mt-4 font-serif text-4xl">Project progress trend.</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('developmentTrajectory', 'Development trajectory')}</p>
+          <h2 className="mt-4 font-serif text-4xl">{t('projectProgressTrend', 'Project progress trend.')}</h2>
           <p className="mt-4 max-w-sm text-sm leading-6 text-stone-600">
-            Select an active development to examine historical progression and live registered status.
+            {t('projectProgressTrendDesc', 'Select an active development to examine historical progression and live registered status.')}
           </p>
 
           {/* Project Selector */}
           <div className="mt-6">
             <label htmlFor="project-trend-select" className="block font-mono text-[10px] uppercase tracking-wider text-stone-500">
-              Select development
+              {t('selectDevelopment', 'Select development')}
             </label>
             <select
               id="project-trend-select"
@@ -473,15 +480,19 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
           {selectedProject && projectTrend && (
             <div className="mt-6 space-y-2 border-t border-black/10 pt-4 font-mono text-xs text-stone-600">
               <p>
-                <span className="text-stone-500 uppercase tracking-wider text-[10px]">Phase:</span> {selectedProject.phase}
+                <span className="text-stone-500 uppercase tracking-wider text-[10px]">{t('phaseLabel', 'Phase:')}</span> {selectedProject.phase}
               </p>
               <p>
-                <span className="text-stone-500 uppercase tracking-wider text-[10px]">Live Progress:</span> <strong className="font-serif text-base text-stone-900">{selectedProject.progress}%</strong>
+                <span className="text-stone-500 uppercase tracking-wider text-[10px]">{t('liveProgressLabel', 'Live Progress:')}</span> <strong className="font-serif text-base text-stone-900">{selectedProject.progress}%</strong>
               </p>
               {projectTrend.hasHistory && projectTrend.baselineProgress !== null && (
                 <p>
-                  <span className="text-stone-500 uppercase tracking-wider text-[10px]">Baseline / Delta:</span>{' '}
-                  {projectTrend.baselineProgress}% ({projectTrend.delta !== null && projectTrend.delta >= 0 ? '+' : ''}{projectTrend.delta}% change)
+                  <span className="text-stone-500 uppercase tracking-wider text-[10px]">{t('baselineDeltaLabel', 'Baseline / Delta:')}</span>{' '}
+                  {t('baselineDeltaValue', '{{baseline}}% ({{sign}}{{delta}}% change)', {
+                    baseline: projectTrend.baselineProgress,
+                    sign: projectTrend.delta !== null && projectTrend.delta >= 0 ? '+' : '',
+                    delta: projectTrend.delta,
+                  })}
                 </p>
               )}
             </div>
@@ -492,26 +503,26 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
           {selectedProject ? (
             <TrendLineChart
               testId="project-trend-chart"
-              title={`${selectedProject.title} progress trend`}
-              description={`Progress trend for ${selectedProject.title} showing historical milestones and current status.`}
+              title={t('projectTrendChartTitle', '{{title}} progress trend', { title: selectedProject.title })}
+              description={t('projectTrendChartDesc', 'Progress trend for {{title}} showing historical milestones and current status.', { title: selectedProject.title })}
               points={projectTrendPoints}
-              emptyMessage={`No historical snapshots recorded for ${selectedProject.title}.`}
+              emptyMessage={t('noProjectSnapshots', 'No historical snapshots recorded for {{title}}.', { title: selectedProject.title })}
             />
           ) : (
             <div className="border border-black/15 bg-black/[0.02] p-8 text-center font-mono text-xs text-stone-500">
-              No active projects available.
+              {t('noActiveProjects', 'No active projects available.')}
             </div>
           )}
         </div>
       </section>
 
       {/* Development stages */}
-      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[1fr_1.2fr]" aria-label="Development stages">
+      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[1fr_1.2fr]" aria-label={t('developmentStagesAria', 'Development stages')}>
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Development stages</p>
-          <h2 className="mt-4 font-serif text-4xl">Where the portfolio stands.</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('developmentStages', 'Development stages')}</p>
+          <h2 className="mt-4 font-serif text-4xl">{t('wherePortfolioStands', 'Where the portfolio stands.')}</h2>
           <p className="mt-3 text-sm leading-6 text-stone-600">
-            Active project concentration categorized by development phase from preliminary study through documentation.
+            {t('wherePortfolioStandsDesc', 'Active project concentration categorized by development phase from preliminary study through documentation.')}
           </p>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -519,25 +530,29 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
             <div key={stage} className="border-l border-black/20 pl-4 py-2">
               <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{stage}</p>
               <p className="mt-3 font-serif text-3xl">{String(count).padStart(2, '0')}</p>
-              <p className="mt-1 text-xs text-stone-600">active project{count === 1 ? '' : 's'}</p>
+              <p className="mt-1 text-xs text-stone-600">
+                {count === 1
+                  ? t('activeProjectSingular', 'active project')
+                  : t('activeProjectPlural', 'active projects')}
+              </p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Project progress chart (Live portfolio signal) */}
-      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[0.75fr_1.25fr]" aria-label="Project progress chart">
+      <section className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[0.75fr_1.25fr]" aria-label={t('projectProgressChartAria', 'Project progress chart')}>
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Live portfolio signal</p>
-          <h2 className="mt-4 font-serif text-4xl">Progress by development.</h2>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('livePortfolioSignal', 'Live portfolio signal')}</p>
+          <h2 className="mt-4 font-serif text-4xl">{t('progressByDevelopment', 'Progress by development.')}</h2>
           <p className="mt-4 max-w-sm text-sm leading-6 text-stone-600">
-            A direct view of current progress from the active project register.
+            {t('progressByDevelopmentDesc', 'A direct view of current progress from the active project register.')}
           </p>
         </div>
         <div
           data-testid="project-progress-chart"
           role="img"
-          aria-label="Project progress by development"
+          aria-label={t('projectProgressByDevelopmentAria', 'Project progress by development')}
           className="grid grid-cols-2 gap-4 sm:grid-cols-3"
         >
           {activeProjects.map((project) => (

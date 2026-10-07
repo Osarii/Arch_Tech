@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Search,
   ChevronRight,
@@ -24,6 +25,7 @@ import { ViewpointsPanel } from './ViewpointsPanel';
 import { ChangeSetPanel } from './ChangeSetPanel';
 
 export const SpatialTreePanel: React.FC = () => {
+  const { t } = useTranslation('workspace');
   const isTreeOpen = useBimStore((s) => s.isTreeOpen);
   const leftPanelTab = useBimStore((s) => s.leftPanelTab);
   const setLeftPanelTab = useBimStore((s) => s.setLeftPanelTab);
@@ -177,7 +179,7 @@ export const SpatialTreePanel: React.FC = () => {
                 handleToggleCategory(e, node.category!, elementIds);
               }}
               className="opacity-0 group-hover:opacity-100 hover:text-sky-300 text-slate-500 transition p-0.5"
-              title={`Toggle ${node.category} visibility`}
+              title={t('toggleCategoryVisibilityTitle', 'Toggle {{category}} visibility', { category: node.category })}
             >
               {hiddenCategories.has(node.category) ? (
                 <EyeOff className="w-3.5 h-3.5 text-slate-500" />
@@ -194,7 +196,7 @@ export const SpatialTreePanel: React.FC = () => {
                 toggleStoreyVisibility(node.name);
               }}
               className="opacity-0 group-hover:opacity-100 hover:text-emerald-300 text-slate-500 transition p-0.5"
-              title={`Toggle Storey visibility`}
+              title={t('toggleStoreyVisibilityGeneric', 'Toggle Storey visibility')}
             >
               {hiddenStoreys.has(node.name) ? (
                 <EyeOff className="w-3.5 h-3.5 text-slate-500" />
@@ -228,7 +230,7 @@ export const SpatialTreePanel: React.FC = () => {
           }`}
         >
           <Layers className="w-3.5 h-3.5" />
-          <span>Spatial BIM Tree</span>
+          <span>{t('spatialBimTree', 'Spatial BIM Tree')}</span>
         </button>
 
         <button
@@ -241,7 +243,7 @@ export const SpatialTreePanel: React.FC = () => {
           }`}
         >
           <Building2 className="w-3.5 h-3.5" />
-          <span>Levels / 2D</span>
+          <span>{t('levels2D', 'Levels / 2D')}</span>
         </button>
 
         <button
@@ -254,7 +256,7 @@ export const SpatialTreePanel: React.FC = () => {
           }`}
         >
           <Bookmark className="w-3.5 h-3.5" />
-          <span>Views</span>
+          <span>{t('views', 'Views')}</span>
         </button>
 
         <button
@@ -265,10 +267,10 @@ export const SpatialTreePanel: React.FC = () => {
               ? 'border-purple-500 text-purple-300 bg-[#151722]'
               : 'border-transparent hover:text-slate-200 hover:bg-[#12141a]'
           }`}
-          title="Non-destructive BIM Edit Change Set"
+          title={t('changeSetTitle', 'Non-destructive BIM Edit Change Set')}
         >
           <ListFilter className="w-3.5 h-3.5" />
-          <span>Edits</span>
+          <span>{t('edits', 'Edits')}</span>
         </button>
       </div>
 
@@ -284,20 +286,20 @@ export const SpatialTreePanel: React.FC = () => {
           {/* Tree Header Controls */}
           <div className="p-2 border-b border-[#222630] flex items-center justify-between bg-[#151722]">
             <span className="text-[11px] text-slate-400 font-mono">
-              {spatialTree.length > 0 ? `${spatialTree.length} roots` : 'Hierarchy'}
+              {spatialTree.length > 0 ? t('rootsCount', '{{count}} roots', { count: spatialTree.length }) : t('hierarchy', 'Hierarchy')}
             </span>
             <div className="flex items-center space-x-1 text-slate-400">
               <button
                 onClick={expandAllNodes}
                 className="p-1 hover:text-slate-200 hover:bg-[#1c202a] rounded transition"
-                title="Expand All"
+                title={t('expandAll', 'Expand All')}
               >
                 <Maximize2 className="w-3 h-3" />
               </button>
               <button
                 onClick={collapseAllNodes}
                 className="p-1 hover:text-slate-200 hover:bg-[#1c202a] rounded transition"
-                title="Collapse All"
+                title={t('collapseAll', 'Collapse All')}
               >
                 <Minimize2 className="w-3 h-3" />
               </button>
@@ -310,7 +312,7 @@ export const SpatialTreePanel: React.FC = () => {
               <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2 top-2 pointer-events-none" />
               <input
                 type="text"
-                placeholder="Filter elements..."
+                placeholder={t('filterElementsPlaceholder', 'Filter elements...')}
                 value={treeSearchQuery}
                 onChange={(e) => setTreeSearchQuery(e.target.value)}
                 className="w-full bg-[#171a22] border border-[#272c38] rounded px-2 py-1 pl-7 text-[11px] text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-500/70"
@@ -324,7 +326,7 @@ export const SpatialTreePanel: React.FC = () => {
               spatialTree.map((root) => renderNode(root, 0))
             ) : (
               <div className="p-4 text-center text-xs text-slate-500">
-                No spatial structure available
+                {t('noSpatialStructure', 'No spatial structure available')}
               </div>
             )}
           </div>

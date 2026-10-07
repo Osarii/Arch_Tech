@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BarChart2, CheckCircle2, Layers, Sparkles, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot } from '../../../portal/data';
 import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
@@ -15,6 +16,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('admin');
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const { adminPortal } = useLocale();
@@ -96,7 +98,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
       </section>
 
       {/* KPI Overview Strip */}
-      <section className="admin-kpi-strip grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Portfolio overview">
+      <section className="admin-kpi-strip grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('portfolioOverview', 'Portfolio overview')}>
         <button
           type="button"
           onClick={() => navigate('/admin/projects')}
@@ -138,15 +140,15 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
       <ExternalContextPanel />
 
       {/* Review and delivery signals */}
-      <section className="grid gap-12 border-b border-black/15 pb-12 lg:grid-cols-2" aria-label="Review and delivery signals">
+      <section className="grid gap-12 border-b border-black/15 pb-12 lg:grid-cols-2" aria-label={t('reviewDeliverySignals', 'Review and delivery signals')}>
         <div>
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring review</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('decisionsReview', 'Decisions requiring review')}</p>
             <button
               onClick={() => navigate('/admin/approvals')}
               className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500 hover:text-black"
             >
-              Full queue →
+              {t('fullQueue', 'Full queue →')}
             </button>
           </div>
           {reviewProjects.length ? (
@@ -165,28 +167,28 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
                       .join(' · ')}
                   </span>
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">Review</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{t('review', 'Review')}</span>
               </button>
             ))
           ) : (
-            <p className="mt-5 max-w-sm text-sm leading-6 text-stone-600">No project decisions are waiting for review.</p>
+            <p className="mt-5 max-w-sm text-sm leading-6 text-stone-600">{t('noDecisionsWaitingReview', 'No project decisions are waiting for review.')}</p>
           )}
         </div>
 
         <div>
           <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>
-            <span className="font-mono text-[9px] uppercase text-stone-500">Scheduled sequence</span>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('upcomingMilestones', 'Upcoming milestones')}</p>
+            <span className="font-mono text-[9px] uppercase text-stone-500">{t('scheduledSequence', 'Scheduled sequence')}</span>
           </div>
           {upcomingMilestones.length ? (
             upcomingMilestones.slice(0, 5).map((milestone) => (
               <p key={`${milestone.projectId}-${milestone.label}`} className="mt-5 flex justify-between gap-4 border-b border-black/10 pb-3 text-sm">
                 <span>{milestone.projectTitle} · {milestone.label}</span>
-                <span className="font-mono text-[9px] uppercase text-stone-500">Upcoming</span>
+                <span className="font-mono text-[9px] uppercase text-stone-500">{t('upcoming', 'Upcoming')}</span>
               </p>
             ))
           ) : (
-            <p className="mt-5 max-w-sm text-sm leading-6 text-stone-600">No upcoming milestones are scheduled.</p>
+            <p className="mt-5 max-w-sm text-sm leading-6 text-stone-600">{t('noUpcomingMilestones', 'No upcoming milestones are scheduled.')}</p>
           )}
         </div>
       </section>
@@ -194,7 +196,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
       {/* Recent Activity Section */}
       <section className="grid gap-12 border-b border-black/15 pb-12 lg:grid-cols-2">
         <div>
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent activity</h2>
+          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('recentActivity', 'Recent activity')}</h2>
           {recentActivity.length ? (
             recentActivity.slice(0, 5).map((update) => (
               <p key={`${update.projectId}-${update.date}-${update.title}`} className="mt-4 flex justify-between gap-4 border-b border-black/10 pb-2 text-sm">
@@ -203,27 +205,27 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
               </p>
             ))
           ) : (
-            <p className="mt-4 text-sm text-stone-600">No recent updates.</p>
+            <p className="mt-4 text-sm text-stone-600">{t('noRecentUpdates', 'No recent updates.')}</p>
           )}
         </div>
 
         <div>
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Development controls</h2>
+          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('developmentControls', 'Development controls')}</h2>
           <p className="mt-4 text-sm leading-6 text-stone-600">
-            Create, assign and advance projects from the register. Open any project or its model directly from the portfolio workspaces.
+            {t('developmentControlsDesc', 'Create, assign and advance projects from the register. Open any project or its model directly from the portfolio workspaces.')}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               onClick={() => navigate('/admin/projects')}
               className="border border-black px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] hover:bg-black hover:text-white"
             >
-              Open project register →
+              {t('openProjectRegister', 'Open project register →')}
             </button>
             <button
               onClick={() => navigate('/admin/people')}
               className="border border-black/20 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] hover:border-black"
             >
-              Manage people & roles →
+              {t('managePeopleRoles', 'Manage people & roles →')}
             </button>
           </div>
         </div>
@@ -231,15 +233,15 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
 
       {/* Deeper Workspaces Grid */}
       <section className="pt-2">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Administration workspaces</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('adminWorkspaces', 'Administration workspaces')}</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <button
             onClick={() => navigate('/admin/projects')}
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <Layers className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">Project Register</p>
-            <p className="mt-1 text-xs text-stone-600">Search, filter, sort and manage development portfolio.</p>
+            <p className="mt-4 font-serif text-lg">{t('projectRegister', 'Project Register')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('projectRegisterDesc', 'Search, filter, sort and manage development portfolio.')}</p>
           </button>
 
           <button
@@ -247,8 +249,8 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <Users className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">People & Access</p>
-            <p className="mt-1 text-xs text-stone-600">Account creation, roles, and project assignments.</p>
+            <p className="mt-4 font-serif text-lg">{t('peopleAccess', 'People & Access')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('peopleAccessDesc', 'Account creation, roles, and project assignments.')}</p>
           </button>
 
           <button
@@ -256,8 +258,8 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <CheckCircle2 className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">Approvals Queue</p>
-            <p className="mt-1 text-xs text-stone-600">Global decision tracking and notification log.</p>
+            <p className="mt-4 font-serif text-lg">{t('approvalsQueue', 'Approvals Queue')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('approvalsQueueDesc', 'Global decision tracking and notification log.')}</p>
           </button>
 
           <button
@@ -265,8 +267,8 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <BarChart2 className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">Analytics & Signals</p>
-            <p className="mt-1 text-xs text-stone-600">Stage distribution, progress chart and metrics.</p>
+            <p className="mt-4 font-serif text-lg">{t('analyticsSignals', 'Analytics & Signals')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('analyticsSignalsDesc', 'Stage distribution, progress chart and metrics.')}</p>
           </button>
 
           <button
@@ -274,8 +276,8 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <Sparkles className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">Enterprise AI</p>
-            <p className="mt-1 text-xs text-stone-600">Full BIM assistant access and tools.</p>
+            <p className="mt-4 font-serif text-lg">{t('enterpriseAi', 'Enterprise AI')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('enterpriseAiDesc', 'Full BIM assistant access and tools.')}</p>
           </button>
         </div>
       </section>

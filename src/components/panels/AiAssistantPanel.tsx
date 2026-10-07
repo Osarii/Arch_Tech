@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Sparkles,
   Send,
@@ -17,6 +18,7 @@ import { AIMessage, PendingWriteProposal } from '@/types/bim';
 import { aiService } from '@/services/aiService';
 
 export const AiAssistantPanel: React.FC = () => {
+  const { t } = useTranslation(['ai', 'workspace']);
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [inputPrompt, setInputPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -91,14 +93,14 @@ export const AiAssistantPanel: React.FC = () => {
           </div>
           <div>
             <div className="font-semibold text-slate-200 text-[11px] flex items-center space-x-1.5">
-              <span>BIM AI Assistant</span>
+              <span>{t('ai:bimAiAssistant', 'BIM AI Assistant')}</span>
               <span className="text-[9px] px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/80">
-                Phase 6B.1
+                {t('ai:phaseBadge', 'Phase 6B.1')}
               </span>
             </div>
             <div className="text-[10px] text-slate-400 flex items-center space-x-1">
               <Cpu className="w-2.5 h-2.5 text-emerald-400" />
-              <span>{aiService.isConfigured() ? 'Remote n8n / offline fallback' : 'Offline Deterministic Engine'}</span>
+              <span>{aiService.isConfigured() ? t('ai:remoteEngine', 'Remote n8n / offline fallback') : t('ai:offlineEngine', 'Offline Deterministic Engine')}</span>
             </div>
           </div>
         </div>
@@ -107,7 +109,7 @@ export const AiAssistantPanel: React.FC = () => {
           onClick={handleClearHistory}
           data-testid="ai-btn-clear"
           className="p-1.5 rounded hover:bg-[#1e2330] text-slate-400 hover:text-slate-200 transition"
-          title="Clear Conversation History"
+          title={t('ai:clearHistoryTooltip', 'Clear Conversation History')}
         >
           <Trash2 className="w-3 h-3" />
         </button>
@@ -140,7 +142,7 @@ export const AiAssistantPanel: React.FC = () => {
                 >
                   <div className="flex items-center space-x-1 text-[9px] text-purple-200 mb-1 opacity-80">
                     <User className="w-2.5 h-2.5" />
-                    <span>User • {msg.timestamp}</span>
+                    <span>{t('ai:userTimestamp', 'User • {{time}}', { time: msg.timestamp })}</span>
                   </div>
                   <div>{msg.content}</div>
                 </div>
@@ -156,7 +158,7 @@ export const AiAssistantPanel: React.FC = () => {
                 >
                   <div className="flex items-center space-x-1 text-[9px] text-purple-400 font-medium">
                     <Bot className="w-2.5 h-2.5" />
-                    <span>AI Assistant • {msg.timestamp}</span>
+                    <span>{t('ai:assistantTimestamp', 'AI Assistant • {{time}}', { time: msg.timestamp })}</span>
                   </div>
 
                   <div className="whitespace-pre-line text-slate-300">{msg.content}</div>
@@ -188,7 +190,7 @@ export const AiAssistantPanel: React.FC = () => {
                               <span>{tc.toolName}</span>
                             </span>
                             <span className="text-[9px] opacity-75 font-sans">
-                              {tc.category === 'READ' ? 'Executed' : 'Proposal created'}
+                              {tc.category === 'READ' ? t('ai:toolExecuted', 'Executed') : t('ai:toolProposalCreated', 'Proposal created')}
                             </span>
                           </div>
 
@@ -246,7 +248,7 @@ export const AiAssistantPanel: React.FC = () => {
             onChange={(e) => setInputPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             data-testid="ai-chat-input"
-            placeholder="Ask AI e.g. 'Move #44 by 1m in X'..."
+            placeholder={t('ai:chatPlaceholder', "Ask AI e.g. 'Move #44 by 1m in X'...")}
             className="flex-1 bg-transparent text-slate-200 placeholder-slate-500 text-[11px] focus:outline-none py-1"
           />
           <button
@@ -270,6 +272,7 @@ interface ProposalCardProps {
 }
 
 const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onConfirm, onReject }) => {
+  const { t } = useTranslation(['ai', 'workspace']);
   const isPending = proposal.status === 'pending';
   const isExecuted = proposal.status === 'executed';
   const isRejected = proposal.status === 'rejected';
@@ -282,7 +285,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onConfirm, onReje
       <div className="flex items-center justify-between border-b border-amber-800/40 pb-1.5">
         <div className="flex items-center space-x-1.5 text-amber-400 font-semibold text-[10px]">
           <AlertTriangle className="w-3.5 h-3.5" />
-          <span>WRITE ACTION CONFIRMATION</span>
+          <span>{t('ai:writeActionConfirmation', 'WRITE ACTION CONFIRMATION')}</span>
         </div>
         <span className="font-mono text-[9px] uppercase px-1 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800">
           {proposal.toolName}
@@ -300,7 +303,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onConfirm, onReje
             className="flex items-center space-x-1 px-2.5 py-1 rounded bg-[#1c202a] hover:bg-[#252b39] text-slate-300 border border-[#2c3345] text-[10px] transition"
           >
             <X className="w-3 h-3 text-rose-400" />
-            <span>Cancel</span>
+            <span>{t('workspace:cancel', 'Cancel')}</span>
           </button>
           <button
             onClick={onConfirm}
@@ -308,7 +311,7 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onConfirm, onReje
             className="flex items-center space-x-1 px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-medium text-[10px] shadow transition"
           >
             <Check className="w-3 h-3" />
-            <span>Confirm & Apply</span>
+            <span>{t('ai:confirmAndApply', 'Confirm & Apply')}</span>
           </button>
         </div>
       )}
@@ -316,14 +319,14 @@ const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onConfirm, onReje
       {isExecuted && (
         <div className="flex items-center space-x-1.5 text-emerald-400 text-[10px] font-medium pt-1">
           <CheckCircle2 className="w-3.5 h-3.5" />
-          <span>Executed & Recorded in Change Set</span>
+          <span>{t('ai:executedAndRecorded', 'Executed & Recorded in Change Set')}</span>
         </div>
       )}
 
       {isRejected && (
         <div className="flex items-center space-x-1.5 text-slate-500 text-[10px] font-medium pt-1">
           <XCircle className="w-3.5 h-3.5" />
-          <span>Action Cancelled</span>
+          <span>{t('ai:actionCancelled', 'Action Cancelled')}</span>
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot, PortalRole } from '../../../portal/data';
 import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
@@ -10,6 +11,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('admin');
   const { insideShell } = usePortalShell();
   const { adminPortal } = useLocale();
 
@@ -49,7 +51,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
       await userService.update(userId, { projectIds });
       refresh();
     } catch (error) {
-      setUserError(error instanceof Error ? error.message : 'Assignment could not be saved.');
+      setUserError(error instanceof Error ? error.message : t('assignmentSaveError', 'Assignment could not be saved.'));
     }
   };
 
@@ -58,26 +60,26 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
     try {
       const user = await userService.create({ ...newUser, status: 'active', projectIds: [] });
       setNewUser({ name: '', email: '', password: '', role: 'client' });
-      setOperationFeedback(`${user.name} was added as an active ${user.role}.`);
+      setOperationFeedback(t('userAddedSuccess', '{{name}} was added as an active {{role}}.', { name: user.name, role: user.role }));
       refresh();
     } catch (error) {
-      setUserError(error instanceof Error ? error.message : 'Unable to create the user.');
+      setUserError(error instanceof Error ? error.message : t('userCreateError', 'Unable to create the user.'));
     }
   };
 
   const updateUser = async (id: string, changes: Parameters<typeof userService.update>[1]) => {
     await userService.update(id, changes);
-    setOperationFeedback('User access updated.');
+    setOperationFeedback(t('userAccessUpdated', 'User access updated.'));
     refresh();
   };
 
   const editUserName = async (userId: string, currentName: string) => {
-    const nextName = window.prompt('Update user name', currentName)?.trim();
+    const nextName = window.prompt(t('updateUserNamePrompt', 'Update user name'), currentName)?.trim();
     if (!nextName || nextName === currentName) return;
     try {
       await updateUser(userId, { name: nextName });
     } catch (error) {
-      setUserError(error instanceof Error ? error.message : 'Unable to update the user.');
+      setUserError(error instanceof Error ? error.message : t('userUpdateError', 'Unable to update the user.'));
     }
   };
 
@@ -101,9 +103,9 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
       </div>
 
       {/* People register: Clients & Architects */}
-      <section id="portal-section-people" className="grid gap-12 lg:grid-cols-2" aria-label="People register">
+      <section id="portal-section-people" className="grid gap-12 lg:grid-cols-2" aria-label={t('peopleRegister', 'People register')}>
         <div>
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Clients</h2>
+          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('clients', 'Clients')}</h2>
           <div className="mt-4 divide-y divide-black/15 border-y border-black/15">
             {clients.map((user) => (
               <div key={user.id} className="py-4 flex flex-wrap items-center justify-between gap-4">
@@ -116,13 +118,13 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                     onClick={() => void editUserName(user.id, user.name)}
                     className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
                   >
-                    Edit name
+                    {t('editName', 'Edit name')}
                   </button>
                   <button
                     onClick={() => void updateUser(user.id, { role: 'architect' })}
                     className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
                   >
-                    Make architect
+                    {t('makeArchitect', 'Make architect')}
                   </button>
                   <button
                     onClick={() => void updateUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' })}
@@ -137,7 +139,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
         </div>
 
         <div>
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Architects</h2>
+          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('architects', 'Architects')}</h2>
           <div className="mt-4 divide-y divide-black/15 border-y border-black/15">
             {architects.map((user) => (
               <div key={user.id} className="py-4">
@@ -151,13 +153,13 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                       onClick={() => void editUserName(user.id, user.name)}
                       className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
                     >
-                      Edit name
+                      {t('editName', 'Edit name')}
                     </button>
                     <button
                       onClick={() => void updateUser(user.id, { role: 'client' })}
                       className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
                     >
-                      Make client
+                      {t('makeClient', 'Make client')}
                     </button>
                     <button
                       onClick={() => void updateUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' })}
@@ -167,7 +169,9 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                     </button>
                   </div>
                 </div>
-                <p className="mt-1 text-xs text-stone-500">{user.projectIds.length} assigned developments</p>
+                <p className="mt-1 text-xs text-stone-500">
+                  {t('assignedDevelopmentsCount', '{{count}} assigned developments', { count: user.projectIds.length })}
+                </p>
               </div>
             ))}
           </div>
@@ -175,12 +179,12 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
       </section>
 
       {/* Assign People to Projects */}
-      <section id="portal-section-activity" className="border-t border-black/15 pt-10" aria-label="Project assignments">
+      <section id="portal-section-activity" className="border-t border-black/15 pt-10" aria-label={t('projectAssignments', 'Project assignments')}>
         <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">
-          Assign people to projects
+          {t('assignPeopleToProjects', 'Assign people to projects')}
         </h2>
         <p className="mt-2 text-sm text-stone-600">
-          Toggle client and architect team access for each active development in the portfolio.
+          {t('assignPeopleDesc', 'Toggle client and architect team access for each active development in the portfolio.')}
         </p>
 
         <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -217,13 +221,13 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
       <section className="border-t border-black/15 pt-10" aria-labelledby="create-user-title">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">People management</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('peopleManagement', 'People management')}</p>
             <h2 id="create-user-title" className="mt-2 font-serif text-3xl">
-              Add portal access.
+              {t('addPortalAccess', 'Add portal access.')}
             </h2>
           </div>
           <p className="max-w-md text-sm leading-6 text-stone-600">
-            Create an active client or architect account, then assign projects from the register above.
+            {t('addPortalAccessDesc', 'Create an active client or architect account, then assign projects from the register above.')}
           </p>
         </div>
 
@@ -235,7 +239,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
           }}
         >
           <label className="font-mono text-[9px] uppercase text-stone-500">
-            Name
+            {t('name', 'Name')}
             <input
               required
               value={newUser.name}
@@ -245,7 +249,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
           </label>
 
           <label className="font-mono text-[9px] uppercase text-stone-500">
-            Email
+            {t('email', 'Email')}
             <input
               required
               type="email"
@@ -256,7 +260,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
           </label>
 
           <label className="font-mono text-[9px] uppercase text-stone-500">
-            Temporary password
+            {t('tempPassword', 'Temporary password')}
             <input
               required
               minLength={8}
@@ -267,14 +271,14 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
           </label>
 
           <label className="font-mono text-[9px] uppercase text-stone-500">
-            Role
+            {t('role', 'Role')}
             <select
               value={newUser.role}
               onChange={(event) => setNewUser({ ...newUser, role: event.target.value as PortalRole })}
               className="mt-2 w-full border-b border-black/20 bg-transparent py-2 text-sm outline-none"
             >
-              <option value="client">Client</option>
-              <option value="architect">Architect</option>
+              <option value="client">{t('client', 'Client')}</option>
+              <option value="architect">{t('architect', 'Architect')}</option>
             </select>
           </label>
 
@@ -283,7 +287,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
             type="submit"
             className="self-end bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white hover:bg-stone-800"
           >
-            Add user
+            {t('addUser', 'Add user')}
           </button>
         </form>
 

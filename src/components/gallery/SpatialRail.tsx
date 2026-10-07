@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Maximize2, X } from 'lucide-react';
 import type { PortalProject } from '../../portal/data';
 import { getPreferredProjectImage } from './projectMedia';
@@ -40,10 +41,16 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
 };
 
 const RailImage: React.FC<{ src?: string; alt: string; loading?: 'eager' | 'lazy'; fetchPriority?: 'high' | 'low' | 'auto'; className?: string }> = ({ src, alt, loading = 'lazy', fetchPriority = 'low', className = '' }) => {
+  const { t } = useTranslation('common');
   const [failed, setFailed] = useState(!src);
   useEffect(() => setFailed(!src), [src]);
   if (failed) {
-    return <div data-testid="rail-image-fallback" role="img" aria-label={`${alt} image unavailable`} className={`landing-image-fallback ${className}`}><span>GARNIER ARCHITECTURE / PROJECT MEDIA</span></div>;
+    return (
+      <div data-testid="rail-image-fallback" role="img" aria-label={t('gallery.imageUnavailable', '{{alt}} image unavailable', { alt })} className={`landing-image-fallback ${className}`}>
+        {/* i18next-instrument-ignore */}
+        <span>GARNIER ARCHITECTURE / PROJECT MEDIA</span>
+      </div>
+    );
   }
   return <img src={src} alt={alt} loading={loading} fetchPriority={fetchPriority} decoding="async" onError={() => setFailed(true)} className={className} />;
 };
@@ -53,6 +60,7 @@ interface SpatialRailProps {
 }
 
 export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
+  const { t } = useTranslation('common');
   const slides = useMemo(() => buildSpatialRailSlides(project), [project]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const fullscreenRef = useRef<HTMLDivElement>(null);
@@ -215,7 +223,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
       tabIndex={0}
       onKeyDown={handleKeyDown}
       data-testid="spatial-rail"
-      aria-label="Spatial Rail Development Media"
+      aria-label={t('rail.developmentMedia', 'Spatial Rail Development Media')}
       className="relative outline-none focus-visible:ring-1 focus-visible:ring-stone-600"
     >
       {/* Editorial Header / Metadata & Progress Rail */}
@@ -263,7 +271,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
               onClick={handlePrev}
               disabled={activeIndex === 0}
               data-testid="rail-prev-btn"
-              aria-label="Previous slide"
+              aria-label={t('rail.prevSlide', 'Previous slide')}
               className="flex h-8 w-8 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white/[0.3] hover:text-white disabled:pointer-events-none disabled:opacity-20"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
@@ -273,7 +281,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
               onClick={handleNext}
               disabled={activeIndex === slides.length - 1}
               data-testid="rail-next-btn"
-              aria-label="Next slide"
+              aria-label={t('rail.nextSlide', 'Next slide')}
               className="flex h-8 w-8 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white/[0.3] hover:text-white disabled:pointer-events-none disabled:opacity-20"
             >
               <ArrowRight className="h-3.5 w-3.5" />
@@ -316,7 +324,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                   setFullscreenIndex(idx);
                 }}
                 className="relative block h-full w-full cursor-zoom-in text-left focus:outline-none"
-                aria-label={`Open fullscreen view of ${slide.label}`}
+                aria-label={t('rail.openFullscreen', 'Open fullscreen view of {{label}}', { label: slide.label })}
               >
                 <RailImage
                   src={shouldLoadImage ? slide.src : undefined}
@@ -329,7 +337,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                 {/* Subtle Hover Action overlay */}
                 <div className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded bg-black/70 px-2 py-0.5 text-[8px] font-mono uppercase tracking-[0.16em] text-stone-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                   <Maximize2 className="h-2.5 w-2.5" />
-                  <span>Inspect</span>
+                  <span>{t('rail.inspect', 'Inspect')}</span>
                 </div>
               </button>
             </div>
@@ -358,7 +366,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
           data-testid="rail-fullscreen"
           role="dialog"
           aria-modal="true"
-          aria-label="Fullscreen viewer"
+          aria-label={t('rail.fullscreenViewer', 'Fullscreen viewer')}
           className="fixed inset-0 z-50 flex flex-col justify-between bg-black/95 p-4 sm:p-6 backdrop-blur-sm"
         >
           {/* Top Bar */}
@@ -376,7 +384,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
               type="button"
               onClick={() => setFullscreenIndex(null)}
               data-testid="rail-fullscreen-close"
-              aria-label="Close fullscreen view"
+              aria-label={t('rail.closeFullscreen', 'Close fullscreen view')}
               className="flex h-8 w-8 items-center justify-center border border-white/[0.1] text-stone-400 transition-colors hover:border-white hover:text-white"
             >
               <X className="h-4 w-4" />
@@ -403,7 +411,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                 onClick={() => setFullscreenIndex((prev) => (prev !== null ? Math.max(0, prev - 1) : 0))}
                 disabled={fullscreenIndex === 0}
                 data-testid="rail-fullscreen-prev"
-                aria-label="Previous fullscreen image"
+                aria-label={t('rail.prevFullscreen', 'Previous fullscreen image')}
                 className="flex h-7 w-7 items-center justify-center border border-white/[0.1] text-stone-400 hover:text-white disabled:pointer-events-none disabled:opacity-20"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
@@ -413,7 +421,7 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
                 onClick={() => setFullscreenIndex((prev) => (prev !== null ? Math.min(slides.length - 1, prev + 1) : 0))}
                 disabled={fullscreenIndex === slides.length - 1}
                 data-testid="rail-fullscreen-next"
-                aria-label="Next fullscreen image"
+                aria-label={t('rail.nextFullscreen', 'Next fullscreen image')}
                 className="flex h-7 w-7 items-center justify-center border border-white/[0.1] text-stone-400 hover:text-white disabled:pointer-events-none disabled:opacity-20"
               >
                 <ArrowRight className="h-3.5 w-3.5" />

@@ -73,7 +73,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
 
         <Reveal variant="fade" delay={120}>
           <div className="landing-projects-register-header hidden grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] gap-8 border-b border-black/15 py-4 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500 lg:grid">
-            <span>No.</span>
+            <span>{t.numberLabel || 'No.'}</span>
             <span>{locale === 'es' ? 'Ubicación' : 'Site'}</span>
             <span>{locale === 'es' ? 'Desarrollo' : 'Development'}</span>
             <span>{t.market}</span>

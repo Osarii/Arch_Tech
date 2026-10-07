@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, FileText, Layers, Sparkles } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
 import { useLocale } from '../../../portal/locale';
@@ -12,6 +13,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
   onNavigate,
   onSignOut,
 }) => {
+  const { t } = useTranslation('architect');
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const { architectPortal, clientPortal, portalCommon } = useLocale();
@@ -62,7 +64,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
       </div>
 
       {/* Workload Tiles */}
-      <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label="Architect workload">
+      <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('workloadAria', 'Architect workload')}>
         <button
           type="button"
           onClick={() => navigate('/architect/projects')}
@@ -108,7 +110,10 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
               {architectPortal.assignedProjects}
             </h2>
             <span className="font-mono text-[10px] text-stone-500">
-              {projects.length.toString().padStart(2, '0')} active · {projectsForReview.length.toString().padStart(2, '0')} decisions pending
+              {t('activeAndPending', '{{active}} active · {{pending}} decisions pending', {
+                active: projects.length.toString().padStart(2, '0'),
+                pending: projectsForReview.length.toString().padStart(2, '0'),
+              })}
             </span>
           </div>
           <button
@@ -139,10 +144,10 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
                   <div className="portal-progress-track h-px bg-black/15">
                     <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
                   </div>
-                  <p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p>
+                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next:')} {project.nextMilestone}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase">
-                      Client response pending
+                      {t('clientResponsePending', 'Client response pending')}
                     </p>
                   )}
                 </div>
@@ -164,14 +169,14 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
             ))}
           </div>
         ) : (
-          <PortalEmptyState message="No projects currently assigned to this studio." />
+          <PortalEmptyState message={t('noProjectsStudio', 'No projects currently assigned to this studio.')} />
         )}
       </section>
 
       {/* Decisions, Milestones & Approvals preview */}
       <section id="portal-section-activity" className="grid gap-10 border-t border-black/15 pt-10 lg:grid-cols-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Decisions requiring review</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('decisionsReview', 'Decisions requiring review')}</p>
           {projectsForReview.length ? (
             projectsForReview.map((project) => (
               <button
@@ -184,12 +189,12 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
               </button>
             ))
           ) : (
-            <p className="mt-4 text-sm text-stone-600">No project decisions are waiting for review.</p>
+            <p className="mt-4 text-sm text-stone-600">{t('noDecisionsWaitingReview', 'No project decisions are waiting for review.')}</p>
           )}
         </div>
 
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Upcoming milestones</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('upcomingMilestones', 'Upcoming milestones')}</p>
           {milestones.slice(0, 3).map((milestone) => (
             <button
               key={`${milestone.projectId}-${milestone.label}`}
@@ -205,7 +210,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
         </div>
 
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Pending client approvals</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('pendingClientApprovals', 'Pending client approvals')}</p>
           {approvals.slice(0, 3).map((approval) => (
             <button
               key={`${approval.projectId}-${approval.title}`}
@@ -222,7 +227,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
       {/* Activity preview */}
       {activity.length > 0 && (
         <section className="border-t border-black/15 pt-8">
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Recent studio activity</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('recentStudioActivity', 'Recent studio activity')}</p>
           <div className="mt-4 divide-y divide-black/10 border-y border-black/10">
             {activity.map((update) => (
               <button
@@ -240,15 +245,15 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
 
       {/* Deeper Workspaces Grid */}
       <section className="border-t border-black/15 pt-10">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">Architect workspaces</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('architectWorkspaces', 'Architect workspaces')}</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <button
             onClick={() => navigate('/architect/projects')}
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <Layers className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-xl">Project Register</p>
-            <p className="mt-1 text-xs text-stone-600">Full assigned project register and 3D CAD models.</p>
+            <p className="mt-4 font-serif text-xl">{t('projectRegister', 'Project Register')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('projectRegisterDesc', 'Full assigned project register and 3D CAD models.')}</p>
           </button>
 
           <button
@@ -256,8 +261,8 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <CheckCircle2 className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-xl">Client Decisions</p>
-            <p className="mt-1 text-xs text-stone-600">Approval queue and coordination sign-offs.</p>
+            <p className="mt-4 font-serif text-xl">{t('clientDecisions', 'Client Decisions')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('clientDecisionsDesc', 'Approval queue and coordination sign-offs.')}</p>
           </button>
 
           <button
@@ -265,8 +270,8 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <FileText className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-xl">Deliverables</p>
-            <p className="mt-1 text-xs text-stone-600">Technical drawings, specs, and issued packages.</p>
+            <p className="mt-4 font-serif text-xl">{t('deliverables', 'Deliverables')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('deliverablesDesc', 'Technical drawings, specs, and issued packages.')}</p>
           </button>
 
           <button
@@ -274,8 +279,8 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
             className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
           >
             <Sparkles className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-xl">BIM Assistant</p>
-            <p className="mt-1 text-xs text-stone-600">Generative massing plans, spatial search and tools.</p>
+            <p className="mt-4 font-serif text-xl">{t('bimAssistant', 'BIM Assistant')}</p>
+            <p className="mt-1 text-xs text-stone-600">{t('bimAssistantDesc', 'Generative massing plans, spatial search and tools.')}</p>
           </button>
         </div>
       </section>
