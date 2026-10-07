@@ -152,6 +152,8 @@
 .landing-surface .landing-projects-register-row:hover { background-color: #ABD1B5 !important; }
 .landing-surface .landing-footer-link:hover,
 .landing-surface .landing-footer-link:focus-visible { color: #EDF4ED !important; }
+.landing-navbar-lang-active { background-color: #ffffff !important; color: #000000 !important; }
+.landing-light .landing-navbar-lang-active { background-color: #000000 !important; color: #ffffff !important; }
 
 
 @media (max-width: 639px) {
