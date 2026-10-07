@@ -16,6 +16,14 @@ import { bimEditService } from '../edit/bimEditService';
 import { bimGenerationService } from '../generation/generationService';
 import { laLimaSiteContextService } from '../site';
 import { useBimStore } from '@/stores/bimStore';
+import { AdaptiveResolution } from './adaptiveResolution';
+import { renderQualityProfiles, type RenderDiagnostics, type RenderQualityProfile } from './renderQuality';
+import { SceneLighting } from './sceneLighting';
+
+type CameraControlsEvents = {
+  addEventListener?: (type: string, listener: () => void) => void;
+  removeEventListener?: (type: string, listener: () => void) => void;
+};
 
 export class BimEngine {
   public components!: OBC.Components;
@@ -46,6 +54,13 @@ export class BimEngine {
   private initPromise: Promise<void> | null = null;
   private disposePromise: Promise<void> | null = null;
   private isDisposed = false;
+  private readonly lighting = new SceneLighting();
+  private readonly adaptiveResolution = new AdaptiveResolution();
+  private qualityProfile: RenderQualityProfile = 'balanced';
+  private effectiveDpr = renderQualityProfiles.balanced.maxDpr;
+  private trackedControls: CameraControlsEvents | null = null;
+  private isCameraInteractive = false;
+  private lastCameraActivityAt = 0;
 
   // Selection callback
   public onElementSelected?: (details: SelectedElementDetails | null) => void;
@@ -56,6 +71,15 @@ export class BimEngine {
   private lastRendererFrame = 0;
   private fps = 60;
   private frameTimeMs = 16.6;
+
+  private readonly handleCameraActivity = (): void => {
+    this.isCameraInteractive = true;
+    this.lastCameraActivityAt = performance.now();
+  };
+
+  private readonly handleCameraRest = (): void => {
+    this.isCameraInteractive = false;
+  };
 
   constructor() {
     this.createCoreComponents();
@@ -151,12 +175,7 @@ export class BimEngine {
       // Configure background and ambient light
       if (this.world.scene.three) {
         this.world.scene.three.background = new THREE.Color(0x0e1117);
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333945, 1.2);
-        this.world.scene.three.add(hemiLight);
-
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        dirLight.position.set(20, 40, 20);
-        this.world.scene.three.add(dirLight);
+        this.lighting.attach(this.world.scene.three);
 
         bimEditService.initSceneLayer(this.world.scene.three);
         bimGenerationService.initSceneLayer(this.world.scene.three);
@@ -182,8 +201,8 @@ export class BimEngine {
       }
       this.world.renderer = new OBC.SimpleRenderer(this.components, container);
       if (this.world.renderer.three) {
-        this.world.renderer.three.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
-        this.world.renderer.three.shadowMap.enabled = false;
+        this.effectiveDpr = this.getInitialDpr(this.qualityProfile);
+        this.configureRenderer(this.world.renderer.three);
         this.world.renderer.three.domElement.style.position = 'absolute';
         this.world.renderer.three.domElement.style.inset = '0';
         this.setupWebGLContextListeners(this.world.renderer.three.domElement);
@@ -199,10 +218,14 @@ export class BimEngine {
         this.world.camera.controls.dollyToCursor = true;
         this.world.camera.controls.infinityDolly = true;
         this.world.camera.controls.smoothTime = 0.2;
+        this.setupCameraActivityTracking(this.world.camera.controls as unknown as CameraControlsEvents);
       }
 
       // Initialize That Open components
       this.components.init();
+
+      // Camera-dependent quality work happens only once renderer and camera both exist.
+      this.applyRenderQuality(this.qualityProfile);
 
       // 4. FragmentsManager Worker setup
       try {
@@ -283,6 +306,8 @@ export class BimEngine {
       this.stopPerformanceSampler();
       this.disconnectResizeObserver();
       this.setupWebGLContextListeners(null);
+      this.setupCameraActivityTracking(null);
+      this.lighting.dispose();
       this.revokeWorkerBlobUrl();
       try {
         this.components.dispose();
@@ -326,7 +351,7 @@ export class BimEngine {
       if (canvas.parentElement !== container) {
         container.appendChild(canvas);
       }
-      threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+      threeRenderer.setPixelRatio(this.effectiveDpr);
       this.setupWebGLContextListeners(canvas);
     }
 
@@ -391,11 +416,25 @@ export class BimEngine {
     this.world.camera?.updateAspect();
   }
 
+  private setupCameraActivityTracking(controls: CameraControlsEvents | null): void {
+    if (this.trackedControls === controls) return;
+    this.trackedControls?.removeEventListener?.('controlstart', this.handleCameraActivity);
+    this.trackedControls?.removeEventListener?.('control', this.handleCameraActivity);
+    this.trackedControls?.removeEventListener?.('transitionstart', this.handleCameraActivity);
+    this.trackedControls?.removeEventListener?.('rest', this.handleCameraRest);
+    this.trackedControls = controls;
+    controls?.addEventListener?.('controlstart', this.handleCameraActivity);
+    controls?.addEventListener?.('control', this.handleCameraActivity);
+    controls?.addEventListener?.('transitionstart', this.handleCameraActivity);
+    controls?.addEventListener?.('rest', this.handleCameraRest);
+  }
+
   private startPerformanceSampler(): void {
     this.stopPerformanceSampler();
     const renderer = this.world?.renderer?.three;
     this.lastTime = performance.now();
     this.lastRendererFrame = renderer?.info.render.frame ?? 0;
+    this.lastCameraActivityAt = this.lastTime;
 
     this.performanceTimerId = setInterval(() => {
       const activeRenderer = this.world?.renderer?.three;
@@ -405,20 +444,85 @@ export class BimEngine {
       const delta = now - this.lastTime;
       const currentFrame = activeRenderer.info.render.frame ?? this.lastRendererFrame;
       const renderedFrames = Math.max(0, currentFrame - this.lastRendererFrame);
-      this.fps = delta > 0 ? Math.round((renderedFrames * 1000) / delta) : 0;
-      this.frameTimeMs = renderedFrames > 0 ? Math.round((delta / renderedFrames) * 10) / 10 : 0;
+      const isInteractive = this.isCameraInteractive || now - this.lastCameraActivityAt < 1200;
+      if (renderedFrames > 0 && isInteractive) {
+        this.fps = delta > 0 ? Math.round((renderedFrames * 1000) / delta) : 0;
+        this.frameTimeMs = Math.round((delta / renderedFrames) * 10) / 10;
+      }
       this.lastRendererFrame = currentFrame;
       this.lastTime = now;
 
+      const nextDpr = this.adaptiveResolution.next(
+        this.fps,
+        this.effectiveDpr,
+        renderQualityProfiles[this.qualityProfile],
+        now,
+        isInteractive && renderedFrames > 0
+      );
+      if (nextDpr !== null) {
+        this.effectiveDpr = nextDpr;
+        activeRenderer.setPixelRatio(nextDpr);
+        this.resize();
+      }
+
+      const diagnostics = this.getRenderDiagnostics(isInteractive);
       this.onPerformanceUpdate?.({
-        fps: this.fps,
-        frameTimeMs: this.frameTimeMs,
-        drawCalls: activeRenderer.info.render.calls,
-        triangles: activeRenderer.info.render.triangles,
-        geometries: activeRenderer.info.memory.geometries,
-        textures: activeRenderer.info.memory.textures,
+        fps: diagnostics.fps,
+        frameTimeMs: diagnostics.frameTimeMs,
+        drawCalls: diagnostics.drawCalls,
+        triangles: diagnostics.triangles,
+        geometries: diagnostics.geometries,
+        textures: diagnostics.textures,
       });
     }, 1000);
+  }
+
+  private getInitialDpr(profile: RenderQualityProfile): number {
+    const deviceDpr = typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1;
+    return Math.min(deviceDpr, renderQualityProfiles[profile].maxDpr);
+  }
+
+  private configureRenderer(renderer: THREE.WebGLRenderer): void {
+    const profile = renderQualityProfiles[this.qualityProfile];
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = profile.toneMapping;
+    renderer.toneMappingExposure = profile.exposure;
+    renderer.setPixelRatio(this.effectiveDpr);
+    renderer.shadowMap.enabled = false;
+  }
+
+  public getRenderQuality(): RenderQualityProfile {
+    return this.qualityProfile;
+  }
+
+  public setRenderQuality(profile: RenderQualityProfile): void {
+    this.applyRenderQuality(profile);
+  }
+
+  public getRenderDiagnostics(isInteractive = this.isCameraInteractive): RenderDiagnostics {
+    const renderer = this.world?.renderer?.three;
+    return {
+      fps: this.fps,
+      frameTimeMs: this.frameTimeMs,
+      drawCalls: renderer?.info.render.calls ?? 0,
+      triangles: renderer?.info.render.triangles ?? 0,
+      geometries: renderer?.info.memory.geometries ?? 0,
+      textures: renderer?.info.memory.textures ?? 0,
+      effectiveDpr: this.effectiveDpr,
+      qualityProfile: this.qualityProfile,
+      isInteractive,
+      shadowsEnabled: false,
+    };
+  }
+
+  private applyRenderQuality(profile: RenderQualityProfile): void {
+    this.qualityProfile = profile;
+    this.adaptiveResolution.reset();
+    this.effectiveDpr = this.getInitialDpr(profile);
+    const renderer = this.world?.renderer?.three;
+    if (renderer) this.configureRenderer(renderer);
+    this.lighting.applyProfile(renderQualityProfiles[profile]);
+    if (renderer && this.world?.camera) this.resize();
   }
 
   private stopPerformanceSampler(): void {
@@ -970,7 +1074,9 @@ export class BimEngine {
       this.stopPerformanceSampler();
       this.disconnectResizeObserver();
       this.setupWebGLContextListeners(null);
+      this.setupCameraActivityTracking(null);
       await this.unloadModel();
+      this.lighting.dispose();
       try {
         this.components.dispose();
       } catch (err) {
