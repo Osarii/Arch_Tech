@@ -16,6 +16,7 @@
     "i18n:status": "i18next-cli status",
     "i18n:check": "npm run i18n:lint && npm run i18n:status",
     "server": "json-server --watch db.json --port 3001",
+    "dev:portal": "node scripts/dev-portal.mjs",
     "postinstall": "node scripts/patch-web-ifc.js"
   },
   "dependencies": {
