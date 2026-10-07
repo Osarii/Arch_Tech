@@ -20,8 +20,8 @@ import {
   portalStatusClass,
   ProjectNavigation,
   ProjectOverview,
-} from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
+} from '../../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../../components/portal/PortalShell';
 import { useLocale } from '../../../portal/locale';
 import { useTranslation } from 'react-i18next';
 import {

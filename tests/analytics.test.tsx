@@ -12,7 +12,7 @@ import {
   type ProgressSnapshot,
   type PortalProjectRecord,
 } from '../src/portal/data';
-import { AdminAnalyticsPage } from '../src/components/portal/admin/AdminAnalyticsPage';
+import { AdminAnalyticsPage } from '../src/pages/admin/AdminAnalyticsPage';
 
 const createMockProject = (id: string, title: string, progress: number): PortalProjectRecord => ({
   id,

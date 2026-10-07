@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { getPortalSnapshot, getPortalUser } from '../../../portal/data';
-import { portalAuth } from '../../../portal/demoAuth';
-import { projectService } from '../../../services/projectService';
-import { projectWorkflowService } from '../../../services/projectWorkflowService';
-import { userService } from '../../../services/userService';
-import { NavigationProps, PortalEmptyState, portalStatusClass } from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
-import { useLocale } from '../../../portal/locale';
+import { getPortalSnapshot, getPortalUser } from '../../portal/data';
+import { portalAuth } from '../../portal/demoAuth';
+import { projectService } from '../../services/projectService';
+import { projectWorkflowService } from '../../services/projectWorkflowService';
+import { userService } from '../../services/userService';
+import { NavigationProps, PortalEmptyState, portalStatusClass } from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
+import { useLocale } from '../../portal/locale';
 import { useTranslation } from 'react-i18next';
-import { getLocalizedApprovalTitle } from '../../../portal/showcaseLocalization';
+import { getLocalizedApprovalTitle } from '../../portal/showcaseLocalization';
 
 export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

@@ -1,39 +1,38 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
-import { LandingPage } from '../components/landing/LandingPage';
 import { useReducedMotion } from '../motion/useReducedMotion';
-import {
-  AdminAnalyticsPage,
-  AdminApprovalsPage,
-  AdminAssistantPage,
-  AdminOverviewPage,
-  AdminNewsPage,
-  AdminPeoplePage,
-  AdminProjectsPage,
-  ArchitectApprovalsPage,
-  ArchitectAssistantPage,
-  ArchitectDocumentsPage,
-  ArchitectInsightsPage,
-  ArchitectOverviewPage,
-  ArchitectProjectsPage,
-  ClientApprovalsPage,
-  ClientAssistantPage,
-  ClientDocumentsPage,
-  ClientInsightsPage,
-  ClientOverviewPage,
-  ClientProjectsPage,
-  DashboardProjectPage,
-  LoginOverlay,
-  PortalShell,
-  PublicProjectPage,
-  ServiceUnavailablePage,
-} from '../components/portal/PortalPages';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { LandingPage } from '../pages/public/LandingPage';
+import { PublicProjectPage } from '../pages/public/PublicProjectPage';
+import { NewsArchivePage } from '../pages/public/NewsArchivePage';
+import { NewsDetailPage } from '../pages/public/NewsDetailPage';
+import { LoginPage } from '../pages/auth/LoginPage';
+import { RegisterPage } from '../pages/auth/RegisterPage';
+import { DashboardProjectPage } from '../pages/portal/project/DashboardProjectPage';
+import { AdminAnalyticsPage } from '../pages/admin/AdminAnalyticsPage';
+import { AdminApprovalsPage } from '../pages/admin/AdminApprovalsPage';
+import { AdminAssistantPage } from '../pages/admin/AdminAssistantPage';
+import { AdminNewsPage } from '../pages/admin/AdminNewsPage';
+import { AdminOverviewPage } from '../pages/admin/AdminOverviewPage';
+import { AdminPeoplePage } from '../pages/admin/AdminPeoplePage';
+import { AdminProjectsPage } from '../pages/admin/AdminProjectsPage';
+import { ArchitectApprovalsPage } from '../pages/architect/ArchitectApprovalsPage';
+import { ArchitectAssistantPage } from '../pages/architect/ArchitectAssistantPage';
+import { ArchitectDocumentsPage } from '../pages/architect/ArchitectDocumentsPage';
+import { ArchitectInsightsPage } from '../pages/architect/ArchitectInsightsPage';
+import { ArchitectOverviewPage } from '../pages/architect/ArchitectOverviewPage';
+import { ArchitectProjectsPage } from '../pages/architect/ArchitectProjectsPage';
+import { ClientApprovalsPage } from '../pages/client/ClientApprovalsPage';
+import { ClientAssistantPage } from '../pages/client/ClientAssistantPage';
+import { ClientDocumentsPage } from '../pages/client/ClientDocumentsPage';
+import { ClientInsightsPage } from '../pages/client/ClientInsightsPage';
+import { ClientOverviewPage } from '../pages/client/ClientOverviewPage';
+import { ClientProjectsPage } from '../pages/client/ClientProjectsPage';
+import { PortalShell } from '../components/portal/PortalShell';
+import { ServiceUnavailablePage } from '../components/portal/PortalCommon';
 import { getPublicProject } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
 import { projectService } from '../services/projectService';
-import { NewsArchivePage } from '../components/news/NewsArchivePage';
-import { NewsDetailPage } from '../components/news/NewsDetailPage';
 import {
   AccessibleProjectRoute,
   ensureProjectsHydrated,
@@ -94,9 +93,11 @@ const WorkspaceRoute: React.FC = () => {
   );
 };
 
-const RootRoute: React.FC<{ onLogin: (trigger?: HTMLElement) => void; onNavigate: (path: string) => void }> = ({ onLogin, onNavigate }) => {
+const RootRoute: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
+  const location = useLocation();
   if (legacyWorkspaceRequested()) return <WorkspaceRoute />;
-  return <LandingPage onNavigate={onNavigate} onLogin={onLogin} />;
+  if (new URLSearchParams(location.search).get('login') === '1') return <Navigate to="/login" replace />;
+  return <LandingPage onNavigate={onNavigate} onLogin={() => onNavigate('/login')} />;
 };
 
 const PublicProjectRoute: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {
@@ -168,37 +169,8 @@ const DashboardProjectRoute: React.FC<{ role: 'client' | 'architect' | 'admin' }
 
 const RoutedApp: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const reducedMotion = useReducedMotion();
-  const [loginOpen, setLoginOpen] = useState(() => new URLSearchParams(location.search).get('login') === '1');
-  const loginTriggerRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    if (new URLSearchParams(location.search).get('login') === '1') setLoginOpen(true);
-  }, [location.search]);
-
-  const openLogin = (trigger?: HTMLElement) => {
-    loginTriggerRef.current = trigger ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
-    setLoginOpen(true);
-  };
-
-  const closeLogin = () => {
-    setLoginOpen(false);
-    if (location.pathname === '/' && location.search) navigate('/', { replace: true });
-    window.setTimeout(() => loginTriggerRef.current?.focus(), 0);
-  };
-
-  const completeLogin = () => {
-    setLoginOpen(false);
-    navigate(roleHome(portalAuth.getSession()?.role), { replace: true });
-  };
-
   const handleNavigate = (path: string) => {
-    if (path === '/login') {
-      openLogin();
-      if (location.pathname !== '/') navigate('/?login=1', { replace: true });
-      return;
-    }
     navigateWithViewTransition(navigate, path, reducedMotion);
   };
 
@@ -210,8 +182,9 @@ const RoutedApp: React.FC = () => {
   return (
     <>
       <Routes>
-        <Route path="/" element={<RootRoute onLogin={openLogin} onNavigate={handleNavigate} />} />
-        <Route path="/login" element={<Navigate to="/?login=1" replace />} />
+        <Route path="/" element={<RootRoute onNavigate={handleNavigate} />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/projects/:projectId" element={<PublicProjectRoute onNavigate={handleNavigate} />} />
         <Route path="/news" element={<NewsArchivePage onNavigate={handleNavigate} />} />
         <Route path="/news/:updateId" element={<NewsDetailRoute onNavigate={handleNavigate} />} />
@@ -268,7 +241,6 @@ const RoutedApp: React.FC = () => {
         </Route>
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
-      <LoginOverlay open={loginOpen} onClose={closeLogin} onSuccess={completeLogin} />
     </>
   );
 };

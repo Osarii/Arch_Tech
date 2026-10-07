@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getPortalSnapshot } from '../../../portal/data';
-import { useLocale } from '../../../portal/locale';
-import { projectService } from '../../../services/projectService';
-import { userService } from '../../../services/userService';
+import { getPortalSnapshot } from '../../portal/data';
+import { useLocale } from '../../portal/locale';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
 import {
   CreateProjectModal,
   NavigationProps,
   PortalEmptyState,
   ProjectRows,
-} from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
+} from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
 
 export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

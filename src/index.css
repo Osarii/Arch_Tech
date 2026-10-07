@@ -1,14 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 .font-serif {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Cormorant Garamond', serif;
 }
-.font-sans {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+.font-sans,
+.font-mono {
+  font-family: 'Manrope', sans-serif;
 }
 
 .landing-about-media {
@@ -313,7 +314,7 @@ body {
   overflow: hidden;
   background-color: #0d0f12;
   color: #e2e8f0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Manrope', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -569,7 +570,7 @@ html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
   padding: 0.35rem;
   color: var(--portal-text);
   background-color: var(--portal-surface-raised);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: 'Manrope', sans-serif;
   font-size: 0.5rem;
   letter-spacing: 0.12em;
   line-height: 1.3;
@@ -663,7 +664,7 @@ html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
     #111216;
   background-size: 2.5rem 2.5rem;
   color: rgb(244 239 232 / 0.55);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: 'Manrope', sans-serif;
   font-size: 0.6rem;
   letter-spacing: 0.16em;
   line-height: 1.4;
@@ -1167,3 +1168,40 @@ html.portal-reduce-motion .featured-project-slide:active,
 html.portal-reduce-motion button[data-testid^="public-project-"]:active {
   transform: none !important;
 }
+
+/* Public light theme uses the same semantic palette as the portal. */
+.landing-light {
+  background: #EDF4ED;
+  color: #000000;
+}
+.landing-light .landing-navbar,
+.landing-light .landing-navbar [class~="bg-[#000000]"] {
+  background: #EDF4ED !important;
+  border-color: rgb(0 0 0 / 0.16) !important;
+}
+.landing-light .landing-navbar [class*="text-stone"],
+.landing-light .landing-navbar [class*="text-white"] { color: #000000 !important; }
+.landing-light .landing-navbar [class*="border-white"] { border-color: rgb(0 0 0 / 0.22) !important; }
+.landing-light .landing-navbar [class*="bg-white"] { background-color: rgb(121 183 145 / 0.2) !important; }
+.landing-light .landing-hero,
+.landing-light .landing-team,
+.landing-light #development,
+.landing-light .landing-footer { background: #EDF4ED; color: #000000; }
+.landing-light .landing-hero [class*="text-stone"],
+.landing-light .landing-team [class*="text-stone"],
+.landing-light #development [class*="text-stone"],
+.landing-light .landing-footer [class*="text-stone"] { color: #000000 !important; }
+.landing-light .landing-hero [class*="text-[#EDF4ED]"],
+.landing-light .landing-team [class*="text-[#EDF4ED]"],
+.landing-light #development [class*="text-[#EDF4ED]"] { color: #000000 !important; }
+.landing-light .landing-hero [class*="border-white"],
+.landing-light .landing-team [class*="border-white"],
+.landing-light #development [class*="border-white"],
+.landing-light .landing-footer [class*="border-white"] { border-color: rgb(0 0 0 / 0.16) !important; }
+.landing-light .landing-footer-link:hover,
+.landing-light .landing-footer-link:focus-visible { color: #79B791 !important; }
+
+/* Tailwind's technical aliases still resolve to the public two-family system. */
+.font-sans,
+.font-mono { font-family: 'Manrope', sans-serif !important; }
+.font-serif { font-family: 'Cormorant Garamond', serif !important; }

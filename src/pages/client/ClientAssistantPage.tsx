@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavigationProps, PortalAIAssistantView } from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
-import { useLocale } from '../../../portal/locale';
+import { NavigationProps, PortalAIAssistantView } from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
+import { useLocale } from '../../portal/locale';
 
 export const ClientAssistantPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

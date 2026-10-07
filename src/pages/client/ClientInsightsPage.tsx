@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { getPortalSnapshot, getPortalUser } from '../../../portal/data';
-import { portalAuth } from '../../../portal/demoAuth';
-import { projectService } from '../../../services/projectService';
-import { userService } from '../../../services/userService';
-import { NavigationProps } from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
-import { useLocale } from '../../../portal/locale';
+import { getPortalSnapshot, getPortalUser } from '../../portal/data';
+import { portalAuth } from '../../portal/demoAuth';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
+import { NavigationProps } from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
+import { useLocale } from '../../portal/locale';
 import { useTranslation } from 'react-i18next';
 
 export const ClientInsightsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({

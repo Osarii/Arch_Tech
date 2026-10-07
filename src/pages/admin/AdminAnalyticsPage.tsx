@@ -1,12 +1,12 @@
 import React, { useEffect, useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getPortalSnapshot, type ProgressSnapshot } from '../../../portal/data';
-import { useLocale } from '../../../portal/locale';
-import { projectService } from '../../../services/projectService';
-import { userService } from '../../../services/userService';
-import { analyticsService } from '../../../services/analyticsService';
-import { ExternalContextPanel, NavigationProps } from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
+import { getPortalSnapshot, type ProgressSnapshot } from '../../portal/data';
+import { useLocale } from '../../portal/locale';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
+import { analyticsService } from '../../services/analyticsService';
+import { ExternalContextPanel, NavigationProps } from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
 
 type TrendPoint = {
   label: string;

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getPortalSnapshot } from '../../../portal/data';
-import { useLocale } from '../../../portal/locale';
-import { projectService } from '../../../services/projectService';
-import { userService } from '../../../services/userService';
-import { NavigationProps, PortalEmptyState, portalStatusClass } from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
-import { getLocalizedApprovalTitle, getLocalizedNotificationMessage } from '../../../portal/showcaseLocalization';
+import { getPortalSnapshot } from '../../portal/data';
+import { useLocale } from '../../portal/locale';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
+import { NavigationProps, PortalEmptyState, portalStatusClass } from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
+import { getLocalizedApprovalTitle, getLocalizedNotificationMessage } from '../../portal/showcaseLocalization';
 
 export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

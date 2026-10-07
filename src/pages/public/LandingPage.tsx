@@ -1,18 +1,18 @@
-import React from 'react';
-import { Footer } from './Footer';
-import { Hero } from './Hero';
-import { LandingNavbar } from './LandingNavbar';
-import { ProjectShowcase } from './ProjectShowcase';
-import { CapabilityRegister } from './CapabilityRegister';
-import { DevelopmentFrame } from './DevelopmentFrame';
-import { AboutSection } from './AboutSection';
-import { TeamSection } from './TeamSection';
-import { ScrollProgressBar } from '../motion/ScrollProgressBar';
-import { NewsSection } from '../news/NewsSection';
+import React, { useEffect, useState } from 'react';
+import { Footer } from '../../components/landing/Footer';
+import { Hero } from '../../components/landing/Hero';
+import { LandingNavbar } from '../../components/landing/LandingNavbar';
+import { ProjectShowcase } from '../../components/landing/ProjectShowcase';
+import { CapabilityRegister } from '../../components/landing/CapabilityRegister';
+import { DevelopmentFrame } from '../../components/landing/DevelopmentFrame';
+import { AboutSection } from '../../components/landing/AboutSection';
+import { TeamSection } from '../../components/landing/TeamSection';
+import { ScrollProgressBar } from '../../components/motion/ScrollProgressBar';
+import { NewsSection } from '../../components/news/NewsSection';
 import { useAccessibility } from '../../portal/useAccessibility';
-import { AccessibilityOverlay } from '../portal/AccessibilityOverlay';
-import { AccessibilityPanel } from '../portal/AccessibilityPanel';
-import { LandingAssistantLauncher } from './LandingAssistantLauncher';
+import { AccessibilityOverlay } from '../../components/portal/AccessibilityOverlay';
+import { AccessibilityPanel } from '../../components/portal/AccessibilityPanel';
+import { LandingAssistantLauncher } from '../../components/landing/LandingAssistantLauncher';
 
 interface LandingPageProps {
   onNavigate: (path: string) => void;
@@ -20,6 +20,8 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin }) => {
+  const [lightTheme, setLightTheme] = useState(() => typeof window !== 'undefined' && window.localStorage.getItem('garnier-public-theme') === 'light');
+  useEffect(() => { window.localStorage.setItem('garnier-public-theme', lightTheme ? 'light' : 'dark'); }, [lightTheme]);
   const {
     preferences,
     updatePreferences,
@@ -44,7 +46,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
   return (
     <div
       data-landing-scroll-container
-      className="landing-surface h-screen w-full overflow-y-auto overflow-x-hidden scroll-smooth bg-[#000000] font-sans text-[#EDF4ED] selection:bg-[#ABD1B5] selection:text-black"
+      className={`landing-surface ${lightTheme ? 'landing-light' : ''} h-screen w-full overflow-y-auto overflow-x-hidden scroll-smooth bg-[#000000] font-sans text-[#EDF4ED] selection:bg-[#ABD1B5] selection:text-black`}
     >
       <ScrollProgressBar />
       <LandingNavbar
@@ -52,6 +54,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         onNavigate={onNavigate}
         onOpenA11y={() => setIsA11yPanelOpen(true)}
         isA11yPanelOpen={isA11yPanelOpen}
+        lightTheme={lightTheme}
+        onToggleTheme={() => setLightTheme((value) => !value)}
       />
       <main>
         <Hero onViewProjects={viewProjects} onOpenProject={(id) => onNavigate(`/projects/${id}`)} />

@@ -1,21 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BarChart2, CheckCircle2, Layers, Sparkles, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getPortalSnapshot } from '../../../portal/data';
-import { useLocale } from '../../../portal/locale';
-import { projectService } from '../../../services/projectService';
-import { userService } from '../../../services/userService';
+import { getPortalSnapshot } from '../../portal/data';
+import { useLocale } from '../../portal/locale';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
 import {
   CreateProjectModal,
   ExternalContextPanel,
   NavigationProps,
-} from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
+} from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
 import {
   getLocalizedApprovalTitle,
   getLocalizedMilestoneLabel,
   getLocalizedUpdate,
-} from '../../../portal/showcaseLocalization';
+} from '../../portal/showcaseLocalization';
 
 export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

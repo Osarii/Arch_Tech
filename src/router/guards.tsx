@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet, useNavigate, useParams } from 'react-router-dom';
-import { LandingPage } from '../components/landing/LandingPage';
-import { ForbiddenPage, LoginOverlay, NotFoundPage, ServiceUnavailablePage } from '../components/portal/PortalPages';
+import { LandingPage } from '../pages/public/LandingPage';
+import { ForbiddenPage, NotFoundPage, ServiceUnavailablePage } from '../components/portal/PortalCommon';
 import { getPortalProject, getPortalUser, getProjectsForUser, PortalRole } from '../portal/data';
 import { portalAuth } from '../portal/demoAuth';
 import { authService } from '../services/authService';
@@ -19,11 +19,7 @@ export const legacyWorkspaceRequested = () => {
     || window.location.hash === '#/workspace';
 };
 
-const AuthGate: React.FC = () => {
-  const navigate = useNavigate();
-  const completeLogin = () => navigate(roleHome(portalAuth.getSession()?.role), { replace: true });
-  return <LoginOverlay open onClose={() => navigate('/')} onSuccess={completeLogin} />;
-};
+const AuthGate: React.FC = () => <Navigate to="/login" replace />;
 
 export const ProtectedRoute: React.FC = () => {
   if (legacyWorkspaceRequested()) return <Outlet />;
@@ -219,8 +215,8 @@ export const NotFoundRoute: React.FC = () => {
   return <NotFoundPage onNavigate={navigate} />;
 };
 
-export const PublicLandingRoute: React.FC<{ onLogin: (trigger?: HTMLElement) => void }> = ({ onLogin }) => {
+export const PublicLandingRoute: React.FC = () => {
   const navigate = useNavigate();
   if (legacyWorkspaceRequested()) return <Outlet />;
-  return <LandingPage onNavigate={navigate} onLogin={onLogin} />;
+  return <LandingPage onNavigate={navigate} onLogin={() => navigate('/login')} />;
 };

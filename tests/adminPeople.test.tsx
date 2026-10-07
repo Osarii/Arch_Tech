@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { AdminPeoplePage } from '../src/components/portal/admin/AdminPeoplePage';
+import { AdminPeoplePage } from '../src/pages/admin/AdminPeoplePage';
 import { getPortalSnapshot, type PortalUser } from '../src/portal/data';
 import { portalAuth } from '../src/portal/demoAuth';
 import { userService } from '../src/services/userService';

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { setStoredLocale } from '../src/portal/locale';
 import { getPublicProjects, PortalProject } from '../src/portal/data';
-import { PublicProjectPage } from '../src/components/portal/PublicProjectPage';
+import { PublicProjectPage } from '../src/pages/public/PublicProjectPage';
 import {
   getLocalizedApprovalTitle,
   getLocalizedDocument,

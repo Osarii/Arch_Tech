@@ -1,25 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, FileText, Layers, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getPortalSnapshot, getPortalUser } from '../../../portal/data';
-import { portalAuth } from '../../../portal/demoAuth';
-import { projectService } from '../../../services/projectService';
-import { projectWorkflowService } from '../../../services/projectWorkflowService';
-import { userService } from '../../../services/userService';
+import { getPortalSnapshot, getPortalUser } from '../../portal/data';
+import { portalAuth } from '../../portal/demoAuth';
+import { projectService } from '../../services/projectService';
+import { projectWorkflowService } from '../../services/projectWorkflowService';
+import { userService } from '../../services/userService';
 import {
   NavigationProps,
   ProjectIdentityButton,
   PortalEmptyState,
-} from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
-import { useLocale } from '../../../portal/locale';
+} from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
+import { useLocale } from '../../portal/locale';
 import {
   getLocalizedApprovalTitle,
   getLocalizedMilestoneLabel,
   getLocalizedNotificationMessage,
   getLocalizedProjectField,
   getLocalizedUpdate,
-} from '../../../portal/showcaseLocalization';
+} from '../../portal/showcaseLocalization';
 
 export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

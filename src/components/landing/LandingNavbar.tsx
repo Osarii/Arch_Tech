@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, X, Sliders } from 'lucide-react';
+import { Menu, Moon, Sun, X, Sliders } from 'lucide-react';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { useScrollProgress } from '../motion/useScrollProgress';
 import { useLocale } from '../../portal/locale';
@@ -9,6 +9,8 @@ interface LandingNavbarProps {
   onNavigate?: (path: string) => void;
   onOpenA11y?: () => void;
   isA11yPanelOpen?: boolean;
+  lightTheme?: boolean;
+  onToggleTheme?: () => void;
 }
 
 export const LandingNavbar: React.FC<LandingNavbarProps> = ({
@@ -16,6 +18,8 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
   onNavigate,
   onOpenA11y,
   isA11yPanelOpen,
+  lightTheme = false,
+  onToggleTheme,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isScrolled } = useScrollProgress('[data-landing-scroll-container]');
@@ -103,6 +107,17 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
             </button>
           </div>
 
+          <button
+            type="button"
+            data-testid="public-theme-toggle"
+            onClick={onToggleTheme}
+            aria-label={lightTheme ? 'Use dark theme' : 'Use light theme'}
+            className="inline-flex items-center gap-1.5 border border-white/20 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-300 transition-colors hover:border-white hover:text-white"
+          >
+            {lightTheme ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+            <span className="hidden xl:inline">{lightTheme ? 'Dark' : 'Light'}</span>
+          </button>
+
           {/* Accessibility Controls Trigger */}
           <button
             type="button"
@@ -175,6 +190,19 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
               </button>
             </div>
           </div>
+
+          <button
+            type="button"
+            data-testid="mobile-theme-toggle"
+            onClick={() => {
+              onToggleTheme?.();
+              setMobileMenuOpen(false);
+            }}
+            className="flex w-full items-center justify-between border border-white/20 px-4 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-200"
+          >
+            <span>{lightTheme ? 'Dark mode' : 'Light mode'}</span>
+            {lightTheme ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+          </button>
 
           <button
             type="button"

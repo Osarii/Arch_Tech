@@ -62,5 +62,25 @@
     "useArrows": "Use arrows to browse"
   },
   "returnToDashboard": "Return to client dashboard",
-  "returnToPortfolio": "Return to architectural portfolio"
+  "returnToPortfolio": "Return to architectural portfolio",
+  "auth": {
+    "loginDescription": "Review current project information, approvals and documents.",
+    "registerTitle": "Create client access",
+    "registerDescription": "A client account keeps project access connected to a single identity.",
+    "costaRicaId": "Costa Rica ID",
+    "check": "Check",
+    "checking": "Checking…",
+    "identityInvalid": "Enter a valid Costa Rican identification number.",
+    "identityFound": "Identity found: {{name}}.",
+    "identityMissing": "No public name was returned. You can still enter your name and continue.",
+    "identityUnavailable": "Lookup is temporarily unavailable. You can still enter your name and continue.",
+    "identityRetry": "Lookup is temporarily unavailable. Try again in {{seconds}} seconds.",
+    "registrationValidation": "Enter your identification, name, email and a matching password of at least 8 characters.",
+    "creating": "Creating…",
+    "createClientAccount": "Create client account",
+    "alreadyRegistered": "Already registered?",
+    "needAccess": "Need access?",
+    "createClientLink": "Create a client account",
+    "backToSite": "Back to site"
+  }
 }

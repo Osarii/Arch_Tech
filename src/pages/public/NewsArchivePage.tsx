@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { getPublicNewsUpdates, newsUpdatePath } from '../../services/newsService';
-import { ArchTechLogo } from '../brand/ArchTechLogo';
+import { ArchTechLogo } from '../../components/brand/ArchTechLogo';
 import { useLocale } from '../../portal/locale';
 
 export const NewsArchivePage: React.FC<{ onNavigate: (path: string) => void }> = ({ onNavigate }) => {

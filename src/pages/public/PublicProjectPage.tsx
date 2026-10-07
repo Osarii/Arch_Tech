@@ -2,11 +2,11 @@ import React from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getPublicProject } from '../../portal/data';
-import { SpatialRail } from '../gallery/SpatialRail';
-import { NavigationProps, NotFoundPage } from './PortalCommon';
-import { Reveal } from '../motion/Reveal';
-import { ArchTechLogo } from '../brand/ArchTechLogo';
-import { ProjectUpdatesTimeline } from '../news/ProjectUpdatesTimeline';
+import { SpatialRail } from '../../components/gallery/SpatialRail';
+import { NavigationProps, NotFoundPage } from '../../components/portal/PortalCommon';
+import { Reveal } from '../../components/motion/Reveal';
+import { ArchTechLogo } from '../../components/brand/ArchTechLogo';
+import { ProjectUpdatesTimeline } from '../../components/news/ProjectUpdatesTimeline';
 import { useLocale } from '../../portal/locale';
 import { getLocalizedMilestoneLabel, getLocalizedMilestoneStatus } from '../../portal/showcaseLocalization';
 

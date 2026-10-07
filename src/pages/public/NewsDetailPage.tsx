@@ -1,8 +1,8 @@
 import React from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getPublicNewsUpdate, getPublicNewsUpdates, getNewsProject, newsUpdatePath } from '../../services/newsService';
-import { ArchTechLogo } from '../brand/ArchTechLogo';
-import { NotFoundPage } from '../portal/PortalCommon';
+import { ArchTechLogo } from '../../components/brand/ArchTechLogo';
+import { NotFoundPage } from '../../components/portal/PortalCommon';
 import { useLocale } from '../../portal/locale';
 
 export const NewsDetailPage: React.FC<{ updateId: string; onNavigate: (path: string) => void }> = ({ updateId, onNavigate }) => {

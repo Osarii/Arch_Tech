@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getPortalSnapshot, getPortalUser, getProjectsForUser } from '../../../portal/data';
-import { portalAuth } from '../../../portal/demoAuth';
-import { useLocale } from '../../../portal/locale';
-import { projectService } from '../../../services/projectService';
-import { userService } from '../../../services/userService';
-import { NavigationProps, PortalEmptyState } from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
-import { getLocalizedDocument } from '../../../portal/showcaseLocalization';
+import { getPortalSnapshot, getPortalUser, getProjectsForUser } from '../../portal/data';
+import { portalAuth } from '../../portal/demoAuth';
+import { useLocale } from '../../portal/locale';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
+import { NavigationProps, PortalEmptyState } from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
+import { getLocalizedDocument } from '../../portal/showcaseLocalization';
 
 export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

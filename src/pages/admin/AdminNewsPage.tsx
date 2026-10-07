@@ -22,13 +22,13 @@ import {
   type NewsCategory,
   type NewsSourceType,
   type NewsStatus,
-} from '../../../portal/data';
-import { newsService } from '../../../services/newsService';
-import { NavigationProps, PortalEmptyState } from '../PortalCommon';
-import { useLocale } from '../../../portal/locale';
-import { PortalShell, usePortalShell } from '../PortalShell';
+} from '../../portal/data';
+import { newsService } from '../../services/newsService';
+import { NavigationProps, PortalEmptyState } from '../../components/portal/PortalCommon';
+import { useLocale } from '../../portal/locale';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
 import { useTranslation } from 'react-i18next';
-import { getLocalizedNewsArticle } from '../../../portal/showcaseLocalization';
+import { getLocalizedNewsArticle } from '../../portal/showcaseLocalization';
 
 interface NewsModalProps {
   open: boolean;

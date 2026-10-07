@@ -62,5 +62,25 @@
     "useArrows": "Use las flechas para explorar"
   },
   "returnToDashboard": "Regresar al panel de control del cliente",
-  "returnToPortfolio": "Regresar al portafolio arquitectónico"
+  "returnToPortfolio": "Regresar al portafolio arquitectónico",
+  "auth": {
+    "loginDescription": "Revise la información actual de proyectos, aprobaciones y documentos.",
+    "registerTitle": "Crear acceso de cliente",
+    "registerDescription": "Una cuenta de cliente mantiene el acceso a proyectos vinculado a una sola identidad.",
+    "costaRicaId": "Cédula de Costa Rica",
+    "check": "Consultar",
+    "checking": "Consultando…",
+    "identityInvalid": "Ingrese una identificación costarricense válida.",
+    "identityFound": "Identidad encontrada: {{name}}.",
+    "identityMissing": "No se devolvió un nombre público. Puede ingresar su nombre y continuar.",
+    "identityUnavailable": "La consulta no está disponible temporalmente. Puede ingresar su nombre y continuar.",
+    "identityRetry": "La consulta no está disponible temporalmente. Inténtelo de nuevo en {{seconds}} segundos.",
+    "registrationValidation": "Ingrese su identificación, nombre, correo y una contraseña coincidente de al menos 8 caracteres.",
+    "creating": "Creando…",
+    "createClientAccount": "Crear cuenta de cliente",
+    "alreadyRegistered": "¿Ya está registrado?",
+    "needAccess": "¿Necesita acceso?",
+    "createClientLink": "Crear una cuenta de cliente",
+    "backToSite": "Volver al sitio"
+  }
 }

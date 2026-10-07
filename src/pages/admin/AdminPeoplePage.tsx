@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getPortalSnapshot, PortalRole } from '../../../portal/data';
-import { useLocale } from '../../../portal/locale';
-import { projectService } from '../../../services/projectService';
-import { userService } from '../../../services/userService';
-import { NavigationProps } from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
+import { getPortalSnapshot, PortalRole } from '../../portal/data';
+import { useLocale } from '../../portal/locale';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
+import { NavigationProps } from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
 
 export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

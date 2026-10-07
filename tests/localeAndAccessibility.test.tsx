@@ -18,9 +18,9 @@ import {
   STORAGE_KEY_A11Y,
 } from '../src/portal/accessibility';
 import { LandingNavbar } from '../src/components/landing/LandingNavbar';
-import { NewsArchivePage } from '../src/components/news/NewsArchivePage';
-import { NewsDetailPage } from '../src/components/news/NewsDetailPage';
-import { PublicProjectPage } from '../src/components/portal/PublicProjectPage';
+import { NewsArchivePage } from '../src/pages/public/NewsArchivePage';
+import { NewsDetailPage } from '../src/pages/public/NewsDetailPage';
+import { PublicProjectPage } from '../src/pages/public/PublicProjectPage';
 import { PortalShell } from '../src/components/portal/PortalShell';
 import { AIAgent } from '../src/bim/ai/AIAgent';
 import { aiService } from '../src/services/aiService';

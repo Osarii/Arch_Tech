@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, FileText, Layers, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { getPortalUser, getProjectsForUser } from '../../../portal/data';
-import { portalAuth } from '../../../portal/demoAuth';
-import { useLocale } from '../../../portal/locale';
-import { projectService } from '../../../services/projectService';
-import { userService } from '../../../services/userService';
-import { NavigationProps, ProjectIdentityButton, PortalEmptyState, portalStatusClass } from '../PortalCommon';
-import { PortalShell, usePortalShell } from '../PortalShell';
+import { getPortalUser, getProjectsForUser } from '../../portal/data';
+import { portalAuth } from '../../portal/demoAuth';
+import { useLocale } from '../../portal/locale';
+import { projectService } from '../../services/projectService';
+import { userService } from '../../services/userService';
+import { NavigationProps, ProjectIdentityButton, PortalEmptyState, portalStatusClass } from '../../components/portal/PortalCommon';
+import { PortalShell, usePortalShell } from '../../components/portal/PortalShell';
 import {
   getLocalizedApprovalTitle,
   getLocalizedMilestoneLabel,
   getLocalizedMilestoneStatus,
   getLocalizedProjectField,
   getLocalizedUpdate,
-} from '../../../portal/showcaseLocalization';
+} from '../../portal/showcaseLocalization';
 
 export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,

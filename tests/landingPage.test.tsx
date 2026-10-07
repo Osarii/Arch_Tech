@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../src/App';
 import { Hero } from '../src/components/landing/Hero';
-import { LandingPage } from '../src/components/landing/LandingPage';
+import { LandingPage } from '../src/pages/public/LandingPage';
 import { LandingNavbar } from '../src/components/landing/LandingNavbar';
 import { ProjectShowcase } from '../src/components/landing/ProjectShowcase';
 import { AboutSection, aboutFacts } from '../src/components/landing/AboutSection';
@@ -765,7 +765,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
       window.history.replaceState({}, '', '/');
       render(<App />);
       fireEvent.click(screen.getByTestId('client-login-link'));
-      expect(screen.getByRole('button', { name: `${role[0].toUpperCase()}${role.slice(1)} access` })).toBeDefined();
+      expect(screen.getByRole('button', { name: new RegExp(`${role} access`, 'i') })).toBeDefined();
       fireEvent.click(screen.getByTestId(`quick-login-${role}`));
       expect(window.location.pathname).toBe(path);
     }
@@ -934,7 +934,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     });
   });
 
-  it('rejects remote reload for deactivated user and displays login gate', async () => {
+  it('rejects remote reload for deactivated user and displays login page', async () => {
     vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
     window.localStorage.setItem('arch-tech-portal-session', JSON.stringify({
       email: 'deactivated@arch-tech.studio',
@@ -963,9 +963,8 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     window.history.replaceState({}, '', '/admin');
     render(<App />);
 
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeDefined();
-    });
+    await waitFor(() => expect(window.location.pathname).toBe('/login'));
+    expect(screen.getByRole('heading', { name: 'Portal Access' })).toBeDefined();
     expect(portalAuth.getSession()).toBeNull();
     expect(window.localStorage.getItem('arch-tech-portal-session')).toBeNull();
   });
@@ -1193,8 +1192,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     render(<App />);
 
     fireEvent.click(screen.getByTestId('client-login-link'));
-    expect(window.location.pathname).toBe('/');
-    expect(screen.getByRole('dialog')).toBeDefined();
+    expect(window.location.pathname).toBe('/login');
     fireEvent.change(screen.getByTestId('login-email'), { target: { value: 'mariana.solano@arch-tech.studio' } });
     fireEvent.change(screen.getByTestId('login-password'), { target: { value: 'client-access' } });
     fireEvent.click(screen.getByTestId('login-submit'));
@@ -1221,21 +1219,13 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     expect(await screen.findByTestId('workspace')).toBeDefined();
   });
 
-  it('opens landing login from navbar and footer, then restores trigger focus', async () => {
+  it('opens the routed login page from the landing navigation', async () => {
     render(<App />);
 
     const navLogin = screen.getByTestId('client-login-link');
     fireEvent.click(navLogin);
-    expect(window.location.pathname).toBe('/');
-    expect(screen.getByRole('dialog')).toBeDefined();
-
-    fireEvent.click(screen.getByLabelText('Close login'));
-    await waitFor(() => expect(document.activeElement).toBe(navLogin));
-
-    fireEvent.click(screen.getAllByRole('button', { name: /Project Portal/i }).at(-1)!);
-    expect(screen.getByRole('dialog')).toBeDefined();
-    fireEvent.mouseDown(screen.getAllByRole('presentation').at(-1)!);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(window.location.pathname).toBe('/login');
+    expect(screen.getByRole('heading', { name: 'Portal Access' })).toBeDefined();
   });
 
   it('renders the architectural footer directory, wordmark and useful navigation', () => {
@@ -1278,12 +1268,12 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     expect(onLogin.mock.calls[0][0]).toBeInstanceOf(HTMLElement);
   });
 
-  it('guards private routes with the isolated portal login', () => {
+  it('guards private routes with the routed portal login', () => {
     window.history.replaceState({}, '', '/dashboard');
     render(<App />);
 
     expect(screen.getByRole('heading', { name: 'Portal Access' })).toBeDefined();
-    expect(window.location.pathname).toBe('/dashboard');
+    expect(window.location.pathname).toBe('/login');
     expect(screen.queryByText('Projects in progress.')).toBeNull();
   });
 

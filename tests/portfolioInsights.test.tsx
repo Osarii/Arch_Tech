@@ -5,7 +5,7 @@ import type { PortalProject } from '../src/portal/data';
 import { projectService } from '../src/services/projectService';
 import { calculatePortfolioInsights, portfolioInsightsService } from '../src/services/portfolioInsightsService';
 import { PortfolioInsightsPanel } from '../src/components/portal/admin/PortfolioInsightsPanel';
-import { AdminAssistantPage } from '../src/components/portal/admin/AdminAssistantPage';
+import { AdminAssistantPage } from '../src/pages/admin/AdminAssistantPage';
 import { bimAgent } from '../src/bim/ai/AIAgent';
 
 vi.mock('../src/bim/ai/AIAgent', () => ({

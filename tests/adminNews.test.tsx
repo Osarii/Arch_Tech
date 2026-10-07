@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AdminNewsPage } from '../src/components/portal/admin/AdminNewsPage';
+import { AdminNewsPage } from '../src/pages/admin/AdminNewsPage';
 
 describe('AdminNewsPage UI and Management', () => {
   beforeEach(() => {
