@@ -13,6 +13,14 @@ export type RemoteAIRequest = {
   projectId?: string;
 };
 
+export interface RemoteAIResponsePayload {
+  message?: string;
+  toolCalls?: AIProviderResponse['toolCalls'];
+  toolRequest?: AIProviderResponse['toolCalls'];
+  success?: boolean;
+  error?: string | null;
+}
+
 export class AIServiceError extends Error {
   constructor(message: string) {
     super(message);
@@ -27,13 +35,76 @@ export const aiService = {
   async generateResponse(payload: RemoteAIRequest): Promise<AIProviderResponse> {
     const webhookUrl = getWebhookUrl();
     if (!webhookUrl) throw new AIServiceError('Remote AI is not configured.');
-    const response = await fetch(webhookUrl, { method: 'POST', headers: { Accept: 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    if (!response.ok) throw new AIServiceError(`Remote AI failed with status ${response.status}.`);
-    const body = await response.json() as Partial<AIProviderResponse>;
-    if (typeof body.message !== 'string') throw new AIServiceError('Remote AI returned an invalid structured response.');
-    return { message: body.message, toolCalls: Array.isArray(body.toolCalls) ? body.toolCalls : undefined };
+
+    let response: Response;
+    try {
+      response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(25000),
+      });
+    } catch (err: unknown) {
+      const error = err as { name?: string; message?: string } | undefined;
+      if (error?.name === 'TimeoutError' || error?.name === 'AbortError') {
+        throw new AIServiceError('Remote AI request timed out.');
+      }
+      throw new AIServiceError(`Network error communicating with AI service: ${error?.message || 'Connection failed'}`);
+    }
+
+    if (!response.ok) {
+      throw new AIServiceError(`Remote AI failed with status ${response.status}.`);
+    }
+
+    let rawData: unknown;
+    try {
+      rawData = await response.json();
+    } catch {
+      throw new AIServiceError('Remote AI returned a malformed response.');
+    }
+
+    if (!rawData || typeof rawData !== 'object') {
+      throw new AIServiceError('Remote AI returned an empty response.');
+    }
+
+    const body = rawData as RemoteAIResponsePayload;
+
+    if (body.error) {
+      throw new AIServiceError(String(body.error));
+    }
+
+    if (typeof body.message !== 'string' || !body.message.trim()) {
+      throw new AIServiceError('Remote AI returned an invalid structured response.');
+    }
+
+    const toolCalls = Array.isArray(body.toolCalls)
+      ? body.toolCalls
+      : Array.isArray(body.toolRequest)
+        ? body.toolRequest
+        : undefined;
+
+    return {
+      message: body.message.trim(),
+      toolCalls,
+    };
   },
   async healthCheck(): Promise<boolean> {
-    return Boolean(getWebhookUrl() || getApiBaseUrl());
+    const webhookUrl = getWebhookUrl();
+    if (!webhookUrl) return Boolean(getApiBaseUrl());
+    try {
+      const healthUrl = webhookUrl.replace(/\/webhook\/[^/?#]+/, '/webhook/garnier-assistant-health');
+      const response = await fetch(healthUrl, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (response.ok) {
+        const data = (await response.json()) as { success?: boolean; status?: string };
+        return Boolean(data.success && data.status === 'ok');
+      }
+      return false;
+    } catch {
+      return false;
+    }
   },
 };

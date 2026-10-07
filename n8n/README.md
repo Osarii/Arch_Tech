@@ -1,25 +1,65 @@
-# ARCH_TECH n8n workflows
+# ARCH_TECH n8n Workflows
 
-## Import
+## Garnier Assistant Multi-Workflow Architecture
 
-Import `ai-assistant.json` and `project-automation.json` from the n8n editor using **Import from File**. Activate each workflow only after assigning the required webhook URLs to the matching Vite variables.
+The Garnier Assistant is structured into two modular, interacting workflows:
 
-## Credentials
+1. **Workflow 1: Chat Orchestrator** (`n8n/workflows/garnier-assistant-chat.json`)
+   - Webhook: `POST /webhook/garnier-assistant`
+   - Health Check: `GET /webhook/garnier-assistant-health`
+   - Validates requests, normalizes conversation history and locale (`es` / `en`), calls Workflow 2 for project data, builds grounded prompt context, runs the LLM chain, and returns structured responses.
 
-The AI workflow requires an n8n LLM credential configured in its LLM node. The automation workflow has no external credential requirement. Do not commit API keys or webhook secrets.
+2. **Workflow 2: Project Tools** (`n8n/workflows/garnier-assistant-project-tools.json`)
+   - Trigger: `Execute Workflow Trigger` (sub-workflow architecture called by Workflow 1)
+   - Supports tool operations: `project_info`, `project_progress`, `project_documents`, `project_approvals`, `project_analytics`, `bim_metadata`, `user_context`, `navigation_context`.
+   - Fetches live data from local JSON Server on port 3001 with embedded ARCH_TECH catalog fallback.
+
+3. **Project Automation** (`n8n/project-automation.json`)
+   - Webhook: `POST /webhook/arch-tech-automation`
+   - Handles project lifecycle events (`project.created`, `project.updated`, `approval.requested`).
+
+## Local Environment & URLs
+
+Configure in `.env.development`:
+```bash
+VITE_API_BASE_URL=http://localhost:3001
+VITE_N8N_AI_WEBHOOK_URL=http://localhost:5678/webhook/garnier-assistant
+VITE_N8N_AUTOMATION_WEBHOOK_URL=http://localhost:5678/webhook/arch-tech-automation
+```
 
 ## Contracts
 
-AI request: `{ userPrompt, messages, tools, context }`. AI response: `{ message, toolCalls?: [{ toolName, args }] }`.
+### Garnier Assistant Chat Request
+```json
+{
+  "userPrompt": "Tell me about the current project.",
+  "messages": [],
+  "locale": "en",
+  "role": "client",
+  "route": "/portal/project/zona-franca-la-lima",
+  "projectId": "zona-franca-la-lima",
+  "context": {},
+  "tools": []
+}
+```
 
-Automation request: `{ event, projectId, message?, metadata? }`, where `event` is `project.created`, `project.updated`, or `approval.requested`. Response: `{ success: boolean, notification?: { message, date? }, error?: string }`.
+### Garnier Assistant Chat Response
+```json
+{
+  "success": true,
+  "message": "...",
+  "intent": "conversation",
+  "toolRequest": null,
+  "requestId": "req_...",
+  "error": null
+}
+```
 
-## Local verification
-
-Set `VITE_N8N_AI_WEBHOOK_URL` and `VITE_N8N_AUTOMATION_WEBHOOK_URL`, restart Vite, then use the BIM Assistant or create/update/request approval controls in the Admin portal.
-
-The repository validates the workflow JSON structure and frontend contracts only. Live LLM execution requires an imported workflow, deployed webhook and configured n8n credential; no live n8n pass is claimed here.
-
-## Failure behavior
-
-Unavailable or malformed webhooks surface an error and preserve the deterministic offline AI provider or local portal state. No write tool is executed remotely without the existing confirmation gate.
+### Health Check Response
+```json
+{
+  "success": true,
+  "status": "ok",
+  "service": "Garnier Assistant"
+}
+```

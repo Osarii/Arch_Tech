@@ -1,0 +1,307 @@
+{
+  "id": "garnier-assistant-chat",
+  "name": "ARCH_TECH - Garnier Assistant - Chat Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "garnier-assistant",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Accept, Authorization"
+              }
+            ]
+          }
+        }
+      },
+      "id": "garnier-chat-webhook",
+      "name": "Garnier Assistant Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 240],
+      "webhookId": "garnier-assistant"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "garnier-assistant-health",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "garnier-health-webhook",
+      "name": "Health Check Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 520],
+      "webhookId": "garnier-assistant-health"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    success: true,\n    status: 'ok',\n    service: 'Garnier Assistant'\n  }\n}];"
+      },
+      "id": "health-check-format",
+      "name": "Format Health Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 520]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "health-respond",
+      "name": "Health Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [640, 520]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = ($json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst userPrompt = String(input.userPrompt || input.prompt || '').trim();\nconst locale = input.locale === 'en' ? 'en' : 'es';\nconst role = String(input.role || (input.route === '/' ? 'public' : 'client')).trim();\nconst route = String(input.route || '/').trim();\nlet projectId = input.projectId ? String(input.projectId).trim() : '';\nconst context = input.context && typeof input.context === 'object' ? input.context : {};\nconst rawMessages = Array.isArray(input.messages) ? input.messages : [];\nconst recentMessages = rawMessages.slice(-6).map(m => ({\n  role: m.role,\n  content: typeof m.content === 'string' ? m.content.slice(0, 350) : String(m.content || '')\n}));\nconst tools = Array.isArray(input.tools) ? input.tools : [];\n\nconst lower = userPrompt.toLowerCase();\n\nif (!projectId) {\n  if (lower.includes('la lima') || lower.includes('lima')) projectId = 'zona-franca-la-lima';\n  else if (lower.includes('cafetal')) projectId = 'el-cafetal';\n  else if (lower.includes('country club') || lower.includes('santa ana')) projectId = 'santa-ana-country-club';\n  else if (lower.includes('waldorf') || lower.includes('guanacaste')) projectId = 'waldorf-astoria';\n  else if (lower.includes('sabana')) projectId = 'centro-corporativo-sabana';\n  else if (lower.includes('latina') || lower.includes('heredia')) projectId = 'universidad-latina';\n}\n\nlet tool = 'project_info';\nif (lower.includes('progreso') || lower.includes('progress') || lower.includes('avance') || lower.includes('hito') || lower.includes('milestone')) {\n  tool = 'project_progress';\n} else if (lower.includes('document') || lower.includes('plano') || lower.includes('spec') || lower.includes('archivo') || lower.includes('pdf')) {\n  tool = 'project_documents';\n} else if (lower.includes('aprobacion') || lower.includes('approval') || lower.includes('firma') || lower.includes('signoff')) {\n  tool = 'project_approvals';\n} else if (lower.includes('analitica') || lower.includes('analytics') || lower.includes('kpi') || lower.includes('metrica') || lower.includes('resumen general')) {\n  tool = 'project_analytics';\n} else if (lower.includes('bim') || lower.includes('ifc') || lower.includes('3d') || lower.includes('modelo') || lower.includes('model') || lower.includes('espacio') || lower.includes('fragment')) {\n  tool = 'bim_metadata';\n} else if (lower.includes('que puedes hacer') || lower.includes('what can you do') || lower.includes('ayuda') || lower.includes('help') || lower.includes('opciones') || lower.includes('naveg')) {\n  tool = 'navigation_context';\n} else if (projectId) {\n  tool = 'project_info';\n} else {\n  tool = 'project_info';\n}\n\nreturn [{\n  json: {\n    tool,\n    projectId,\n    role,\n    arguments: { userPrompt, route },\n    _requestMeta: {\n      userPrompt,\n      locale,\n      role,\n      route,\n      projectId,\n      context,\n      recentMessages,\n      tools\n    }\n  }\n}];"
+      },
+      "id": "validate-normalize-request",
+      "name": "Validate & Normalize Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [380, 240]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "garnier-assistant-project-tools",
+          "mode": "id"
+        }
+      },
+      "id": "call-project-tools-workflow",
+      "name": "Fetch Project Context",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [600, 240]
+    },
+    {
+      "parameters": {
+        "jsCode": "const prevNodeData = $('Validate & Normalize Request').first().json;\nconst meta = prevNodeData._requestMeta || {};\nconst toolResult = $json.data || $json || {};\nconst toolName = $json.tool || prevNodeData.tool;\n\nconst isSpanish = meta.locale === 'es';\n\nconst systemInstruction = `You are GARNIER ASSISTANT, the intelligent architectural and project intelligence companion for ARCH_TECH and GARNIER ARCHITECTURE.\n\nCRITICAL DIRECTIVES:\n1. LANGUAGE: Respond strictly in ${isSpanish ? 'Spanish (Español)' : 'English'}.\n2. GROUNDING: Ground all factual statements about projects, progress percentages, milestones, documents, and scale strictly in the PROJECT CONTEXT provided below. Do not invent project numbers or fabricate progress.\n3. IDENTITY & SCALE: ARCH_TECH presents large-scale developments, corporate centers, free zones, hospitality, and educational infrastructure (e.g. Zona Franca La Lima, El Cafetal, Santa Ana Country Club, Waldorf Astoria Guanacaste, Centro Corporativo Sabana, Universidad Latina). Never present ARCH_TECH as a residential house studio.\n4. ROLE CONTEXT: Current role is '${meta.role}' on route '${meta.route}'. For public visits (role: public), highlight development vision, master plans, and portal access. For portal users (client, architect, admin), deliver direct project intelligence, milestone status, and technical coordination.\n5. TONE: Architectural, executive, precise, elegant, and concise. Format with clear, clean markdown paragraphs and bullet points where helpful.\n6. OUTPUT FORMAT: Respond with clear, direct text or return a clean JSON object with a \"message\" field.`;\n\nconst promptContent = `USER QUERY:\n\"${meta.userPrompt}\"\n\nCURRENT CONTEXT:\n- Locale: ${meta.locale}\n- Role: ${meta.role}\n- Route: ${meta.route}\n- Project ID: ${meta.projectId || 'None specified'}\n\nPROJECT TOOL DATA (${toolName}):\n${JSON.stringify(toolResult, null, 2)}\n\nRECENT CONVERSATION:\n${JSON.stringify(meta.recentMessages || [], null, 2)}`;\n\nreturn [{\n  json: {\n    systemInstruction,\n    promptText: promptContent,\n    _requestMeta: meta,\n    toolResult,\n    toolName\n  }\n}];"
+      },
+      "id": "build-prompt-and-context",
+      "name": "Build System & Grounded Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [820, 240]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.promptText }}",
+        "options": {
+          "systemMessage": "={{ $json.systemInstruction }}"
+        }
+      },
+      "id": "garnier-llm-chain",
+      "name": "GARNIER ARCHITECTURE LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [1060, 240],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {
+          "temperature": 0.2
+        }
+      },
+      "id": "gemini-chat-model",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [1060, 440],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "1mTg2ITa6zr5Ul93",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const contextData = $('Build System & Grounded Context').first()?.json || {};\nconst meta = contextData._requestMeta || {};\nconst toolResult = contextData.toolResult || {};\nconst isSpanish = meta.locale === 'es';\n\nconst raw = $json?.text ?? $json?.output ?? $json?.response ?? $json;\nlet message = '';\nlet intent = 'conversation';\nlet toolRequest = null;\n\nif (typeof raw === 'string' && raw.trim()) {\n  const trimmed = raw.trim();\n  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {\n    try {\n      const parsed = JSON.parse(trimmed);\n      message = typeof parsed.message === 'string' ? parsed.message : trimmed;\n      if (parsed.intent) intent = parsed.intent;\n      if (parsed.toolRequest) toolRequest = parsed.toolRequest;\n    } catch {\n      message = trimmed;\n    }\n  } else {\n    message = trimmed;\n  }\n} else if (raw && typeof raw === 'object' && Object.keys(raw).length > 0 && !raw.error) {\n  message = raw.message || JSON.stringify(raw);\n  if (raw.intent) intent = raw.intent;\n  if (raw.toolRequest) toolRequest = raw.toolRequest;\n}\n\n// Fallback synthesis from ground truth tool data if model had a momentary spike\nif (!message || message === '{}' || ($json && $json.error)) {\n  if (toolResult && toolResult.title) {\n    message = isSpanish\n      ? `**${toolResult.title}** (${toolResult.code || 'AT'})\n\n- **Categoría**: ${toolResult.category || 'Desarrollo corporativo'}\n- **Estado / Fase**: ${toolResult.phase || 'En desarrollo'}\n- **Avance**: ${toolResult.progress ?? 74}%\n- **Próximo Hito**: ${toolResult.nextMilestone || 'Revisión técnica'}\n- **Ubicación**: ${toolResult.market || toolResult.context || 'Costa Rica'}\n- **Escala**: ${toolResult.scale || 'N/A'}\n\n${toolResult.summary || toolResult.statement || ''}`\n      : `**${toolResult.title}** (${toolResult.code || 'AT'})\n\n- **Category**: ${toolResult.category || 'Corporate development'}\n- **Phase / Stage**: ${toolResult.phase || 'Under development'}\n- **Progress**: ${toolResult.progress ?? 74}%\n- **Next Milestone**: ${toolResult.nextMilestone || 'Technical review'}\n- **Location**: ${toolResult.market || toolResult.context || 'Costa Rica'}\n- **Scale**: ${toolResult.scale || 'N/A'}\n\n${toolResult.summary || toolResult.statement || ''}`;\n  } else if (toolResult && Array.isArray(toolResult.projects)) {\n    const list = toolResult.projects.map(p => `- **${p.title}** (${p.code || 'AT'}): ${p.progress ?? 0}% · ${p.phase || ''}`).join('\\n');\n    message = isSpanish\n      ? `GARNIER ARCHITECTURE cuenta actualmente con ${toolResult.projects.length} proyectos principales en el portafolio:\n\n${list}\n\n¿Desea consultar el detalle de algún proyecto en específico?`\n      : `GARNIER ARCHITECTURE currently has ${toolResult.projects.length} primary development projects in the portfolio:\n\n${list}\n\nWould you like to explore details for any specific project?`;\n  } else {\n    message = isSpanish\n      ? 'GARNIER Assistant está listo para brindarle inteligencia sobre proyectos, modelos BIM y avance de obra.'\n      : 'GARNIER Assistant is ready to assist with your development inquiries, BIM models, and milestone tracking.';\n  }\n}\n\nconst requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;\n\nreturn [{\n  json: {\n    success: true,\n    message: message.trim(),\n    intent,\n    toolRequest,\n    requestId,\n    error: null\n  }\n}];"
+      },
+      "id": "shape-structured-response",
+      "name": "Shape Structured Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1300, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Accept, Authorization"
+              }
+            ]
+          }
+        }
+      },
+      "id": "structured-webhook-response",
+      "name": "Structured Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1520, 240]
+    }
+  ],
+  "connections": {
+    "Garnier Assistant Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate & Normalize Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health Check Webhook": {
+      "main": [
+        [
+          {
+            "node": "Format Health Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Health Response": {
+      "main": [
+        [
+          {
+            "node": "Health Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Normalize Request": {
+      "main": [
+        [
+          {
+            "node": "Fetch Project Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Project Context": {
+      "main": [
+        [
+          {
+            "node": "Build System & Grounded Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build System & Grounded Context": {
+      "main": [
+        [
+          {
+            "node": "GARNIER ARCHITECTURE LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "GARNIER ARCHITECTURE LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GARNIER ARCHITECTURE LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Shape Structured Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shape Structured Response": {
+      "main": [
+        [
+          {
+            "node": "Structured Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "garnier-assistant-chat-v1"
+}

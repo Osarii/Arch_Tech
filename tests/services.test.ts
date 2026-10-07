@@ -827,4 +827,95 @@ describe('portal service layer', () => {
       expect(article?.image).toBe('/projects/waldorf-astoria/garnier-cover.jpg');
     });
   });
+
+  describe('aiService and remote n8n assistant integration', () => {
+    it('reports isConfigured accurately based on VITE_N8N_AI_WEBHOOK_URL', async () => {
+      const { aiService } = await import('../src/services/aiService');
+      vi.stubEnv('VITE_N8N_AI_WEBHOOK_URL', '');
+      expect(aiService.isConfigured()).toBe(false);
+
+      vi.stubEnv('VITE_N8N_AI_WEBHOOK_URL', 'http://localhost:5678/webhook/garnier-assistant');
+      expect(aiService.isConfigured()).toBe(true);
+    });
+
+    it('generates a structured response from the remote webhook and parses toolCalls/toolRequest', async () => {
+      const { aiService } = await import('../src/services/aiService');
+      vi.stubEnv('VITE_N8N_AI_WEBHOOK_URL', 'http://localhost:5678/webhook/garnier-assistant');
+
+      const mockResponse = {
+        success: true,
+        message: 'Zona Franca La Lima is at 74% progress.',
+        intent: 'project_inquiry',
+        toolRequest: [{ toolName: 'select_element', args: { id: 101 } }],
+        requestId: 'req_123',
+        error: null,
+      };
+
+      const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(mockResponse), { status: 200 }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      const response = await aiService.generateResponse({
+        userPrompt: 'Tell me about La Lima',
+        messages: [],
+        tools: [],
+        context: {},
+        locale: 'en',
+        role: 'client',
+        route: '/portal',
+        projectId: 'zona-franca-la-lima',
+      });
+
+      expect(response.message).toBe('Zona Franca La Lima is at 74% progress.');
+      expect(response.toolCalls).toEqual([{ toolName: 'select_element', args: { id: 101 } }]);
+      expect(fetchMock).toHaveBeenCalledWith(
+        'http://localhost:5678/webhook/garnier-assistant',
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    it('handles remote AI errors and network failure gracefully', async () => {
+      const { aiService, AIServiceError } = await import('../src/services/aiService');
+      vi.stubEnv('VITE_N8N_AI_WEBHOOK_URL', 'http://localhost:5678/webhook/garnier-assistant');
+
+      // 1. Status 500
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Server Error', { status: 500 })));
+      await expect(
+        aiService.generateResponse({
+          userPrompt: 'Hello',
+          messages: [],
+          tools: [],
+          context: {},
+          locale: 'es',
+        })
+      ).rejects.toThrow(AIServiceError);
+
+      // 2. Explicit error in payload
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: 'LLM context error' }), { status: 200 })));
+      await expect(
+        aiService.generateResponse({
+          userPrompt: 'Hello',
+          messages: [],
+          tools: [],
+          context: {},
+          locale: 'es',
+        })
+      ).rejects.toThrow('LLM context error');
+    });
+
+    it('performs health check against /webhook/garnier-assistant-health', async () => {
+      const { aiService } = await import('../src/services/aiService');
+      vi.stubEnv('VITE_N8N_AI_WEBHOOK_URL', 'http://localhost:5678/webhook/garnier-assistant');
+
+      const fetchMock = vi.fn().mockImplementation(async (url: string) => {
+        if (url === 'http://localhost:5678/webhook/garnier-assistant-health') {
+          return new Response(JSON.stringify({ success: true, status: 'ok', service: 'Garnier Assistant' }), { status: 200 });
+        }
+        return new Response('Not Found', { status: 404 });
+      });
+      vi.stubGlobal('fetch', fetchMock);
+
+      expect(await aiService.healthCheck()).toBe(true);
+      expect(fetchMock).toHaveBeenCalledWith('http://localhost:5678/webhook/garnier-assistant-health', expect.anything());
+    });
+  });
 });
