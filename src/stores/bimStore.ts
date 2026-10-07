@@ -61,6 +61,10 @@ interface BimState {
   // Model Metadata
   modelMetadata: ModelMetadata | null;
   setModelMetadata: (meta: ModelMetadata | null) => void;
+  activeSiteContextId: string | null;
+  setActiveSiteContextId: (id: string | null) => void;
+  activeSiteContextLabel: string | null;
+  setActiveSiteContextLabel: (label: string | null) => void;
 
   // Selection
   selectedElement: SelectedElementDetails | null;
@@ -201,6 +205,10 @@ export const useBimStore = create<BimState>((set) => ({
 
   modelMetadata: null,
   setModelMetadata: (meta) => set({ modelMetadata: meta }),
+  activeSiteContextId: null,
+  setActiveSiteContextId: (id) => set({ activeSiteContextId: id }),
+  activeSiteContextLabel: null,
+  setActiveSiteContextLabel: (label) => set({ activeSiteContextLabel: label }),
 
   selectedElement: null,
   setSelectedElement: (element) => set({ selectedElement: element }),
@@ -305,6 +313,8 @@ export const useBimStore = create<BimState>((set) => ({
   resetModel: () =>
     set({
       modelMetadata: null,
+      activeSiteContextId: null,
+      activeSiteContextLabel: null,
       selectedElement: null,
       selectedNodeId: null,
       spatialTree: [],
