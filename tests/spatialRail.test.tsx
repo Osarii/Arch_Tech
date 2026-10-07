@@ -1,10 +1,15 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SpatialRail, buildSpatialRailSlides } from '../src/components/gallery/SpatialRail';
 import { getPublicProject } from '../src/portal/data';
+import * as useReducedMotionModule from '../src/motion/useReducedMotion';
 
 describe('ARCH_TECH SpatialRail showcase media', () => {
   const sampleProject = getPublicProject('zona-franca-la-lima')!;
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('builds only unique locally mapped project photography', () => {
     const slides = buildSpatialRailSlides(sampleProject);
@@ -16,19 +21,16 @@ describe('ARCH_TECH SpatialRail showcase media', () => {
     expect(slides.every((slide) => slide.src.startsWith('/projects/zona-franca-la-lima/'))).toBe(true);
   });
 
-  it('renders the fixed media rail with prioritized first image and lazy later images', () => {
+  it('renders one active media frame with lazy thumbnail previews', () => {
     render(<SpatialRail project={sampleProject} />);
 
-    const track = screen.getByTestId('rail-track');
+    const frame = screen.getByTestId('rail-frame');
     expect(screen.getByTestId('rail-index').textContent).toBe('01');
     expect(screen.getByText('/ 03')).toBeDefined();
-    expect(screen.getAllByTestId(/^rail-slide-/)).toHaveLength(3);
-    const images = track.querySelectorAll('img');
-    expect(images).toHaveLength(2);
-    expect(images[0].getAttribute('loading')).toBe('eager');
-    expect(images[0].getAttribute('decoding')).toBe('async');
-    expect(images[1].getAttribute('loading')).toBe('lazy');
-    expect(screen.getByTestId('rail-image-fallback')).toBeDefined();
+    expect(frame.querySelectorAll('img')).toHaveLength(1);
+    expect(frame.querySelector('img')?.getAttribute('loading')).toBe('eager');
+    expect(screen.getByTestId('rail-thumbnails').querySelectorAll('img')).toHaveLength(3);
+    expect(screen.getByTestId('rail-thumbnails').querySelector('img')?.getAttribute('loading')).toBe('lazy');
   });
 
   it('supports bounded controls and keyboard navigation', () => {
@@ -45,6 +47,15 @@ describe('ARCH_TECH SpatialRail showcase media', () => {
     expect(next).toHaveProperty('disabled', true);
     fireEvent.click(prev);
     expect(screen.getByTestId('rail-index').textContent).toBe('02');
+  });
+
+  it('selects a thumbnail and keeps one active image in the main frame', () => {
+    render(<SpatialRail project={sampleProject} />);
+    fireEvent.click(screen.getByTestId('rail-thumb-gallery-2'));
+
+    expect(screen.getByTestId('rail-index').textContent).toBe('03');
+    expect(screen.getByTestId('rail-thumb-gallery-2').getAttribute('aria-current')).toBe('true');
+    expect(screen.getByTestId('rail-frame').querySelectorAll('img')).toHaveLength(1);
   });
 
   it('opens fullscreen media, keeps navigation local, and restores focus', async () => {
@@ -68,6 +79,15 @@ describe('ARCH_TECH SpatialRail showcase media', () => {
     render(<SpatialRail project={project} />);
     expect(screen.getByTestId('rail-image-fallback')).toBeDefined();
     expect(screen.getByRole('img', { name: 'Zona Franca La Lima - Project cover image unavailable' })).toBeDefined();
+  });
+
+  it('settles immediately when reduced motion is preferred', () => {
+    vi.spyOn(useReducedMotionModule, 'useReducedMotion').mockReturnValue(true);
+    render(<SpatialRail project={sampleProject} />);
+    fireEvent.click(screen.getByTestId('rail-next-btn'));
+
+    expect(screen.getByTestId('rail-index').textContent).toBe('02');
+    expect(screen.getByTestId('rail-frame').querySelector('button > div')?.className).toContain('opacity-100');
   });
 
   it('keeps every public project mapped to its own local media directory', () => {

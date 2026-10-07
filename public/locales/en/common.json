@@ -52,7 +52,10 @@
     "nextSlide": "Next slide",
     "openFullscreen": "Open fullscreen view of {{label}}",
     "prevFullscreen": "Previous fullscreen image",
-    "prevSlide": "Previous slide"
+    "prevSlide": "Previous slide",
+    "selectImage": "Select project image",
+    "selectSlide": "Select {{label}}",
+    "useArrows": "Use arrows to browse"
   },
   "returnToDashboard": "Return to client dashboard",
   "returnToPortfolio": "Return to architectural portfolio"

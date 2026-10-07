@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as THREE from 'three';
 import { BimGenerationService, bimGenerationService } from '@/bim/generation/generationService';
-import { bimEngine } from '@/bim/engine/BimEngine';
+import { BimEngine, bimEngine } from '@/bim/engine/BimEngine';
 import { ToolRegistry } from '@/bim/ai/ToolRegistry';
 import { RuleBasedProvider } from '@/bim/ai/providers/RuleBasedProvider';
 import { AIAgent } from '@/bim/ai/AIAgent';
@@ -351,6 +351,22 @@ describe('Phase 6A: Viewport Visibility & Camera Fit Integration', () => {
     expect(fittedBox.max.z).toBeCloseTo(24, 1);
   });
 
+  it('caches computed model bounds until geometry is explicitly invalidated', () => {
+    const group = new THREE.Group();
+    group.add(new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), new THREE.MeshBasicMaterial()));
+    bimEngine.currentModel = { object: group } as any;
+    bimEngine.invalidateModelBounds();
+    const setFromObject = vi.spyOn(THREE.Box3.prototype, 'setFromObject');
+
+    bimEngine.getModelBounds();
+    bimEngine.getModelBounds();
+    expect(setFromObject).toHaveBeenCalledTimes(1);
+
+    bimEngine.invalidateModelBounds();
+    bimEngine.getModelBounds();
+    expect(setFromObject).toHaveBeenCalledTimes(2);
+  });
+
   it('falls back to active preview bounds when no IFC model is loaded', () => {
     const plan = bimGenerationService.generatePlan({
       length: 12,
@@ -432,11 +448,13 @@ describe('Phase 6A Lifecycle Hardening: Viewport & Engine Lifecycle', () => {
     (bimEngine as any).isInitialized = false;
     (bimEngine as any).initPromise = null;
     (bimEngine as any).container = null;
+    (bimEngine as any).resizeFrameId = null;
     bimEngine.world = {
       renderer: {
         three: {
           domElement: mockCanvas,
           setSize: vi.fn(),
+          setPixelRatio: vi.fn(),
         },
         resize: vi.fn(),
         setupEvents: vi.fn(),
@@ -462,6 +480,7 @@ describe('Phase 6A Lifecycle Hardening: Viewport & Engine Lifecycle', () => {
     mockContainer2.appendChild(staleChild);
 
     bimEngine.rebindContainer(mockContainer2);
+    bimEngine.resize();
 
     expect(mockCanvas.parentElement).toBe(mockContainer2);
     expect(mockContainer2.contains(staleChild)).toBe(false);
@@ -534,17 +553,70 @@ describe('Phase 6A Lifecycle Hardening: Viewport & Engine Lifecycle', () => {
     expect(resolved).toBe(true);
   });
 
-  it('dispose cleans up observers, frame loops, and clears initPromise and container', () => {
-    (bimEngine as any).animFrameId = 42;
-    (bimEngine as any).container = mockContainer1;
-    (bimEngine as any).initPromise = Promise.resolve();
-    (bimEngine as any).isInitialized = true;
+  it('coalesces repeated resize notifications into one update per frame', () => {
+    let frameCallback: FrameRequestCallback | undefined;
+    const requestFrame = vi.fn((callback: FrameRequestCallback) => {
+      frameCallback = callback;
+      return 7;
+    });
+    vi.stubGlobal('requestAnimationFrame', requestFrame);
+    const resize = vi.spyOn(bimEngine, 'resize');
 
-    bimEngine.dispose();
+    (bimEngine as any).scheduleResize();
+    (bimEngine as any).scheduleResize();
 
-    expect((bimEngine as any).animFrameId).toBeNull();
-    expect((bimEngine as any).container).toBeNull();
-    expect((bimEngine as any).initPromise).toBeNull();
-    expect((bimEngine as any).isInitialized).toBe(false);
+    expect(requestFrame).toHaveBeenCalledTimes(1);
+    frameCallback?.(0);
+    expect(resize).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
+  });
+
+  it('samples renderer statistics once per second and stops cleanly', () => {
+    vi.useFakeTimers();
+    const engine = new BimEngine();
+    const info = {
+      render: { frame: 0, calls: 2, triangles: 12 },
+      memory: { geometries: 3, textures: 4 },
+    };
+    engine.world = { renderer: { three: { info } } } as any;
+    engine.onPerformanceUpdate = vi.fn();
+
+    (engine as any).startPerformanceSampler();
+    info.render.frame = 30;
+    vi.advanceTimersByTime(1000);
+    expect(engine.onPerformanceUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ fps: 30, drawCalls: 2, triangles: 12, geometries: 3, textures: 4 })
+    );
+
+    (engine as any).stopPerformanceSampler();
+    vi.advanceTimersByTime(1000);
+    expect(engine.onPerformanceUpdate).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  it('dispose waits for model cleanup and is idempotent', async () => {
+    const engine = new BimEngine();
+    const unload = vi.spyOn(engine, 'unloadModel').mockResolvedValue(undefined);
+    const disposeComponents = vi.spyOn(engine.components, 'dispose').mockImplementation(() => {});
+    const disconnect = vi.fn();
+    const revokeObjectUrl = vi.spyOn(URL, 'revokeObjectURL');
+    (engine as any).isInitialized = true;
+    (engine as any).container = mockContainer1;
+    (engine as any).resizeObserver = { disconnect };
+    (engine as any).resizeFrameId = 42;
+    (engine as any).performanceTimerId = setInterval(() => {}, 1000);
+    (engine as any).workerBlobUrl = 'blob:test-worker';
+
+    await Promise.all([engine.dispose(), engine.dispose()]);
+    await engine.dispose();
+
+    expect(unload).toHaveBeenCalledTimes(1);
+    expect(disposeComponents).toHaveBeenCalledTimes(1);
+    expect(disconnect).toHaveBeenCalledTimes(1);
+    expect(revokeObjectUrl).toHaveBeenCalledWith('blob:test-worker');
+    expect((engine as any).performanceTimerId).toBeNull();
+    expect((engine as any).resizeFrameId).toBeNull();
+    expect((engine as any).container).toBeNull();
+    expect((engine as any).isInitialized).toBe(false);
   });
 });

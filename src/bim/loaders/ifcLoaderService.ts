@@ -8,6 +8,9 @@ import { bimGenerationService } from '../generation/generationService';
 import { ModelMetadata } from '@/types/bim';
 
 export class IfcLoaderService {
+  private static loadGeneration = 0;
+  private static readonly staleRequest = Symbol('stale-ifc-load');
+
   /**
    * Loads a real IFC file from an ArrayBuffer or File object through That Open and WebIFC.
    * Transactional and non-destructive: stages new model and only swaps upon complete validation.
@@ -17,6 +20,10 @@ export class IfcLoaderService {
     source: File | ArrayBuffer | Uint8Array,
     fileName = 'model.ifc'
   ): Promise<void> {
+    const requestGeneration = ++this.loadGeneration;
+    const ensureCurrent = () => {
+      if (requestGeneration !== this.loadGeneration) throw this.staleRequest;
+    };
     const store = useBimStore.getState();
 
     // Preserve references to active OLD model, engine, scene, and store state
@@ -75,6 +82,7 @@ export class IfcLoaderService {
         fileName = source.name;
         sizeBytes = source.size;
         const buffer = await source.arrayBuffer();
+        ensureCurrent();
         uint8 = new Uint8Array(buffer);
       } else if (source instanceof Uint8Array) {
         uint8 = source;
@@ -107,6 +115,7 @@ export class IfcLoaderService {
         webIfcApi.SetWasmPath(wasmPath, true);
       }
       await webIfcApi.Init(undefined, true);
+      ensureCurrent();
       modelID = webIfcApi.OpenModel(uint8);
 
       // Extract schema
@@ -125,7 +134,9 @@ export class IfcLoaderService {
       });
 
       await bimEngine.waitForInit();
+      ensureCurrent();
       fragmentsModel = await bimEngine.ifcLoader.load(uint8, true, fileName);
+      ensureCurrent();
 
       // 4. Stage: Building BIM tree & Analysis
       store.setLoading({
@@ -145,7 +156,18 @@ export class IfcLoaderService {
         counts: treeResult.elementCounts,
       };
 
-      // 5. REVERSIBLE COMMIT NEW: Switch scene and engine references without destroying old resources first
+      // Clear active overlays before the synchronous commit boundary.
+      if (bimEngine.highlighter) {
+        await bimEngine.highlighter.clear('select');
+        ensureCurrent();
+      }
+      if (bimEngine.clipper) {
+        bimEngine.clipper.deleteAll();
+      }
+      bimEngine.deleteMeasurements();
+
+      // 5. REVERSIBLE COMMIT NEW: after this token check the swap is synchronous.
+      ensureCurrent();
       commitStarted = true;
 
       // Switch scene model
@@ -162,15 +184,7 @@ export class IfcLoaderService {
       bimEngine.webIfcModelID = modelID;
       bimEngine.currentModel = fragmentsModel;
       bimEngine.currentModelId = fragmentsModel.modelId;
-
-      // Clear any active visual overlays on the viewport
-      if (bimEngine.highlighter) {
-        await bimEngine.highlighter.clear('select');
-      }
-      if (bimEngine.clipper) {
-        bimEngine.clipper.deleteAll();
-      }
-      bimEngine.deleteMeasurements();
+      bimEngine.invalidateModelBounds();
 
       // Frame camera to fit new model
       bimEngine.fitModel();
@@ -197,14 +211,16 @@ export class IfcLoaderService {
       // Mark commit as completed BEFORE destroying OLD resources
       commitCompleted = true;
     } catch (err: any) {
-      console.error('Failed to load IFC file:', err);
+      const stale = err === this.staleRequest || requestGeneration !== this.loadGeneration;
+      if (!stale) console.error('Failed to load IFC file:', err);
 
-      if (commitStarted && !commitCompleted) {
+      if (commitStarted && !commitCompleted && !stale && bimEngine.currentModel === fragmentsModel) {
         // ROLLBACK: Restore OLD engine references
         bimEngine.webIfcApi = prevEngineState.webIfcApi;
         bimEngine.webIfcModelID = prevEngineState.webIfcModelID;
         bimEngine.currentModel = prevEngineState.currentModel;
         bimEngine.currentModelId = prevEngineState.currentModelId;
+        bimEngine.invalidateModelBounds();
 
         // Restore scene objects
         if (bimEngine.world?.scene?.three) {
@@ -221,9 +237,13 @@ export class IfcLoaderService {
       }
 
       // Clean up newly created staged resources on failure (staging failure or commit rollback)
-      if (fragmentsModel && fragmentsModel !== prevEngineState.currentModel) {
+      if (fragmentsModel && fragmentsModel !== bimEngine.currentModel) {
         try {
-          if (fragmentsModel.object && bimEngine.world?.scene?.three) {
+          if (
+            fragmentsModel.object &&
+            fragmentsModel.object !== bimEngine.currentModel?.object &&
+            bimEngine.world?.scene?.three
+          ) {
             bimEngine.world.scene.three.remove(fragmentsModel.object);
           }
           await fragmentsModel.dispose?.();
@@ -236,7 +256,7 @@ export class IfcLoaderService {
         webIfcApi &&
         modelID !== null &&
         modelID !== undefined &&
-        webIfcApi !== prevEngineState.webIfcApi
+        (webIfcApi !== bimEngine.webIfcApi || modelID !== bimEngine.webIfcModelID)
       ) {
         try {
           webIfcApi.CloseModel(modelID);
@@ -244,6 +264,8 @@ export class IfcLoaderService {
           // ignore cleanup error
         }
       }
+
+      if (stale) return;
 
       store.setLoading({
         isBusy: false,
@@ -259,7 +281,11 @@ export class IfcLoaderService {
     // Model swap has successfully committed. Post-commit cleanup failures
     // MUST NOT trigger rollback to disposed old resources.
     if (commitCompleted) {
-      if (prevEngineState.currentModel && prevEngineState.currentModel !== fragmentsModel) {
+      if (
+        prevEngineState.currentModel &&
+        prevEngineState.currentModel !== fragmentsModel &&
+        prevEngineState.currentModel !== bimEngine.currentModel
+      ) {
         try {
           await prevEngineState.currentModel.dispose?.();
         } catch (e) {
@@ -271,7 +297,9 @@ export class IfcLoaderService {
         prevEngineState.webIfcApi &&
         prevEngineState.webIfcModelID !== null &&
         prevEngineState.webIfcModelID !== undefined &&
-        prevEngineState.webIfcApi !== webIfcApi
+        prevEngineState.webIfcApi !== webIfcApi &&
+        (prevEngineState.webIfcApi !== bimEngine.webIfcApi ||
+          prevEngineState.webIfcModelID !== bimEngine.webIfcModelID)
       ) {
         try {
           prevEngineState.webIfcApi.CloseModel(prevEngineState.webIfcModelID);
@@ -300,6 +328,7 @@ export class IfcLoaderService {
    * Unloads current model and resets state.
    */
   public static async unload(): Promise<void> {
+    this.loadGeneration++;
     await bimEngine.unloadModel();
     useBimStore.getState().resetModel();
   }

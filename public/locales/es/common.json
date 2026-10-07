@@ -52,7 +52,10 @@
     "nextSlide": "Siguiente diapositiva",
     "openFullscreen": "Abrir vista en pantalla completa de {{label}}",
     "prevFullscreen": "Imagen anterior en pantalla completa",
-    "prevSlide": "Diapositiva anterior"
+    "prevSlide": "Diapositiva anterior",
+    "selectImage": "Seleccionar imagen del proyecto",
+    "selectSlide": "Seleccionar {{label}}",
+    "useArrows": "Use las flechas para explorar"
   },
   "returnToDashboard": "Regresar al panel de control del cliente",
   "returnToPortfolio": "Regresar al portafolio arquitectónico"

@@ -17,11 +17,11 @@ import { bimGenerationService } from '../generation/generationService';
 import { useBimStore } from '@/stores/bimStore';
 
 export class BimEngine {
-  public components: OBC.Components;
-  public worlds: OBC.Worlds;
+  public components!: OBC.Components;
+  public worlds!: OBC.Worlds;
   public world!: OBC.SimpleWorld<OBC.SimpleScene, OBC.OrthoPerspectiveCamera, OBC.SimpleRenderer>;
-  public fragments: OBC.FragmentsManager;
-  public ifcLoader: OBC.IfcLoader;
+  public fragments!: OBC.FragmentsManager;
+  public ifcLoader!: OBC.IfcLoader;
   public highlighter!: OBF.Highlighter;
   public hider!: OBC.Hider;
   public clipper!: OBC.Clipper;
@@ -36,9 +36,15 @@ export class BimEngine {
   public webIfcModelID: number | null = null;
 
   private resizeObserver: ResizeObserver | null = null;
-  private animFrameId: number | null = null;
+  private resizeFrameId: number | null = null;
+  private performanceTimerId: ReturnType<typeof setInterval> | null = null;
+  private workerBlobUrl: string | null = null;
+  private contextCanvas: HTMLCanvasElement | null = null;
+  private modelBoundsCache: { model: FRAGS.FragmentsModel; box: THREE.Box3 } | null = null;
   private isInitialized = false;
   private initPromise: Promise<void> | null = null;
+  private disposePromise: Promise<void> | null = null;
+  private isDisposed = false;
 
   // Selection callback
   public onElementSelected?: (details: SelectedElementDetails | null) => void;
@@ -46,15 +52,12 @@ export class BimEngine {
 
   // Performance tracking
   private lastTime = performance.now();
-  private frames = 0;
+  private lastRendererFrame = 0;
   private fps = 60;
   private frameTimeMs = 16.6;
 
   constructor() {
-    this.components = new OBC.Components();
-    this.worlds = this.components.get(OBC.Worlds);
-    this.fragments = this.components.get(OBC.FragmentsManager);
-    this.ifcLoader = this.components.get(OBC.IfcLoader);
+    this.createCoreComponents();
 
     const isDevOrTest =
       (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') ||
@@ -63,6 +66,36 @@ export class BimEngine {
 
     if (typeof window !== 'undefined' && isDevOrTest) {
       (window as any).bimEngine = this;
+    }
+  }
+
+  private createCoreComponents(): void {
+    this.components = new OBC.Components();
+    this.worlds = this.components.get(OBC.Worlds);
+    this.fragments = this.components.get(OBC.FragmentsManager);
+    this.ifcLoader = this.components.get(OBC.IfcLoader);
+  }
+
+  private readonly handleContextLost = (event: Event): void => {
+    event.preventDefault();
+    this.stopPerformanceSampler();
+  };
+
+  private readonly handleContextRestored = (): void => {
+    this.resize();
+    this.startPerformanceSampler();
+  };
+
+  private setupWebGLContextListeners(canvas: HTMLCanvasElement | null): void {
+    if (this.contextCanvas === canvas) return;
+    if (this.contextCanvas) {
+      this.contextCanvas.removeEventListener('webglcontextlost', this.handleContextLost);
+      this.contextCanvas.removeEventListener('webglcontextrestored', this.handleContextRestored);
+    }
+    this.contextCanvas = canvas;
+    if (canvas) {
+      canvas.addEventListener('webglcontextlost', this.handleContextLost);
+      canvas.addEventListener('webglcontextrestored', this.handleContextRestored);
     }
   }
 
@@ -77,6 +110,14 @@ export class BimEngine {
    * Initializes the That Open engine with container element.
    */
   public async init(container: HTMLElement): Promise<void> {
+    if (this.disposePromise) {
+      await this.disposePromise;
+    }
+    if (this.isDisposed) {
+      this.createCoreComponents();
+      this.isDisposed = false;
+    }
+
     if (this.isInitialized) {
       if (this.container !== container) {
         this.rebindContainer(container);
@@ -139,10 +180,11 @@ export class BimEngine {
       }
       this.world.renderer = new OBC.SimpleRenderer(this.components, container);
       if (this.world.renderer.three) {
-        this.world.renderer.three.setPixelRatio(Math.min(window.devicePixelRatio, 1.25));
+        this.world.renderer.three.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
         this.world.renderer.three.shadowMap.enabled = false;
         this.world.renderer.three.domElement.style.position = 'absolute';
         this.world.renderer.three.domElement.style.inset = '0';
+        this.setupWebGLContextListeners(this.world.renderer.three.domElement);
       }
 
       // 4. Setup Camera
@@ -162,6 +204,7 @@ export class BimEngine {
         if (workerResponse.ok) {
           const workerBlob = await workerResponse.blob();
           const workerUrl = URL.createObjectURL(workerBlob);
+          this.workerBlobUrl = workerUrl;
           this.fragments.init(workerUrl);
         } else {
           const workerUrl = await OBC.FragmentsManager.getWorker();
@@ -226,10 +269,23 @@ export class BimEngine {
       // 11. Handle container resizing
       this.setupResizeObserver(container);
 
-      // 12. Performance monitoring loop
-      this.startPerformanceLoop();
+      // 12. Low-frequency performance monitoring
+      this.startPerformanceSampler();
 
       this.isInitialized = true;
+    } catch (error) {
+      this.stopPerformanceSampler();
+      this.disconnectResizeObserver();
+      this.setupWebGLContextListeners(null);
+      this.revokeWorkerBlobUrl();
+      try {
+        this.components.dispose();
+      } catch {
+        // Preserve the original initialization error.
+      }
+      this.isDisposed = true;
+      this.container = null;
+      throw error;
     } finally {
       this.initPromise = null;
     }
@@ -253,7 +309,8 @@ export class BimEngine {
     }
 
     // 2. Reattach the existing canvas if present
-    const canvas = this.world?.renderer?.three?.domElement;
+    const threeRenderer = this.world?.renderer?.three;
+    const canvas = threeRenderer?.domElement;
     if (canvas) {
       canvas.style.position = 'absolute';
       canvas.style.inset = '0';
@@ -263,13 +320,20 @@ export class BimEngine {
       if (canvas.parentElement !== container) {
         container.appendChild(canvas);
       }
+      threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+      this.setupWebGLContextListeners(canvas);
     }
 
     // 3. Update That Open SimpleRenderer internal container reference & events
     if (this.world?.renderer) {
+      try {
+        this.world.renderer.setupEvents(false);
+      } catch {
+        // Safe fallback if renderer does not support setupEvents
+      }
       (this.world.renderer as any).container = container;
       try {
-        (this.world.renderer as any).setupEvents(true);
+        this.world.renderer.setupEvents(true);
       } catch {
         // Safe fallback if renderer does not support setupEvents
       }
@@ -279,19 +343,40 @@ export class BimEngine {
     this.setupResizeObserver(container);
 
     // 5. Trigger resize and aspect ratio update
-    this.resize();
+    this.scheduleResize();
   }
 
-  private setupResizeObserver(container: HTMLElement) {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-      this.resizeObserver = null;
-    }
+  private setupResizeObserver(container: HTMLElement): void {
+    this.disconnectResizeObserver();
     if (typeof ResizeObserver === 'undefined') return;
     this.resizeObserver = new ResizeObserver(() => {
-      this.resize();
+      this.scheduleResize();
     });
     this.resizeObserver.observe(container);
+  }
+
+  private scheduleResize(): void {
+    if (this.resizeFrameId !== null) return;
+    if (typeof requestAnimationFrame !== 'function') {
+      this.resize();
+      return;
+    }
+    this.resizeFrameId = requestAnimationFrame(() => {
+      this.resizeFrameId = null;
+      this.resize();
+    });
+  }
+
+  private cancelPendingResize(): void {
+    if (this.resizeFrameId === null) return;
+    if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this.resizeFrameId);
+    this.resizeFrameId = null;
+  }
+
+  private disconnectResizeObserver(): void {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    this.cancelPendingResize();
   }
 
   public resize(): void {
@@ -300,38 +385,46 @@ export class BimEngine {
     this.world.camera?.updateAspect();
   }
 
-  private startPerformanceLoop(): void {
-    if (this.animFrameId !== null) {
-      cancelAnimationFrame(this.animFrameId);
-    }
-    const loop = () => {
-      this.frames++;
+  private startPerformanceSampler(): void {
+    this.stopPerformanceSampler();
+    const renderer = this.world?.renderer?.three;
+    this.lastTime = performance.now();
+    this.lastRendererFrame = renderer?.info.render.frame ?? 0;
+
+    this.performanceTimerId = setInterval(() => {
+      const activeRenderer = this.world?.renderer?.three;
+      if (!activeRenderer) return;
+
       const now = performance.now();
       const delta = now - this.lastTime;
+      const currentFrame = activeRenderer.info.render.frame ?? this.lastRendererFrame;
+      const renderedFrames = Math.max(0, currentFrame - this.lastRendererFrame);
+      this.fps = delta > 0 ? Math.round((renderedFrames * 1000) / delta) : 0;
+      this.frameTimeMs = renderedFrames > 0 ? Math.round((delta / renderedFrames) * 10) / 10 : 0;
+      this.lastRendererFrame = currentFrame;
+      this.lastTime = now;
 
-      if (delta >= 1000) {
-        this.fps = Math.round((this.frames * 1000) / delta);
-        this.frameTimeMs = Math.round((delta / this.frames) * 10) / 10;
-        this.frames = 0;
-        this.lastTime = now;
+      this.onPerformanceUpdate?.({
+        fps: this.fps,
+        frameTimeMs: this.frameTimeMs,
+        drawCalls: activeRenderer.info.render.calls,
+        triangles: activeRenderer.info.render.triangles,
+        geometries: activeRenderer.info.memory.geometries,
+        textures: activeRenderer.info.memory.textures,
+      });
+    }, 1000);
+  }
 
-        if (this.onPerformanceUpdate && this.world?.renderer?.three) {
-          const info = this.world.renderer.three.info;
-          this.onPerformanceUpdate({
-            fps: this.fps,
-            frameTimeMs: this.frameTimeMs,
-            drawCalls: info.render.calls,
-            triangles: info.render.triangles,
-            geometries: info.memory.geometries,
-            textures: info.memory.textures,
-          });
-        }
-      }
+  private stopPerformanceSampler(): void {
+    if (this.performanceTimerId === null) return;
+    clearInterval(this.performanceTimerId);
+    this.performanceTimerId = null;
+  }
 
-      this.animFrameId = requestAnimationFrame(loop);
-    };
-
-    this.animFrameId = requestAnimationFrame(loop);
+  private revokeWorkerBlobUrl(): void {
+    if (!this.workerBlobUrl) return;
+    URL.revokeObjectURL(this.workerBlobUrl);
+    this.workerBlobUrl = null;
   }
 
   private handleModelIdMapSelection(modelIdMap: OBC.ModelIdMap) {
@@ -365,17 +458,26 @@ export class BimEngine {
    * Fallback: computed from currentModel.object via THREE.Box3().setFromObject.
    */
   public getModelBounds(): THREE.Box3 | null {
+    if (!this.currentModel) return null;
+    if (this.modelBoundsCache?.model === this.currentModel) {
+      return this.modelBoundsCache.box;
+    }
     if (this.currentModel?.box && !this.currentModel.box.isEmpty()) {
-      return this.currentModel.box;
+      this.modelBoundsCache = { model: this.currentModel, box: this.currentModel.box };
+      return this.modelBoundsCache.box;
     }
     if (this.currentModel?.object) {
       const computed = new THREE.Box3().setFromObject(this.currentModel.object);
       if (!computed.isEmpty()) {
-        (this.currentModel as any).box = computed;
+        this.modelBoundsCache = { model: this.currentModel, box: computed };
         return computed;
       }
     }
     return null;
+  }
+
+  public invalidateModelBounds(): void {
+    this.modelBoundsCache = null;
   }
 
   public fitModel(box?: THREE.Box3): void {
@@ -776,6 +878,15 @@ export class BimEngine {
   // --- MEMORY SAFETY & MODEL UNLOAD ---
 
   public async unloadModel(): Promise<void> {
+    const model = this.currentModel;
+    const webIfcApi = this.webIfcApi;
+    const webIfcModelID = this.webIfcModelID;
+    this.currentModel = null;
+    this.currentModelId = null;
+    this.webIfcApi = null;
+    this.webIfcModelID = null;
+    this.invalidateModelBounds();
+
     if (this.highlighter) {
       await this.highlighter.clear('select');
     }
@@ -796,17 +907,15 @@ export class BimEngine {
       }
     }
 
-    if (this.currentModel) {
+    if (model) {
       try {
-        if (this.world?.scene?.three && this.currentModel.object) {
-          this.world.scene.three.remove(this.currentModel.object);
+        if (this.world?.scene?.three && model.object) {
+          this.world.scene.three.remove(model.object);
         }
-        await this.currentModel.dispose();
+        await model.dispose();
       } catch (err) {
         console.warn('Error disposing fragments model:', err);
       }
-      this.currentModel = null;
-      this.currentModelId = null;
     }
 
     if (this.ifcLoader) {
@@ -817,13 +926,12 @@ export class BimEngine {
       }
     }
 
-    if (this.webIfcApi && this.webIfcModelID !== null) {
+    if (webIfcApi && webIfcModelID !== null) {
       try {
-        this.webIfcApi.CloseModel(this.webIfcModelID);
+        webIfcApi.CloseModel(webIfcModelID);
       } catch (err) {
         console.warn('Error closing web-ifc model:', err);
       }
-      this.webIfcModelID = null;
     }
 
     if (this.onElementSelected) {
@@ -831,24 +939,41 @@ export class BimEngine {
     }
   }
 
-  public dispose(): void {
-    if (this.animFrameId !== null) {
-      cancelAnimationFrame(this.animFrameId);
-      this.animFrameId = null;
-    }
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
-      this.resizeObserver = null;
-    }
-    this.unloadModel();
-    try {
-      this.components.dispose();
-    } catch (err) {
-      console.warn('Error disposing components:', err);
-    }
-    this.isInitialized = false;
-    this.initPromise = null;
-    this.container = null;
+  public dispose(): Promise<void> {
+    if (this.disposePromise) return this.disposePromise;
+    if (this.isDisposed) return Promise.resolve();
+
+    const activeDispose = (async () => {
+      if (this.initPromise) {
+        try {
+          await this.initPromise;
+        } catch {
+          // Initialization already cleaned up its partial resources.
+        }
+      }
+
+      this.stopPerformanceSampler();
+      this.disconnectResizeObserver();
+      this.setupWebGLContextListeners(null);
+      await this.unloadModel();
+      try {
+        this.components.dispose();
+      } catch (err) {
+        console.warn('Error disposing components:', err);
+      }
+      this.revokeWorkerBlobUrl();
+      this.onElementSelected = undefined;
+      this.onPerformanceUpdate = undefined;
+      this.isInitialized = false;
+      this.isDisposed = true;
+      this.initPromise = null;
+      this.container = null;
+    })();
+
+    this.disposePromise = activeDispose.finally(() => {
+      this.disposePromise = null;
+    });
+    return this.disposePromise;
   }
 }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, Maximize2, X } from 'lucide-react';
 import type { PortalProject } from '../../portal/data';
+import { useReducedMotion } from '../../motion/useReducedMotion';
 import { getPreferredProjectImage } from './projectMedia';
 
 export type SpatialRailSlide = {
@@ -62,103 +63,41 @@ interface SpatialRailProps {
 export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
   const { t } = useTranslation('common');
   const slides = useMemo(() => buildSpatialRailSlides(project), [project]);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const fullscreenCloseRef = useRef<HTMLButtonElement>(null);
   const fullscreenTriggerRef = useRef<HTMLButtonElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [fullscreenIndex, setFullscreenIndex] = useState<number | null>(null);
+  const reducedMotion = useReducedMotion();
   const isFullscreenOpen = fullscreenIndex !== null;
+  const hasMountedRef = useRef(false);
 
-  // Guard against IntersectionObserver fighting intentional button/keyboard programmatic scrolling
-  const isProgrammaticScrollRef = useRef(false);
-  const unlockTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const activeIndexRef = useRef(0);
-  activeIndexRef.current = activeIndex;
-
-  // Scroll to slide smoothly and update active index atomically
-  const scrollToSlide = useCallback(
-    (index: number) => {
-      const container = scrollContainerRef.current;
-      if (!container) return;
-      const clamped = Math.max(0, Math.min(index, slides.length - 1));
-
-      isProgrammaticScrollRef.current = true;
-      if (unlockTimeoutRef.current) {
-        clearTimeout(unlockTimeoutRef.current);
-      }
-      // Re-enable observer sync after smooth scroll settles
-      unlockTimeoutRef.current = setTimeout(() => {
-        isProgrammaticScrollRef.current = false;
-      }, 500);
-
-      setActiveIndex(clamped);
-
-      const targetChild = container.children[clamped] as HTMLElement | undefined;
-      if (targetChild) {
-        if (typeof container.scrollTo === 'function') {
-          container.scrollTo({
-            left: targetChild.offsetLeft,
-            behavior: 'smooth',
-          });
-        } else {
-          container.scrollLeft = targetChild.offsetLeft;
-        }
-      }
-    },
-    [slides.length]
-  );
+  const selectSlide = useCallback((index: number) => {
+    setActiveIndex(Math.max(0, Math.min(index, slides.length - 1)));
+  }, [slides.length]);
 
   const handlePrev = useCallback(() => {
-    scrollToSlide(activeIndexRef.current - 1);
-  }, [scrollToSlide]);
+    selectSlide(activeIndex - 1);
+  }, [activeIndex, selectSlide]);
 
   const handleNext = useCallback(() => {
-    scrollToSlide(activeIndexRef.current + 1);
-  }, [scrollToSlide]);
+    selectSlide(activeIndex + 1);
+  }, [activeIndex, selectSlide]);
 
-  // Observer to track active slide as user manually drags or trackpad scrolls
+  const [isFading, setIsFading] = useState(false);
   useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    if (typeof IntersectionObserver === 'undefined') return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isProgrammaticScrollRef.current) return;
-
-        // Pick entry with largest intersection ratio
-        let bestEntry: IntersectionObserverEntry | null = null;
-        for (const entry of entries) {
-          if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
-            if (!bestEntry || entry.intersectionRatio > bestEntry.intersectionRatio) {
-              bestEntry = entry;
-            }
-          }
-        }
-
-        if (bestEntry) {
-          const index = Number(bestEntry.target.getAttribute('data-index'));
-          if (!Number.isNaN(index) && index !== activeIndexRef.current) {
-            setActiveIndex(index);
-          }
-        }
-      },
-      {
-        root: container,
-        threshold: [0.5, 0.75, 0.9],
-      }
-    );
-
-    Array.from(container.children).forEach((child) => observer.observe(child));
-    return () => {
-      observer.disconnect();
-      if (unlockTimeoutRef.current) {
-        clearTimeout(unlockTimeoutRef.current);
-      }
-    };
-  }, [slides]);
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return undefined;
+    }
+    if (reducedMotion) {
+      setIsFading(false);
+      return undefined;
+    }
+    setIsFading(true);
+    const frame = window.requestAnimationFrame(() => setIsFading(false));
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeIndex, reducedMotion]);
 
   // Fullscreen keys belong exclusively to the global listener, even when they bubble through the rail.
   const handleKeyDown = useCallback(
@@ -250,21 +189,6 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
 
         {/* Minimal Controls & Rail Progress */}
         <div className="flex items-center gap-5 self-start sm:self-end">
-          {/* Thin Progress Rail */}
-          <div
-            data-testid="rail-progress"
-            className="hidden h-[2px] w-28 overflow-hidden bg-white/[0.08] sm:block md:w-40"
-            aria-hidden="true"
-          >
-            <div
-              className="h-full bg-white transition-transform duration-300 ease-out will-change-transform"
-              style={{
-                width: '100%',
-                transform: `translateX(-${100 - ((activeIndex + 1) / slides.length) * 100}%)`,
-              }}
-            />
-          </div>
-
           <div className="flex items-center gap-1">
             <button
               type="button"
@@ -290,73 +214,93 @@ export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
         </div>
       </div>
 
-      {/* Horizontal Spatial Rail Track with native CSS scroll-snap */}
+      {/* Single editorial frame; navigation swaps only the active image. */}
       <div
-        ref={scrollContainerRef}
-        data-testid="rail-track"
-        className="no-scrollbar flex snap-x snap-mandatory items-stretch gap-4 overflow-x-auto overflow-y-hidden pb-2 pt-1 touch-pan-x"
-        style={{
-          scrollbarWidth: 'none',
-          WebkitOverflowScrolling: 'touch',
-        }}
+        data-testid="rail-frame"
+        className="relative aspect-[16/9] max-h-[65vh] w-full overflow-hidden border border-white/[0.08] bg-[#0d0d0c]"
       >
-        {slides.map((slide, idx) => {
-          const isInitial = idx === 0;
-          const isNext = idx === 1;
-          const isActive = idx === activeIndex;
-          const shouldLoadImage = Math.abs(idx - activeIndex) <= 1;
-
-          return (
-            <div
-              key={slide.id}
-              data-index={idx}
-              data-testid={`rail-slide-${slide.id}`}
-              className={`group relative flex-none snap-start overflow-hidden border border-white/[0.08] transition-opacity duration-300 ${
-                slide.aspect === 'wide'
-                  ? 'w-[84vw] max-w-5xl aspect-[16/10] sm:aspect-[16/9] max-h-[58vh] bg-[#0d0d0c]'
-                  : 'w-[75vw] max-w-4xl aspect-[4/3] max-h-[58vh] bg-[#090908]'
-              }`}
-            >
-              <button
-                type="button"
-                onClick={(event) => {
-                  fullscreenTriggerRef.current = event.currentTarget;
-                  setFullscreenIndex(idx);
-                }}
-                className="relative block h-full w-full cursor-zoom-in text-left focus:outline-none"
-                aria-label={t('rail.openFullscreen', 'Open fullscreen view of {{label}}', { label: slide.label })}
-              >
-                <RailImage
-                  src={shouldLoadImage ? slide.src : undefined}
-                  alt={`${project.title} - ${slide.label}`}
-                  loading={isInitial ? 'eager' : 'lazy'}
-                  fetchPriority={isInitial ? 'high' : isNext ? 'auto' : 'low'}
-                  className={`h-full w-full select-none object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-[1.01] ${isActive ? 'opacity-100' : 'opacity-80'}`}
-                />
-
-                {/* Subtle Hover Action overlay */}
-                <div className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded bg-black/70 px-2 py-0.5 text-[8px] font-mono uppercase tracking-[0.16em] text-stone-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-                  <Maximize2 className="h-2.5 w-2.5" />
-                  <span>{t('rail.inspect', 'Inspect')}</span>
-                </div>
-              </button>
-            </div>
-          );
-        })}
+        <button
+          type="button"
+          onClick={(event) => {
+            fullscreenTriggerRef.current = event.currentTarget;
+            setFullscreenIndex(activeIndex);
+          }}
+          className="group relative block h-full w-full cursor-zoom-in text-left focus:outline-none focus-visible:ring-1 focus-visible:ring-white/60"
+          aria-label={t('rail.openFullscreen', 'Open fullscreen view of {{label}}', { label: activeSlide.label })}
+        >
+          <div className={`h-full w-full transition-opacity duration-300 ease-out ${isFading && !reducedMotion ? 'opacity-0' : 'opacity-100'}`}>
+            <RailImage
+              key={activeSlide.id}
+              src={activeSlide.src}
+              alt={`${project.title} - ${activeSlide.label}`}
+              loading="eager"
+              fetchPriority="high"
+              className="h-full w-full select-none object-cover"
+            />
+          </div>
+          <div className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded bg-black/70 px-2 py-0.5 text-[8px] font-mono uppercase tracking-[0.16em] text-stone-300 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+            <Maximize2 className="h-2.5 w-2.5" />
+            <span>{t('rail.inspect', 'Inspect')}</span>
+          </div>
+        </button>
       </div>
 
-      {/* Mobile Thin Progress Rail indicator */}
-      <div
-        className="mt-2 h-[2px] w-full overflow-hidden bg-white/[0.08] sm:hidden"
-        aria-hidden="true"
-      >
+      <div className="mt-3 flex items-center justify-between gap-4">
         <div
-          className="h-full bg-white transition-transform duration-300 ease-out will-change-transform"
-          style={{
-            width: '100%',
-            transform: `translateX(-${100 - ((activeIndex + 1) / slides.length) * 100}%)`,
-          }}
-        />
+          data-testid="rail-progress"
+          className="h-[2px] min-w-0 flex-1 overflow-hidden bg-white/[0.08]"
+          aria-hidden="true"
+        >
+          <div
+            className="h-full bg-white transition-[width] duration-300 ease-out"
+            style={{ width: `${((activeIndex + 1) / slides.length) * 100}%` }}
+          />
+        </div>
+        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500 sm:hidden">
+          {t('rail.useArrows', 'Use arrows to browse')}
+        </span>
+      </div>
+
+      {slides.length > 1 && (
+        <div data-testid="rail-thumbnails" className="mt-4 hidden gap-3 sm:flex">
+          {slides.map((slide, idx) => (
+            <button
+              key={slide.id}
+              type="button"
+              onClick={() => selectSlide(idx)}
+              data-testid={`rail-thumb-${slide.id}`}
+              aria-label={t('rail.selectSlide', 'Select {{label}}', { label: slide.label })}
+              aria-current={idx === activeIndex ? 'true' : undefined}
+              className={`group relative aspect-[16/9] w-[clamp(90px,9vw,120px)] overflow-hidden border transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-white/70 ${idx === activeIndex ? 'border-white' : 'border-white/[0.12] opacity-60 hover:border-white/60 hover:opacity-100'}`}
+            >
+              <img
+                src={slide.src}
+                alt=""
+                loading="lazy"
+                fetchPriority="low"
+                decoding="async"
+                className="h-full w-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div
+        data-testid="rail-mobile-dots"
+        className="mt-3 flex justify-center gap-1.5 sm:hidden"
+        aria-label={t('rail.selectImage', 'Select project image')}
+      >
+        {slides.map((slide, idx) => (
+          <button
+            key={slide.id}
+            type="button"
+            onClick={() => selectSlide(idx)}
+            aria-label={t('rail.selectSlide', 'Select {{label}}', { label: slide.label })}
+            aria-current={idx === activeIndex ? 'true' : undefined}
+            className={`h-1.5 rounded-full transition-all ${idx === activeIndex ? 'w-5 bg-white' : 'w-1.5 bg-white/35'}`}
+          />
+        ))}
       </div>
 
       {/* Simple Fullscreen Viewer */}

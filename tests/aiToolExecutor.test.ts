@@ -7,6 +7,7 @@ import { bimGenerationService } from '@/bim/generation/generationService';
 import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
 import { IfcAuthoringService } from '@/bim/generation/ifcAuthoringService';
 import { BimTreeNode } from '@/types/bim';
+import * as WebIFC from 'web-ifc';
 
 describe('ToolRegistry & AI Tool Executor', () => {
   const sampleTree: BimTreeNode[] = [
@@ -637,6 +638,84 @@ describe('ToolRegistry & AI Tool Executor', () => {
       bimEngine.currentModelId = null;
       bimEngine.webIfcApi = null;
       bimEngine.webIfcModelID = null;
+    });
+
+    it('keeps the newest concurrent IFC request and cleans the stale staged resources', async () => {
+      const plan = bimGenerationService.generatePlan({
+        length: 10,
+        width: 8,
+        storeys: 1,
+        storeyHeight: 3,
+      });
+      const ifcData = await IfcAuthoringService.generateIfc4(plan);
+      const firstModel = {
+        modelId: 'first-stale-model',
+        object: { id: 'first-object' },
+        dispose: vi.fn().mockResolvedValue(undefined),
+      };
+      const secondModel = {
+        modelId: 'second-current-model',
+        object: { id: 'second-object' },
+        dispose: vi.fn().mockResolvedValue(undefined),
+      };
+      let resolveFirst!: (model: any) => void;
+      let resolveSecond!: (model: any) => void;
+      const firstLoad = new Promise<any>((resolve) => (resolveFirst = resolve));
+      const secondLoad = new Promise<any>((resolve) => (resolveSecond = resolve));
+      const sceneObjects: any[] = [];
+
+      bimEngine.currentModel = null;
+      bimEngine.currentModelId = null;
+      bimEngine.webIfcApi = null;
+      bimEngine.webIfcModelID = null;
+      bimEngine.world = {
+        scene: {
+          three: {
+            add: vi.fn((object: any) => sceneObjects.push(object)),
+            remove: vi.fn((object: any) => {
+              const index = sceneObjects.indexOf(object);
+              if (index >= 0) sceneObjects.splice(index, 1);
+            }),
+          },
+        },
+      } as any;
+      bimEngine.highlighter = { clear: vi.fn().mockResolvedValue(undefined) } as any;
+      bimEngine.clipper = { deleteAll: vi.fn() } as any;
+
+      const loader = vi
+        .spyOn(bimEngine.ifcLoader, 'load')
+        .mockImplementationOnce(() => firstLoad)
+        .mockImplementationOnce(() => secondLoad);
+      const waitForInit = vi.spyOn(bimEngine, 'waitForInit').mockResolvedValue(undefined);
+      const fitModel = vi.spyOn(bimEngine, 'fitModel').mockImplementation(() => {});
+      const closeModel = vi.spyOn(WebIFC.IfcAPI.prototype, 'CloseModel');
+
+      const firstRequest = IfcLoaderService.loadIfc(ifcData, 'first.ifc');
+      await vi.waitFor(() => expect(loader).toHaveBeenCalledTimes(1));
+      const secondRequest = IfcLoaderService.loadIfc(ifcData, 'second.ifc');
+      await vi.waitFor(() => expect(loader).toHaveBeenCalledTimes(2));
+
+      resolveSecond(secondModel);
+      await secondRequest;
+      resolveFirst(firstModel);
+      await firstRequest;
+
+      expect(bimEngine.currentModel).toBe(secondModel);
+      expect(bimEngine.currentModelId).toBe('second-current-model');
+      expect(firstModel.dispose).toHaveBeenCalledTimes(1);
+      expect(secondModel.dispose).not.toHaveBeenCalled();
+      expect(closeModel).toHaveBeenCalledTimes(1);
+      expect(sceneObjects).toEqual([secondModel.object]);
+
+      (bimEngine.webIfcApi as WebIFC.IfcAPI | null)?.CloseModel(bimEngine.webIfcModelID!);
+      bimEngine.currentModel = null;
+      bimEngine.currentModelId = null;
+      bimEngine.webIfcApi = null;
+      bimEngine.webIfcModelID = null;
+      loader.mockRestore();
+      waitForInit.mockRestore();
+      fitModel.mockRestore();
+      closeModel.mockRestore();
     });
 
     it('excludes spatial hierarchy containers from element queries even if they have an expressID', async () => {
