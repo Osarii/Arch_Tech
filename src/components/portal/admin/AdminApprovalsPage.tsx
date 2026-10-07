@@ -6,6 +6,7 @@ import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, PortalEmptyState, portalStatusClass } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { getLocalizedApprovalTitle, getLocalizedNotificationMessage } from '../../../portal/showcaseLocalization';
 
 export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
@@ -80,7 +81,7 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
                     onClick={() => navigate(`/admin/projects/${approval.projectId}`)}
                     className="text-left font-serif text-2xl hover:text-stone-500"
                   >
-                    {approval.projectTitle} · {approval.title}
+                    {approval.projectTitle} · {getLocalizedApprovalTitle(approval.title, approval.projectId)}
                   </button>
                   <p className="mt-1 text-xs text-stone-500">
                     {t('decisionPendingWorkflow', 'Decision pending in development workflow')}
@@ -123,7 +124,7 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
                 className="flex items-center justify-between gap-4 py-3.5 text-sm"
               >
                 <div>
-                  <span className="font-serif text-lg">{approval.title}</span>
+                  <span className="font-serif text-lg">{getLocalizedApprovalTitle(approval.title, approval.projectId)}</span>
                   <span className="ml-3 font-mono text-[10px] text-stone-500">{approval.projectTitle}</span>
                 </div>
                 <span className={`${portalStatusClass(approval.status)} font-mono text-[9px] uppercase tracking-[0.12em]`}>
@@ -147,7 +148,7 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
                 key={`${notification.userId}-${notification.date}-${notification.message}`}
                 className="flex items-start justify-between gap-4 py-3 text-sm"
               >
-                <span className="leading-snug text-stone-700">{notification.message}</span>
+                <span className="leading-snug text-stone-700">{getLocalizedNotificationMessage(notification.message)}</span>
                 <span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span>
               </div>
             ))}

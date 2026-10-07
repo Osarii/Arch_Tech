@@ -8,6 +8,7 @@ import { NavigationProps, PortalEmptyState, portalStatusClass } from '../PortalC
 import { PortalShell, usePortalShell } from '../PortalShell';
 import { useLocale } from '../../../portal/locale';
 import { useTranslation } from 'react-i18next';
+import { getLocalizedApprovalTitle } from '../../../portal/showcaseLocalization';
 
 export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
@@ -113,7 +114,7 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
                       {approval.projectTitle} ({approval.projectCode})
                     </span>
                   </div>
-                  <p className="mt-2 font-serif text-3xl">{approval.title}</p>
+                  <p className="mt-2 font-serif text-3xl">{getLocalizedApprovalTitle(approval.title, approval.projectId)}</p>
                   <p className="mt-1 text-xs text-stone-600">
                     {t('decisionRequiredMilestone', 'Decision required to advance this project milestone into the active documentation queue.')}
                   </p>
@@ -166,7 +167,7 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
                 className="flex items-center justify-between gap-4 py-4 text-sm"
               >
                 <div>
-                  <span className="font-serif text-lg">{approval.title}</span>
+                  <span className="font-serif text-lg">{getLocalizedApprovalTitle(approval.title, approval.projectId)}</span>
                   <span className="ml-3 font-mono text-[10px] text-stone-500">{approval.projectTitle}</span>
                 </div>
                 <span className={`${portalStatusClass(approval.status)} font-mono text-[9px] uppercase tracking-[0.14em]`}>

@@ -7,6 +7,7 @@ import { userService } from '../../../services/userService';
 import { NavigationProps, ProjectIdentityButton, PortalEmptyState } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
 import { useLocale } from '../../../portal/locale';
+import { getLocalizedProjectField } from '../../../portal/showcaseLocalization';
 
 export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
@@ -66,7 +67,7 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
                   onNavigate={navigate}
                   detailPath={(id) => `/dashboard/projects/${id}`}
                   testId={`dashboard-project-${project.id}`}
-                  meta={<>{project.phase} · {project.progress}% {portalCommon.complete}</>}
+                  meta={<>{getLocalizedProjectField(project.id, 'phase', project.phase)} · {project.progress}% {portalCommon.complete}</>}
                 />
                 <div>
                   <p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
@@ -76,7 +77,7 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
                   <div className="portal-progress-track h-px bg-black/15">
                     <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
                   </div>
-                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next: {{milestone}}', { milestone: project.nextMilestone })}</p>
+                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next: {{milestone}}', { milestone: getLocalizedProjectField(project.id, 'nextMilestone', project.nextMilestone) })}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase tracking-[0.12em]">
                       {clientPortal.pendingDecision}

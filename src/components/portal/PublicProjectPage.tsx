@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getPublicProject } from '../../portal/data';
 import { SpatialRail } from '../gallery/SpatialRail';
 import { NavigationProps, NotFoundPage } from './PortalCommon';
@@ -7,14 +8,24 @@ import { Reveal } from '../motion/Reveal';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { ProjectUpdatesTimeline } from '../news/ProjectUpdatesTimeline';
 import { useLocale } from '../../portal/locale';
+import { getLocalizedMilestoneLabel, getLocalizedMilestoneStatus } from '../../portal/showcaseLocalization';
 
-export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }> = ({
+export const PublicProjectPage: React.FC<NavigationProps & { projectId?: string; project?: ReturnType<typeof getPublicProject> }> = ({
   projectId,
+  project: explicitProject,
   onNavigate,
 }) => {
   const { publicProject } = useLocale();
-  const project = getPublicProject(projectId);
+  const { t } = useTranslation('public');
+  const project = explicitProject ?? (projectId ? getPublicProject(projectId) : undefined);
   if (!project) return <NotFoundPage onNavigate={onNavigate} />;
+
+  const localizedCategory = t(`projects.${project.id}.category`, { defaultValue: project.category });
+  const localizedSummary = t(`projects.${project.id}.summary`, { defaultValue: project.summary });
+  const localizedDevelopmentType = t(`projects.${project.id}.developmentType`, { defaultValue: project.developmentType ?? project.category });
+  const localizedPublicStage = t(`projects.${project.id}.publicStage`, { defaultValue: project.publicStage ?? project.phase });
+  const localizedStatement = t(`projects.${project.id}.statement`, { defaultValue: project.statement });
+  const localizedLongView = t(`projects.${project.id}.longView`, { defaultValue: project.longView ?? publicProject.defaultLongView });
 
   return (
     <div className="h-screen overflow-y-auto bg-[#0a0b0d] text-[#f4efe8]">
@@ -49,21 +60,21 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
             <div className="lg:py-8 lg:pr-12">
               <Reveal variant="fade-up" delay={50}>
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-                  {project.code} / {project.category}
+                  {project.code} / {localizedCategory}
                 </p>
                 <h1 className="mt-4 max-w-3xl font-serif text-4xl font-light leading-[0.98] tracking-tight sm:text-6xl lg:text-7xl">
                   {project.title}
                 </h1>
                 <p className="mt-6 max-w-xl border-l border-white/[0.15] pl-5 text-base leading-7 text-stone-300">
-                  {project.summary}
+                  {localizedSummary}
                 </p>
               </Reveal>
             </div>
             <dl className="grid grid-cols-2 gap-x-6 text-sm lg:grid-cols-1 lg:gap-x-0 lg:border-l lg:border-white/[0.12] lg:pl-8">
               {[
                 [publicProject.labels.market, project.market ?? publicProject.defaultMarket],
-                [publicProject.labels.development, project.developmentType ?? project.category],
-                [publicProject.labels.stage, project.publicStage ?? project.phase],
+                [publicProject.labels.development, localizedDevelopmentType],
+                [publicProject.labels.stage, localizedPublicStage],
                 [publicProject.labels.context, project.context ?? publicProject.defaultMarket],
                 [publicProject.labels.scale, project.scale ?? publicProject.defaultScale],
               ].map(([label, value], index) => (
@@ -103,7 +114,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
           <div className="mt-8 border-l border-white/[0.18] pl-5 sm:pl-7 lg:mt-0">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{publicProject.developmentMandate}</p>
             <p className="mt-4 max-w-3xl text-xl leading-8 text-stone-200 sm:text-2xl sm:leading-9">
-              {project.statement}
+              {localizedStatement}
             </p>
           </div>
         </section>
@@ -120,7 +131,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
                 {publicProject.longTermStrategy}
               </p>
               <p className="max-w-3xl font-serif text-3xl font-light leading-tight text-stone-100 sm:text-4xl">
-                {project.longView ?? publicProject.defaultLongView}
+                {localizedLongView}
               </p>
             </div>
           </div>
@@ -142,21 +153,25 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId: string }
               <span className="text-right">{publicProject.status}</span>
             </div>
             <ol>
-              {project.milestones.map((milestone, index) => (
-                <Reveal key={milestone.label} variant="fade-up" delay={index * 40} as="li">
-                  <div className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-baseline gap-4 border-b border-white/[0.1] px-3 py-5 sm:grid-cols-[4rem_minmax(0,1fr)_8rem] sm:gap-6 sm:px-4">
-                    <span className="font-mono text-sm text-stone-400">{String(index + 1).padStart(2, '0')}</span>
-                    <span className="font-serif text-xl font-light text-stone-100 sm:text-2xl">{milestone.label}</span>
-                    <span className="text-right font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">
-                      {milestone.status}
-                    </span>
-                  </div>
-                </Reveal>
-              ))}
+              {project.milestones.map((milestone, index) => {
+                const milestoneLabel = getLocalizedMilestoneLabel(milestone.label);
+                const milestoneStatus = getLocalizedMilestoneStatus(milestone.status);
+                return (
+                  <Reveal key={milestone.label} variant="fade-up" delay={index * 40} as="li">
+                    <div className="grid grid-cols-[3rem_minmax(0,1fr)_auto] items-baseline gap-4 border-b border-white/[0.1] px-3 py-5 sm:grid-cols-[4rem_minmax(0,1fr)_8rem] sm:gap-6 sm:px-4">
+                      <span className="font-mono text-sm text-stone-400">{String(index + 1).padStart(2, '0')}</span>
+                      <span className="font-serif text-xl font-light text-stone-100 sm:text-2xl">{milestoneLabel}</span>
+                      <span className="text-right font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">
+                        {milestoneStatus}
+                      </span>
+                    </div>
+                  </Reveal>
+                );
+              })}
             </ol>
           </div>
         </section>
-        <ProjectUpdatesTimeline projectId={projectId} onNavigate={onNavigate} />
+        <ProjectUpdatesTimeline projectId={project.id} onNavigate={onNavigate} />
       </main>
     </div>
   );

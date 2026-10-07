@@ -8,6 +8,7 @@ import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, PortalEmptyState } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { getLocalizedDocument } from '../../../portal/showcaseLocalization';
 
 export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
@@ -64,39 +65,42 @@ export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSig
 
         {documents.length ? (
           <div className="divide-y divide-black/15 border-y border-black/15">
-            {documents.map((document) => (
-              <div
-                key={`${document.projectId}-${document.name}`}
-                className="grid gap-4 py-5 sm:grid-cols-[1fr_auto] sm:items-center"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="p-2 border border-black/15 bg-white/40 text-stone-700">
-                    <FileText className="h-5 w-5" />
+            {documents.map((document) => {
+              const locDoc = getLocalizedDocument(document);
+              return (
+                <div
+                  key={`${document.projectId}-${document.name}`}
+                  className="grid gap-4 py-5 sm:grid-cols-[1fr_auto] sm:items-center"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 border border-black/15 bg-white/40 text-stone-700">
+                      <FileText className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => navigate(`/architect/projects/${document.projectId}`)}
+                        className="text-left font-serif text-2xl leading-tight hover:text-stone-500"
+                      >
+                        {locDoc.name}
+                      </button>
+                      <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-stone-500">
+                        {`${document.projectTitle} (${document.projectCode}) · ${locDoc.meta}`}
+                      </p>
+                    </div>
                   </div>
-                  <div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{t('issued', 'Issued')}</span>
                     <button
                       onClick={() => navigate(`/architect/projects/${document.projectId}`)}
-                      className="text-left font-serif text-2xl leading-tight hover:text-stone-500"
+                      className="border border-black px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:bg-black hover:text-white"
                     >
-                      {document.name}
+                      {portalCommon.openProject}
                     </button>
-                    <p className="mt-1 font-mono text-[10px] uppercase tracking-wider text-stone-500">
-                      {`${document.projectTitle} (${document.projectCode}) · ${document.meta}`}
-                    </p>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{t('issued', 'Issued')}</span>
-                  <button
-                    onClick={() => navigate(`/architect/projects/${document.projectId}`)}
-                    className="border border-black px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:bg-black hover:text-white"
-                  >
-                    {portalCommon.openProject}
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <PortalEmptyState message={t('noDocumentsIssued', "No documents have been issued for this studio's assigned developments.")} />

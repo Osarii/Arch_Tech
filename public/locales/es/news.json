@@ -1,1 +1,46 @@
-{}
+{
+  "articles": {
+    "news-archived-concept-brief": {
+      "body": "Estudios volumétricos iniciales realizados durante la fase de factibilidad de 2024 explorando alturas de torre y efectos de túnel de viento alrededor del perímetro del parque La Sabana.",
+      "category": "Infraestructura",
+      "excerpt": "Exploración volumétrica inicial archivada y análisis de envolvente solar de la fase preliminar de factibilidad.",
+      "sourceLabel": "Archivo de Planificación",
+      "title": "Estudio volumétrico histórico para Centro Corporativo La Sabana"
+    },
+    "news-el-cafetal-sustainability": {
+      "body": "La telemetría continua del edificio y el monitoreo ambiental en Centro Corporativo El Cafetal en Belén, Heredia muestran sólidos indicadores de sostenibilidad. Mejoras coordinadas en envolventes y secuenciación inteligente de HVAC han reducido el consumo base de servicios públicos en todos los sectores corporativos.",
+      "category": "Operaciones",
+      "excerpt": "La telemetría operativa en siete torres de oficinas demuestra una reducción del 24% en la carga energética máxima de enfriamiento.",
+      "sourceLabel": "Registro de Telemetría de Ingeniería",
+      "title": "Centro Corporativo El Cafetal alcanza hitos de rendimiento energético cero neto"
+    },
+    "news-n8n-daily-telemetry-ingest": {
+      "body": "Levantamiento topográfico automatizado del sitio capturado mediante LIDAR aéreo DJI dock y procesado vía flujo de trabajo n8n. La excavación civil en el Lote B-12 está completada al 92% con balance de volumen de corte y relleno según el modelo digital del terreno. Pendiente de revisión por ingeniería estructural.",
+      "category": "Sitio",
+      "excerpt": "Ingesta en canal n8n de nubes de puntos de drones en sitio y estimaciones de volumen de movimiento de tierras.",
+      "sourceLabel": "Telemetría Automatizada n8n",
+      "title": "Informe automatizado de telemetría por drones — Movimiento de tierras Sector B"
+    },
+    "news-sacc-sports-facility": {
+      "body": "Equipos de revisión arquitectónica han iniciado los procedimientos de puesta en servicio para la expansión del pabellón acuático en Santa Ana Country Club. La instalación incorpora arreglos de calentamiento solar térmico y nivelación civil de bajo impacto.",
+      "category": "Diseño",
+      "excerpt": "Revisión técnica en curso para sistemas sostenibles de filtración de agua e infraestructura deportiva de escala olímpica.",
+      "sourceLabel": "Grupo de Coordinación de Diseño",
+      "title": "Santa Ana Country Club inicia puesta en servicio arquitectónica de nuevo pabellón acuático"
+    },
+    "news-waldorf-astoria-groundbreaking": {
+      "body": "El desarrollo de hospitalidad de ultra lujo en Punta Cacique, Guanacaste alcanzó un hito de ingeniería este mes. La estabilización integral del terreno y la integración arquitectónica biofílica aseguran un impacto mínimo en la topografía costera nativa mientras preservan vistas panorámicas al Pacífico.",
+      "category": "Hito",
+      "excerpt": "El resort de hospitalidad en el acantilado avanza con el 100% de vaciados de concreto estructural completados para las villas centrales frente al océano.",
+      "sourceLabel": "Oficina de Coordinación de Sitio",
+      "title": "Waldorf Astoria Cacique alcanza hito en superestructura costera"
+    },
+    "news-zfll-expansion": {
+      "body": "Garnier Architecture ha coordinado el expediente técnico OpenBIM para la expansión de la Fase 4 en Zona Franca La Lima. La nueva infraestructura integra modelado energético avanzado, conectividad con redes inteligentes y zonas especializadas de manufactura para ciencias de la vida diseñadas para operaciones internacionales.",
+      "category": "Desarrollo",
+      "excerpt": "Inicia la construcción de una nueva instalación de 45.000 m² para logística de alta especificación y manufactura de cuartos limpios en Cartago.",
+      "sourceLabel": "Editorial Garnier Architecture",
+      "title": "Zona Franca La Lima anuncia expansión de manufactura avanzada en Fase 4"
+    }
+  }
+}

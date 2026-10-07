@@ -8,6 +8,13 @@ import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, ProjectIdentityButton, PortalEmptyState, portalStatusClass } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import {
+  getLocalizedApprovalTitle,
+  getLocalizedMilestoneLabel,
+  getLocalizedMilestoneStatus,
+  getLocalizedProjectField,
+  getLocalizedUpdate,
+} from '../../../portal/showcaseLocalization';
 
 export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
@@ -134,7 +141,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
                   project={project}
                   onNavigate={navigate}
                   detailPath={(id) => `/architect/projects/${id}`}
-                  meta={<>{project.phase} · {project.progress}%</>}
+                  meta={<>{getLocalizedProjectField(project.id, 'phase', project.phase)} · {project.progress}%</>}
                 />
                 <div>
                   <p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
@@ -144,7 +151,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
                   <div className="portal-progress-track h-px bg-black/15">
                     <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
                   </div>
-                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next:')} {project.nextMilestone}</p>
+                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next:')} {getLocalizedProjectField(project.id, 'nextMilestone', project.nextMilestone)}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase">
                       {t('clientResponsePending', 'Client response pending')}
@@ -201,9 +208,9 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
               onClick={() => navigate(`/architect/projects/${milestone.projectId}`)}
               className="mt-4 flex w-full justify-between gap-4 text-left text-sm hover:text-stone-500 border-b border-black/10 pb-2"
             >
-              <span>{milestone.projectTitle} · {milestone.label}</span>
+              <span>{milestone.projectTitle} · {getLocalizedMilestoneLabel(milestone.label, milestone.projectId)}</span>
               <span className={`${portalStatusClass(milestone.status)} font-mono text-[9px] uppercase text-stone-500`}>
-                {milestone.status}
+                {getLocalizedMilestoneStatus(milestone.status)}
               </span>
             </button>
           ))}
@@ -218,7 +225,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
               onClick={() => navigate(`/architect/projects/${approval.projectId}`)}
               className="mt-4 block w-full text-left text-sm hover:text-stone-500 border-b border-black/10 pb-2"
             >
-              {approval.projectTitle} · {approval.title}
+              {approval.projectTitle} · {getLocalizedApprovalTitle(approval.title, approval.projectId)}
             </button>
           ))}
         </div>
@@ -235,7 +242,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
                 onClick={() => navigate(`/architect/projects/${update.projectId}`)}
                 className="flex w-full justify-between gap-4 py-3 text-left text-sm hover:text-stone-500"
               >
-                <span>{update.projectTitle} · {update.title}</span>
+                <span>{update.projectTitle} · {getLocalizedUpdate(update).title}</span>
                 <span className="font-mono text-[9px] text-stone-500">{update.date}</span>
               </button>
             ))}

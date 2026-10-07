@@ -1,1 +1,74 @@
-{}
+{
+  "milestones": {
+    "mediaMapping": "Mapeo de medios",
+    "publicSourceIntake": "Recepción de fuentes públicas",
+    "showcaseReview": "Revisión de muestra",
+    "status": {
+      "complete": "Completado",
+      "current": "En curso",
+      "upcoming": "Próximo"
+    }
+  },
+  "projects": {
+    "centro-corporativo-sabana": {
+      "category": "Centro corporativo de oficinas",
+      "developmentType": "Centro corporativo de oficinas",
+      "longView": "Un centro de oficinas con amenidades y metas de sostenibilidad, incluida la certificación LEED Gold descrita en el portafolio oficial.",
+      "nextMilestone": "Revisión de portafolio · 16 de diciembre",
+      "phase": "Revisión de muestra",
+      "publicStage": "Propuesto · próximo",
+      "statement": "El portafolio oficial describe Centro Corporativo La Sabana como un edificio de oficinas de 18 niveles con tres sótanos de estacionamiento, áreas de oficina de 2.800 m² por planta y amenidades que incluyen gimnasio, áreas deportivas, spa, miradores, terrazas y balcones.",
+      "summary": "Un centro corporativo de oficinas en Sabana Sur, descrito por el portafolio oficial como un edificio de 18 niveles con tres sótanos de estacionamiento."
+    },
+    "el-cafetal": {
+      "category": "Centro corporativo · Campus de oficinas",
+      "developmentType": "Centro corporativo / Campus de oficinas",
+      "longView": "Siete edificios de oficinas, jardines, estacionamientos y vías de acceso conforman el entorno corporativo descrito en el portafolio oficial.",
+      "nextMilestone": "Revisión de portafolio · 25 de noviembre",
+      "phase": "Revisión de muestra",
+      "publicStage": "En operación desde 2014",
+      "statement": "El portafolio oficial describe siete edificios de oficinas ecoeficientes, extensos jardines, 2.100 espacios de estacionamiento y vías de acceso clave para un centro corporativo con 5.600 colaboradores.",
+      "summary": "Un centro corporativo en Belén, Heredia, conformado por siete torres de oficinas con jardines, estacionamientos y vías de acceso."
+    },
+    "santa-ana-country-club": {
+      "category": "Club social y deportivo",
+      "developmentType": "Club social y deportivo",
+      "longView": "Un club privado organizado en torno al deporte, la salud física, la gastronomía y la integración social, según describe el portafolio oficial.",
+      "nextMilestone": "Revisión de portafolio · 02 de diciembre",
+      "phase": "Revisión de muestra",
+      "publicStage": "En operación desde 2019",
+      "statement": "El portafolio oficial describe Santa Ana Country Club como un club social y deportivo de ocho hectáreas con espacios gastronómicos, acuáticos, deportes de raqueta, acondicionamiento físico y áreas sociales.",
+      "summary": "Un club social y deportivo en un terreno de ocho hectáreas en Pozos de Santa Ana, con áreas gastronómicas, acuáticas, deportes de raqueta, acondicionamiento físico y espacios sociales."
+    },
+    "universidad-latina": {
+      "category": "Campus educativo",
+      "developmentType": "Campus educativo",
+      "longView": "Un campus educativo y recreativo organizado para la experiencia diaria de los estudiantes, según describe el portafolio oficial.",
+      "nextMilestone": "Revisión de portafolio · 23 de diciembre",
+      "phase": "Revisión de muestra",
+      "publicStage": "En operación desde 2019",
+      "statement": "El portafolio oficial describe un edificio de 15.000 m² y cinco niveles que integra infraestructura educativa y recreativa para la educación superior privada.",
+      "summary": "Un campus educativo en Heredia que integra aulas, talleres, laboratorios, biblioteca, oficinas administrativas y área de comidas."
+    },
+    "waldorf-astoria": {
+      "category": "Hospitalidad · Hotel y residencias",
+      "developmentType": "Hospitalidad / Hotel y residencias",
+      "longView": "Un proyecto hotelero enmarcado por el entorno natural y la experiencia de destino descrita en el portafolio oficial.",
+      "nextMilestone": "Revisión de portafolio · 09 de diciembre",
+      "phase": "Revisión de muestra",
+      "publicStage": "Propuesto · apertura indicada para 2025",
+      "statement": "El portafolio oficial de Garnier describe el proyecto Waldorf Astoria Hotel en Playa Penca, Punta Cacique, con 188 habitaciones y cerca de 30 residencias.",
+      "summary": "Un proyecto de hospitalidad en Playa Penca, Punta Cacique, Guanacaste, planificado en torno a un hotel y residencias."
+    },
+    "zona-franca-la-lima": {
+      "category": "Zona franca · Parque industrial",
+      "developmentType": "Zona franca / Parque industrial",
+      "longView": "Una plataforma de negocios e infraestructura para manufactura avanzada, ciencias de la vida, logística y servicios relacionados.",
+      "nextMilestone": "Revisión de portafolio · 18 de noviembre",
+      "phase": "Revisión de muestra",
+      "publicStage": "En operación desde 2014",
+      "statement": "El portafolio oficial describe La Lima como un desarrollo comercial mixto de 79 hectáreas con un perfil tecnológico para manufactura avanzada, ciencias de la vida, centros logísticos y empresas proveedoras y de servicios.",
+      "summary": "Una zona franca y parque industrial en La Lima, Cartago, que abarca 79 hectáreas destinadas a manufactura avanzada, ciencias de la vida, logística y servicios relacionados."
+    }
+  }
+}

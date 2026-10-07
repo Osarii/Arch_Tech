@@ -15,21 +15,38 @@ export type SpatialRailSlide = {
   aspect: 'wide' | 'technical';
 };
 
-export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide[] => {
+export const buildSpatialRailSlides = (
+  project: PortalProject,
+  t?: (key: string, options?: any) => string
+): SpatialRailSlide[] => {
   const preferredImage = getPreferredProjectImage(project);
+  const coverLabel = t ? t('rail.projectCover', { ns: 'common', defaultValue: 'Project cover' }) : 'Project cover';
+  const officialCaption = t
+    ? t('rail.officialPhotography', { ns: 'common', defaultValue: 'Official project photography from the public portfolio.' })
+    : 'Official project photography from the public portfolio.';
+  const noMediaCaption = t
+    ? t('rail.noPhotography', { ns: 'common', defaultValue: 'No official project photography is available.' })
+    : 'No official project photography is available.';
+
   const candidates = [
     {
       id: 'hero',
-      label: 'Project cover',
-      caption: 'Official project photography from the public portfolio.',
+      label: coverLabel,
+      caption: officialCaption,
       src: preferredImage,
     },
-    ...(project.media?.gallery ?? []).map((src, index) => ({
-      id: `gallery-${index + 1}`,
-      label: `Portfolio view ${String(index + 1).padStart(2, '0')}`,
-      caption: 'Official project photography from the public portfolio.',
-      src,
-    })),
+    ...(project.media?.gallery ?? []).map((src, index) => {
+      const numStr = String(index + 1).padStart(2, '0');
+      const viewLabel = t
+        ? t('rail.portfolioView', { ns: 'common', number: numStr, defaultValue: `Portfolio view ${numStr}` })
+        : `Portfolio view ${numStr}`;
+      return {
+        id: `gallery-${index + 1}`,
+        label: viewLabel,
+        caption: officialCaption,
+        src,
+      };
+    }),
   ];
   const seen = new Set<string>();
   const filtered = candidates.filter((slide) => {
@@ -37,8 +54,18 @@ export const buildSpatialRailSlides = (project: PortalProject): SpatialRailSlide
     seen.add(slide.src);
     return Boolean(slide.src);
   });
-  const safeCandidates = filtered.length ? filtered : [{ id: 'hero', label: 'Project cover', caption: 'No official project photography is available.', src: '' }];
-  return safeCandidates.map((slide) => ({ ...slide, category: project.category, fit: 'cover' as const, aspect: 'wide' as const }));
+  const safeCandidates = filtered.length
+    ? filtered
+    : [{ id: 'hero', label: coverLabel, caption: noMediaCaption, src: '' }];
+  const category = t
+    ? t(`public:projects.${project.id}.category`, { defaultValue: project.category })
+    : project.category;
+  return safeCandidates.map((slide) => ({
+    ...slide,
+    category,
+    fit: 'cover' as const,
+    aspect: 'wide' as const,
+  }));
 };
 
 const RailImage: React.FC<{ src?: string; alt: string; loading?: 'eager' | 'lazy'; fetchPriority?: 'high' | 'low' | 'auto'; className?: string }> = ({ src, alt, loading = 'lazy', fetchPriority = 'low', className = '' }) => {
@@ -61,8 +88,8 @@ interface SpatialRailProps {
 }
 
 export const SpatialRail: React.FC<SpatialRailProps> = ({ project }) => {
-  const { t } = useTranslation('common');
-  const slides = useMemo(() => buildSpatialRailSlides(project), [project]);
+  const { t } = useTranslation(['common', 'public']);
+  const slides = useMemo(() => buildSpatialRailSlides(project, t), [project, t]);
   const fullscreenRef = useRef<HTMLDivElement>(null);
   const fullscreenCloseRef = useRef<HTMLButtonElement>(null);
   const fullscreenTriggerRef = useRef<HTMLButtonElement | null>(null);

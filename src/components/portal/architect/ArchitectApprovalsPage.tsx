@@ -8,6 +8,7 @@ import { projectWorkflowService } from '../../../services/projectWorkflowService
 import { userService } from '../../../services/userService';
 import { NavigationProps, PortalEmptyState, portalStatusClass } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { getLocalizedApprovalTitle } from '../../../portal/showcaseLocalization';
 
 export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
@@ -154,7 +155,7 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
                     onClick={() => navigate(`/architect/projects/${approval.projectId}`)}
                     className="block text-left font-serif text-2xl hover:text-stone-500"
                   >
-                    {approval.projectTitle} · {approval.title}
+                    {approval.projectTitle} · {getLocalizedApprovalTitle(approval.title, approval.projectId)}
                   </button>
                   <p className="mt-1 text-xs text-stone-500">
                     {approval.projectCode} · {t('clientResponsePending', 'Client response pending')}
@@ -204,7 +205,7 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
                 className="flex items-center justify-between gap-4 py-4 text-sm"
               >
                 <div>
-                  <span className="font-serif text-lg">{approval.title}</span>
+                  <span className="font-serif text-lg">{getLocalizedApprovalTitle(approval.title, approval.projectId)}</span>
                   <span className="ml-3 font-mono text-[10px] text-stone-500">{approval.projectTitle}</span>
                 </div>
                 <div className="flex items-center gap-3">

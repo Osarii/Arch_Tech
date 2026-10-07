@@ -11,6 +11,11 @@ import {
   NavigationProps,
 } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import {
+  getLocalizedApprovalTitle,
+  getLocalizedMilestoneLabel,
+  getLocalizedUpdate,
+} from '../../../portal/showcaseLocalization';
 
 export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
@@ -163,7 +168,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
                   <span className="mt-1 block text-sm text-stone-500">
                     {project.approvals
                       .filter((approval) => approval.status === 'Pending')
-                      .map((approval) => approval.title)
+                      .map((approval) => getLocalizedApprovalTitle(approval.title, approval.projectId))
                       .join(' · ')}
                   </span>
                 </span>
@@ -183,7 +188,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
           {upcomingMilestones.length ? (
             upcomingMilestones.slice(0, 5).map((milestone) => (
               <p key={`${milestone.projectId}-${milestone.label}`} className="mt-5 flex justify-between gap-4 border-b border-black/10 pb-3 text-sm">
-                <span>{milestone.projectTitle} · {milestone.label}</span>
+                <span>{milestone.projectTitle} · {getLocalizedMilestoneLabel(milestone.label, milestone.projectId)}</span>
                 <span className="font-mono text-[9px] uppercase text-stone-500">{t('upcoming', 'Upcoming')}</span>
               </p>
             ))
@@ -200,7 +205,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
           {recentActivity.length ? (
             recentActivity.slice(0, 5).map((update) => (
               <p key={`${update.projectId}-${update.date}-${update.title}`} className="mt-4 flex justify-between gap-4 border-b border-black/10 pb-2 text-sm">
-                <span>{update.projectTitle} · {update.title}</span>
+                <span>{update.projectTitle} · {getLocalizedUpdate(update).title}</span>
                 <span className="font-mono text-[9px] text-stone-500">{update.date}</span>
               </p>
             ))

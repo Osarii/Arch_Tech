@@ -50,9 +50,13 @@
     "inspect": "Inspect",
     "nextFullscreen": "Next fullscreen image",
     "nextSlide": "Next slide",
+    "noPhotography": "No official project photography is available.",
+    "officialPhotography": "Official project photography from the public portfolio.",
     "openFullscreen": "Open fullscreen view of {{label}}",
+    "portfolioView": "Portfolio view {{number}}",
     "prevFullscreen": "Previous fullscreen image",
     "prevSlide": "Previous slide",
+    "projectCover": "Project cover",
     "selectImage": "Select project image",
     "selectSlide": "Select {{label}}",
     "useArrows": "Use arrows to browse"

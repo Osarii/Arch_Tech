@@ -104,5 +104,35 @@
   "studioManagement": "Gestión del estudio",
   "updateBody": "Cuerpo de la actualización",
   "updateTitle": "Título de la actualización",
-  "whatChanged": "¿Qué cambió?"
+  "whatChanged": "¿Qué cambió?",
+  "seeded": {
+    "approvals": {
+      "publicFactsCheck": "Verificación de datos públicos",
+      "showcaseFraming": "Encuadre de muestra"
+    },
+    "documents": {
+      "localMediaMappingMeta": "Coordinación conceptual · ARCH_TECH",
+      "localMediaMappingName": "Mapeo de medios locales",
+      "officialReferenceMeta": "Muestra Conceptual · fuente pública",
+      "officialReferenceName": "Referencia oficial del proyecto"
+    },
+    "notifications": {
+      "architectEc": "La referencia del campus corporativo está lista para coordinación.",
+      "architectZfll": "El mapeo de fuentes públicas está listo para coordinación.",
+      "clientWa": "La referencia de hospitalidad está lista para revisión.",
+      "clientZfll": "El encuadre de muestra está listo para revisión."
+    },
+    "updates": {
+      "portfolioFactsCheckedBody": "La ubicación, escala y descripción del desarrollo se alinearon con la fuente pública oficial.",
+      "portfolioFactsCheckedTitle": "Datos de portafolio verificados",
+      "projectReferencePreparedCcsBody": "La información del centro de oficinas está organizada para el expediente de muestra.",
+      "projectReferencePreparedSaccBody": "La información pública del proyecto está organizada para el expediente de muestra.",
+      "projectReferencePreparedTitle": "Referencia de proyecto preparada",
+      "showcaseMediaReviewEcBody": "Las imágenes del campus corporativo están preparadas para la Muestra Conceptual de ARCH_TECH.",
+      "showcaseMediaReviewTitle": "Revisión de medios de muestra",
+      "showcaseMediaReviewUlBody": "Las imágenes del campus educativo están preparadas para la Muestra Conceptual de ARCH_TECH.",
+      "showcaseMediaReviewWaBody": "Las imágenes del proyecto de hospitalidad y los datos públicos están listos para revisión.",
+      "showcaseMediaReviewZfllBody": "Las imágenes del portafolio oficial y los datos públicos están listos para la Muestra Conceptual de ARCH_TECH."
+    }
+  }
 }

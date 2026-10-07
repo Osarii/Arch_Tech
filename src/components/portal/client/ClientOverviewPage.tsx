@@ -13,6 +13,13 @@ import {
 } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
 import { useLocale } from '../../../portal/locale';
+import {
+  getLocalizedApprovalTitle,
+  getLocalizedMilestoneLabel,
+  getLocalizedNotificationMessage,
+  getLocalizedProjectField,
+  getLocalizedUpdate,
+} from '../../../portal/showcaseLocalization';
 
 export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
@@ -157,7 +164,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                   onNavigate={navigate}
                   detailPath={(id) => `/dashboard/projects/${id}`}
                   testId={`dashboard-project-${project.id}`}
-                  meta={<>{project.phase} · {project.progress}% {portalCommon.complete}</>}
+                  meta={<>{getLocalizedProjectField(project.id, 'phase', project.phase)} · {project.progress}% {portalCommon.complete}</>}
                 />
                 <div>
                   <p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
@@ -167,7 +174,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                   <div className="portal-progress-track h-px bg-black/15">
                     <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
                   </div>
-                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next:')} {project.nextMilestone}</p>
+                  <p className="mt-3 text-xs text-stone-600">{t('nextLabel', 'Next:')} {getLocalizedProjectField(project.id, 'nextMilestone', project.nextMilestone)}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase tracking-[0.12em]">
                       {clientPortal.pendingDecision}
@@ -213,7 +220,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
               <div key={`${approval.projectId}-${approval.title}`} className="mt-5 border-b border-black/10 pb-4">
                 <div className="flex items-start justify-between gap-6">
                   <div>
-                    <p className="font-serif text-xl">{approval.title}</p>
+                    <p className="font-serif text-xl">{getLocalizedApprovalTitle(approval.title, approval.projectId)}</p>
                     <p className="mt-1 text-xs text-stone-500">{approval.projectTitle}</p>
                   </div>
                   <span className="portal-status-pending font-mono text-[9px] uppercase tracking-[0.14em]">{t('pending', 'Pending')}</span>
@@ -252,7 +259,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
           {upcomingMilestones.length ? (
             upcomingMilestones.slice(0, 4).map((milestone) => (
               <p key={`${milestone.projectId}-${milestone.label}`} className="mt-5 flex justify-between gap-5 border-b border-black/10 pb-3 text-sm">
-                <span>{milestone.projectTitle} · {milestone.label}</span>
+                <span>{milestone.projectTitle} · {getLocalizedMilestoneLabel(milestone.label, milestone.projectId)}</span>
                 <span className="font-mono text-[9px] uppercase text-stone-500">{t('upcoming', 'Upcoming')}</span>
               </p>
             ))
@@ -267,17 +274,20 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
         <div id="portal-section-updates">
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('recentUpdates', 'Recent project updates')}</p>
           {updates.length ? (
-            updates.map((update) => (
-              <button
-                key={`${update.projectId}-${update.date}-${update.title}`}
-                onClick={() => navigate(`/dashboard/projects/${update.projectId}`)}
-                className="mt-5 block w-full border-b border-black/10 pb-4 text-left hover:text-stone-700"
-              >
-                <span className="font-mono text-[10px] text-stone-500">{update.date} · {update.projectTitle}</span>
-                <span className="mt-1 block font-serif text-xl">{update.title}</span>
-                <span className="mt-1 block text-xs leading-5 text-stone-600">{update.body}</span>
-              </button>
-            ))
+            updates.map((update) => {
+              const locUpdate = getLocalizedUpdate(update);
+              return (
+                <button
+                  key={`${update.projectId}-${update.date}-${update.title}`}
+                  onClick={() => navigate(`/dashboard/projects/${update.projectId}`)}
+                  className="mt-5 block w-full border-b border-black/10 pb-4 text-left hover:text-stone-700"
+                >
+                  <span className="font-mono text-[10px] text-stone-500">{update.date} · {update.projectTitle}</span>
+                  <span className="mt-1 block font-serif text-xl">{locUpdate.title}</span>
+                  <span className="mt-1 block text-xs leading-5 text-stone-600">{locUpdate.body}</span>
+                </button>
+              );
+            })
           ) : (
             <p className="mt-5 text-sm text-stone-600">{t('noRecentUpdates', 'No recent updates.')}</p>
           )}
@@ -292,7 +302,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                 onClick={() => navigate(`/dashboard/projects/${notification.projectId}`)}
                 className="mt-5 flex w-full justify-between gap-5 border-b border-black/10 pb-4 text-left text-sm hover:text-stone-700"
               >
-                <span>{notification.message}</span>
+                <span>{getLocalizedNotificationMessage(notification.message, notification.projectId)}</span>
                 <span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date} · {t('open', 'Open')}</span>
               </button>
             ))

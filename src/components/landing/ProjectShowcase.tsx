@@ -6,6 +6,7 @@ import { Reveal } from '../motion/Reveal';
 import { WireframeToSolid } from '../motion/WireframeToSolid';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { useLocale } from '../../portal/locale';
+import { getLocalizedProject } from '../../portal/showcaseLocalization';
 
 interface ProjectShowcaseProps {
   onOpenProject: (id: string) => void;
@@ -20,7 +21,8 @@ const Field: React.FC<{ label: string; value: string; labelAlways?: boolean }> =
 
 export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject }) => {
   const [projects] = useState(getPublicProjects);
-  const [featured, ...register] = projects;
+  const [featuredRaw, ...register] = projects;
+  const featured = featuredRaw ? getLocalizedProject(featuredRaw) : null;
   const { locale, landing } = useLocale();
   const t = landing.projects;
 
@@ -83,32 +85,35 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
           </div>
         </Reveal>
         <div>
-          {register.map((project, i) => (
-            <Reveal key={project.id} variant="fade-up" delay={i * 45}>
-              <button
-                data-testid={`public-project-${project.id}`}
-                onClick={() => onOpenProject(project.id)}
-                className="landing-projects-register-row group grid w-full gap-5 border-b border-black/15 py-6 text-left transition-colors hover:bg-[#ABD1B5] sm:grid-cols-[14rem_1fr] lg:grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] lg:items-center lg:gap-8"
-              >
-                <span className="hidden font-mono text-[10px] text-stone-500 lg:block">{String(i + 2).padStart(2, '0')}</span>
-                <span className="relative block aspect-[16/10] overflow-hidden bg-stone-300">
-                  <ProjectImage project={project} alt={`${project.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-                </span>
-                <span className="grid gap-5 sm:contents">
-                  <span className="block sm:col-start-2 lg:col-start-auto">
-                    <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{project.category}</span>
-                    <span className="mt-2 block font-serif text-2xl font-light leading-tight sm:text-3xl">{project.title}</span>
+          {register.map((projectRaw, i) => {
+            const project = getLocalizedProject(projectRaw);
+            return (
+              <Reveal key={project.id} variant="fade-up" delay={i * 45}>
+                <button
+                  data-testid={`public-project-${project.id}`}
+                  onClick={() => onOpenProject(project.id)}
+                  className="landing-projects-register-row group grid w-full gap-5 border-b border-black/15 py-6 text-left transition-colors hover:bg-[#ABD1B5] sm:grid-cols-[14rem_1fr] lg:grid-cols-[3rem_14rem_1.3fr_1fr_1fr_1fr_2rem] lg:items-center lg:gap-8"
+                >
+                  <span className="hidden font-mono text-[10px] text-stone-500 lg:block">{String(i + 2).padStart(2, '0')}</span>
+                  <span className="relative block aspect-[16/10] overflow-hidden bg-stone-300">
+                    <ProjectImage project={project} alt={`${project.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
                   </span>
-                  <span className="grid gap-4 sm:col-start-2 sm:grid-cols-3 lg:contents">
-                    <Field label={t.market} value={project.market ?? 'Costa Rica'} />
-                    <Field label={t.stage} value={project.publicStage ?? project.phase} />
-                    <Field label={t.scale} value={project.scale ?? 'Development study'} />
+                  <span className="grid gap-5 sm:contents">
+                    <span className="block sm:col-start-2 lg:col-start-auto">
+                      <span className="block font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{project.category}</span>
+                      <span className="mt-2 block font-serif text-2xl font-light leading-tight sm:text-3xl">{project.title}</span>
+                    </span>
+                    <span className="grid gap-4 sm:col-start-2 sm:grid-cols-3 lg:contents">
+                      <Field label={t.market} value={project.market ?? 'Costa Rica'} />
+                      <Field label={t.stage} value={project.publicStage ?? project.phase} />
+                      <Field label={t.scale} value={project.scale ?? 'Development study'} />
+                    </span>
                   </span>
-                </span>
-                <ArrowUpRight className="hidden h-4 w-4 text-stone-600 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 lg:block" />
-              </button>
-            </Reveal>
-          ))}
+                  <ArrowUpRight className="hidden h-4 w-4 text-stone-600 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 lg:block" />
+                </button>
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -12,6 +12,7 @@ import {
   type ProjectUpdate,
 } from '../portal/data';
 import { apiClient, getApiBaseUrl } from './apiClient';
+import { getLocalizedNewsArticle, getLocalizedProject } from '../portal/showcaseLocalization';
 
 export type { CreateNewsInput, NewsArticle, NewsCategory, NewsCadence, NewsStatus, NewsSourceType } from '../portal/data';
 const remoteEnabled = () => Boolean(getApiBaseUrl());
@@ -64,7 +65,24 @@ const formatDate = (value: string) => new Date(value).toLocaleDateString('en-GB'
 export const getPublicNewsUpdates = (projectId?: string): PublicNewsUpdate[] => {
   const projects = new Map(getPublicProjects().map((project) => [project.id, project]));
   const articles = projectId ? getPublicNews(projectId) : getLatestPublishedNews(Number.MAX_SAFE_INTEGER);
-  return articles.flatMap((article) => { const project = projects.get(article.projectId); return project ? [{ id: article.id, slug: article.slug, projectId: article.projectId, date: formatDate(article.publishedAt || article.createdAt), title: article.title, body: article.body || article.excerpt, category: article.category, projectTitle: project.title, projectCategory: project.category, image: article.image || project.image }] : []; });
+  return articles.flatMap((article) => {
+    const project = projects.get(article.projectId);
+    if (!project) return [];
+    const localizedArticle = getLocalizedNewsArticle(article);
+    const localizedProject = getLocalizedProject(project);
+    return [{
+      id: localizedArticle.id,
+      slug: localizedArticle.slug,
+      projectId: localizedArticle.projectId,
+      date: formatDate(localizedArticle.publishedAt || localizedArticle.createdAt),
+      title: localizedArticle.title,
+      body: localizedArticle.body || localizedArticle.excerpt,
+      category: localizedArticle.category,
+      projectTitle: localizedProject.title,
+      projectCategory: localizedProject.category,
+      image: localizedArticle.image || project.image,
+    }];
+  });
 };
 export const getPublicNewsUpdate = (id: string) => {
   const article = getNewsBySlug(id);

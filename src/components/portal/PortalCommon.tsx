@@ -20,6 +20,12 @@ import { aiService } from '../../services/aiService';
 import { AIMessage } from '../../types/bim';
 import { portalAuth } from '../../portal/demoAuth';
 import { useLocale } from '../../portal/locale';
+import {
+  getLocalizedApprovalTitle,
+  getLocalizedMilestone,
+  getLocalizedProjectField,
+  getLocalizedUpdate,
+} from '../../portal/showcaseLocalization';
 
 export type Navigate = (path: string) => void;
 
@@ -104,7 +110,13 @@ export const ProjectIdentityButton: React.FC<{
   detailPath: (id: string) => string;
   meta?: React.ReactNode;
   testId?: string;
-}> = ({ project, onNavigate, detailPath, meta = project.category, testId }) => (
+}> = ({
+  project,
+  onNavigate,
+  detailPath,
+  meta = getLocalizedProjectField(project.id, 'category', project.category),
+  testId,
+}) => (
   <button
     data-testid={testId}
     onClick={() => onNavigate(detailPath(project.id))}
@@ -438,7 +450,7 @@ export const ProjectRows: React.FC<{
         >
           <ProjectIdentityButton project={project} onNavigate={onNavigate} detailPath={detailPath} />
           <span className="text-xs text-stone-600">
-            <span className="block">{project.phase}</span>
+            <span className="block">{getLocalizedProjectField(project.id, 'phase', project.phase)}</span>
             {project.approvals.some((approval) => approval.status === 'Pending') && (
               <span className="portal-status-pending mt-2 block font-mono text-[9px] uppercase tracking-[0.12em]">{t('approvalPending', 'Approval pending')}</span>
             )}
@@ -882,26 +894,40 @@ export const ProjectNavigation: React.FC<{
 export const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project }) => {
   const { t } = useTranslation('portal');
   const media = uniqueProjectMedia(project);
+  const localizedStatement = getLocalizedProjectField(project.id, 'statement', project.statement);
+  const localizedDevType = getLocalizedProjectField(project.id, 'developmentType', project.developmentType);
+  const localizedPhase = getLocalizedProjectField(project.id, 'phase', project.phase);
+  const localizedNextMilestone = getLocalizedProjectField(project.id, 'nextMilestone', project.nextMilestone);
+
   const facts: [string, string][] = [
     ['Market', project.market],
-    ['Development type', project.developmentType],
+    ['Development type', localizedDevType],
     ['Context', project.context],
     ['Scale', project.scale],
-    ['Current phase', project.phase],
+    ['Current phase', localizedPhase],
     ['Progress', `${project.progress}%`],
-    ['Next milestone', project.nextMilestone],
+    ['Next milestone', localizedNextMilestone],
   ].filter((entry): entry is [string, string] => Boolean(entry[1]));
 
   const activity = [
-    ...project.updates.slice(0, 2).map((update) => ({ kind: 'Update', label: update.title, detail: update.body, date: update.date, status: '' })),
-    ...project.approvals.filter((approval) => approval.status === 'Pending').slice(0, 1).map((approval) => ({ kind: 'Approval', label: approval.title, detail: 'Decision required', date: '', status: approval.status })),
-    ...project.milestones.filter((milestone) => milestone.status !== 'Complete').slice(0, 1).map((milestone) => ({ kind: 'Milestone', label: milestone.label, detail: 'Delivery event', date: '', status: milestone.status })),
+    ...project.updates.slice(0, 2).map((update) => {
+      const locUpdate = getLocalizedUpdate(update);
+      return { kind: 'Update', label: locUpdate.title, detail: locUpdate.body, date: locUpdate.date, status: '' };
+    }),
+    ...project.approvals.filter((approval) => approval.status === 'Pending').slice(0, 1).map((approval) => {
+      const locTitle = getLocalizedApprovalTitle(approval.title, approval.projectId);
+      return { kind: 'Approval', label: locTitle, detail: 'Decision required', date: '', status: approval.status };
+    }),
+    ...project.milestones.filter((milestone) => milestone.status !== 'Complete').slice(0, 1).map((milestone) => {
+      const locMilestone = getLocalizedMilestone(milestone);
+      return { kind: 'Milestone', label: locMilestone.label, detail: 'Delivery event', date: '', status: locMilestone.status };
+    }),
   ].slice(0, 4);
 
   return (
     <div className="grid gap-12 lg:grid-cols-[1.35fr_0.65fr]">
       <div>
-        <p className="max-w-3xl font-serif text-3xl font-light leading-snug sm:text-4xl">{project.statement}</p>
+        <p className="max-w-3xl font-serif text-3xl font-light leading-snug sm:text-4xl">{localizedStatement}</p>
         {media.length ? (
           <div className="portal-project-media-grid mt-10">
             {media.map((src, index) => (

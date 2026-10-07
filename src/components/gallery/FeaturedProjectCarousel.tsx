@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import { getPublicProjects, type PortalProject } from '../../portal/data';
 import { preferredProjectImages, ProjectImage } from './projectMedia';
+import { getLocalizedProject } from '../../portal/showcaseLocalization';
 
 export const FEATURED_CAROUSEL_AUTOPLAY_MS = 3200;
 
@@ -26,6 +27,7 @@ const useReducedMotion = () => {
 
 const FeaturedProjectSlide: React.FC<{ project: PortalProject; index: number; total: number; active: boolean; onOpenProject: (id: string) => void }> = ({ project, index, total, active, onOpenProject }) => {
   const { t } = useTranslation('common');
+  const localized = getLocalizedProject(project);
   return (
     <article
       data-testid={`featured-slide-${project.id}`}
@@ -54,8 +56,8 @@ const FeaturedProjectSlide: React.FC<{ project: PortalProject; index: number; to
           <span className="featured-project-slide-content pointer-events-none absolute inset-x-0 bottom-0 grid min-h-[9.5rem] gap-4 p-5 text-white sm:min-h-[12rem] sm:gap-6 sm:p-8 lg:grid-cols-[1fr_auto] lg:items-end lg:p-10">
             <span>
               <span className="featured-project-title block max-w-3xl font-serif font-light leading-[0.98]">{project.title}</span>
-              <span className="mt-3 block font-mono text-[10px] uppercase tracking-[0.16em] text-stone-300 sm:mt-4">{project.category}</span>
-              <span className="featured-project-statement mt-3 block max-w-2xl font-serif font-light leading-snug text-stone-200 sm:mt-5">{project.statement}</span>
+              <span className="mt-3 block font-mono text-[10px] uppercase tracking-[0.16em] text-stone-300 sm:mt-4">{localized.category}</span>
+              <span className="featured-project-statement mt-3 block max-w-2xl font-serif font-light leading-snug text-stone-200 sm:mt-5">{localized.statement}</span>
             </span>
             <span className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.18em] text-stone-300 transition-colors group-hover:text-white group-focus-visible:text-white">
               {t('carousel.viewDossier', 'View dossier')} <ArrowUpRight className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

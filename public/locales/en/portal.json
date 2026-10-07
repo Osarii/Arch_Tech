@@ -104,5 +104,35 @@
   "studioManagement": "Studio management",
   "updateBody": "Update body",
   "updateTitle": "Update title",
-  "whatChanged": "What changed?"
+  "whatChanged": "What changed?",
+  "seeded": {
+    "approvals": {
+      "publicFactsCheck": "Public facts check",
+      "showcaseFraming": "Showcase framing"
+    },
+    "documents": {
+      "localMediaMappingMeta": "Concept coordination · ARCH_TECH",
+      "localMediaMappingName": "Local media mapping",
+      "officialReferenceMeta": "Concept Showcase · public source",
+      "officialReferenceName": "Official project reference"
+    },
+    "notifications": {
+      "architectEc": "Corporate campus reference is ready for coordination.",
+      "architectZfll": "Public source mapping is ready for coordination.",
+      "clientWa": "Hospitality reference is ready for review.",
+      "clientZfll": "Showcase framing is ready for review."
+    },
+    "updates": {
+      "portfolioFactsCheckedBody": "Location, scale and development description were aligned with the official public source.",
+      "portfolioFactsCheckedTitle": "Portfolio facts checked",
+      "projectReferencePreparedCcsBody": "Office-center information is organized for the showcase dossier.",
+      "projectReferencePreparedSaccBody": "Public project information is organized for the showcase dossier.",
+      "projectReferencePreparedTitle": "Project reference prepared",
+      "showcaseMediaReviewEcBody": "Corporate campus imagery is staged for the ARCH_TECH Concept Showcase.",
+      "showcaseMediaReviewTitle": "Showcase media review",
+      "showcaseMediaReviewUlBody": "Educational campus imagery is staged for the ARCH_TECH Concept Showcase.",
+      "showcaseMediaReviewWaBody": "Hospitality project imagery and public facts are ready for review.",
+      "showcaseMediaReviewZfllBody": "Official portfolio imagery and public facts are ready for the ARCH_TECH Concept Showcase."
+    }
+  }
 }

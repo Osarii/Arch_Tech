@@ -1,1 +1,74 @@
-{}
+{
+  "milestones": {
+    "mediaMapping": "Media mapping",
+    "publicSourceIntake": "Public source intake",
+    "showcaseReview": "Showcase review",
+    "status": {
+      "complete": "Complete",
+      "current": "Current",
+      "upcoming": "Upcoming"
+    }
+  },
+  "projects": {
+    "centro-corporativo-sabana": {
+      "category": "Corporate office center",
+      "developmentType": "Corporate office center",
+      "longView": "An office center with amenities and sustainability goals, including the LEED Gold certification described in the official portfolio.",
+      "nextMilestone": "Portfolio review · 16 December",
+      "phase": "Showcase review",
+      "publicStage": "Proposed · upcoming",
+      "statement": "The official portfolio describes Centro Corporativo La Sabana as an 18-level office building with three parking basements, office areas of 2,800 m² per floor and amenities including a gym, sports areas, spa, viewpoints, terraces and balconies.",
+      "summary": "A corporate office center in Sabana Sur, described by the official portfolio as an 18-level building with three parking basements."
+    },
+    "el-cafetal": {
+      "category": "Corporate center · Office campus",
+      "developmentType": "Corporate center / Office campus",
+      "longView": "Seven office buildings, gardens, parking and access roads form the corporate setting described in the official portfolio.",
+      "nextMilestone": "Portfolio review · 25 November",
+      "phase": "Showcase review",
+      "publicStage": "Operating since 2014",
+      "statement": "The official portfolio describes seven eco-friendly office buildings, extensive gardens, 2,100 parking spaces and key access roads serving a corporate center with 5,600 employees.",
+      "summary": "A corporate center in Belén, Heredia, formed by seven office towers with gardens, parking and access roads"
+    },
+    "santa-ana-country-club": {
+      "category": "Social & sports club",
+      "developmentType": "Social & sports club",
+      "longView": "A private club organized around sports, fitness, dining and social connection, as described by the official portfolio.",
+      "nextMilestone": "Portfolio review · 02 December",
+      "phase": "Showcase review",
+      "publicStage": "Operating since 2019",
+      "statement": "The official portfolio describes Santa Ana Country Club as an eight-hectare social and sports club with gastronomic, aquatic, racquet sports, fitness and social spaces.",
+      "summary": "A social and sports club on an eight-hectare site in Pozos de Santa Ana, with dining, aquatic, racquet, fitness and social amenities."
+    },
+    "universidad-latina": {
+      "category": "Educational campus",
+      "developmentType": "Educational campus",
+      "longView": "An educational and recreational campus organized for the daily experience of students, as described in the official portfolio.",
+      "nextMilestone": "Portfolio review · 23 December",
+      "phase": "Showcase review",
+      "publicStage": "Operating since 2019",
+      "statement": "The official portfolio describes a 15,000 m², five-level building that integrates educational and recreational infrastructure for private higher education.",
+      "summary": "An educational campus in Heredia integrating classrooms, workshops, laboratories, library, administrative offices and a food court."
+    },
+    "waldorf-astoria": {
+      "category": "Hospitality · Hotel and residences",
+      "developmentType": "Hospitality / Hotel and residences",
+      "longView": "A hospitality project framed by the natural setting and destination experience described in the official portfolio.",
+      "nextMilestone": "Portfolio review · 09 December",
+      "phase": "Showcase review",
+      "publicStage": "Proposed · opening listed as 2025",
+      "statement": "Garnier's official portfolio describes the Waldorf Astoria Hotel Project at Playa Penca, Punta Cacique, with 188 rooms and around 30 residences.",
+      "summary": "A hospitality project at Playa Penca, Punta Cacique, Guanacaste, planned around a hotel and residences."
+    },
+    "zona-franca-la-lima": {
+      "category": "Free zone · Industrial park",
+      "developmentType": "Free zone / Industrial park",
+      "longView": "A business and infrastructure platform for advanced manufacturing, life sciences, logistics and related services.",
+      "nextMilestone": "Portfolio review · 18 November",
+      "phase": "Showcase review",
+      "publicStage": "Operating since 2014",
+      "statement": "The official portfolio describes La Lima as a 79-hectare mixed-commercial development with a technological profile for advanced manufacturing, life sciences, logistics centers and supplier and service companies.",
+      "summary": "A free zone and industrial park in La Lima, Cartago, covering 79 hectares for advanced manufacturing, life sciences, logistics and related services."
+    }
+  }
+}

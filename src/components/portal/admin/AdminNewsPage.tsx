@@ -28,6 +28,7 @@ import { NavigationProps, PortalEmptyState } from '../PortalCommon';
 import { useLocale } from '../../../portal/locale';
 import { PortalShell, usePortalShell } from '../PortalShell';
 import { useTranslation } from 'react-i18next';
+import { getLocalizedNewsArticle } from '../../../portal/showcaseLocalization';
 
 interface NewsModalProps {
   open: boolean;
@@ -640,6 +641,7 @@ export const AdminNewsPage: React.FC<Partial<NavigationProps> & { onSignOut?: ()
             {filteredArticles.map((article) => {
               const project = projectsById.get(article.projectId);
               const isN8n = article.sourceType === 'n8n';
+              const displayArticle = getLocalizedNewsArticle(article);
 
               return (
                 <div
@@ -664,7 +666,7 @@ export const AdminNewsPage: React.FC<Partial<NavigationProps> & { onSignOut?: ()
                         {article.status}
                       </span>
                       <span className="rounded bg-black/5 px-1.5 py-0.5 font-mono text-[8px] uppercase text-stone-600">
-                        {article.category}
+                        {displayArticle.category}
                       </span>
                       <span className="rounded bg-black/5 px-1.5 py-0.5 font-mono text-[8px] uppercase text-stone-600">
                         {article.cadence}
@@ -681,12 +683,12 @@ export const AdminNewsPage: React.FC<Partial<NavigationProps> & { onSignOut?: ()
                       )}
                     </div>
 
-                    <h3 className="font-serif text-lg font-normal leading-snug">{article.title}</h3>
-                    <p className="line-clamp-2 text-xs text-stone-600">{article.excerpt}</p>
+                    <h3 className="font-serif text-lg font-normal leading-snug">{displayArticle.title}</h3>
+                    <p className="line-clamp-2 text-xs text-stone-600">{displayArticle.excerpt}</p>
 
                     <div className="flex flex-wrap items-center gap-3 font-mono text-[9px] text-stone-500">
                       <span>{t('slugPrefix', 'Slug: /')}{article.slug}</span>
-                      {article.sourceLabel && <span>{t('sourcePrefix', 'Source:')} {article.sourceLabel}</span>}
+                      {displayArticle.sourceLabel && <span>{t('sourcePrefix', 'Source:')} {displayArticle.sourceLabel}</span>}
                       {article.publishedAt && <span>{t('publishedPrefix', 'Published:')} {new Date(article.publishedAt).toLocaleDateString()}</span>}
                     </div>
                   </div>

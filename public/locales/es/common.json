@@ -50,9 +50,13 @@
     "inspect": "Inspeccionar",
     "nextFullscreen": "Siguiente imagen en pantalla completa",
     "nextSlide": "Siguiente diapositiva",
+    "noPhotography": "No hay fotografía oficial del proyecto disponible.",
+    "officialPhotography": "Fotografía oficial del proyecto del portafolio público.",
     "openFullscreen": "Abrir vista en pantalla completa de {{label}}",
+    "portfolioView": "Vista de portafolio {{number}}",
     "prevFullscreen": "Imagen anterior en pantalla completa",
     "prevSlide": "Diapositiva anterior",
+    "projectCover": "Portada del proyecto",
     "selectImage": "Seleccionar imagen del proyecto",
     "selectSlide": "Seleccionar {{label}}",
     "useArrows": "Use las flechas para explorar"

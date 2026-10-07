@@ -24,6 +24,13 @@ import {
 import { PortalShell, usePortalShell } from '../PortalShell';
 import { useLocale } from '../../../portal/locale';
 import { useTranslation } from 'react-i18next';
+import {
+  getLocalizedApprovalTitle,
+  getLocalizedDocument,
+  getLocalizedMilestone,
+  getLocalizedProjectField,
+  getLocalizedUpdate,
+} from '../../../portal/showcaseLocalization';
 
 export interface DashboardProjectPageProps extends Partial<NavigationProps> {
   projectId: string;
@@ -239,19 +246,19 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
       <div className="mt-8 grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-            {project.code} / {project.category}
+            {project.code} / {getLocalizedProjectField(project.id, 'category', project.category)}
           </p>
           <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">{project.title}</h1>
         </div>
         <div className="min-w-64">
           <div className="flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
-            <span>{project.phase}</span>
+            <span>{getLocalizedProjectField(project.id, 'phase', project.phase)}</span>
             <span>{project.progress}%</span>
           </div>
           <div className="portal-progress-track mt-3 h-px bg-black/15">
             <div className="portal-progress-fill h-px bg-black" style={{ width: `${project.progress}%` }} />
           </div>
-          <p className="mt-3 text-xs text-stone-500">{t('nextLabel', 'Next: {{milestone}}', { milestone: project.nextMilestone })}</p>
+          <p className="mt-3 text-xs text-stone-500">{t('nextLabel', 'Next: {{milestone}}', { milestone: getLocalizedProjectField(project.id, 'nextMilestone', project.nextMilestone) })}</p>
         </div>
       </div>
 
@@ -289,15 +296,18 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         {activeTab === 'Updates' && (
           <div className="divide-y divide-black/15 border-y border-black/15">
             {project.updates.length ? (
-              project.updates.map((update) => (
-                <article key={update.date + update.title} className="grid gap-4 py-8 md:grid-cols-[140px_1fr]">
-                  <p className="font-mono text-[10px] text-stone-500">{update.date}</p>
-                  <div>
-                    <h2 className="font-serif text-3xl">{update.title}</h2>
-                    <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{update.body}</p>
-                  </div>
-                </article>
-              ))
+              project.updates.map((update) => {
+                const locUpdate = getLocalizedUpdate(update);
+                return (
+                  <article key={update.date + update.title} className="grid gap-4 py-8 md:grid-cols-[140px_1fr]">
+                    <p className="font-mono text-[10px] text-stone-500">{update.date}</p>
+                    <div>
+                      <h2 className="font-serif text-3xl">{locUpdate.title}</h2>
+                      <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-600">{locUpdate.body}</p>
+                    </div>
+                  </article>
+                );
+              })
             ) : (
               <PortalEmptyState message="No updates have been recorded for this project." />
             )}
@@ -307,15 +317,18 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         {activeTab === 'Milestones' && (
           <ol className="divide-y divide-black/15 border-y border-black/15">
             {project.milestones.length ? (
-              project.milestones.map((ms, index) => (
-                <li key={ms.label} className="grid grid-cols-[60px_1fr_auto] items-center py-6">
-                  <span className="font-mono text-[10px] text-stone-500">{String(index + 1).padStart(2, '0')}</span>
-                  <span className="font-serif text-2xl">{ms.label}</span>
-                  <span className={`${portalStatusClass(ms.status)} font-mono text-[9px] uppercase tracking-[0.16em]`}>
-                    {ms.status}
-                  </span>
-                </li>
-              ))
+              project.milestones.map((ms, index) => {
+                const locMs = getLocalizedMilestone(ms);
+                return (
+                  <li key={ms.label} className="grid grid-cols-[60px_1fr_auto] items-center py-6">
+                    <span className="font-mono text-[10px] text-stone-500">{String(index + 1).padStart(2, '0')}</span>
+                    <span className="font-serif text-2xl">{locMs.label}</span>
+                    <span className={`${portalStatusClass(ms.status)} font-mono text-[9px] uppercase tracking-[0.16em]`}>
+                      {locMs.status}
+                    </span>
+                  </li>
+                );
+              })
             ) : (
               <li>
                 <PortalEmptyState message="No milestones have been defined for this project." />
@@ -327,18 +340,21 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         {activeTab === 'Documents' && (
           <div className="divide-y divide-black/15 border-y border-black/15">
             {project.documents.length ? (
-              project.documents.map((doc) => (
-                <div key={doc.name} className="flex items-center justify-between gap-6 py-6">
-                  <div className="flex items-center gap-4">
-                    <FileText className="h-4 w-4" />
-                    <div>
-                      <p className="font-serif text-xl">{doc.name}</p>
-                      <p className="mt-1 font-mono text-[9px] uppercase tracking-wider text-stone-500">{doc.meta}</p>
+              project.documents.map((doc) => {
+                const locDoc = getLocalizedDocument(doc, project.id);
+                return (
+                  <div key={doc.name} className="flex items-center justify-between gap-6 py-6">
+                    <div className="flex items-center gap-4">
+                      <FileText className="h-4 w-4" />
+                      <div>
+                        <p className="font-serif text-xl">{locDoc.name}</p>
+                        <p className="mt-1 font-mono text-[9px] uppercase tracking-wider text-stone-500">{locDoc.meta}</p>
+                      </div>
                     </div>
+                    <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{t('available', 'Available')}</span>
                   </div>
-                  <span className="font-mono text-[9px] uppercase tracking-wider text-stone-500">{t('available', 'Available')}</span>
-                </div>
-              ))
+                );
+              })
             ) : (
               <PortalEmptyState message="No documents have been issued for this project." />
             )}
@@ -350,7 +366,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
             {project.approvals.length ? (
               project.approvals.map((appr) => (
                 <div key={appr.title} className="flex items-center justify-between gap-6 py-6">
-                  <p className="font-serif text-2xl">{appr.title}</p>
+                  <p className="font-serif text-2xl">{getLocalizedApprovalTitle(appr.title, project.id)}</p>
                   <span className="flex items-center gap-3">
                     <span className={`${portalStatusClass(appr.status)} font-mono text-[9px] uppercase tracking-wider`}>
                       {t(`statuses.${appr.status.toLowerCase()}`, appr.status)}

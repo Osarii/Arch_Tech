@@ -1,1 +1,46 @@
-{}
+{
+  "articles": {
+    "news-archived-concept-brief": {
+      "body": "Initial massing studies conducted during the 2024 feasibility phase exploring tower heights and wind tunnel effects around the Sabana park perimeter.",
+      "category": "Infrastructure",
+      "excerpt": "Archived initial volume exploration and solar envelope analysis from preliminary feasibility phase.",
+      "sourceLabel": "Planning Archive",
+      "title": "Historical Massing Study for Sabana Corporate Center"
+    },
+    "news-el-cafetal-sustainability": {
+      "body": "Continuous building telemetry and environmental monitoring at El Cafetal Corporate Center in Belén, Heredia show strong sustainability indicators. Coordinated envelope upgrades and intelligent HVAC sequencing have lowered baseline utility consumption across all corporate sectors.",
+      "category": "Operations",
+      "excerpt": "Operational telemetry across seven office towers demonstrates a 24% reduction in peak cooling energy load.",
+      "sourceLabel": "Engineering Telemetry Register",
+      "title": "El Cafetal Corporate Center Achieves Net-Zero Energy Performance Milestones"
+    },
+    "news-n8n-daily-telemetry-ingest": {
+      "body": "Automated site survey captured by DJI dock aerial LIDAR and processed via n8n workflow. Civil excavation on Lot B-12 is 92% complete with cut-and-fill volume balanced according to digital terrain model. Pending structural engineering review.",
+      "category": "Site",
+      "excerpt": "n8n pipeline ingestion of site drone point clouds and earthwork volume estimates.",
+      "sourceLabel": "n8n Automated Telemetry",
+      "title": "Automated Drone Telemetry Report — Sector B Groundworks"
+    },
+    "news-sacc-sports-facility": {
+      "body": "Architectural review teams have commenced commissioning procedures for the aquatic pavilion expansion at Santa Ana Country Club. The facility incorporates solar thermal heating arrays and low-impact civil grading.",
+      "category": "Design",
+      "excerpt": "Technical review underway for sustainable water filtration systems and Olympic-scale sports infrastructure.",
+      "sourceLabel": "Design Coordination Group",
+      "title": "Santa Ana Country Club Initiates Architectural Commissioning for New Aquatic Pavilion"
+    },
+    "news-waldorf-astoria-groundbreaking": {
+      "body": "The ultra-luxury hospitality development in Punta Cacique, Guanacaste reached an engineering milestone this month. Comprehensive terrain stabilization and biophilic architectural integration ensure minimal disruption to native coastal topography while preserving panoramic Pacific views.",
+      "category": "Milestone",
+      "excerpt": "The cliffside hospitality resort advances with 100% structural concrete pours completed for central ocean villas.",
+      "sourceLabel": "Site Coordination Office",
+      "title": "Waldorf Astoria Cacique Reaches Coastal Superstructure Milestone"
+    },
+    "news-zfll-expansion": {
+      "body": "Garnier Architecture has coordinated the technical OpenBIM dossier for the Phase 4 expansion at Zona Franca La Lima. The new infrastructure integrates advanced energy modeling, smart grid connectivity, and specialized life sciences manufacturing zones designed for international operations.",
+      "category": "Development",
+      "excerpt": "New 45,000 m² high-specification logistics and cleanroom manufacturing facility breaks ground in Cartago.",
+      "sourceLabel": "Garnier Architecture Editorial",
+      "title": "Zona Franca La Lima Announces Phase 4 Advanced Manufacturing Expansion"
+    }
+  }
+}
