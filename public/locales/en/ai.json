@@ -1,11 +1,14 @@
 {
   "actionCancelled": "Action Cancelled",
+  "assistantName": "GARNIER ASSISTANT",
+  "assistantSubtitle": "Project intelligence",
   "assistantTimestamp": "AI Assistant • {{time}}",
   "bimAiAssistant": "BIM AI Assistant",
   "chatPlaceholder": "Ask AI e.g. 'Move #44 by 1m in X'...",
   "clearHistory": "Clear History",
   "clearHistoryTitle": "Clear Conversation History",
   "clearHistoryTooltip": "Clear Conversation History",
+  "closeAssistant": "Close assistant",
   "confirm": "Confirm",
   "confirmAndApply": "Confirm & Apply",
   "emptyDescription": "Ask about building quantities, model elements, structural search or massing preview generation.",
@@ -15,19 +18,34 @@
   "engineOffline": "Offline Deterministic Engine",
   "engineRemote": "Remote n8n / offline fallback",
   "executedAndRecorded": "Executed & Recorded in Change Set",
-  "heading": "BIM AI Assistant",
-  "helperCopy": "Natural language BIM intelligence and coordination engine.",
+  "heading": "GARNIER ASSISTANT",
+  "helperCopy": "Project intelligence and natural language coordination engine.",
   "inputPlaceholder": "Ask about model quantities, elements or building generation…",
+  "landingGreeting": "Welcome to GARNIER ARCHITECTURE. How can I assist you with our developments, services, or project portals?",
+  "landingQuickPrompts": [
+    "What types of projects do you develop?",
+    "Show me industrial projects",
+    "Tell me about your services",
+    "How can I access my project portal?"
+  ],
+  "launcherAriaClose": "Close GARNIER assistant",
+  "launcherAriaOpen": "Open GARNIER assistant",
+  "launcherLabel": "Ask GARNIER",
   "offlineEngine": "Offline Deterministic Engine",
   "offlineStatus": "Offline Deterministic Engine",
+  "onlineStatus": "Online",
+  "openAssistant": "Open assistant",
   "openModel": "Open 3D Model →",
   "openWorkspace": "Open 3D Model →",
   "phaseBadge": "Phase 6B.1",
+  "publicAssistantSubtitle": "Architecture & development concierge",
+  "publicAssistantTitle": "GARNIER ASSISTANT",
   "quickPrompts": {
-    "client": [
+    "admin": [
       "Calculate model quantities",
-      "Show all elements",
-      "Isolate walls"
+      "Find all walls",
+      "Preview 10x8m 2-storey building, 3m height per storey",
+      "Show all elements"
     ],
     "architect": [
       "Preview 10x8m 2-storey building, 3m height per storey",
@@ -35,11 +53,10 @@
       "Find all walls",
       "Show all elements"
     ],
-    "admin": [
+    "client": [
       "Calculate model quantities",
-      "Find all walls",
-      "Preview 10x8m 2-storey building, 3m height per storey",
-      "Show all elements"
+      "Show all elements",
+      "Isolate walls"
     ]
   },
   "quickPromptsLabel": "Quick prompts:",
@@ -47,9 +64,11 @@
   "remoteEngine": "Remote n8n / offline fallback",
   "remoteStatus": "Remote n8n / offline fallback",
   "send": "Send",
-  "subtitle": "Natural language BIM intelligence and coordination engine.",
+  "subtitle": "Project intelligence",
+  "thinking": "Thinking…",
   "toolExecuted": "Executed",
   "toolProposalCreated": "Proposal created",
+  "unavailableMessage": "The assistant service is currently unavailable. Please check back shortly or contact our team directly.",
   "userTimestamp": "User • {{time}}",
   "workspaceHeading": "3D Engineering Workspace",
   "workspaceSubtitle": "Open the live WebGL workspace to inspect fragments, property sets, and visual model modifications.",

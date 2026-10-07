@@ -128,6 +128,9 @@
     "title": "Service temporarily unavailable."
   },
   "shell": {
+    "brandName": "GARNIER",
+    "closeNavigation": "Close navigation",
+    "openNavigation": "Open navigation menu",
     "showcaseEyebrow": "Portfolio Showcase / Concept Prototype",
     "homeAria": "GARNIER ARCHITECTURE home",
     "roles": {

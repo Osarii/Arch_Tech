@@ -333,111 +333,201 @@ body {
   background: #373b47;
 }
 
-html.portal-dark .portal-surface {
-  --portal-bg: #000000;
-  --portal-text: #EDF4ED;
-  --portal-secondary: #ABD1B5;
-  --portal-green: #79B791;
-  --portal-accent: #FFBF00;
+/* ==========================================================================
+   PORTAL DESIGN SYSTEM TOKENS & SURFACES
+   ========================================================================== */
+
+.portal-surface {
+  --portal-bg: #f8faf8;
+  --portal-surface: #ffffff;
+  --portal-surface-raised: #edf4ed;
+  --portal-border: rgba(0, 0, 0, 0.1);
+  --portal-border-strong: rgba(0, 0, 0, 0.22);
+  --portal-text: #000000;
+  --portal-muted: #57655b;
+  --portal-accent: #79B791;
+  --portal-accent-soft: rgba(121, 183, 145, 0.14);
+  --portal-amber: #FFBF00;
   background-color: var(--portal-bg) !important;
   color: var(--portal-text) !important;
 }
-html.portal-dark .portal-surface .portal-header {
-  background-color: #000000 !important;
-  border-color: rgb(171 209 181 / 0.28) !important;
-  color: #EDF4ED !important;
+
+html.portal-dark .portal-surface {
+  --portal-bg: #090a0c;
+  --portal-surface: #121417;
+  --portal-surface-raised: #181b1f;
+  --portal-border: rgba(171, 209, 181, 0.14);
+  --portal-border-strong: rgba(171, 209, 181, 0.28);
+  --portal-text: #EDF4ED;
+  --portal-muted: #8fa596;
+  --portal-accent: #79B791;
+  --portal-accent-soft: rgba(121, 183, 145, 0.15);
+  --portal-amber: #FFBF00;
+  background-color: var(--portal-bg) !important;
+  color: var(--portal-text) !important;
 }
-html.portal-dark .portal-surface .portal-header > div:last-child {
-  background-color: rgb(121 183 145 / 0.16) !important;
+
+/* Header & Rail containers */
+.portal-surface .portal-header,
+.portal-surface .portal-rail {
+  background-color: var(--portal-surface) !important;
+  border-color: var(--portal-border) !important;
+  color: var(--portal-text) !important;
 }
+
+/* Nav Item States */
+.portal-surface .portal-nav-item {
+  color: var(--portal-muted);
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.portal-surface .portal-nav-item:hover {
+  background-color: var(--portal-surface-raised);
+  color: var(--portal-text);
+}
+.portal-surface .portal-nav-item[aria-current="page"] {
+  background-color: var(--portal-surface-raised);
+  color: var(--portal-text);
+  font-weight: 600;
+  border-left: 2px solid var(--portal-accent);
+}
+
+/* Text and border utilities within portal */
 html.portal-dark .portal-surface [class~="text-black"],
 html.portal-dark .portal-surface [class~="text-[#211E1A]"],
 html.portal-dark .portal-surface [class~="text-[#171714]"] {
-  color: #FFBF00 !important;
+  color: var(--portal-text) !important;
 }
 html.portal-dark .portal-surface .text-stone-600,
 html.portal-dark .portal-surface .text-stone-500,
-html.portal-dark .portal-surface .text-stone-400,
-html.portal-dark .portal-surface .text-stone-300,
-html.portal-dark .portal-surface .text-stone-200 {
-  color: #ABD1B5 !important;
+html.portal-dark .portal-surface .text-stone-400 {
+  color: var(--portal-muted) !important;
 }
-html.portal-dark .portal-surface .text-white,
-html.portal-dark .portal-surface .text-stone-100 {
-  color: #EDF4ED !important;
+html.portal-dark .portal-surface .text-stone-300,
+html.portal-dark .portal-surface .text-stone-200,
+html.portal-dark .portal-surface .text-stone-100,
+html.portal-dark .portal-surface .text-white {
+  color: var(--portal-text) !important;
 }
 html.portal-dark .portal-surface [class~="border-black"],
 html.portal-dark .portal-surface [class~="border-black/10"],
 html.portal-dark .portal-surface [class~="border-black/15"],
 html.portal-dark .portal-surface [class~="border-black/20"],
 html.portal-dark .portal-surface [class~="divide-black/15"] > :not([hidden]) ~ :not([hidden]) {
-  border-color: rgb(171 209 181 / 0.28) !important;
-}
-html.portal-dark .portal-surface .portal-header button:hover,
-html.portal-dark .portal-surface [class~="hover:text-black"]:hover,
-html.portal-dark .portal-surface [class~="hover:text-stone-700"]:hover,
-html.portal-dark .portal-surface [class~="hover:text-stone-500"]:hover {
-  color: #FFBF00 !important;
-}
-html.portal-dark .portal-surface [class~="bg-black"] {
-  background-color: #FFBF00 !important;
-  color: #000000 !important;
-}
-html.portal-dark .portal-surface [class~="bg-black/15"],
-html.portal-dark .portal-surface [class~="bg-white/5"],
-html.portal-dark .portal-surface [class~="bg-white/10"] {
-  background-color: rgb(121 183 145 / 0.18) !important;
+  border-color: var(--portal-border) !important;
 }
 html.portal-dark .portal-surface [class~="bg-[#E6DED2]"],
 html.portal-dark .portal-surface [class~="bg-[#E9E2D7]"],
 html.portal-dark .portal-surface [class~="bg-[#11110f]"],
 html.portal-dark .portal-surface [class~="bg-[#171714]"],
-html.portal-dark .portal-surface [class~="bg-[#161716]"],
-html.portal-dark .portal-surface .admin-overview-tile,
-html.portal-dark .portal-surface .portal-overview-tile,
-html.portal-dark .portal-surface .portal-project-media-frame,
-html.portal-dark .portal-surface .portal-project-thumbnail-fallback {
-  background-color: rgb(121 183 145 / 0.14) !important;
-  color: #EDF4ED !important;
+html.portal-dark .portal-surface [class~="bg-[#161716]"] {
+  background-color: var(--portal-surface) !important;
+  color: var(--portal-text) !important;
 }
-html.portal-dark .portal-surface [class~="hover:bg-white/35"]:hover,
-html.portal-dark .portal-surface .portal-project-navigation button:not(:disabled):hover,
-html.portal-dark .portal-surface .portal-project-navigation button:not(:disabled):focus-visible {
-  background-color: rgb(171 209 181 / 0.18) !important;
-  border-color: rgb(171 209 181 / 0.45) !important;
-}
-html.portal-dark .portal-surface .portal-project-thumbnail,
-html.portal-dark .portal-surface .portal-project-media-frame {
-  border-color: rgb(171 209 181 / 0.3) !important;
-}
-html.portal-dark .portal-surface .portal-progress-track { background-color: rgb(171 209 181 / 0.25) !important; }
-html.portal-dark .portal-surface .portal-progress-fill { background-color: #79B791 !important; }
-html.portal-dark .portal-surface .portal-status-approved,
-html.portal-dark .portal-surface .portal-status-complete { color: #79B791 !important; }
-html.portal-dark .portal-surface .portal-status-current { color: #FFBF00 !important; }
-html.portal-dark .portal-surface .portal-status-upcoming { color: #ABD1B5 !important; }
-html.portal-dark .portal-surface .portal-status-pending { color: #FFBF00 !important; text-decoration: underline; text-decoration-style: dashed; }
-html.portal-dark .portal-surface .portal-status-rejected { color: #ABD1B5 !important; text-decoration: underline; text-decoration-style: wavy; }
-html.portal-dark .portal-surface [class~="bg-amber-500"],
-html.portal-dark .portal-surface [class~="text-amber-400"],
-html.portal-dark .portal-surface [class~="text-amber-500"] { color: #FFBF00 !important; }
-html.portal-dark .portal-surface [class~="bg-amber-500"] { background-color: #FFBF00 !important; }
-html.portal-dark .portal-surface [class~="hover:bg-red-500/20"]:hover,
-html.portal-dark .portal-surface [class~="hover:bg-red-500/10"]:hover { background-color: rgb(171 209 181 / 0.18) !important; }
-html.portal-dark .portal-surface [class~="hover:text-red-300"]:hover { color: #ABD1B5 !important; }
 
+/* Light mode specific surfaces */
+html:not(.portal-dark) .portal-surface [class~="text-black"],
+html:not(.portal-dark) .portal-surface [class~="text-[#211E1A]"],
+html:not(.portal-dark) .portal-surface [class~="text-[#171714]"] {
+  color: #000000 !important;
+}
+html:not(.portal-dark) .portal-surface .text-stone-600,
+html:not(.portal-dark) .portal-surface .text-stone-500,
+html:not(.portal-dark) .portal-surface .text-stone-400 {
+  color: var(--portal-muted) !important;
+}
+html:not(.portal-dark) .portal-surface [class~="border-black"],
+html:not(.portal-dark) .portal-surface [class~="border-black/10"],
+html:not(.portal-dark) .portal-surface [class~="border-black/15"],
+html:not(.portal-dark) .portal-surface [class~="border-black/20"],
+html:not(.portal-dark) .portal-surface [class~="divide-black/15"] > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--portal-border) !important;
+}
+html:not(.portal-dark) .portal-surface [class~="bg-[#E6DED2]"],
+html:not(.portal-dark) .portal-surface [class~="bg-[#E9E2D7]"] {
+  background-color: var(--portal-surface) !important;
+  color: var(--portal-text) !important;
+}
+
+/* Overview & Intelligence Tiles */
+.portal-surface .portal-overview-tile,
+.portal-surface .admin-overview-tile {
+  background-color: var(--portal-surface) !important;
+  border: 1px solid var(--portal-border);
+  color: var(--portal-text) !important;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+.portal-surface .portal-overview-tile:hover,
+.portal-surface .admin-overview-tile:hover {
+  background-color: var(--portal-surface-raised) !important;
+  border-color: var(--portal-border-strong) !important;
+}
+
+/* Progress & Status Signals */
+.portal-surface .portal-progress-track {
+  background-color: var(--portal-border) !important;
+}
+.portal-surface .portal-progress-fill {
+  background-color: var(--portal-accent) !important;
+}
+.portal-surface .portal-status-approved,
+.portal-surface .portal-status-complete {
+  color: #79B791 !important;
+}
+.portal-surface .portal-status-current {
+  color: #FFBF00 !important;
+}
+.portal-surface .portal-status-upcoming {
+  color: var(--portal-muted) !important;
+}
+.portal-surface .portal-status-pending {
+  color: #FFBF00 !important;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+}
+.portal-surface .portal-status-rejected {
+  color: var(--portal-muted) !important;
+  text-decoration: underline;
+  text-decoration-style: wavy;
+}
+
+/* Actions and interactive controls */
+.portal-surface .admin-primary-action,
+.portal-surface [data-testid="site-intelligence-analyze"] {
+  background-color: #000000 !important;
+  border: 1px solid var(--portal-border-strong) !important;
+  color: #EDF4ED !important;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+html.portal-dark .portal-surface .admin-primary-action,
+html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
+  background-color: #79B791 !important;
+  border-color: #79B791 !important;
+  color: #000000 !important;
+}
+.portal-surface .admin-primary-action:hover,
+.portal-surface .admin-primary-action:focus-visible,
+.portal-surface [data-testid="site-intelligence-analyze"]:hover,
+.portal-surface [data-testid="site-intelligence-analyze"]:focus-visible {
+  background-color: #ABD1B5 !important;
+  border-color: #000000 !important;
+  color: #000000 !important;
+  outline: none;
+}
+
+/* Media & Identity */
 .portal-project-thumbnail {
   aspect-ratio: 4 / 3;
   width: 4.5rem;
-  border: 1px solid rgb(0 0 0 / 0.18);
-  background-color: #ABD1B5;
+  border: 1px solid var(--portal-border);
+  background-color: var(--portal-surface-raised);
 }
 .portal-project-thumbnail-fallback {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.35rem;
-  color: #000000;
+  color: var(--portal-text);
+  background-color: var(--portal-surface-raised);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.5rem;
   letter-spacing: 0.12em;
@@ -447,173 +537,62 @@ html.portal-dark .portal-surface [class~="hover:text-red-300"]:hover { color: #A
 .portal-project-media-frame {
   min-height: 8rem;
   width: 100%;
-  border: 1px solid rgb(0 0 0 / 0.18);
-  background-color: #ABD1B5;
+  border: 1px solid var(--portal-border);
+  background-color: var(--portal-surface-raised);
 }
 .portal-project-media-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
 .portal-project-media-grid .portal-project-media-primary { aspect-ratio: 16 / 9; grid-column: 1 / -1; }
 .portal-project-media-grid .portal-project-media-frame:not(.portal-project-media-primary) { aspect-ratio: 4 / 3; }
-.portal-empty-state { border-color: rgb(0 0 0 / 0.2); }
-.portal-project-navigation button { border: 1px solid transparent; padding: 0.35rem 0.45rem; transition: border-color 160ms ease, background-color 160ms ease; }
+.portal-empty-state { border-color: var(--portal-border); color: var(--portal-muted); }
+.portal-project-navigation button {
+  border: 1px solid var(--portal-border);
+  background-color: var(--portal-surface);
+  color: var(--portal-text);
+  padding: 0.35rem 0.55rem;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
 .portal-project-navigation button:not(:disabled):hover,
-.portal-project-navigation button:not(:disabled):focus-visible { background-color: #ABD1B5; border-color: rgb(0 0 0 / 0.25); outline: none; }
+.portal-project-navigation button:not(:disabled):focus-visible {
+  background-color: var(--portal-surface-raised);
+  border-color: var(--portal-border-strong);
+  outline: none;
+}
 .portal-project-identity { border: 1px solid transparent; transition: border-color 160ms ease, color 160ms ease; }
 .portal-project-identity:hover .portal-project-thumbnail,
 .portal-project-identity:focus-visible .portal-project-thumbnail { border-color: currentColor; }
 .portal-register-actions { flex-wrap: wrap; }
+.portal-register-actions .admin-action {
+  border: 1px solid var(--portal-border-strong);
+  color: var(--portal-text);
+  padding: 0.4rem 0.55rem;
+}
+.portal-register-actions .admin-action:hover {
+  background-color: #000000 !important;
+  color: #EDF4ED !important;
+}
 
-html:not(.portal-dark) .portal-surface {
-  --portal-bg: #EDF4ED;
-  --portal-text: #000000;
-  --portal-secondary: #ABD1B5;
-  --portal-green: #79B791;
-  --portal-accent: #FFBF00;
-  background-color: var(--portal-bg) !important;
-  color: var(--portal-text) !important;
+.admin-kpi-strip {
+  background-color: var(--portal-border);
+  border-color: var(--portal-border);
 }
-html:not(.portal-dark) .portal-surface .portal-header {
-  background-color: #ABD1B5 !important;
-  border-color: rgb(0 0 0 / 0.2) !important;
-  color: #000000 !important;
-}
-html:not(.portal-dark) .portal-surface .portal-header > div:last-child { background-color: rgb(121 183 145 / 0.35) !important; }
-html:not(.portal-dark) .portal-surface [class~="text-black"],
-html:not(.portal-dark) .portal-surface [class~="text-[#211E1A]"],
-html:not(.portal-dark) .portal-surface [class~="text-[#171714]"] { color: #000000 !important; }
-html:not(.portal-dark) .portal-surface .text-stone-600,
-html:not(.portal-dark) .portal-surface .text-stone-500,
-html:not(.portal-dark) .portal-surface .text-stone-400,
-html:not(.portal-dark) .portal-surface .text-stone-300 { color: #000000 !important; }
-html:not(.portal-dark) .portal-surface .text-stone-200,
-html:not(.portal-dark) .portal-surface .text-stone-100,
-html:not(.portal-dark) .portal-surface .text-white { color: #000000 !important; }
-html:not(.portal-dark) .portal-surface [class~="border-black"],
-html:not(.portal-dark) .portal-surface [class~="border-black/10"],
-html:not(.portal-dark) .portal-surface [class~="border-black/15"],
-html:not(.portal-dark) .portal-surface [class~="border-black/20"],
-html:not(.portal-dark) .portal-surface [class~="divide-black/15"] > :not([hidden]) ~ :not([hidden]) { border-color: rgb(0 0 0 / 0.24) !important; }
-html:not(.portal-dark) .portal-surface [class~="bg-black"] { background-color: #FFBF00 !important; color: #000000 !important; }
-html:not(.portal-dark) .portal-surface [class~="bg-black/15"],
-html:not(.portal-dark) .portal-surface [class~="bg-white/5"],
-html:not(.portal-dark) .portal-surface [class~="bg-white/10"],
-html:not(.portal-dark) .portal-surface [class~="bg-[#E6DED2]"],
-html:not(.portal-dark) .portal-surface [class~="bg-[#E9E2D7]"],
-html:not(.portal-dark) .portal-surface [class~="bg-[#11110f]"],
-html:not(.portal-dark) .portal-surface [class~="bg-[#171714]"],
-html:not(.portal-dark) .portal-surface [class~="bg-[#161716]"],
-html:not(.portal-dark) .portal-surface .admin-overview-tile,
-html:not(.portal-dark) .portal-surface .portal-overview-tile { background-color: #ABD1B5 !important; color: #000000 !important; }
-html:not(.portal-dark) .portal-surface [class~="hover:bg-white/35"]:hover,
-html:not(.portal-dark) .portal-surface .portal-project-navigation button:not(:disabled):hover,
-html:not(.portal-dark) .portal-surface .portal-project-navigation button:not(:disabled):focus-visible { background-color: #79B791 !important; border-color: rgb(0 0 0 / 0.35) !important; }
-html:not(.portal-dark) .portal-surface .portal-progress-track { background-color: rgb(0 0 0 / 0.18) !important; }
-html:not(.portal-dark) .portal-surface .portal-progress-fill { background-color: #79B791 !important; }
-html:not(.portal-dark) .portal-surface .portal-status-approved,
-html:not(.portal-dark) .portal-surface .portal-status-complete { color: #79B791 !important; }
-html:not(.portal-dark) .portal-surface .portal-status-current { color: #FFBF00 !important; }
-html:not(.portal-dark) .portal-surface .portal-status-upcoming { color: #000000 !important; }
-html:not(.portal-dark) .portal-surface .portal-status-pending { color: #FFBF00 !important; text-decoration: underline; text-decoration-style: dashed; }
-html:not(.portal-dark) .portal-surface .portal-status-rejected { color: #000000 !important; text-decoration: underline; text-decoration-style: wavy; }
-html:not(.portal-dark) .portal-surface [class~="bg-amber-500"],
-html:not(.portal-dark) .portal-surface [class~="text-amber-400"],
-html:not(.portal-dark) .portal-surface [class~="text-amber-500"] { color: #FFBF00 !important; }
-html:not(.portal-dark) .portal-surface [class~="bg-amber-500"] { background-color: #FFBF00 !important; }
-html:not(.portal-dark) .portal-surface [class~="hover:bg-red-500/20"]:hover,
-html:not(.portal-dark) .portal-surface [class~="hover:bg-red-500/10"]:hover { background-color: rgb(121 183 145 / 0.35) !important; }
-html:not(.portal-dark) .portal-surface [class~="hover:text-red-300"]:hover { color: #000000 !important; }
 
-html:not(.portal-dark) .portal-surface .portal-register-row:focus-within { background-color: #ABD1B5 !important; color: #000000 !important; }
-html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action { border: 1px solid rgb(0 0 0 / 0.35); color: #000000 !important; padding: 0.4rem 0.55rem; }
-html:not(.portal-dark) .portal-surface .portal-register-actions .admin-action:hover { background-color: #000000 !important; color: #EDF4ED !important; }
-html:not(.portal-dark) .portal-surface .admin-kpi-strip { background-color: #79B791 !important; border-color: #79B791 !important; }
-html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile { background-color: #ABD1B5 !important; color: #000000 !important; }
-html:not(.portal-dark) .portal-surface .admin-kpi-strip .admin-overview-tile + .admin-overview-tile { border-left: 1px solid rgb(0 0 0 / 0.2) !important; }
-html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
-html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-500"],
-html:not(.portal-dark) .portal-surface .admin-kpi-strip [class~="text-stone-600"] { color: #000000 !important; }
-html.portal-dark .portal-surface .admin-primary-action,
-html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"],
-html:not(.portal-dark) .portal-surface .admin-primary-action,
-html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"] {
-  background-color: #79B791 !important;
-  border: 1px solid rgb(0 0 0 / 0.35) !important;
-  color: #000000 !important;
-  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
-}
-html.portal-dark .portal-surface .admin-primary-action:hover,
-html.portal-dark .portal-surface .admin-primary-action:focus-visible,
-html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"]:hover,
-html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"]:focus-visible,
-html:not(.portal-dark) .portal-surface .admin-primary-action:hover,
-html:not(.portal-dark) .portal-surface .admin-primary-action:focus-visible,
-html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"]:hover,
-html:not(.portal-dark) .portal-surface [data-testid="site-intelligence-analyze"]:focus-visible {
-  background-color: #ABD1B5 !important;
-  border-color: #000000 !important;
-  color: #000000 !important;
-  outline: none;
-}
-[class~="bg-[#11110f]"] { background-color: #000000 !important; }
-html.portal-dark .portal-surface [class~="bg-[#171714]"] { background-color: #FFBF00 !important; color: #000000 !important; }
-
-/* Admin keeps the editorial register while giving operational information a usable reading scale. */
+/* Admin responsive layout improvements */
 .portal-admin > main {
-  max-width: 92rem !important;
-  padding-bottom: 4.5rem !important;
-  padding-top: 3.5rem !important;
-}
-.portal-admin > main > div:first-child {
-  padding-bottom: 2.75rem !important;
-}
-.portal-admin > main > section {
-  padding-bottom: 2.5rem !important;
-  padding-top: 2.5rem !important;
-}
-.portal-admin > main > section.flex {
-  padding-bottom: 1.75rem !important;
-  padding-top: 1.75rem !important;
-}
-.portal-admin > main > section[aria-label="Portfolio overview"] {
-  padding-bottom: 0 !important;
-  padding-top: 0 !important;
+  max-width: 98rem !important;
+  padding-bottom: 3.5rem !important;
+  padding-top: 2rem !important;
 }
 .portal-admin .admin-overview-tile > p:first-child,
 .portal-admin [class~="text-[9px]"] {
   font-size: 0.6875rem !important;
 }
 .portal-admin .admin-overview-tile .font-serif {
-  font-size: 3rem !important;
-  line-height: 0.95 !important;
+  font-size: 2.75rem !important;
+  line-height: 1 !important;
 }
 .portal-admin .admin-overview-tile > p:last-child {
-  font-size: 0.875rem !important;
-  line-height: 1.4 !important;
-}
-.portal-admin [class~="text-xs"] {
   font-size: 0.8125rem !important;
-}
-.portal-admin [class~="text-sm"] {
-  font-size: 0.9375rem !important;
-  line-height: 1.5 !important;
-}
-.portal-admin [class~="text-2xl"] {
-  font-size: 1.75rem !important;
-  line-height: 1.1 !important;
-}
-.portal-admin [class~="admin-action"] {
-  font-size: 0.6875rem !important;
-  line-height: 1.3 !important;
-}
-.portal-admin #portal-section-people button {
-  font-size: 0.6875rem !important;
-  line-height: 1.3 !important;
-  padding-bottom: 0.35rem;
-  padding-top: 0.35rem;
-}
-.portal-admin #portal-section-activity [data-testid^="admin-assignment-"] {
-  font-size: 0.6875rem !important;
-  line-height: 1.3 !important;
-  padding: 0.5rem 0.75rem;
+  line-height: 1.4 !important;
 }
 
 @media (max-width: 639px) {

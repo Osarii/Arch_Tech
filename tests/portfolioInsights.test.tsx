@@ -165,7 +165,7 @@ describe('portfolio panel and Admin Assistant', () => {
     expect(within(panel).getByText('Pending approval: Design review')).toBeDefined();
     fireEvent.click(within(panel).getByRole('button', { name: 'Project priority' }));
     expect(navigate).toHaveBeenCalledWith('/admin/projects/priority');
-    const bim = screen.getByText('BIM AI Assistant');
+    const bim = screen.getByText('GARNIER ASSISTANT');
     expect(panel.compareDocumentPosition(bim) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Calculate model quantities' })); });
     expect(bimAgent.sendMessage).toHaveBeenCalledWith('Calculate model quantities');
@@ -184,7 +184,7 @@ describe('portfolio panel and Admin Assistant', () => {
     vi.spyOn(projectService, 'list').mockRejectedValue(new Error('Service unavailable'));
     render(<AdminAssistantPage onNavigate={vi.fn()} />);
     await screen.findByText('Portfolio intelligence is unavailable. Current project data could not be loaded.');
-    expect(screen.getByText('BIM AI Assistant')).toBeDefined();
+    expect(screen.getByText('GARNIER ASSISTANT')).toBeDefined();
     expect(screen.queryByRole('heading', { name: 'Executive brief' })).toBeNull();
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Find all walls' })); });
     expect(bimAgent.sendMessage).toHaveBeenCalledWith('Find all walls');

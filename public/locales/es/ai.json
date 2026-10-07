@@ -1,11 +1,14 @@
 {
   "actionCancelled": "Acción Cancelada",
+  "assistantName": "ASISTENTE GARNIER",
+  "assistantSubtitle": "Inteligencia de proyectos",
   "assistantTimestamp": "Asistente IA • {{time}}",
   "bimAiAssistant": "Asistente BIM IA",
   "chatPlaceholder": "Pregunte a la IA p. ej. 'Mover #44 por 1m en X'...",
   "clearHistory": "Limpiar Historial",
   "clearHistoryTitle": "Limpiar historial de conversación",
   "clearHistoryTooltip": "Limpiar Historial de Conversación",
+  "closeAssistant": "Cerrar asistente",
   "confirm": "Confirmar",
   "confirmAndApply": "Confirmar y Aplicar",
   "emptyDescription": "Consulte sobre cuantificaciones, elementos del modelo, búsqueda estructural o generación volumétrica preliminar.",
@@ -15,19 +18,34 @@
   "engineOffline": "Motor determinista local",
   "engineRemote": "Remoto n8n / respaldo local",
   "executedAndRecorded": "Ejecutado y Registrado en Change Set",
-  "heading": "Asistente IA BIM",
-  "helperCopy": "Motor de inteligencia y coordinación BIM en lenguaje natural.",
+  "heading": "ASISTENTE GARNIER",
+  "helperCopy": "Motor de inteligencia de proyectos y coordinación en lenguaje natural.",
   "inputPlaceholder": "Pregunte sobre cuantificación, elementos o generación volumétrica…",
+  "landingGreeting": "Bienvenido a GARNIER ARCHITECTURE. ¿En qué puedo orientarle respecto a nuestros proyectos, servicios o acceso al portal?",
+  "landingQuickPrompts": [
+    "¿Qué tipo de proyectos desarrollan?",
+    "Muéstrame proyectos industriales",
+    "Cuéntame sobre sus servicios",
+    "¿Cómo ingreso a mi portal de proyecto?"
+  ],
+  "launcherAriaClose": "Cerrar asistente GARNIER",
+  "launcherAriaOpen": "Abrir asistente GARNIER",
+  "launcherLabel": "Consultar a GARNIER",
   "offlineEngine": "Motor Determinista Offline",
   "offlineStatus": "Motor determinista local",
+  "onlineStatus": "En línea",
+  "openAssistant": "Abrir asistente",
   "openModel": "Abrir Modelo 3D →",
   "openWorkspace": "Abrir Modelo 3D →",
   "phaseBadge": "Fase 6B.1",
+  "publicAssistantSubtitle": "Orientación de arquitectura y desarrollo",
+  "publicAssistantTitle": "ASISTENTE GARNIER",
   "quickPrompts": {
-    "client": [
+    "admin": [
       "Calcular cantidades del modelo",
-      "Mostrar todos los elementos",
-      "Aislar muros"
+      "Buscar todos los muros",
+      "Previsualizar edificio de 10x8m de 2 niveles, 3m de altura por nivel",
+      "Mostrar todos los elementos"
     ],
     "architect": [
       "Previsualizar edificio de 10x8m de 2 niveles, 3m de altura por nivel",
@@ -35,11 +53,10 @@
       "Buscar todos los muros",
       "Mostrar todos los elementos"
     ],
-    "admin": [
+    "client": [
       "Calcular cantidades del modelo",
-      "Buscar todos los muros",
-      "Previsualizar edificio de 10x8m de 2 niveles, 3m de altura por nivel",
-      "Mostrar todos los elementos"
+      "Mostrar todos los elementos",
+      "Aislar muros"
     ]
   },
   "quickPromptsLabel": "Consultas rápidas:",
@@ -47,9 +64,11 @@
   "remoteEngine": "n8n Remoto / Fallback Offline",
   "remoteStatus": "Remoto n8n / respaldo local",
   "send": "Enviar",
-  "subtitle": "Motor de inteligencia y coordinación BIM en lenguaje natural.",
+  "subtitle": "Inteligencia de proyectos",
+  "thinking": "Pensando…",
   "toolExecuted": "Ejecutado",
   "toolProposalCreated": "Propuesta creada",
+  "unavailableMessage": "El servicio del asistente no está disponible en este momento. Por favor intente más tarde o comuníquese directamente con nuestro equipo.",
   "userTimestamp": "Usuario • {{time}}",
   "workspaceHeading": "Espacio de Trabajo 3D",
   "workspaceSubtitle": "Abra el espacio de trabajo WebGL interactivo para inspeccionar fragmentos, propiedades y modificaciones visuales del modelo.",

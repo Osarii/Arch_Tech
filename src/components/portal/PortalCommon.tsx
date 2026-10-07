@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Bot, Cpu, Send, Sparkles, X } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
+import { GarnierChatShell } from '../ai/GarnierChatShell';
 import {
   PortalProject,
   PortalRole,
@@ -670,23 +671,16 @@ export const PortalAIAssistantView: React.FC<{
   const { locale, t } = useLocale();
   const aiT = t.portalAi;
   const [messages, setMessages] = useState<AIMessage[]>([]);
-  const [inputPrompt, setInputPrompt] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const unsubscribe = bimAgent.subscribe((msgs) => setMessages(msgs));
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  const handleSend = async (textToSend?: string) => {
-    const text = (textToSend || inputPrompt).trim();
+  const handleSend = async (textToSend: string) => {
+    const text = textToSend.trim();
     if (!text || isProcessing) return;
-    setInputPrompt('');
     setIsProcessing(true);
     try {
       await bimAgent.sendMessage(text);
@@ -706,136 +700,29 @@ export const PortalAIAssistantView: React.FC<{
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/15 pb-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-purple-600" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{aiT.heading}</span>
-          </div>
-          <p className="mt-1 text-sm text-stone-600">
-            {aiT.subtitle}
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 border border-black/15 bg-white/40 px-2.5 py-1 text-[10px] font-mono text-stone-600">
-            <Cpu className="h-3 w-3 text-emerald-600" />
-            <span>{aiService.isConfigured() ? aiT.remoteStatus : aiT.offlineStatus}</span>
-          </div>
-          <button
-            onClick={() => bimAgent.clearHistory()}
-            data-testid="ai-btn-clear"
-            className="border border-black/20 px-3 py-1 font-mono text-[9px] uppercase tracking-[0.14em] text-stone-600 hover:text-black hover:border-black"
-            title={aiT.clearHistory}
-          >
-            {aiT.clearHistory}
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">{aiT.quickPromptsLabel}</span>
-        {quickPrompts.map((prompt) => (
-          <button
-            key={prompt}
-            type="button"
-            onClick={() => handleSend(prompt)}
-            disabled={isProcessing}
-            className="border border-black/15 bg-white/50 px-3 py-1 font-mono text-[9px] text-stone-700 transition-colors hover:border-black hover:bg-white disabled:opacity-50"
-          >
-            {prompt}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex h-96 flex-col border border-black/15 bg-[#E6DED2] p-4">
-        <div className="flex-1 space-y-4 overflow-y-auto pr-2">
-          {messages.length === 0 ? (
-            <div className="flex h-full flex-col items-center justify-center text-center text-stone-500">
-              <Bot className="h-8 w-8 stroke-1 text-stone-400" />
-              <p className="mt-3 font-serif text-xl text-stone-700">{aiT.emptyTitle}</p>
-              <p className="mt-1 max-w-sm text-xs text-stone-500">
-                {aiT.emptyDescription}
-              </p>
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex gap-3 text-xs ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                {msg.role === 'assistant' && (
-                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-black text-white">
-                    <Bot className="h-3.5 w-3.5" />
-                  </div>
-                )}
-                <div
-                  className={`max-w-[80%] rounded px-3.5 py-2.5 leading-relaxed ${
-                    msg.role === 'user'
-                      ? 'bg-black text-white'
-                      : 'border border-black/15 bg-white text-stone-800'
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                  {msg.toolCalls?.map((tc, idx) => (
-                    <div
-                      key={idx}
-                      data-testid={`ai-tool-call-${tc.toolName}`}
-                      className="mt-2 border-t border-stone-200 pt-1.5 font-mono text-[9px] text-stone-500"
-                    >
-                      <span className="font-semibold">{tc.toolName}</span>: {tc.category}
-                    </div>
-                  ))}
-                  {msg.proposal && (
-                    <div data-testid="ai-proposal-card" className="mt-3 border border-amber-500/40 bg-amber-50 p-2 text-stone-800">
-                      <p className="font-mono text-[9px] font-semibold uppercase text-amber-700">{aiT.writeConfirmation}</p>
-                      <p className="mt-1 text-xs">{msg.proposal.toolName}: {msg.proposal.description}</p>
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          onClick={() => bimAgent.confirmProposal(msg.proposal!.proposalId)}
-                          className="bg-black px-2.5 py-1 font-mono text-[9px] uppercase text-white"
-                        >
-                          {aiT.confirm}
-                        </button>
-                        <button
-                          onClick={() => bimAgent.rejectProposal(msg.proposal!.proposalId)}
-                          className="border border-black/20 px-2.5 py-1 font-mono text-[9px] uppercase text-stone-600"
-                        >
-                          {aiT.reject}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
-          className="mt-4 flex gap-2 border-t border-black/15 pt-3"
-        >
-          <input
-            value={inputPrompt}
-            onChange={(e) => setInputPrompt(e.target.value)}
-            disabled={isProcessing}
-            placeholder={aiT.inputPlaceholder}
-            className="flex-1 border border-black/20 bg-white px-3 py-2 text-xs outline-none placeholder:text-stone-400 focus:border-black"
-          />
-          <button
-            type="submit"
-            disabled={isProcessing || !inputPrompt.trim()}
-            className="flex items-center gap-1.5 bg-black px-4 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-white disabled:opacity-40"
-          >
-            <span>{aiT.send}</span>
-            <Send className="h-3 w-3" />
-          </button>
-        </form>
-      </div>
+      <GarnierChatShell
+        title={aiT.heading}
+        subtitle={aiT.subtitle}
+        statusLabel={aiService.isConfigured() ? aiT.remoteStatus : aiT.offlineStatus}
+        isOnline={aiService.isConfigured()}
+        messages={messages}
+        isProcessing={isProcessing}
+        onSendMessage={handleSend}
+        onClearHistory={() => bimAgent.clearHistory()}
+        onConfirmProposal={(id) => bimAgent.confirmProposal(id)}
+        onRejectProposal={(id) => bimAgent.rejectProposal(id)}
+        quickPrompts={quickPrompts}
+        quickPromptsLabel={aiT.quickPromptsLabel}
+        placeholder={aiT.inputPlaceholder}
+        emptyHeading={aiT.emptyTitle}
+        emptyDescription={aiT.emptyDescription}
+        clearLabel={aiT.clearHistory}
+        sendLabel={aiT.send}
+        confirmLabel={aiT.confirm}
+        rejectLabel={aiT.reject}
+        writeConfirmationLabel={aiT.writeConfirmation}
+        thinkingLabel={aiT.thinking || 'Thinking…'}
+      />
 
       <div className="flex flex-wrap items-center justify-between gap-4 border-t border-black/15 pt-6">
         <div>

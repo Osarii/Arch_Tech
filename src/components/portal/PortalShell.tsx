@@ -1,9 +1,36 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { LogOut, Moon, Sun, Sliders } from 'lucide-react';
+import {
+  LogOut,
+  Moon,
+  Sun,
+  Sliders,
+  Menu,
+  X,
+  LayoutDashboard,
+  Building2,
+  FileText,
+  CheckCircle2,
+  BarChart2,
+  Users,
+  Newspaper,
+  Sparkles,
+} from 'lucide-react';
 import { useInRouterContext, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { PortalRole, getPortalUser } from '../../portal/data';
 import { portalAuth } from '../../portal/demoAuth';
+
+const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  overview: LayoutDashboard,
+  projects: Building2,
+  documents: FileText,
+  approvals: CheckCircle2,
+  insights: BarChart2,
+  analytics: BarChart2,
+  people: Users,
+  news: Newspaper,
+  assistant: Sparkles,
+};
 import { roleHome } from '../../router/guards';
 import { useAccessibility } from '../../portal/useAccessibility';
 import { AccessibilityPanel } from './AccessibilityPanel';
@@ -155,51 +182,204 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     }
   };
 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   const roleLabel = portalShell.roles[role];
+  const activeNavItem = navItems.find((n) => currentPath === n.path || (n.path !== homePath && currentPath.startsWith(n.path + '/')));
 
   return (
     <PortalShellContext.Provider value={{ insideShell: true, navigate }}>
-      <div className={`portal-surface ${role === 'admin' ? 'portal-admin' : ''} h-screen overflow-y-auto bg-[#D6CBB9] text-[#211E1A]`}>
-        <header className="portal-header border-b border-black/20 bg-[#ABD1B5]">
-          <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => navigate('/')}
-                aria-label={portalShell.homeAria || 'GARNIER ARCHITECTURE home'}
-                className="flex items-center gap-3 text-left text-[#211E1A]"
-              >
-                <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="arch-tech-logo-portal" />
-                <span className="hidden font-mono text-[8px] uppercase tracking-[0.16em] text-stone-400 sm:inline">
+      <div className={`portal-surface ${role === 'admin' ? 'portal-admin' : ''} flex h-screen w-full overflow-hidden bg-[#D6CBB9] bg-[var(--portal-bg)] text-[var(--portal-text)]`}>
+        {/* Mobile slide-over drawer backdrop & drawer */}
+        {mobileNavOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden="true"
+          />
+        )}
+        <div
+          className={`fixed inset-y-0 left-0 z-50 w-64 transform bg-[var(--portal-surface)] transition-transform duration-200 ease-in-out md:hidden ${
+            mobileNavOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+          }`}
+        >
+          <div className="flex h-14 items-center justify-between border-b border-[var(--portal-border)] px-4">
+            <div className="flex items-center gap-2">
+              <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="h-5 w-5" />
+              <span className="font-serif text-sm font-semibold tracking-tight text-[var(--portal-text)]">{portalShell.brandName || 'GARNIER'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label={portalShell.closeNavigation || 'Close navigation'}
+              className="flex h-8 w-8 items-center justify-center rounded-sm border border-[var(--portal-border)] text-[var(--portal-text)]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="px-4 py-2.5 border-b border-[var(--portal-border)]">
+            <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--portal-muted)]">
+              {roleLabel}
+            </span>
+          </div>
+          <nav aria-label={`${role} mobile navigation`} className="p-3 space-y-1">
+            {navItems.map((item) => {
+              const isExact = currentPath === item.path;
+              const isSub =
+                item.path !== homePath &&
+                (currentPath === item.path || currentPath.startsWith(item.path + '/'));
+              const isActive = isExact || isSub;
+              const Icon = NAV_ICONS[item.key] ?? LayoutDashboard;
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={() => {
+                    navigate(item.path);
+                    setMobileNavOpen(false);
+                  }}
+                  className={`flex w-full items-center gap-3 rounded-sm px-3 py-2 text-left font-mono text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                    isActive
+                      ? 'border-l-2 border-[var(--portal-accent)] bg-[var(--portal-surface-raised)] font-semibold text-[var(--portal-text)]'
+                      : 'text-[var(--portal-muted)] hover:bg-[var(--portal-surface-raised)] hover:text-[var(--portal-text)]'
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" /><span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Desktop Persistent Left Navigation Rail */}
+        <aside
+          aria-label={`${role} navigation rail`}
+          className="portal-rail hidden md:flex md:w-56 lg:w-64 shrink-0 flex-col border-r border-[var(--portal-border)] bg-[var(--portal-surface)] z-20"
+        >
+          {/* Top Mark & Brand Title */}
+          <div className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--portal-border)] px-4 lg:px-5">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              aria-label={portalShell.homeAria || 'GARNIER ARCHITECTURE home'}
+              className="flex items-center gap-3 text-left transition-opacity hover:opacity-80"
+            >
+              <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="arch-tech-logo-portal h-6 w-6" />
+              <div className="min-w-0">
+                <span className="block font-serif text-xs font-semibold tracking-tight text-[var(--portal-text)] truncate">
+                  {portalShell.brandName || 'GARNIER'}
+                </span>
+                <span className="block font-mono text-[7px] uppercase tracking-[0.16em] text-[var(--portal-muted)] truncate">
                   {portalShell.showcaseEyebrow}
                 </span>
-              </button>
-              <span className="hidden rounded border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-stone-300 md:inline-block">
-                {roleLabel}
-              </span>
-            </div>
+              </div>
+            </button>
+            <span className="rounded border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.14em] text-[var(--portal-muted)]">
+              {roleLabel}
+            </span>
+          </div>
 
-            <div className="flex items-center gap-5 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600">
+          {/* Navigation Items with Lucide Icons */}
+          <nav
+            aria-label={`${role} navigation`}
+            className="flex-1 space-y-1 overflow-y-auto p-3 scrollbar-none"
+          >
+            {navItems.map((item) => {
+              const isExact = currentPath === item.path;
+              const isSub =
+                item.path !== homePath &&
+                (currentPath === item.path || currentPath.startsWith(item.path + '/'));
+              const isActive = isExact || isSub;
+              const Icon = NAV_ICONS[item.key] ?? LayoutDashboard;
+
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  data-testid={`portal-nav-${item.key}`}
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={() => navigate(item.path)}
+                  className={`portal-nav-item flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-left font-mono text-[10px] uppercase tracking-[0.14em] transition-all ${
+                    isActive
+                      ? 'border-l-2 border-[var(--portal-accent)] bg-[var(--portal-surface-raised)] font-semibold text-[var(--portal-text)] shadow-xs'
+                      : 'text-[var(--portal-muted)] hover:bg-[var(--portal-surface-raised)] hover:text-[var(--portal-text)]'
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0" /><span>{item.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* User Status / Bottom identity */}
+          {currentUser && (
+            <div className="border-t border-[var(--portal-border)] p-3">
+              <div className="truncate font-mono text-[9px] text-[var(--portal-muted)]">
+                <span className="block truncate font-medium text-[var(--portal-text)]">{currentUser.name}</span>
+                <span className="block truncate opacity-75">{currentUser.email}</span>
+              </div>
+            </div>
+          )}
+        </aside>
+
+        {/* Right side: Top Utility Bar + Scrollable Content */}
+        <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+          <header className="portal-header flex h-14 shrink-0 items-center justify-between border-b border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={() => navigate(homePath)}
-                className="transition-colors hover:text-black"
+                onClick={() => setMobileNavOpen(true)}
+                aria-label={portalShell.openNavigation || 'Open navigation menu'}
+                className="flex h-8 w-8 items-center justify-center rounded-sm border border-[var(--portal-border)] text-[var(--portal-text)] md:hidden"
               >
-                {portalShell.homeNav[role]}
+                <Menu className="h-4 w-4" />
               </button>
 
+              <div className="flex items-center gap-2 md:hidden">
+                <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="h-5 w-5" />
+                <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--portal-muted)]">
+                  {roleLabel}
+                </span>
+              </div>
+
+              {/* Breadcrumb / current location on desktop */}
+              <div className="hidden md:flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--portal-muted)]">
+                <button
+                  type="button"
+                  onClick={() => navigate(homePath)}
+                  className="transition-colors hover:text-[var(--portal-text)]"
+                >
+                  {portalShell.homeNav[role]}
+                </button>
+                <span>/</span>
+                <span className="text-[var(--portal-text)] font-semibold">
+                  {activeNavItem?.label ?? roleLabel}
+                </span>
+              </div>
+            </div>
+
+            {/* Top Utility Controls */}
+            <div className="flex items-center gap-3 sm:gap-4 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--portal-muted)]">
+              {currentUser && (
+                <span className="hidden font-mono text-[9px] text-[var(--portal-muted)] xl:inline-block">
+                  {currentUser.name}
+                </span>
+              )}
+
+              {/* Theme toggle */}
               <button
                 type="button"
                 onClick={() => setDark((value) => !value)}
                 aria-label={dark ? portalShell.useLightMode : portalShell.useDarkMode}
                 data-testid="theme-toggle"
-                className="inline-flex items-center gap-2 transition-colors hover:text-black"
+                className="inline-flex items-center gap-1.5 transition-colors hover:text-[var(--portal-text)]"
               >
-                {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}{' '}
-                {dark ? portalShell.light : portalShell.dark}
+                {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                <span className="hidden sm:inline">{dark ? portalShell.light : portalShell.dark}</span>
               </button>
 
-              {/* Compact GARNIER ARCHITECTURE accessibility control */}
+              {/* Accessibility control */}
               <button
                 ref={a11yTriggerRef}
                 type="button"
@@ -207,73 +387,37 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 aria-label={portalShell.openA11y}
                 aria-expanded={isA11yPanelOpen}
                 data-testid="accessibility-panel-trigger"
-                className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 transition-colors ${
+                className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 transition-colors ${
                   hasActivePreferences
-                    ? 'border-black/30 bg-black/10 text-black font-semibold'
-                    : 'border-black/10 bg-transparent text-stone-500 hover:text-black hover:border-black/30'
+                    ? 'border-[var(--portal-accent)] bg-[var(--portal-accent-soft)] text-[var(--portal-text)] font-semibold'
+                    : 'border-[var(--portal-border)] bg-transparent text-[var(--portal-muted)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]'
                 }`}
               >
                 <Sliders className="h-3.5 w-3.5" />
                 <span>{portalShell.a11y}</span>
                 {hasActivePreferences && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-label={portalShell.adjustmentsActive} />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#FFBF00]" aria-label={portalShell.adjustmentsActive} />
                 )}
               </button>
 
+              {/* Sign out */}
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="inline-flex items-center gap-2 transition-colors hover:text-black"
+                className="inline-flex items-center gap-1.5 text-[var(--portal-muted)] hover:text-[var(--portal-text)] transition-colors"
               >
-                {portalShell.signOut} <LogOut className="h-3.5 w-3.5" />
+                <span>{portalShell.signOut}</span>
+                <LogOut className="h-3.5 w-3.5" />
               </button>
             </div>
-          </div>
+          </header>
 
-          {/* Sub-navigation bar with real routes */}
-          <div className="border-t border-black/15 bg-[#79B791]/35">
-            <div className="mx-auto flex max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
-              <nav
-                aria-label={`${role} navigation`}
-                className="flex items-center gap-1 overflow-x-auto py-2.5 scrollbar-none"
-              >
-                {navItems.map((item) => {
-                  const isExact = currentPath === item.path;
-                  const isSub =
-                    item.path !== homePath &&
-                    (currentPath === item.path || currentPath.startsWith(item.path + '/'));
-                  const isActive = isExact || isSub;
-                  return (
-                    <button
-                      key={item.key}
-                      type="button"
-                      data-testid={`portal-nav-${item.key}`}
-                      aria-current={isActive ? 'page' : undefined}
-                      onClick={() => navigate(item.path)}
-                      className={`whitespace-nowrap px-3 py-1 font-mono text-[10px] uppercase tracking-[0.16em] transition-colors ${
-                        isActive
-                          ? 'border-b-2 border-black font-semibold text-black'
-                          : 'text-stone-600 hover:text-black'
-                      }`}
-                    >
-                      {item.label}
-                    </button>
-                  );
-                })}
-              </nav>
-
-              {currentUser && (
-                <span className="hidden font-mono text-[9px] text-stone-400 lg:inline-block">
-                  {currentUser.name} ({currentUser.email})
-                </span>
-              )}
+          <main className="flex-1 overflow-y-auto px-6 py-6 sm:px-8 lg:px-10 lg:py-8">
+            <div className="mx-auto w-full max-w-[1560px]">
+              {children ?? <Outlet />}
             </div>
-          </div>
-        </header>
-
-        <main className="mx-auto max-w-7xl px-6 py-10 sm:px-8 lg:px-12 lg:py-16">
-          {children ?? <Outlet />}
-        </main>
+          </main>
+        </div>
 
         {/* Presentation-only reading overlay (Reading guide, mask, single word highlight) */}
         <AccessibilityOverlay

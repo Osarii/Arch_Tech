@@ -70,74 +70,106 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
   const content = (
     <div className="space-y-12">
       {/* Header section */}
-      <div className="border-b border-black/15 pb-10">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          {adminPortal.overviewEyebrow}
-        </p>
-        <h1 className="mt-4 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">
-          {adminPortal.overviewHeading}
-        </h1>
-        <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
+      <div className="grid gap-6 border-b border-[var(--portal-border)] pb-8 lg:grid-cols-[1fr_auto] lg:items-end">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--portal-muted)]">
+            {adminPortal.overviewEyebrow}
+          </p>
+          <h1 className="mt-3 max-w-3xl font-serif text-4xl font-light tracking-tight sm:text-6xl text-[var(--portal-text)]">
+            {adminPortal.overviewHeading}
+          </h1>
+        </div>
+        <p className="max-w-md font-mono text-xs leading-relaxed text-[var(--portal-muted)]">
           {adminPortal.overviewSubtitle}
         </p>
       </div>
 
       {/* Quick Action Bar */}
-      <section className="flex flex-wrap items-center gap-4 py-2">
+      <section className="flex flex-wrap items-center gap-4 py-1">
         <button
           ref={createTriggerRef}
           onClick={() => {
             setCreateOpen(true);
             setOperationFeedback('');
           }}
-          className="admin-primary-action bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white hover:bg-stone-800"
+          className="admin-primary-action bg-[var(--portal-text)] px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--portal-surface)] hover:opacity-90 transition-opacity"
         >
           {adminPortal.createNewProject}
         </button>
-        <p className="text-sm text-stone-600">{adminPortal.createProjectDescription}</p>
+        <p className="font-mono text-xs text-[var(--portal-muted)]">{adminPortal.createProjectDescription}</p>
         {operationFeedback && (
-          <p role="status" className="basis-full text-sm text-stone-600">
+          <p role="status" className="basis-full font-mono text-xs text-[var(--portal-accent)]">
             {operationFeedback}
           </p>
         )}
       </section>
 
       {/* KPI Overview Strip */}
-      <section className="admin-kpi-strip grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('portfolioOverview', 'Portfolio overview')}>
+      <section className="admin-kpi-strip grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('portfolioOverview', 'Portfolio overview')}>
         <button
           type="button"
           onClick={() => navigate('/admin/projects')}
-          className="admin-overview-tile bg-[#E6DED2] p-6 text-left transition-colors hover:bg-[#ded4c6]"
+          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{adminPortal.activeProjects}</p>
-          <p className="mt-3 font-serif text-5xl">{activeProjects.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-sm text-stone-600">{adminPortal.currentlyActive}</p>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.activeProjects}</span>
+            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('portfolioBadge', 'PORTFOLIO')}</span>
+          </div>
+          <p className="my-4 font-serif text-5xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+            {activeProjects.length.toString().padStart(2, '0')}
+          </p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)]" />
+            <span>{adminPortal.currentlyActive}</span>
+          </p>
         </button>
 
         <button
           type="button"
           onClick={() => navigate('/admin/analytics')}
-          className="admin-overview-tile bg-[#E6DED2] p-6 text-left transition-colors hover:bg-[#ded4c6]"
+          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{adminPortal.averageProgress}</p>
-          <p className="mt-3 font-serif text-5xl">{averageProgress}%</p>
-          <p className="mt-1 text-sm text-stone-600">{adminPortal.acrossActiveWork}</p>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.averageProgress}</span>
+            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('avgBadge', 'AVG')}</span>
+          </div>
+          <p className="my-4 font-serif text-5xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+            {averageProgress}%
+          </p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)]" />
+            <span>{adminPortal.acrossActiveWork}</span>
+          </p>
         </button>
 
         <button
           type="button"
           onClick={() => navigate('/admin/approvals')}
-          className="admin-overview-tile bg-[#E6DED2] p-6 text-left transition-colors hover:bg-[#ded4c6]"
+          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{adminPortal.pendingApprovals}</p>
-          <p className="mt-3 font-serif text-5xl">{pendingApprovals.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-sm text-stone-600">{adminPortal.requiringReview}</p>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.pendingApprovals}</span>
+            <span className={`h-2 w-2 rounded-full ${pendingApprovals.length > 0 ? 'bg-[#FFBF00]' : 'bg-[var(--portal-accent)]'}`} />
+          </div>
+          <p className="my-4 font-serif text-5xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+            {pendingApprovals.length.toString().padStart(2, '0')}
+          </p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
+            <span>{adminPortal.requiringReview}</span>
+          </p>
         </button>
 
-        <div className="admin-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{adminPortal.upcomingMilestones}</p>
-          <p className="mt-3 font-serif text-5xl">{upcomingMilestones.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-sm text-stone-600">{adminPortal.inActiveSequence}</p>
+        <div className="admin-overview-tile flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.upcomingMilestones}</span>
+            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('queueBadge', 'QUEUE')}</span>
+          </div>
+          <p className="my-4 font-serif text-5xl font-light tracking-tight text-[var(--portal-text)]">
+            {upcomingMilestones.length.toString().padStart(2, '0')}
+          </p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
+            <span>{adminPortal.inActiveSequence}</span>
+          </p>
         </div>
       </section>
 
@@ -145,13 +177,13 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
       <ExternalContextPanel />
 
       {/* Review and delivery signals */}
-      <section className="grid gap-12 border-b border-black/15 pb-12 lg:grid-cols-2" aria-label={t('reviewDeliverySignals', 'Review and delivery signals')}>
-        <div>
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('decisionsReview', 'Decisions requiring review')}</p>
+      <section className="grid gap-8 border-b border-[var(--portal-border)] pb-12 lg:grid-cols-2" aria-label={t('reviewDeliverySignals', 'Review and delivery signals')}>
+        <div className="rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-6">
+          <div className="flex items-center justify-between border-b border-[var(--portal-border)] pb-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{t('decisionsReview', 'Decisions requiring review')}</p>
             <button
               onClick={() => navigate('/admin/approvals')}
-              className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500 hover:text-black"
+              className="font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--portal-muted)] hover:text-[var(--portal-text)] transition-colors"
             >
               {t('fullQueue', 'Full queue →')}
             </button>
@@ -161,74 +193,74 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
               <button
                 key={project.id}
                 onClick={() => navigate(`/admin/projects/${project.id}`)}
-                className="mt-5 flex w-full items-center justify-between border-b border-black/10 pb-4 text-left hover:text-stone-700"
+                className="mt-4 flex w-full items-center justify-between border-b border-[var(--portal-border)] pb-3 text-left hover:text-[var(--portal-accent)] transition-colors last:border-0"
               >
                 <span>
-                  <span className="block font-serif text-2xl">{project.title}</span>
-                  <span className="mt-1 block text-sm text-stone-500">
+                  <span className="block font-serif text-xl text-[var(--portal-text)]">{project.title}</span>
+                  <span className="mt-1 block font-mono text-xs text-[var(--portal-muted)]">
                     {project.approvals
                       .filter((approval) => approval.status === 'Pending')
                       .map((approval) => getLocalizedApprovalTitle(approval.title, approval.projectId))
                       .join(' · ')}
                   </span>
                 </span>
-                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{t('review', 'Review')}</span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--portal-muted)]">{t('review', 'Review')}</span>
               </button>
             ))
           ) : (
-            <p className="mt-5 max-w-sm text-sm leading-6 text-stone-600">{t('noDecisionsWaitingReview', 'No project decisions are waiting for review.')}</p>
+            <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--portal-muted)]">{t('noDecisionsWaitingReview', 'No project decisions are waiting for review.')}</p>
           )}
         </div>
 
-        <div>
-          <div className="flex items-center justify-between">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('upcomingMilestones', 'Upcoming milestones')}</p>
-            <span className="font-mono text-[9px] uppercase text-stone-500">{t('scheduledSequence', 'Scheduled sequence')}</span>
+        <div className="rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-6">
+          <div className="flex items-center justify-between border-b border-[var(--portal-border)] pb-3">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{t('upcomingMilestones', 'Upcoming milestones')}</p>
+            <span className="font-mono text-[9px] uppercase text-[var(--portal-muted)]">{t('scheduledSequence', 'Scheduled sequence')}</span>
           </div>
           {upcomingMilestones.length ? (
             upcomingMilestones.slice(0, 5).map((milestone) => (
-              <p key={`${milestone.projectId}-${milestone.label}`} className="mt-5 flex justify-between gap-4 border-b border-black/10 pb-3 text-sm">
-                <span>{milestone.projectTitle} · {getLocalizedMilestoneLabel(milestone.label, milestone.projectId)}</span>
-                <span className="font-mono text-[9px] uppercase text-stone-500">{t('upcoming', 'Upcoming')}</span>
+              <p key={`${milestone.projectId}-${milestone.label}`} className="mt-4 flex justify-between gap-4 border-b border-[var(--portal-border)] pb-3 text-sm text-[var(--portal-text)] last:border-0">
+                <span className="truncate">{milestone.projectTitle} · {getLocalizedMilestoneLabel(milestone.label, milestone.projectId)}</span>
+                <span className="font-mono text-[9px] uppercase text-[var(--portal-muted)] shrink-0">{t('upcoming', 'Upcoming')}</span>
               </p>
             ))
           ) : (
-            <p className="mt-5 max-w-sm text-sm leading-6 text-stone-600">{t('noUpcomingMilestones', 'No upcoming milestones are scheduled.')}</p>
+            <p className="mt-5 max-w-sm text-sm leading-6 text-[var(--portal-muted)]">{t('noUpcomingMilestones', 'No upcoming milestones are scheduled.')}</p>
           )}
         </div>
       </section>
 
       {/* Recent Activity Section */}
-      <section className="grid gap-12 border-b border-black/15 pb-12 lg:grid-cols-2">
-        <div>
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('recentActivity', 'Recent activity')}</h2>
+      <section className="grid gap-8 border-b border-[var(--portal-border)] pb-12 lg:grid-cols-2">
+        <div className="rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-6">
+          <h2 className="border-b border-[var(--portal-border)] pb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{t('recentActivity', 'Recent activity')}</h2>
           {recentActivity.length ? (
             recentActivity.slice(0, 5).map((update) => (
-              <p key={`${update.projectId}-${update.date}-${update.title}`} className="mt-4 flex justify-between gap-4 border-b border-black/10 pb-2 text-sm">
-                <span>{update.projectTitle} · {getLocalizedUpdate(update).title}</span>
-                <span className="font-mono text-[9px] text-stone-500">{update.date}</span>
+              <p key={`${update.projectId}-${update.date}-${update.title}`} className="mt-4 flex justify-between gap-4 border-b border-[var(--portal-border)] pb-2 text-sm text-[var(--portal-text)] last:border-0">
+                <span className="truncate">{update.projectTitle} · {getLocalizedUpdate(update).title}</span>
+                <span className="font-mono text-[9px] text-[var(--portal-muted)] shrink-0">{update.date}</span>
               </p>
             ))
           ) : (
-            <p className="mt-4 text-sm text-stone-600">{t('noRecentUpdates', 'No recent updates.')}</p>
+            <p className="mt-4 text-sm text-[var(--portal-muted)]">{t('noRecentUpdates', 'No recent updates.')}</p>
           )}
         </div>
 
-        <div>
-          <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('developmentControls', 'Development controls')}</h2>
-          <p className="mt-4 text-sm leading-6 text-stone-600">
+        <div className="rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-6">
+          <h2 className="border-b border-[var(--portal-border)] pb-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{t('developmentControls', 'Development controls')}</h2>
+          <p className="mt-4 text-sm leading-6 text-[var(--portal-muted)]">
             {t('developmentControlsDesc', 'Create, assign and advance projects from the register. Open any project or its model directly from the portfolio workspaces.')}
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <button
               onClick={() => navigate('/admin/projects')}
-              className="border border-black px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] hover:bg-black hover:text-white"
+              className="border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--portal-text)] hover:border-[var(--portal-accent)] transition-colors"
             >
               {t('openProjectRegister', 'Open project register →')}
             </button>
             <button
               onClick={() => navigate('/admin/people')}
-              className="border border-black/20 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] hover:border-black"
+              className="border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--portal-text)] hover:border-[var(--portal-accent)] transition-colors"
             >
               {t('managePeopleRoles', 'Manage people & roles →')}
             </button>
@@ -238,51 +270,51 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
 
       {/* Deeper Workspaces Grid */}
       <section className="pt-2">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('adminWorkspaces', 'Administration workspaces')}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{t('adminWorkspaces', 'Administration workspaces')}</p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <button
             onClick={() => navigate('/admin/projects')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="group rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)]"
           >
-            <Layers className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">{t('projectRegister', 'Project Register')}</p>
-            <p className="mt-1 text-xs text-stone-600">{t('projectRegisterDesc', 'Search, filter, sort and manage development portfolio.')}</p>
+            <Layers className="h-5 w-5 text-[var(--portal-muted)] group-hover:text-[var(--portal-accent)] transition-colors" />
+            <p className="mt-4 font-serif text-lg text-[var(--portal-text)]">{t('projectRegister', 'Project Register')}</p>
+            <p className="mt-1 text-xs text-[var(--portal-muted)]">{t('projectRegisterDesc', 'Search, filter, sort and manage development portfolio.')}</p>
           </button>
 
           <button
             onClick={() => navigate('/admin/people')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="group rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)]"
           >
-            <Users className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">{t('peopleAccess', 'People & Access')}</p>
-            <p className="mt-1 text-xs text-stone-600">{t('peopleAccessDesc', 'Account creation, roles, and project assignments.')}</p>
+            <Users className="h-5 w-5 text-[var(--portal-muted)] group-hover:text-[var(--portal-accent)] transition-colors" />
+            <p className="mt-4 font-serif text-lg text-[var(--portal-text)]">{t('peopleAccess', 'People & Access')}</p>
+            <p className="mt-1 text-xs text-[var(--portal-muted)]">{t('peopleAccessDesc', 'Account creation, roles, and project assignments.')}</p>
           </button>
 
           <button
             onClick={() => navigate('/admin/approvals')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="group rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)]"
           >
-            <CheckCircle2 className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">{t('approvalsQueue', 'Approvals Queue')}</p>
-            <p className="mt-1 text-xs text-stone-600">{t('approvalsQueueDesc', 'Global decision tracking and notification log.')}</p>
+            <CheckCircle2 className="h-5 w-5 text-[var(--portal-muted)] group-hover:text-[var(--portal-accent)] transition-colors" />
+            <p className="mt-4 font-serif text-lg text-[var(--portal-text)]">{t('approvalsQueue', 'Approvals Queue')}</p>
+            <p className="mt-1 text-xs text-[var(--portal-muted)]">{t('approvalsQueueDesc', 'Global decision tracking and notification log.')}</p>
           </button>
 
           <button
             onClick={() => navigate('/admin/analytics')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="group rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)]"
           >
-            <BarChart2 className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">{t('analyticsSignals', 'Analytics & Signals')}</p>
-            <p className="mt-1 text-xs text-stone-600">{t('analyticsSignalsDesc', 'Stage distribution, progress chart and metrics.')}</p>
+            <BarChart2 className="h-5 w-5 text-[var(--portal-muted)] group-hover:text-[var(--portal-accent)] transition-colors" />
+            <p className="mt-4 font-serif text-lg text-[var(--portal-text)]">{t('analyticsSignals', 'Analytics & Signals')}</p>
+            <p className="mt-1 text-xs text-[var(--portal-muted)]">{t('analyticsSignalsDesc', 'Stage distribution, progress chart and metrics.')}</p>
           </button>
 
           <button
             onClick={() => navigate('/admin/assistant')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="group rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)]"
           >
-            <Sparkles className="h-5 w-5 text-stone-600" />
-            <p className="mt-4 font-serif text-lg">{t('enterpriseAi', 'Enterprise AI')}</p>
-            <p className="mt-1 text-xs text-stone-600">{t('enterpriseAiDesc', 'Full BIM assistant access and tools.')}</p>
+            <Sparkles className="h-5 w-5 text-[var(--portal-muted)] group-hover:text-[var(--portal-accent)] transition-colors" />
+            <p className="mt-4 font-serif text-lg text-[var(--portal-text)]">{t('enterpriseAi', 'Enterprise AI')}</p>
+            <p className="mt-1 text-xs text-[var(--portal-muted)]">{t('enterpriseAiDesc', 'Full BIM assistant access and tools.')}</p>
           </button>
         </div>
       </section>

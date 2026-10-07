@@ -254,6 +254,50 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     expect(screen.getByText('Long view')).toBeDefined();
   });
 
+  it('renders the branded floating GARNIER AI assistant on the landing page with accessible controls and no BIM write tools', async () => {
+    const onNavigate = vi.fn();
+    const onLogin = vi.fn();
+    render(<LandingPage onNavigate={onNavigate} onLogin={onLogin} />);
+
+    // 1. Assistant launcher renders
+    const launcher = screen.getByTestId('landing-assistant-launcher');
+    expect(launcher).toBeDefined();
+    expect(launcher.textContent).toContain('Ask GARNIER');
+
+    // 2. GARNIER logo symbol is used (variant="mark")
+    const symbolLogo = launcher.querySelector('.arch-tech-logo-mark');
+    expect(symbolLogo).not.toBeNull();
+    const logoImg = symbolLogo?.querySelector('img');
+    expect(logoImg?.getAttribute('src')).toContain('symbol');
+
+    // 3. Panel opens on click
+    fireEvent.click(launcher);
+    const panel = screen.getByTestId('landing-assistant-panel');
+    expect(panel).toBeDefined();
+    expect(screen.getByRole('dialog')).toBeDefined();
+    expect(within(panel).getAllByText('GARNIER ASSISTANT').length).toBeGreaterThan(0);
+    expect(within(panel).getByText('Architecture & development concierge')).toBeDefined();
+
+    // 4. Quick prompts for public visitors are visible
+    expect(within(panel).getByText('What types of projects do you develop?')).toBeDefined();
+    expect(within(panel).getByText('Show me industrial projects')).toBeDefined();
+
+    // 5. Public chat does not expose BIM write controls
+    expect(within(panel).queryByTestId('ai-proposal-card')).toBeNull();
+
+    // 6. Escape closes the panel
+    fireEvent.keyDown(window, { key: 'Escape', code: 'Escape' });
+    expect(screen.queryByTestId('landing-assistant-panel')).toBeNull();
+    expect(screen.getByTestId('landing-assistant-launcher')).toBeDefined();
+
+    // 7. Panel opens again and closes via close button
+    fireEvent.click(screen.getByTestId('landing-assistant-launcher'));
+    expect(screen.getByTestId('landing-assistant-panel')).toBeDefined();
+    const closeBtn = within(screen.getByTestId('landing-assistant-panel')).getByRole('button', { name: /close/i });
+    fireEvent.click(closeBtn);
+    expect(screen.queryByTestId('landing-assistant-panel')).toBeNull();
+  });
+
   it('keeps portal authentication isolated inside the login overlay', () => {
     const onSuccess = vi.fn();
     const onClose = vi.fn();

@@ -12,6 +12,7 @@ import { NewsSection } from '../news/NewsSection';
 import { useAccessibility } from '../../portal/useAccessibility';
 import { AccessibilityOverlay } from '../portal/AccessibilityOverlay';
 import { AccessibilityPanel } from '../portal/AccessibilityPanel';
+import { LandingAssistantLauncher } from './LandingAssistantLauncher';
 
 interface LandingPageProps {
   onNavigate: (path: string) => void;
@@ -62,6 +63,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         <DevelopmentFrame onLogin={onLogin} />
       </main>
       <Footer onLogin={onLogin} />
+      <LandingAssistantLauncher />
 
       {/* Shared accessibility reading overlays */}
       <AccessibilityOverlay

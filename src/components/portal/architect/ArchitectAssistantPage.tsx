@@ -12,15 +12,17 @@ export const ArchitectAssistantPage: React.FC<Partial<NavigationProps> & { onSig
   const { architectPortal } = useLocale();
 
   const content = (
-    <div className="space-y-10">
-      <div className="border-b border-black/15 pb-8">
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          {architectPortal.assistantEyebrow}
-        </p>
-        <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          {architectPortal.assistantHeading}
-        </h1>
-        <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-black/15 pb-4">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
+            {architectPortal.assistantEyebrow}
+          </p>
+          <h1 className="mt-1 font-serif text-3xl font-light tracking-tight sm:text-4xl">
+            {architectPortal.assistantHeading}
+          </h1>
+        </div>
+        <p className="max-w-md font-mono text-[11px] text-stone-600 dark:text-stone-400">
           {architectPortal.assistantSubtitle}
         </p>
       </div>

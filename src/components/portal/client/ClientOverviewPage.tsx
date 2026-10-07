@@ -81,58 +81,86 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
   };
 
   const content = (
-    <div className="space-y-14">
+    <div className="space-y-12">
       {/* Header section */}
-      <div className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[1fr_auto] lg:items-end">
+      <div className="grid gap-6 border-b border-[var(--portal-border)] pb-8 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{clientPortal.overviewEyebrow}</p>
-          <h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--portal-muted)]">{clientPortal.overviewEyebrow}</p>
+          <h1 className="mt-3 max-w-3xl font-serif text-4xl font-light tracking-tight sm:text-6xl text-[var(--portal-text)]">
             {clientPortal.overviewHeading}
           </h1>
         </div>
-        <p className="max-w-sm text-sm leading-6 text-stone-600">
+        <p className="max-w-md font-mono text-xs leading-relaxed text-[var(--portal-muted)]">
           {clientPortal.overviewSubtitle}
         </p>
       </div>
 
-      {/* Overview Signal Tiles */}
-      <section className="grid gap-px border-y border-black/15 bg-black/15 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('summaryAria', 'Portfolio summary')}>
+      {/* Refined Project Intelligence Cards */}
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" aria-label={t('summaryAria', 'Portfolio summary')}>
         <button
           type="button"
           onClick={() => navigate('/dashboard/projects')}
-          className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
+          className="portal-overview-tile group flex flex-col justify-between rounded-sm p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{clientPortal.assignedProjects}</p>
-          <p className="mt-3 font-serif text-4xl">{projects.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">{clientPortal.activeDevelopments}</p>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{clientPortal.assignedProjects}</span>
+            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('scopeBadge', 'SCOPE')}</span>
+          </div>
+          <p className="my-4 font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+            {projects.length.toString().padStart(2, '0')}
+          </p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)]" />
+            <span>{clientPortal.activeDevelopments}</span>
+          </p>
         </button>
 
         <button
           type="button"
           onClick={() => navigate('/dashboard/insights')}
-          className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
+          className="portal-overview-tile group flex flex-col justify-between rounded-sm p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{clientPortal.portfolioProgress}</p>
-          <p className="mt-3 font-serif text-4xl">{averageProgress}%</p>
-          <p className="mt-1 text-xs text-stone-600">{clientPortal.averageCompletion}</p>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{clientPortal.portfolioProgress}</span>
+            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('avgBadge', 'AVG')}</span>
+          </div>
+          <p className="my-4 font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+            {averageProgress}%
+          </p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)]" />
+            <span>{clientPortal.averageCompletion}</span>
+          </p>
         </button>
 
         <button
           type="button"
           onClick={() => navigate('/dashboard/approvals')}
-          className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
+          className="portal-overview-tile group flex flex-col justify-between rounded-sm p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{clientPortal.pendingApprovals}</p>
-          <p className="mt-3 font-serif text-4xl">{pendingApprovals.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">{clientPortal.decisionsWaiting}</p>
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{clientPortal.pendingApprovals}</span>
+            <span className={`h-2 w-2 rounded-full ${pendingApprovals.length > 0 ? 'bg-[#FFBF00]' : 'bg-[var(--portal-accent)]'}`} />
+          </div>
+          <p className="my-4 font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+            {pendingApprovals.length.toString().padStart(2, '0')}
+          </p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
+            <span>{clientPortal.decisionsWaiting}</span>
+          </p>
         </button>
 
-        <div className="portal-overview-tile bg-[#E6DED2] p-5">
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{clientPortal.nextMilestone}</p>
-          <p className="mt-3 truncate font-serif text-2xl" title={projects[0]?.nextMilestone ?? 'None pending'}>
+        <div className="portal-overview-tile flex flex-col justify-between rounded-sm p-5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{clientPortal.nextMilestone}</span>
+            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('eventBadge', 'EVENT')}</span>
+          </div>
+          <p className="my-4 truncate font-serif text-2xl font-light text-[var(--portal-text)]" title={projects[0]?.nextMilestone ?? 'None pending'}>
             {projects[0]?.nextMilestone ?? '—'}
           </p>
-          <p className="mt-1 text-xs text-stone-600">{clientPortal.keyDeliveryEvent}</p>
+          <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)] truncate">
+            <span>{clientPortal.keyDeliveryEvent}</span>
+          </p>
         </div>
       </section>
 
