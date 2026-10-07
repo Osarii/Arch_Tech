@@ -67,7 +67,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         <DevelopmentFrame onLogin={onLogin} />
       </main>
       <Footer onLogin={onLogin} />
-      <LandingAssistantLauncher />
+      <LandingAssistantLauncher lightTheme={lightTheme} />
 
       {/* Shared accessibility reading overlays */}
       <AccessibilityOverlay
