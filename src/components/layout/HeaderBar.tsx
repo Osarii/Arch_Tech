@@ -18,6 +18,10 @@ import { useBimStore } from '@/stores/bimStore';
 import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { bimEditService } from '@/bim/edit/bimEditService';
+import {
+  LA_LIMA_SITE_CONTEXT_ID,
+  laLimaSiteContextService,
+} from '@/bim/site';
 import { EditMode } from '@/types/bim';
 import { ArchTechLogo } from '@/components/brand/ArchTechLogo';
 
@@ -26,6 +30,8 @@ export const HeaderBar: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const modelMetadata = useBimStore((s) => s.modelMetadata);
+  const activeSiteContextId = useBimStore((s) => s.activeSiteContextId);
+  const activeSiteContextLabel = useBimStore((s) => s.activeSiteContextLabel);
   const loading = useBimStore((s) => s.loading);
   const cameraMode = useBimStore((s) => s.cameraMode);
   const setCameraMode = useBimStore((s) => s.setCameraMode);
@@ -117,6 +123,32 @@ export const HeaderBar: React.FC = () => {
     await IfcLoaderService.unload();
   };
 
+  const handleLoadLaLimaSite = async () => {
+    try {
+      await bimEngine.waitForInit();
+      await IfcLoaderService.unload();
+      const scene = bimEngine.world?.scene?.three;
+      if (!scene) throw new Error('BIM scene is not initialized.');
+      laLimaSiteContextService.attach(scene);
+      laLimaSiteContextService.load();
+      const store = useBimStore.getState();
+      store.setActiveSiteContextId(LA_LIMA_SITE_CONTEXT_ID);
+      store.setActiveSiteContextLabel(t('laLimaSite', 'La Lima Site'));
+      bimEngine.setCameraMode('perspective');
+      setCameraMode('perspective');
+      bimEngine.fitModel();
+      bimEngine.setStandardView('isometric');
+    } catch (err: any) {
+      console.error('Failed to load La Lima concept site:', err);
+      useBimStore.getState().setLoading({
+        isBusy: false,
+        stage: 'Error',
+        progress: 0,
+        error: err.message || 'Could not load La Lima concept site.',
+      });
+    }
+  };
+
   const handleToggleCamera = () => {
     const newMode = cameraMode === 'perspective' ? 'orthographic' : 'perspective';
     bimEngine.setCameraMode(newMode);
@@ -177,6 +209,21 @@ export const HeaderBar: React.FC = () => {
           </button>
 
           <button
+            onClick={handleLoadLaLimaSite}
+            disabled={loading.isBusy}
+            data-testid="header-btn-la-lima-site"
+            className={`flex items-center space-x-1 px-2 py-1 rounded text-xs transition disabled:opacity-50 ${
+              activeSiteContextId === LA_LIMA_SITE_CONTEXT_ID
+                ? 'bg-emerald-950/70 text-emerald-300'
+                : 'hover:bg-[#1c202a] text-slate-300 hover:text-emerald-300'
+            }`}
+            title={t('laLimaSiteTooltip', 'Load the La Lima industrial and corporate concept site')}
+          >
+            <Layers className="w-3.5 h-3.5 text-emerald-400" />
+            <span>{t('laLimaSite', 'La Lima Site')}</span>
+          </button>
+
+          <button
             onClick={() => handleLoadSample('/sample.ifc', 'BasicHouse.ifc')}
             disabled={loading.isBusy}
             className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-[#1c202a] text-slate-300 hover:text-sky-300 text-xs transition disabled:opacity-50"
@@ -186,7 +233,7 @@ export const HeaderBar: React.FC = () => {
             <span>{t('sampleHouse', 'Sample (House)')}</span>
           </button>
 
-          {modelMetadata && (
+          {(modelMetadata || activeSiteContextId) && (
             <button
               onClick={handleUnload}
               className="flex items-center space-x-1 px-2 py-1 rounded hover:bg-rose-950/40 text-rose-400 text-xs transition"
@@ -207,6 +254,12 @@ export const HeaderBar: React.FC = () => {
             <span className="text-sky-400 font-mono">{modelMetadata.schema}</span>
             <span className="text-slate-500">•</span>
             <span>{t('elementsCount', '{{count}} elements', { count: modelMetadata.elementCount })}</span>
+          </div>
+        )}
+
+        {!modelMetadata && activeSiteContextLabel && (
+          <div className="hidden xl:flex items-center text-[11px] text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-900">
+            <span className="font-mono font-medium">{activeSiteContextLabel}</span>
           </div>
         )}
 

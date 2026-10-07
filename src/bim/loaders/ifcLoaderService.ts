@@ -5,6 +5,7 @@ import { buildSpatialTree } from '../tree/spatialTreeBuilder';
 import { BimAnalysisService } from '../analysis/bimAnalysisService';
 import { bimEditService } from '../edit/bimEditService';
 import { bimGenerationService } from '../generation/generationService';
+import { laLimaSiteContextService } from '../site';
 import { ModelMetadata } from '@/types/bim';
 
 export class IfcLoaderService {
@@ -25,6 +26,9 @@ export class IfcLoaderService {
       if (requestGeneration !== this.loadGeneration) throw this.staleRequest;
     };
     const store = useBimStore.getState();
+    laLimaSiteContextService.clear();
+    store.setActiveSiteContextId(null);
+    store.setActiveSiteContextLabel(null);
 
     // Preserve references to active OLD model, engine, scene, and store state
     const prevEngineState = {
@@ -37,6 +41,8 @@ export class IfcLoaderService {
 
     const prevStoreState = {
       modelMetadata: store.modelMetadata,
+      activeSiteContextId: store.activeSiteContextId,
+      activeSiteContextLabel: store.activeSiteContextLabel,
       selectedElement: store.selectedElement,
       selectedNodeId: store.selectedNodeId,
       spatialTree: store.spatialTree,

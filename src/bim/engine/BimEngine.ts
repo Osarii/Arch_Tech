@@ -14,6 +14,7 @@ import {
 import { extractElementProperties } from '../properties/propertyExtractor';
 import { bimEditService } from '../edit/bimEditService';
 import { bimGenerationService } from '../generation/generationService';
+import { laLimaSiteContextService } from '../site';
 import { useBimStore } from '@/stores/bimStore';
 
 export class BimEngine {
@@ -159,6 +160,7 @@ export class BimEngine {
 
         bimEditService.initSceneLayer(this.world.scene.three);
         bimGenerationService.initSceneLayer(this.world.scene.three);
+        laLimaSiteContextService.attach(this.world.scene.three);
         bimEditService.setSceneBridge({
           getWebIfcApi: () => this.webIfcApi,
           getWebIfcModelID: () => this.webIfcModelID,
@@ -189,6 +191,10 @@ export class BimEngine {
 
       // 4. Setup Camera
       this.world.camera = new OBC.OrthoPerspectiveCamera(this.components);
+      this.world.camera.threePersp.far = 5000;
+      this.world.camera.threePersp.updateProjectionMatrix();
+      this.world.camera.threeOrtho.far = 5000;
+      this.world.camera.threeOrtho.updateProjectionMatrix();
       if (this.world.camera.controls) {
         this.world.camera.controls.dollyToCursor = true;
         this.world.camera.controls.infinityDolly = true;
@@ -488,6 +494,11 @@ export class BimEngine {
       targetBox = this.getModelBounds();
     }
 
+    if (!targetBox && !this.currentModel && laLimaSiteContextService.isActive()) {
+      const siteBounds = laLimaSiteContextService.getBounds();
+      if (!siteBounds.isEmpty()) targetBox = siteBounds;
+    }
+
     // Never silently fail when valid scene geometry exists
     if (!targetBox || targetBox.isEmpty()) {
       if (bimGenerationService.hasActivePreview()) {
@@ -517,13 +528,14 @@ export class BimEngine {
     if (!this.world?.camera?.controls) return;
     const box =
       this.getModelBounds() ||
+      (laLimaSiteContextService.isActive() ? laLimaSiteContextService.getBounds() : null) ||
       new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
     const center = new THREE.Vector3();
     const size = new THREE.Vector3();
     box.getCenter(center);
     box.getSize(size);
     const maxDim = Math.max(size.x, size.y, size.z, 10);
-    const dist = maxDim * 2.2;
+    const dist = maxDim * (laLimaSiteContextService.isActive() ? 1.35 : 2.2);
 
     switch (direction) {
       case 'top':
@@ -886,6 +898,9 @@ export class BimEngine {
     this.webIfcApi = null;
     this.webIfcModelID = null;
     this.invalidateModelBounds();
+    laLimaSiteContextService.clear();
+    useBimStore.getState().setActiveSiteContextId(null);
+    useBimStore.getState().setActiveSiteContextLabel(null);
 
     if (this.highlighter) {
       await this.highlighter.clear('select');

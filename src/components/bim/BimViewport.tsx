@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useBimStore } from '@/stores/bimStore';
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
-import { Box, UploadCloud, Compass, AlertCircle, RefreshCw } from 'lucide-react';
+import { LA_LIMA_SITE_CONTEXT_ID, laLimaSiteContextService } from '@/bim/site';
+import { Box, UploadCloud, Compass, AlertCircle, RefreshCw, Layers } from 'lucide-react';
 import { StandardViewDirection } from '@/types/bim';
 
 export const BimViewport: React.FC = () => {
@@ -13,6 +14,7 @@ export const BimViewport: React.FC = () => {
   const [showViewMenu, setShowViewMenu] = useState(false);
 
   const modelMetadata = useBimStore((s) => s.modelMetadata);
+  const activeSiteContextId = useBimStore((s) => s.activeSiteContextId);
   const loading = useBimStore((s) => s.loading);
   const setSelectedElement = useBimStore((s) => s.setSelectedElement);
   const setPerfStats = useBimStore((s) => s.setPerfStats);
@@ -75,6 +77,32 @@ export const BimViewport: React.FC = () => {
     setShowViewMenu(false);
   };
 
+  const handleLoadLaLimaSite = async () => {
+    try {
+      await bimEngine.waitForInit();
+      await IfcLoaderService.unload();
+      const scene = bimEngine.world?.scene?.three;
+      if (!scene) throw new Error('BIM scene is not initialized.');
+      laLimaSiteContextService.attach(scene);
+      laLimaSiteContextService.load();
+      const store = useBimStore.getState();
+      store.setActiveSiteContextId(LA_LIMA_SITE_CONTEXT_ID);
+      store.setActiveSiteContextLabel(t('laLimaSite', 'La Lima Site'));
+      bimEngine.setCameraMode('perspective');
+      store.setCameraMode('perspective');
+      bimEngine.fitModel();
+      bimEngine.setStandardView('isometric');
+    } catch (err: any) {
+      console.error('Failed to load La Lima concept site:', err);
+      useBimStore.getState().setLoading({
+        isBusy: false,
+        stage: 'Error',
+        progress: 0,
+        error: err.message || 'Could not load La Lima concept site.',
+      });
+    }
+  };
+
   return (
     <div
       className="relative flex-1 h-full w-full bg-[#0d0f12] overflow-hidden"
@@ -95,7 +123,7 @@ export const BimViewport: React.FC = () => {
       )}
 
       {/* Empty State Overlay */}
-      {!modelMetadata && !loading.isBusy && !loading.error && (
+      {!modelMetadata && !activeSiteContextId && !loading.isBusy && !loading.error && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 pointer-events-none">
           <div className="max-w-md w-full bg-[#13161e]/90 backdrop-blur-md border border-[#222735] rounded-xl p-6 shadow-2xl text-center pointer-events-auto">
             <div className="w-12 h-12 rounded-lg bg-sky-950/70 border border-sky-800/60 flex items-center justify-center mx-auto mb-4 text-sky-400">
@@ -106,6 +134,13 @@ export const BimViewport: React.FC = () => {
               {t('dragAndDropPrompt', 'Drag and drop any .ifc file into the viewport, or open a sample model below.')}
             </p>
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <button
+                onClick={handleLoadLaLimaSite}
+                className="px-3 py-2 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium shadow-sm transition flex items-center justify-center space-x-1.5"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>{t('loadLaLimaSite', 'Load La Lima Site')}</span>
+              </button>
               <button
                 onClick={async () => {
                   const res = await fetch('/ifc_open_house.ifc');
@@ -183,7 +218,7 @@ export const BimViewport: React.FC = () => {
       )}
 
       {/* Viewport Floating Quick View Cube / Menu */}
-      {modelMetadata && (
+      {(modelMetadata || activeSiteContextId) && (
         <div className="absolute top-3 right-3 z-20">
           <div className="relative">
             <button
