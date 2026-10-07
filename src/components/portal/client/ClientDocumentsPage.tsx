@@ -75,7 +75,7 @@ export const ClientDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOu
                   className="grid gap-4 py-5 sm:grid-cols-[1fr_auto] sm:items-center"
                 >
                   <div className="flex items-start gap-4">
-                    <div className="p-2 border border-black/15 bg-white/40 text-stone-700">
+                    <div className="border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-2 text-[var(--portal-text)]">
                       <FileText className="h-5 w-5" />
                     </div>
                     <div>

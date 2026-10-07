@@ -35,7 +35,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
 
   if (!points.length) {
     return (
-      <div data-testid={testId} className="border border-black/15 bg-black/[0.02] p-8 text-center">
+      <div data-testid={testId} className="border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-8 text-center">
         <p className="font-mono text-xs uppercase tracking-wider text-stone-500">{emptyMessage ?? t('noHistoricalTelemetry', 'No historical telemetry recorded.')}</p>
       </div>
     );
@@ -83,7 +83,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
 
   return (
     <div data-testid={testId} className="relative min-w-0">
-      <div className="border border-black/15 bg-black/[0.02] p-4 text-inherit">
+      <div className="border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-4 text-inherit">
         <svg
           role="img"
           aria-label={title}
@@ -226,10 +226,10 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
 
       {/* Accessible fallback summary */}
       <details className="mt-2 text-xs text-stone-600">
-        <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-stone-500 hover:text-stone-800">
+        <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-wider text-stone-500 hover:text-[var(--portal-text)]">
           {t('accessibleTabularBreakdown', 'Accessible tabular breakdown')}
         </summary>
-        <div className="mt-2 overflow-x-auto border border-black/15 bg-white/40 p-2">
+        <div className="mt-2 overflow-x-auto border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-2">
           <table className="w-full text-left font-mono text-[10px]">
             <thead>
               <tr className="border-b border-black/10">
@@ -405,7 +405,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
       {snapshotError && (
         <div
           data-testid="analytics-remote-warning"
-          className="border border-amber-900/20 bg-amber-500/10 p-4 text-xs text-amber-900"
+          className="portal-tone-warning border p-4 text-xs"
           role="status"
         >
           <p className="font-mono uppercase tracking-wider font-semibold">{t('remoteTelemetryNotice', 'Remote Telemetry Notice')}</p>
@@ -467,7 +467,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
               data-testid="project-trend-select"
               value={effectiveProjectId}
               onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="mt-2 w-full max-w-xs border border-black/20 bg-white/60 px-3 py-2 font-mono text-xs text-stone-900 focus:border-stone-800 focus:outline-none"
+              className="portal-token-input mt-2 w-full max-w-xs border px-3 py-2 font-mono text-xs focus:outline-none"
             >
               {activeProjects.map((project) => (
                 <option key={project.id} value={project.id}>
@@ -483,7 +483,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
                 <span className="text-stone-500 uppercase tracking-wider text-[10px]">{t('phaseLabel', 'Phase:')}</span> {selectedProject.phase}
               </p>
               <p>
-                <span className="text-stone-500 uppercase tracking-wider text-[10px]">{t('liveProgressLabel', 'Live Progress:')}</span> <strong className="font-serif text-base text-stone-900">{selectedProject.progress}%</strong>
+                <span className="text-stone-500 uppercase tracking-wider text-[10px]">{t('liveProgressLabel', 'Live Progress:')}</span> <strong className="font-serif text-base text-[var(--portal-text)]">{selectedProject.progress}%</strong>
               </p>
               {projectTrend.hasHistory && projectTrend.baselineProgress !== null && (
                 <p>
@@ -509,7 +509,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
               emptyMessage={t('noProjectSnapshots', 'No historical snapshots recorded for {{title}}.', { title: selectedProject.title })}
             />
           ) : (
-            <div className="border border-black/15 bg-black/[0.02] p-8 text-center font-mono text-xs text-stone-500">
+            <div className="border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-8 text-center font-mono text-xs text-stone-500">
               {t('noActiveProjects', 'No active projects available.')}
             </div>
           )}

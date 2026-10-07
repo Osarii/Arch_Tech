@@ -428,7 +428,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     expect(document.querySelectorAll('.portal-project-thumbnail').length).toBeGreaterThan(0);
     const adminSurface = screen.getByText('All projects / assignments').closest('.portal-surface');
     expect(adminSurface?.className).toContain('portal-admin');
-    expect(adminSurface?.className).toContain('bg-[#D6CBB9]');
+    expect(adminSurface?.className).toContain('bg-[var(--portal-bg)]');
     expect(document.querySelector('.portal-register-row')).toBeDefined();
     expect(screen.getByTestId('admin-open-model-zona-franca-la-lima').className).toContain('admin-action');
     cleanup();

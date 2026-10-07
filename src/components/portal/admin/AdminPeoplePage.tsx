@@ -199,14 +199,14 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                   <button
                     disabled={isMutationDisabled}
                     onClick={() => void editUserName(user.id, user.name)}
-                    className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-stone-300"
+                    className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-[var(--portal-muted)]"
                   >
                     {t('editName', 'Edit name')}
                   </button>
                   <button
                     disabled={isMutationDisabled}
                     onClick={() => void updateUser(user.id, { role: 'architect' })}
-                    className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-stone-300"
+                    className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-[var(--portal-muted)]"
                   >
                     {t('makeArchitect', 'Make architect')}
                   </button>
@@ -214,7 +214,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                     data-testid={`admin-user-status-toggle-${user.id}`}
                     disabled={isMutationDisabled}
                     onClick={() => void updateUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' })}
-                    className={`font-mono text-[9px] uppercase disabled:cursor-not-allowed disabled:text-stone-300 ${user.status === 'active' ? 'text-stone-700' : 'text-stone-400'}`}
+                    className={`font-mono text-[9px] uppercase disabled:cursor-not-allowed disabled:text-[var(--portal-muted)] ${user.status === 'active' ? 'text-[var(--portal-text)]' : 'text-stone-400'}`}
                   >
                     {user.status}
                   </button>
@@ -238,14 +238,14 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                     <button
                       disabled={isMutationDisabled}
                       onClick={() => void editUserName(user.id, user.name)}
-                      className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-stone-300"
+                      className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-[var(--portal-muted)]"
                     >
                       {t('editName', 'Edit name')}
                     </button>
                     <button
                       disabled={isMutationDisabled}
                       onClick={() => void updateUser(user.id, { role: 'client' })}
-                      className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-stone-300"
+                      className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-[var(--portal-muted)]"
                     >
                       {t('makeClient', 'Make client')}
                     </button>
@@ -253,7 +253,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                       data-testid={`admin-user-status-toggle-${user.id}`}
                       disabled={isMutationDisabled}
                       onClick={() => void updateUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' })}
-                      className={`font-mono text-[9px] uppercase disabled:cursor-not-allowed disabled:text-stone-300 ${user.status === 'active' ? 'text-stone-700' : 'text-stone-400'}`}
+                      className={`font-mono text-[9px] uppercase disabled:cursor-not-allowed disabled:text-[var(--portal-muted)] ${user.status === 'active' ? 'text-[var(--portal-text)]' : 'text-stone-400'}`}
                     >
                       {user.status}
                     </button>
@@ -282,7 +282,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
             <div
               key={project.id}
               data-testid={`admin-assignment-project-${project.id}`}
-              className="border border-black/15 bg-white/40 p-5"
+              className="border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5"
             >
               <p className="font-serif text-xl">{project.title}</p>
               <p className="font-mono text-[10px] text-stone-500 mt-0.5">{project.code} · {project.phase}</p>
@@ -296,7 +296,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                     className={`border px-2 py-1 font-mono text-[9px] uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                       user.projectIds.includes(project.id)
                         ? 'border-black bg-black text-white'
-                        : 'border-black/15 bg-white/50 text-stone-600 hover:border-black'
+                        : 'border-[var(--portal-border)] bg-[var(--portal-surface-raised)] text-stone-600 hover:border-[var(--portal-border-strong)]'
                     }`}
                   >
                     {user.name}
@@ -320,7 +320,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
               >
                 <span className="text-stone-400">{t('database', 'DATABASE')}</span>
                 {dbStatus === 'connected' ? (
-                  <span className="text-stone-900 font-medium">
+                  <span className="text-[var(--portal-text)] font-medium">
                     {t('databaseConnected', '● Connected · db.json')}
                   </span>
                 ) : dbStatus === 'checking' ? (
@@ -333,7 +333,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                     <button
                       type="button"
                       onClick={() => void checkDb()}
-                      className="underline text-stone-700 hover:text-black ml-1"
+                      className="ml-1 underline text-[var(--portal-muted)] hover:text-[var(--portal-text)]"
                     >
                       {t('retryConnection', 'Retry connection')}
                     </button>
@@ -351,7 +351,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
         </div>
 
         {dbStatus === 'offline' && (
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border border-black/15 bg-stone-50 px-3 py-2 text-xs text-stone-600 font-mono">
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-3 py-2 font-mono text-xs text-stone-600">
             <span>
               <span>{t('userChangesRequireDatabase', 'User changes require a connected database.')}</span>{' '}
               <span>{t('startLocalDatabase', 'Start local database: npm run dev:portal')}</span>
@@ -379,7 +379,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
               required
               value={newUser.name}
               onChange={(event) => setNewUser({ ...newUser, name: event.target.value })}
-              className="mt-2 w-full border-b border-black/20 bg-transparent py-2 text-sm outline-none focus:border-black"
+              className="mt-2 w-full border-b border-[var(--portal-border)] bg-transparent py-2 text-sm text-[var(--portal-text)] outline-none focus:border-[var(--portal-accent)]"
             />
           </label>
 
@@ -390,7 +390,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
               type="email"
               value={newUser.email}
               onChange={(event) => setNewUser({ ...newUser, email: event.target.value })}
-              className="mt-2 w-full border-b border-black/20 bg-transparent py-2 text-sm outline-none focus:border-black"
+              className="mt-2 w-full border-b border-[var(--portal-border)] bg-transparent py-2 text-sm text-[var(--portal-text)] outline-none focus:border-[var(--portal-accent)]"
             />
           </label>
 
@@ -401,7 +401,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
               minLength={8}
               value={newUser.password}
               onChange={(event) => setNewUser({ ...newUser, password: event.target.value })}
-              className="mt-2 w-full border-b border-black/20 bg-transparent py-2 text-sm outline-none focus:border-black"
+              className="mt-2 w-full border-b border-[var(--portal-border)] bg-transparent py-2 text-sm text-[var(--portal-text)] outline-none focus:border-[var(--portal-accent)]"
             />
           </label>
 
@@ -421,7 +421,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
             data-testid="create-user"
             type="submit"
             disabled={isMutationDisabled}
-            className="self-end bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
+            className="self-end bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-[var(--portal-surface-raised)] disabled:text-[var(--portal-muted)]"
           >
             {t('addUser', 'Add user')}
           </button>

@@ -281,7 +281,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
             className={`shrink-0 border-b-2 pb-2 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors ${
               activeTab === tab
                 ? 'border-current text-black'
-                : 'border-transparent text-stone-400 hover:border-current hover:text-stone-700'
+                : 'border-transparent text-stone-400 hover:border-current hover:text-[var(--portal-text)]'
             }`}
           >
             {(portalCommon.tabs as Record<string, string>)[tab] ?? tab}

@@ -260,7 +260,7 @@ export const ExternalContextPanel: React.FC = () => {
           placeholder={t('siteIntelligence.placeholder', 'Enter location (e.g. San José, Costa Rica)')}
           aria-label={t('siteIntelligence.locationAria', 'Location for site intelligence')}
           data-testid="site-intelligence-input"
-          className="min-w-[260px] flex-1 border border-black/20 bg-white/70 px-3 py-2 text-xs text-stone-800 placeholder:text-stone-400 focus:border-black focus:outline-none"
+          className="min-w-[260px] flex-1 border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-3 py-2 text-xs text-[var(--portal-text)] placeholder:text-[var(--portal-muted)] focus:border-[var(--portal-accent)] focus:outline-none"
         />
         <button
           type="submit"
@@ -295,11 +295,11 @@ export const ExternalContextPanel: React.FC = () => {
       {resolvedLocation && (
         <div
           data-testid="site-intelligence-location"
-          className="mt-4 flex flex-wrap items-center justify-between gap-2 border-l-2 border-stone-800 bg-stone-100/60 px-3 py-2 text-xs"
+          className="mt-4 flex flex-wrap items-center justify-between gap-2 border border-[var(--portal-border)] border-l-2 border-l-[var(--portal-accent)] bg-[var(--portal-surface-raised)] px-3 py-2 text-xs"
         >
           <div>
             <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-stone-500">{t('siteIntelligence.resolvedLocation', 'Resolved Location:')} </span>
-            <span className="font-semibold text-stone-800">{resolvedLocation.displayName}</span>
+            <span className="font-semibold text-[var(--portal-text)]">{resolvedLocation.displayName}</span>
           </div>
           <div className="font-mono text-[10px] text-stone-500">
             {resolvedLocation.latitude.toFixed(4)}
@@ -314,7 +314,7 @@ export const ExternalContextPanel: React.FC = () => {
       {(weather || weatherStatus !== 'idle' || seismic || seismicStatus !== 'idle') && (
         <div className="mt-6 grid gap-6 sm:grid-cols-2">
           {/* Weather Card */}
-          <div data-testid="site-intelligence-weather" className="border border-black/10 bg-white/40 p-4">
+          <div data-testid="site-intelligence-weather" className="border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-4">
             <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">{t('siteIntelligence.liveWeather', 'Live Weather Context')}</p>
             {weatherStatus === 'loading' && (
               <p role="status" className="mt-3 text-xs text-stone-500">{t('siteIntelligence.gatheringAtmospheric', 'Gathering current atmospheric conditions…')}</p>
@@ -327,7 +327,7 @@ export const ExternalContextPanel: React.FC = () => {
             {weather && (
               <div className="mt-3 space-y-2">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-serif text-3xl font-light text-stone-900">
+                  <span className="font-serif text-3xl font-light text-[var(--portal-text)]">
                     {weather.temperature}
                     {/* i18next-instrument-ignore */}
                     °C
@@ -349,7 +349,7 @@ export const ExternalContextPanel: React.FC = () => {
           </div>
 
           {/* Seismic Card */}
-          <div data-testid="site-intelligence-seismic" className="border border-black/10 bg-white/40 p-4">
+          <div data-testid="site-intelligence-seismic" className="border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-4">
             <div className="flex items-center justify-between">
               <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-stone-500">{t('siteIntelligence.recentSeismic', 'Recent Seismic Context')}</p>
               {/* i18next-instrument-ignore */}
@@ -366,7 +366,7 @@ export const ExternalContextPanel: React.FC = () => {
             {seismic && (
               <div className="mt-3 space-y-2">
                 <div className="flex items-baseline gap-2">
-                  <span className="font-serif text-3xl font-light text-stone-900">{seismic.eventCount}</span>
+                  <span className="font-serif text-3xl font-light text-[var(--portal-text)]">{seismic.eventCount}</span>
                   <span className="text-xs text-stone-600">{t('siteIntelligence.eventsRecorded', 'events recorded within 300 km')}</span>
                 </div>
                 {seismic.eventCount === 0 ? (
@@ -447,7 +447,7 @@ export const ProjectRows: React.FC<{
       {projects.map((project) => (
         <div
           key={project.id}
-          className="portal-register-row group grid w-full gap-5 py-5 text-left transition-colors hover:bg-white/35 sm:grid-cols-[minmax(0,1fr)_150px_180px_auto] sm:items-center sm:px-3"
+          className="portal-register-row group grid w-full gap-5 py-5 text-left transition-colors hover:bg-[var(--portal-surface-raised)] sm:grid-cols-[minmax(0,1fr)_150px_180px_auto] sm:items-center sm:px-3"
         >
           <ProjectIdentityButton project={project} onNavigate={onNavigate} detailPath={detailPath} />
           <span className="text-xs text-stone-600">

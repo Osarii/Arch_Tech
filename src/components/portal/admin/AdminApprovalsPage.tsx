@@ -148,7 +148,7 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
                 key={`${notification.userId}-${notification.date}-${notification.message}`}
                 className="flex items-start justify-between gap-4 py-3 text-sm"
               >
-                <span className="leading-snug text-stone-700">{getLocalizedNotificationMessage(notification.message)}</span>
+                <span className="leading-snug text-[var(--portal-text)]">{getLocalizedNotificationMessage(notification.message)}</span>
                 <span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date}</span>
               </div>
             ))}

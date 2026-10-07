@@ -308,7 +308,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                 <button
                   key={`${update.projectId}-${update.date}-${update.title}`}
                   onClick={() => navigate(`/dashboard/projects/${update.projectId}`)}
-                  className="mt-5 block w-full border-b border-black/10 pb-4 text-left hover:text-stone-700"
+                  className="mt-5 block w-full border-b border-black/10 pb-4 text-left hover:text-[var(--portal-text)]"
                 >
                   <span className="font-mono text-[10px] text-stone-500">{update.date} · {update.projectTitle}</span>
                   <span className="mt-1 block font-serif text-xl">{locUpdate.title}</span>
@@ -328,7 +328,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
               <button
                 key={`${notification.date}-${notification.message}`}
                 onClick={() => navigate(`/dashboard/projects/${notification.projectId}`)}
-                className="mt-5 flex w-full justify-between gap-5 border-b border-black/10 pb-4 text-left text-sm hover:text-stone-700"
+                className="mt-5 flex w-full justify-between gap-5 border-b border-black/10 pb-4 text-left text-sm hover:text-[var(--portal-text)]"
               >
                 <span>{getLocalizedNotificationMessage(notification.message, notification.projectId)}</span>
                 <span className="shrink-0 font-mono text-[9px] text-stone-500">{notification.date} · {t('open', 'Open')}</span>
@@ -346,7 +346,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <button
             onClick={() => navigate('/dashboard/projects')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 text-left transition-colors hover:bg-[var(--portal-surface-raised)]"
           >
             <Layers className="h-5 w-5 text-stone-600" />
             <p className="mt-4 font-serif text-xl">{t('projectRegister', 'Project Register')}</p>
@@ -355,7 +355,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
 
           <button
             onClick={() => navigate('/dashboard/documents')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 text-left transition-colors hover:bg-[var(--portal-surface-raised)]"
           >
             <FileText className="h-5 w-5 text-stone-600" />
             <p className="mt-4 font-serif text-xl">{t('documentVault', 'Document Vault')}</p>
@@ -364,7 +364,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
 
           <button
             onClick={() => navigate('/dashboard/approvals')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 text-left transition-colors hover:bg-[var(--portal-surface-raised)]"
           >
             <CheckCircle2 className="h-5 w-5 text-stone-600" />
             <p className="mt-4 font-serif text-xl">{t('approvals', 'Approvals')}</p>
@@ -373,7 +373,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
 
           <button
             onClick={() => navigate('/dashboard/assistant')}
-            className="border border-black/15 bg-white/40 p-5 text-left transition-colors hover:bg-white/70"
+            className="border border-[var(--portal-border)] bg-[var(--portal-surface)] p-5 text-left transition-colors hover:bg-[var(--portal-surface-raised)]"
           >
             <Sparkles className="h-5 w-5 text-stone-600" />
             <p className="mt-4 font-serif text-xl">{t('aiAssistant', 'AI Assistant')}</p>

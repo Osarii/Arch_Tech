@@ -367,6 +367,47 @@ html.portal-dark .portal-surface {
   color: var(--portal-text) !important;
 }
 
+.portal-surface .portal-token-input {
+  background-color: var(--portal-surface-raised);
+  border-color: var(--portal-border);
+  color: var(--portal-text);
+}
+.portal-surface .portal-token-input::placeholder {
+  color: var(--portal-muted);
+}
+.portal-surface .portal-token-input:focus {
+  border-color: var(--portal-accent);
+}
+.portal-surface .portal-token-panel {
+  background-color: var(--portal-surface-raised);
+  border-color: var(--portal-border);
+  color: var(--portal-text);
+}
+.portal-surface .portal-token-interactive {
+  background-color: var(--portal-surface);
+  border-color: var(--portal-border);
+  color: var(--portal-text);
+}
+.portal-surface .portal-token-interactive:hover {
+  background-color: var(--portal-surface-raised);
+  border-color: var(--portal-border-strong);
+}
+.portal-surface .portal-tone-success {
+  background-color: var(--portal-accent-soft);
+  border-color: var(--portal-accent);
+  color: var(--portal-text);
+}
+.portal-surface .portal-tone-warning {
+  background-color: rgb(255 191 0 / 0.14);
+  border-color: rgb(255 191 0 / 0.55);
+  color: var(--portal-text);
+}
+.portal-surface .portal-tone-danger {
+  background-color: rgb(220 38 38 / 0.14);
+  border-color: rgb(220 38 38 / 0.55);
+  color: var(--portal-text);
+}
+
 /* Header & Rail containers */
 .portal-surface .portal-header,
 .portal-surface .portal-rail {

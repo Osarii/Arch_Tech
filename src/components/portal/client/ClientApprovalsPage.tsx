@@ -79,8 +79,8 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
           role={operationFailed ? 'alert' : 'status'}
           className={`border px-4 py-3 text-sm ${
             operationFailed
-              ? 'border-red-400 bg-red-50 text-red-800'
-              : 'border-emerald-400 bg-emerald-50 text-emerald-900'
+              ? 'portal-tone-danger border'
+              : 'portal-tone-success border'
           }`}
         >
           {operationFeedback}

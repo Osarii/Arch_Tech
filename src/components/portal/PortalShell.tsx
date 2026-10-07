@@ -188,7 +188,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
 
   return (
     <PortalShellContext.Provider value={{ insideShell: true, navigate }}>
-      <div className={`portal-surface ${role === 'admin' ? 'portal-admin' : ''} flex h-screen w-full overflow-hidden bg-[#D6CBB9] bg-[var(--portal-bg)] text-[var(--portal-text)]`}>
+      <div className={`portal-surface ${role === 'admin' ? 'portal-admin' : ''} flex h-screen w-full overflow-hidden bg-[var(--portal-bg)] text-[var(--portal-text)]`}>
         {/* Mobile slide-over drawer backdrop & drawer */}
         {mobileNavOpen && (
           <div

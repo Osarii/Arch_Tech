@@ -82,8 +82,8 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
           role={operationFailed ? 'alert' : 'status'}
           className={`border px-4 py-3 text-sm ${
             operationFailed
-              ? 'border-red-400 bg-red-50 text-red-800'
-              : 'border-emerald-400 bg-emerald-50 text-emerald-900'
+              ? 'portal-tone-danger border'
+              : 'portal-tone-success border'
           }`}
         >
           {operationFeedback}
@@ -104,7 +104,7 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
         {projectsForReview.length ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {projectsForReview.map((project) => (
-              <div key={project.id} className="border border-black/15 bg-white/40 p-5">
+              <div key={project.id} className="border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5">
                 <button
                   data-testid={`architect-review-${project.id}`}
                   onClick={() => navigate(`/architect/projects/${project.id}`)}
