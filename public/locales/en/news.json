@@ -1,4 +1,9 @@
 {
+  "allCategories": "All categories",
+  "allProjects": "All projects",
+  "allUpdates": "All updates",
+  "archiveDescription": "A current record of the projects, decisions and public references shaping the portfolio.",
+  "archiveHeading": "Project updates.",
   "articles": {
     "news-archived-concept-brief": {
       "body": "Initial massing studies conducted during the 2024 feasibility phase exploring tower heights and wind tunnel effects around the Sabana park perimeter.",
@@ -42,5 +47,20 @@
       "sourceLabel": "Garnier Architecture Editorial",
       "title": "Zona Franca La Lima Announces Phase 4 Advanced Manufacturing Expansion"
     }
-  }
+  },
+  "categoryLabel": "Category",
+  "editorialNote": "Editorial note",
+  "homeAria": "GARNIER ARCHITECTURE home",
+  "journalEyebrow": "GARNIER ARCHITECTURE / Journal",
+  "newsNavAria": "News navigation",
+  "nextUpdate": "Next update",
+  "noUpdates": "No updates match this selection.",
+  "portfolio": "Portfolio",
+  "previousUpdate": "Previous update",
+  "projectLabel": "Project",
+  "publicReferenceCaption": "Public project reference / GARNIER ARCHITECTURE concept showcase",
+  "readAria": "Read",
+  "timelineJournal": "04 / Journal",
+  "timelineTitle": "Project updates",
+  "viewRelatedProject": "View related project"
 }

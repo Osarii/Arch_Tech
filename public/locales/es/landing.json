@@ -1,89 +1,176 @@
 {
-  "capabilitiesSection": {
-    "eyebrow": "02 // CAPACIDADES",
-    "heading": "Capacidades arquitectónicas.",
-    "items": {
-      "generate": {
-        "description": "Sintetice pórticos estructurales de múltiples niveles a partir de parámetros paramétricos con estrictas reglas de jerarquía espacial. Un asistente secundario contextualizado gestiona consultas espaciales y síntesis de niveles antes de que una validación semántica aislada garantice una exportación IFC limpia y verificada.",
-        "lead": "Síntesis paramétrica de edificaciones y persistencia aislada ISO 10303-21.",
-        "specs": {
-          "0": "Modelado IFC4 Determinista",
-          "1": "Asistente Secundario Contextualizado",
-          "2": "Exportación Idempotente STEP-21"
-        },
-        "title": "Generar y exportar"
+  "about": {
+    "eyebrow": "Nosotros / contexto de desarrollo",
+    "heading": "El desarrollo es más que la edificación.",
+    "body1": "Garnier & Garnier aporta 30 años de experiencia en desarrollo inmobiliario en Costa Rica a proyectos moldeados por su mercado, entorno y uso a largo plazo.",
+    "body2": "Su trabajo público abarca parques industriales y zonas francas, entornos corporativos y comerciales, hotelería y otras tipologías de desarrollo complejas. El grupo participa en diseño, construcción, ventas y promoción a través de un proceso integral de desarrollo.",
+    "sourceCaption": "Imagen de fuente pública / Garnier & Garnier",
+    "factualContext": "Contexto fáctico adaptado de la fuente pública oficial / garnier.cr",
+    "mediaAlt": "Ambiente de trabajo interior del portafolio público oficial de Garnier",
+    "facts": [
+      {
+        "value": "30 AÑOS",
+        "label": "Experiencia en desarrollo inmobiliario"
       },
-      "inspect": {
-        "description": "Cargue y analice archivos ISO 16739 IFC4 e IFC2x3 directamente en la memoria del navegador mediante WebAssembly nativo. Recorra árboles completos de contención espacial, consulte conjuntos de propiedades y genere planos de planta 2D ortogonales a cotas de nivel sin dependencias en la nube.",
-        "lead": "Análisis espacial en el cliente y extracción de propiedades.",
-        "specs": {
-          "0": "Ingesta de IFC4 e IFC2x3",
-          "1": "Corte 2D Nivel por Nivel",
-          "2": "Inspector Completo de Atributos y Psets"
-        },
-        "title": "Inspeccionar IFC"
+      {
+        "value": "COSTA RICA",
+        "label": "Mercado principal"
       },
-      "modify": {
-        "description": "Ejecute traslaciones de coordenadas 3D, rotaciones vectoriales relativas y eliminación de elementos. Cada modificación queda aislada en una capa proxy no destructiva y registrada cronológicamente en un ChangeSet JSON inmutable con capacidad completa de deshacer y rehacer.",
-        "lead": "Transformaciones proxy no destructivas y registros de auditoría transaccionales.",
-        "specs": {
-          "0": "Capa Proxy Transaccional",
-          "1": "Deltas de Coordenadas Relativas",
-          "2": "Historial de ChangeSet en JSON"
-        },
-        "title": "Modificar modelos"
+      {
+        "value": "INTEGRAL",
+        "label": "Enfoque de desarrollo"
+      },
+      {
+        "value": "DISEÑO → ENTREGA",
+        "label": "Perspectiva integral de proyecto"
       }
-    },
-    "module": "MÓDULO {{index}}",
-    "subtitle": "TRES MÓDULOS PRINCIPALES DE OPENBIM"
+    ]
   },
-  "finalCta": {
-    "body": "Diseñe, inspeccione y modifique modelos IFC directamente en su navegador.",
-    "enterWorkspace": "INGRESAR AL ESPACIO DE TRABAJO",
-    "eyebrow": "COMIENCE A TRABAJAR",
-    "heading": "Abra su modelo.",
-    "standards": "100% WebAssembly en el Cliente · Estándar Abierto IFC4 e IFC2x3"
-  },
-  "productPreview": {
-    "captionDesc": "ÁRBOL ESPACIAL BIM, INSPECTOR DE ELEMENTOS Y VISOR 3D",
-    "captionFig": "FIG 02.00 // BIM LAB V1 RUNTIME",
-    "enterWorkspace": "INGRESAR AL ESPACIO DE TRABAJO",
-    "enterWorkspaceArrow": "INGRESAR AL ESPACIO DE TRABAJO →",
-    "eyebrow": "01 // EL ESPACIO DE TRABAJO",
-    "heading": "Un solo espacio de trabajo.",
-    "screenshotAlt": "Captura del Espacio de Trabajo BIM de Arch_Tech",
-    "subheading": "IFC desde la inspección hasta la exportación."
-  },
-  "technology": {
-    "coreStack": "STACK TECNOLÓGICO PRINCIPAL",
-    "runtime": "RUNTIME EN EL CLIENTE // ISO 16739"
-  },
-  "workflow": {
-    "eyebrow": "03 // FLUJO DE TRABAJO",
-    "heading": "La línea de ingeniería.",
-    "lifecycle": "CICLO DE VIDA DETERMINISTA DE CUATRO ETAPAS",
-    "phase": "FASE {{number}}",
-    "steps": {
-      "edit": {
-        "description": "Aplique traslaciones 3D, rotaciones relativas o generación paramétrica de niveles a una capa proxy transaccional.",
-        "phase": "EDITAR",
-        "subtitle": "Ediciones No Destructivas"
+  "capabilities": {
+    "eyebrow": "Capacidades de desarrollo",
+    "heading": "Estructura para el desarrollo complejo.",
+    "description": "GARNIER ARCHITECTURE conecta sitio, programa, infraestructura, coordinación e información digital del proyecto en un marco único de desarrollo.",
+    "items": [
+      {
+        "number": "01",
+        "label": "ESTRATEGIA DE SITIO + TERRENO",
+        "description": "Contexto, accesos, restricciones y potencial de desarrollo."
       },
-      "export": {
-        "description": "Ejecute verificación semántica aislada antes de exportar archivos IFC puros ISO 10303-21.",
-        "phase": "EXPORTAR",
-        "subtitle": "Persistencia STEP-21"
+      {
+        "number": "02",
+        "label": "PLANIFICACIÓN MAESTRA",
+        "description": "Programa, lotes, circulación, fases y estructura a largo plazo."
       },
-      "import": {
-        "description": "Transmita archivos .ifc locales a la memoria WebAssembly de web-ifc. Cero transmisión a la nube.",
-        "phase": "IMPORTAR",
-        "subtitle": "Ingesta WASM en el Cliente"
+      {
+        "number": "03",
+        "label": "MARCO DE INFRAESTRUCTURA",
+        "description": "Movilidad, servicios, infraestructura y sistemas operativos."
       },
-      "inspect": {
-        "description": "Recorra la jerarquía del proyecto, consulte propiedades de entidades y genere planos 2D ortogonales.",
-        "phase": "INSPECCIONAR",
-        "subtitle": "Coordinación Espacial"
+      {
+        "number": "04",
+        "label": "COORDINACIÓN DE DESARROLLO",
+        "description": "Diseño, información técnica, hitos y control de decisiones."
+      },
+      {
+        "number": "05",
+        "label": "ENTREGA DIGITAL DE PROYECTOS",
+        "description": "Información estructurada de proyecto y coordinación OpenBIM cuando sea conveniente."
+      },
+      {
+        "number": "06",
+        "label": "CONTINUIDAD OPERATIVA",
+        "description": "Mantener la intención de desarrollo desde la planificación hasta la operación y adaptaciones futuras."
       }
-    }
+    ]
+  },
+  "development": {
+    "eyebrow": "El ciclo de vida del desarrollo",
+    "heading": "De la oportunidad a la operación.",
+    "description": "El trabajo es una secuencia de decisiones que conecta tierra, programa, entrega y la vida de un lugar a lo largo del tiempo.",
+    "stages": [
+      {
+        "number": "01",
+        "label": "Oportunidad",
+        "title": "Interpretar el territorio.",
+        "body": "El terreno, contexto, mercado y modelo operativo marcan la dirección antes del primer plano."
+      },
+      {
+        "number": "02",
+        "label": "Estructura",
+        "title": "Construir el marco.",
+        "body": "Programa, flujos, paisaje y fases dan a cada desarrollo una estructura que evoluciona con su propósito."
+      },
+      {
+        "number": "03",
+        "label": "Entrega",
+        "title": "Hacer efectivas las decisiones.",
+        "body": "Una ruta clara mantiene visible la intención conforme el proyecto avanza en diseño, coordinación y entrega."
+      },
+      {
+        "number": "04",
+        "label": "Operación",
+        "title": "Hacer perdurar el lugar.",
+        "body": "El valor a largo plazo se define por cómo funciona, se adapta y permanece útil un lugar tras su apertura."
+      }
+    ],
+    "privatePortalEyebrow": "Portal privado de proyecto",
+    "privatePortalHeading": "El portafolio público es el inicio de la conversación.",
+    "privatePortalDescription": "Los clientes siguen el ciclo activo de su desarrollo mediante una vista privada de avances, decisiones, documentos y próximos hitos.",
+    "enterPortal": "Ingresar al portal de proyectos"
+  },
+  "footer": {
+    "closingEyebrow": "GARNIER ARCHITECTURE / declaración final",
+    "closingHeading": "Construido para el desarrollo complejo.",
+    "closingBody": "Desarrollo, infraestructura y entrega digital de proyectos desde la primera oportunidad hasta la operación a largo plazo.",
+    "directoryEyebrow": "Directorio",
+    "directoryHeading": "Una ruta clara por la experiencia pública.",
+    "footerDirectory": "Directorio del pie de página",
+    "exploreGroup": "Explorar",
+    "platformGroup": "Plataforma",
+    "contextGroup": "Contexto",
+    "projectPortal": "Portal de Proyectos",
+    "openBim": "OpenBIM",
+    "developmentWorkflow": "Flujo de Desarrollo",
+    "contextCountry": "Costa Rica",
+    "contextShowcase": "Muestra Garnier & Garnier",
+    "contextPrototype": "Prototipo Conceptual",
+    "wordmark": "GARNIER ARCHITECTURE / public development platform",
+    "copyright": "© 2026 GARNIER ARCHITECTURE",
+    "deliverySubtitle": "Desarrollo / Infraestructura / Entrega Digital",
+    "conceptShowcase": "Muestra conceptual",
+    "backToTop": "Volver arriba ↑"
+  },
+  "hero": {
+    "eyebrow": "GARNIER ARCHITECTURE / Muestra de Portafolio / Prototipo Conceptual",
+    "headingLine1": "Desarrollo",
+    "headingLine2": "a mayor escala.",
+    "body": "GARNIER ARCHITECTURE posiciona y desarrolla zonas francas, campus, distritos e infraestructura — desde la primera oportunidad hasta la entrega y operación.",
+    "explorePortfolio": "Explorar el portafolio",
+    "showcaseContext": "Muestra oficial de proyectos",
+    "opportunityToOperation": "De la oportunidad a la operación",
+    "sectors": [
+      "Zonas francas",
+      "Industrial / logística",
+      "Infraestructura de cómputo + energía",
+      "Distritos corporativos",
+      "Campus de salud",
+      "Planes maestros"
+    ]
+  },
+  "navbar": {
+    "projects": "Proyectos",
+    "capabilities": "Capacidades",
+    "about": "Nosotros",
+    "team": "Equipo",
+    "updates": "Actualizaciones",
+    "projectPortal": "Portal de Proyectos",
+    "a11yControls": "Controles de accesibilidad",
+    "toggleMenu": "Alternar menú",
+    "homeAria": "GARNIER ARCHITECTURE inicio",
+    "langSelection": "Selección de idioma",
+    "a11yShort": "Accesibilidad",
+    "langToggle": "Idioma / Language"
+  },
+  "news": {
+    "eyebrow": "Boletín / Actualizaciones de proyecto",
+    "heading": "Últimas actualizaciones.",
+    "viewAll": "Ver todas las actualizaciones"
+  },
+  "projects": {
+    "eyebrow": "GARNIER ARCHITECTURE / Muestra de Portafolio / Prototipo Conceptual",
+    "heading": "Un portafolio diseñado con propósito.",
+    "description": "Seis desarrollos oficiales de Garnier presentados a través de la interfaz de exhibición GARNIER ARCHITECTURE. Los datos públicos y fotografías de proyectos permanecen atribuidos a su fuente.",
+    "principalBadge": "01 · Desarrollo principal · ",
+    "market": "Mercado",
+    "stage": "Etapa",
+    "scale": "Escala",
+    "numberLabel": "N.º"
+  },
+  "team": {
+    "eyebrow": "Equipo / liderazgo",
+    "heading": "Las personas detrás del desarrollo.",
+    "description": "Un grupo de liderazgo multidisciplinario que conecta estrategia, ingeniería, finanzas, nuevos negocios, talento humano y sostenibilidad.",
+    "leadershipCaption": "Liderazgo / Garnier & Garnier",
+    "groupPhotoAlt": "Equipo de liderazgo de Garnier & Garnier reunido en un patio exterior"
   }
 }

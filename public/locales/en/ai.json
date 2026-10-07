@@ -3,14 +3,56 @@
   "assistantTimestamp": "AI Assistant • {{time}}",
   "bimAiAssistant": "BIM AI Assistant",
   "chatPlaceholder": "Ask AI e.g. 'Move #44 by 1m in X'...",
+  "clearHistory": "Clear History",
+  "clearHistoryTitle": "Clear Conversation History",
   "clearHistoryTooltip": "Clear Conversation History",
+  "confirm": "Confirm",
   "confirmAndApply": "Confirm & Apply",
+  "emptyDescription": "Ask about building quantities, model elements, structural search or massing preview generation.",
+  "emptyHeading": "How can the assistant help today?",
+  "emptySubtitle": "Ask about building quantities, model elements, structural search or massing preview generation.",
+  "emptyTitle": "How can the assistant help today?",
+  "engineOffline": "Offline Deterministic Engine",
+  "engineRemote": "Remote n8n / offline fallback",
   "executedAndRecorded": "Executed & Recorded in Change Set",
+  "heading": "BIM AI Assistant",
+  "helperCopy": "Natural language BIM intelligence and coordination engine.",
+  "inputPlaceholder": "Ask about model quantities, elements or building generation…",
   "offlineEngine": "Offline Deterministic Engine",
+  "offlineStatus": "Offline Deterministic Engine",
+  "openModel": "Open 3D Model →",
+  "openWorkspace": "Open 3D Model →",
   "phaseBadge": "Phase 6B.1",
+  "quickPrompts": {
+    "client": [
+      "Calculate model quantities",
+      "Show all elements",
+      "Isolate walls"
+    ],
+    "architect": [
+      "Preview 10x8m 2-storey building, 3m height per storey",
+      "Calculate model quantities",
+      "Find all walls",
+      "Show all elements"
+    ],
+    "admin": [
+      "Calculate model quantities",
+      "Find all walls",
+      "Preview 10x8m 2-storey building, 3m height per storey",
+      "Show all elements"
+    ]
+  },
+  "quickPromptsLabel": "Quick prompts:",
+  "reject": "Reject",
   "remoteEngine": "Remote n8n / offline fallback",
+  "remoteStatus": "Remote n8n / offline fallback",
+  "send": "Send",
+  "subtitle": "Natural language BIM intelligence and coordination engine.",
   "toolExecuted": "Executed",
   "toolProposalCreated": "Proposal created",
   "userTimestamp": "User • {{time}}",
-  "writeActionConfirmation": "WRITE ACTION CONFIRMATION"
+  "workspaceHeading": "3D Engineering Workspace",
+  "workspaceSubtitle": "Open the live WebGL workspace to inspect fragments, property sets, and visual model modifications.",
+  "writeActionConfirmation": "WRITE ACTION CONFIRMATION",
+  "writeConfirmation": "WRITE ACTION CONFIRMATION"
 }

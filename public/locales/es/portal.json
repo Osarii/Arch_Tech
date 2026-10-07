@@ -1,4 +1,5 @@
 {
+  "actions": "Acciones",
   "addDocument": "Agregar documento",
   "addMilestone": "Agregar hito",
   "administration": "Administración",
@@ -6,13 +7,20 @@
   "approvalPending": "Aprobación pendiente",
   "approvalRequest": "Solicitud de aprobación",
   "approve": "Aprobar",
+  "approved": "Aprobado",
   "available": "Disponible",
+  "backToDashboard": "Volver al resumen",
   "clientApprovalRequest": "Solicitud de aprobación de cliente",
+  "complete": "completado",
   "createProjectUpdate": "Crear actualización del proyecto",
+  "current": "Actual",
   "currentProjectModel": "Modelo actual del proyecto",
   "currentProjectModelDesc": "Abra el modelo del proyecto en el espacio de trabajo existente de GARNIER ARCHITECTURE.",
+  "date": "Fecha",
+  "deleteProject": "Eliminar proyecto",
   "deleteRuntimeProject": "Eliminar proyecto en tiempo de ejecución",
   "documentName": "Nombre del documento",
+  "filterAll": "Todos",
   "firstProjectInScope": "Primer proyecto en alcance",
   "forbidden": {
     "eyebrow": "403 / Acceso restringido",
@@ -30,12 +38,25 @@
   "newApproval": "Nueva aprobación",
   "newDocument": "Nuevo documento",
   "newMilestone": "Nuevo hito",
+  "next": "Siguiente",
   "nextLabel": "Siguiente: {{milestone}}",
   "nextProject": "Siguiente proyecto →",
+  "noApprovals": "No hay aprobaciones pendientes ni registradas para este proyecto.",
+  "noDocuments": "No se han subido documentos para este proyecto.",
+  "noMilestones": "No se han definido hitos para este proyecto.",
   "noRecentActivity": "Sin actividad reciente del proyecto.",
+  "noUpdates": "No se han registrado actualizaciones para este proyecto.",
+  "notFoundAction": "Volver al portafolio",
+  "notFoundEyebrow": "404 / Página no encontrada",
+  "notFoundSubtitle": "La página, proyecto o recurso solicitado no existe o ha sido movido.",
+  "notFoundTitle": "Página no encontrada",
   "open": "Abrir",
+  "open3DModel": "Modelo 3D",
   "open3dModel": "Abrir Modelo 3D",
+  "openModel": "Abrir Modelo 3D →",
+  "openProject": "Abrir proyecto",
   "overview": "Resumen",
+  "pending": "Pendiente",
   "phases": {
     "brief": "Anteproyecto y estudio de sitio",
     "concept": "Diseño conceptual",
@@ -55,14 +76,49 @@
   "projectProgress": "Avance del proyecto",
   "projectTitle": "Título del proyecto",
   "publicPortfolio": "Portafolio público",
+  "publishProject": "Publicar proyecto",
   "publishToPublic": "Publicar en portafolio público",
   "publishUpdate": "Publicar actualización",
   "reject": "Rechazar",
+  "rejected": "Rechazado",
   "removeFromPublic": "Remover del portafolio público",
   "reopen": "Reabrir",
   "requestApproval": "Solicitar aprobación",
   "resolve": "Resolver",
+  "returnHome": "Volver al inicio",
+  "returnToWorkspace": "Volver al espacio de trabajo",
   "saveStatus": "Guardar estado",
+  "searchPlaceholder": "Buscar…",
+  "seeded": {
+    "approvals": {
+      "publicFactsCheck": "Verificación de datos públicos",
+      "showcaseFraming": "Encuadre de muestra"
+    },
+    "documents": {
+      "localMediaMappingMeta": "Coordinación conceptual · ARCH_TECH",
+      "localMediaMappingName": "Mapeo de medios locales",
+      "officialReferenceMeta": "Muestra Conceptual · fuente pública",
+      "officialReferenceName": "Referencia oficial del proyecto"
+    },
+    "notifications": {
+      "architectEc": "La referencia del campus corporativo está lista para coordinación.",
+      "architectZfll": "El mapeo de fuentes públicas está listo para coordinación.",
+      "clientWa": "La referencia de hospitalidad está lista para revisión.",
+      "clientZfll": "El encuadre de muestra está listo para revisión."
+    },
+    "updates": {
+      "portfolioFactsCheckedBody": "La ubicación, escala y descripción del desarrollo se alinearon con la fuente pública oficial.",
+      "portfolioFactsCheckedTitle": "Datos de portafolio verificados",
+      "projectReferencePreparedCcsBody": "La información del centro de oficinas está organizada para el expediente de muestra.",
+      "projectReferencePreparedSaccBody": "La información pública del proyecto está organizada para el expediente de muestra.",
+      "projectReferencePreparedTitle": "Referencia de proyecto preparada",
+      "showcaseMediaReviewEcBody": "Las imágenes del campus corporativo están preparadas para la Muestra Conceptual de ARCH_TECH.",
+      "showcaseMediaReviewTitle": "Revisión de medios de muestra",
+      "showcaseMediaReviewUlBody": "Las imágenes del campus educativo están preparadas para la Muestra Conceptual de ARCH_TECH.",
+      "showcaseMediaReviewWaBody": "Las imágenes del proyecto de hospitalidad y los datos públicos están listos para revisión.",
+      "showcaseMediaReviewZfllBody": "Las imágenes del portafolio oficial y los datos públicos están listos para la Muestra Conceptual de ARCH_TECH."
+    }
+  },
   "serviceUnavailable": {
     "defaultMessage": "No se pudieron cargar los registros remotos del proyecto y de la cuenta. Compruebe la conexión de red e intente nuevamente.",
     "eyebrow": "503 / Servicio no disponible",
@@ -70,6 +126,39 @@
     "retry": "Reintentar conexión",
     "returnWorkspace": "Regresar al espacio de trabajo",
     "title": "Servicio temporalmente no disponible."
+  },
+  "shell": {
+    "showcaseEyebrow": "Muestra de Portafolio / Prototipo Conceptual",
+    "homeAria": "GARNIER ARCHITECTURE inicio",
+    "roles": {
+      "admin": "Administración Ejecutiva",
+      "architect": "Taller de Arquitectura",
+      "client": "Espacio del Cliente"
+    },
+    "homeNav": {
+      "admin": "Registro",
+      "architect": "Mesa de Trabajo",
+      "client": "Proyectos"
+    },
+    "nav": {
+      "overview": "Resumen",
+      "projects": "Proyectos",
+      "documents": "Documentos",
+      "approvals": "Aprobaciones",
+      "insights": "Indicadores",
+      "assistant": "Asistente",
+      "people": "Personas",
+      "analytics": "Analítica",
+      "news": "Noticias"
+    },
+    "light": "Claro",
+    "dark": "Oscuro",
+    "a11y": "A11y",
+    "signOut": "Cerrar sesión",
+    "useLightMode": "Usar modo claro",
+    "useDarkMode": "Usar modo oscuro",
+    "openA11y": "Abrir panel de accesibilidad",
+    "adjustmentsActive": "Ajustes activos"
   },
   "siteIntelligence": {
     "analyzeSite": "Analizar Sitio",
@@ -101,38 +190,19 @@
     "weatherUnavailable": "El clima no está disponible temporalmente.",
     "wind": "Viento: {{val}}"
   },
+  "status": "Estado",
   "studioManagement": "Gestión del estudio",
+  "tabs": {
+    "Overview": "Resumen",
+    "Updates": "Actualizaciones",
+    "Milestones": "Hitos",
+    "Documents": "Documentos",
+    "Approvals": "Aprobaciones",
+    "Model": "Modelo 3D"
+  },
+  "unpublishProject": "Retirar de publicación",
+  "upcoming": "Próximo",
   "updateBody": "Cuerpo de la actualización",
   "updateTitle": "Título de la actualización",
-  "whatChanged": "¿Qué cambió?",
-  "seeded": {
-    "approvals": {
-      "publicFactsCheck": "Verificación de datos públicos",
-      "showcaseFraming": "Encuadre de muestra"
-    },
-    "documents": {
-      "localMediaMappingMeta": "Coordinación conceptual · ARCH_TECH",
-      "localMediaMappingName": "Mapeo de medios locales",
-      "officialReferenceMeta": "Muestra Conceptual · fuente pública",
-      "officialReferenceName": "Referencia oficial del proyecto"
-    },
-    "notifications": {
-      "architectEc": "La referencia del campus corporativo está lista para coordinación.",
-      "architectZfll": "El mapeo de fuentes públicas está listo para coordinación.",
-      "clientWa": "La referencia de hospitalidad está lista para revisión.",
-      "clientZfll": "El encuadre de muestra está listo para revisión."
-    },
-    "updates": {
-      "portfolioFactsCheckedBody": "La ubicación, escala y descripción del desarrollo se alinearon con la fuente pública oficial.",
-      "portfolioFactsCheckedTitle": "Datos de portafolio verificados",
-      "projectReferencePreparedCcsBody": "La información del centro de oficinas está organizada para el expediente de muestra.",
-      "projectReferencePreparedSaccBody": "La información pública del proyecto está organizada para el expediente de muestra.",
-      "projectReferencePreparedTitle": "Referencia de proyecto preparada",
-      "showcaseMediaReviewEcBody": "Las imágenes del campus corporativo están preparadas para la Muestra Conceptual de ARCH_TECH.",
-      "showcaseMediaReviewTitle": "Revisión de medios de muestra",
-      "showcaseMediaReviewUlBody": "Las imágenes del campus educativo están preparadas para la Muestra Conceptual de ARCH_TECH.",
-      "showcaseMediaReviewWaBody": "Las imágenes del proyecto de hospitalidad y los datos públicos están listos para revisión.",
-      "showcaseMediaReviewZfllBody": "Las imágenes del portafolio oficial y los datos públicos están listos para la Muestra Conceptual de ARCH_TECH."
-    }
-  }
+  "whatChanged": "¿Qué cambió?"
 }

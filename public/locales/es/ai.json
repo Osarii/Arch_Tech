@@ -3,14 +3,56 @@
   "assistantTimestamp": "Asistente IA • {{time}}",
   "bimAiAssistant": "Asistente BIM IA",
   "chatPlaceholder": "Pregunte a la IA p. ej. 'Mover #44 por 1m en X'...",
+  "clearHistory": "Limpiar Historial",
+  "clearHistoryTitle": "Limpiar historial de conversación",
   "clearHistoryTooltip": "Limpiar Historial de Conversación",
+  "confirm": "Confirmar",
   "confirmAndApply": "Confirmar y Aplicar",
+  "emptyDescription": "Consulte sobre cuantificaciones, elementos del modelo, búsqueda estructural o generación volumétrica preliminar.",
+  "emptyHeading": "¿Cómo puede ayudar el asistente hoy?",
+  "emptySubtitle": "Consulte sobre cuantificaciones, elementos del modelo, búsqueda estructural o generación volumétrica preliminar.",
+  "emptyTitle": "¿Cómo puede ayudar el asistente hoy?",
+  "engineOffline": "Motor determinista local",
+  "engineRemote": "Remoto n8n / respaldo local",
   "executedAndRecorded": "Ejecutado y Registrado en Change Set",
+  "heading": "Asistente IA BIM",
+  "helperCopy": "Motor de inteligencia y coordinación BIM en lenguaje natural.",
+  "inputPlaceholder": "Pregunte sobre cuantificación, elementos o generación volumétrica…",
   "offlineEngine": "Motor Determinista Offline",
+  "offlineStatus": "Motor determinista local",
+  "openModel": "Abrir Modelo 3D →",
+  "openWorkspace": "Abrir Modelo 3D →",
   "phaseBadge": "Fase 6B.1",
+  "quickPrompts": {
+    "client": [
+      "Calcular cantidades del modelo",
+      "Mostrar todos los elementos",
+      "Aislar muros"
+    ],
+    "architect": [
+      "Previsualizar edificio de 10x8m de 2 niveles, 3m de altura por nivel",
+      "Calcular cantidades del modelo",
+      "Buscar todos los muros",
+      "Mostrar todos los elementos"
+    ],
+    "admin": [
+      "Calcular cantidades del modelo",
+      "Buscar todos los muros",
+      "Previsualizar edificio de 10x8m de 2 niveles, 3m de altura por nivel",
+      "Mostrar todos los elementos"
+    ]
+  },
+  "quickPromptsLabel": "Consultas rápidas:",
+  "reject": "Rechazar",
   "remoteEngine": "n8n Remoto / Fallback Offline",
+  "remoteStatus": "Remoto n8n / respaldo local",
+  "send": "Enviar",
+  "subtitle": "Motor de inteligencia y coordinación BIM en lenguaje natural.",
   "toolExecuted": "Ejecutado",
   "toolProposalCreated": "Propuesta creada",
   "userTimestamp": "Usuario • {{time}}",
-  "writeActionConfirmation": "CONFIRMACIÓN DE ACCIÓN DE ESCRITURA"
+  "workspaceHeading": "Espacio de Trabajo 3D",
+  "workspaceSubtitle": "Abra el espacio de trabajo WebGL interactivo para inspeccionar fragmentos, propiedades y modificaciones visuales del modelo.",
+  "writeActionConfirmation": "CONFIRMACIÓN DE ACCIÓN DE ESCRITURA",
+  "writeConfirmation": "CONFIRMACIÓN DE ACCIÓN DE ESCRITURA"
 }

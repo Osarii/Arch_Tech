@@ -1,4 +1,23 @@
 {
+  "briefEyebrow": "01 / Brief",
+  "defaultLongView": "Clear decisions, durable materials and a place that can remain useful over time.",
+  "defaultMarket": "Costa Rica",
+  "defaultScale": "Project study",
+  "developmentMandate": "Development mandate",
+  "developmentPath": "Development path",
+  "developmentPortfolio": "Development portfolio",
+  "homeAria": "GARNIER ARCHITECTURE home",
+  "horizonEyebrow": "02 / Horizon",
+  "labels": {
+    "market": "Market",
+    "development": "Development",
+    "stage": "Current stage",
+    "context": "Context",
+    "scale": "Scale"
+  },
+  "longTermStrategy": "Long-term development strategy",
+  "longView": "Long view",
+  "milestone": "Milestone",
   "milestones": {
     "mediaMapping": "Media mapping",
     "publicSourceIntake": "Public source intake",
@@ -9,6 +28,8 @@
       "upcoming": "Upcoming"
     }
   },
+  "projectIntent": "Project intent",
+  "projectPortal": "Project Portal",
   "projects": {
     "centro-corporativo-sabana": {
       "category": "Corporate office center",
@@ -70,5 +91,9 @@
       "statement": "The official portfolio describes La Lima as a 79-hectare mixed-commercial development with a technological profile for advanced manufacturing, life sciences, logistics centers and supplier and service companies.",
       "summary": "A free zone and industrial park in La Lima, Cartago, covering 79 hectares for advanced manufacturing, life sciences, logistics and related services."
     }
-  }
+  },
+  "registerEyebrow": "03 / Register",
+  "seq": "Seq.",
+  "showcaseEyebrow": "Portfolio Showcase / Concept Prototype",
+  "status": "Status"
 }

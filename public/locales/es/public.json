@@ -1,4 +1,23 @@
 {
+  "briefEyebrow": "01 / Resumen",
+  "defaultLongView": "Decisiones claras, materiales duraderos y un entorno que permanece útil en el tiempo.",
+  "defaultMarket": "Costa Rica",
+  "defaultScale": "Estudio de proyecto",
+  "developmentMandate": "Mandato de desarrollo",
+  "developmentPath": "Ruta de desarrollo",
+  "developmentPortfolio": "Portafolio de desarrollo",
+  "homeAria": "GARNIER ARCHITECTURE inicio",
+  "horizonEyebrow": "02 / Horizonte",
+  "labels": {
+    "market": "Mercado",
+    "development": "Desarrollo",
+    "stage": "Fase actual",
+    "context": "Contexto",
+    "scale": "Escala"
+  },
+  "longTermStrategy": "Estrategia de desarrollo a largo plazo",
+  "longView": "Visión a largo plazo",
+  "milestone": "Hito",
   "milestones": {
     "mediaMapping": "Mapeo de medios",
     "publicSourceIntake": "Recepción de fuentes públicas",
@@ -9,6 +28,8 @@
       "upcoming": "Próximo"
     }
   },
+  "projectIntent": "Propósito del proyecto",
+  "projectPortal": "Portal de Proyectos",
   "projects": {
     "centro-corporativo-sabana": {
       "category": "Centro corporativo de oficinas",
@@ -70,5 +91,9 @@
       "statement": "El portafolio oficial describe La Lima como un desarrollo comercial mixto de 79 hectáreas con un perfil tecnológico para manufactura avanzada, ciencias de la vida, centros logísticos y empresas proveedoras y de servicios.",
       "summary": "Una zona franca y parque industrial en La Lima, Cartago, que abarca 79 hectáreas destinadas a manufactura avanzada, ciencias de la vida, logística y servicios relacionados."
     }
-  }
+  },
+  "registerEyebrow": "03 / Registro",
+  "seq": "Sec.",
+  "showcaseEyebrow": "Muestra de Portafolio / Prototipo Conceptual",
+  "status": "Estado"
 }

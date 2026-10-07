@@ -1,4 +1,5 @@
 {
+  "actions": "Actions",
   "addDocument": "Add document",
   "addMilestone": "Add milestone",
   "administration": "Administration",
@@ -6,13 +7,20 @@
   "approvalPending": "Approval pending",
   "approvalRequest": "Approval request",
   "approve": "Approve",
+  "approved": "Approved",
   "available": "Available",
+  "backToDashboard": "Back to overview",
   "clientApprovalRequest": "Client approval request",
+  "complete": "complete",
   "createProjectUpdate": "Create project update",
+  "current": "Current",
   "currentProjectModel": "Current project model",
   "currentProjectModelDesc": "Open the project model in the existing GARNIER ARCHITECTURE workspace.",
+  "date": "Date",
+  "deleteProject": "Delete project",
   "deleteRuntimeProject": "Delete runtime project",
   "documentName": "Document name",
+  "filterAll": "All",
   "firstProjectInScope": "First project in scope",
   "forbidden": {
     "eyebrow": "403 / Access restricted",
@@ -30,12 +38,25 @@
   "newApproval": "New approval",
   "newDocument": "New document",
   "newMilestone": "New milestone",
+  "next": "Next",
   "nextLabel": "Next: {{milestone}}",
   "nextProject": "Next project →",
+  "noApprovals": "No approvals are currently pending or recorded for this project.",
+  "noDocuments": "No documents have been uploaded for this project.",
+  "noMilestones": "No milestones have been defined for this project.",
   "noRecentActivity": "No recent project activity.",
+  "noUpdates": "No updates have been recorded for this project.",
+  "notFoundAction": "Back to portfolio",
+  "notFoundEyebrow": "404 / Page not found",
+  "notFoundSubtitle": "The requested page, project or resource does not exist or has been moved.",
+  "notFoundTitle": "Page not found",
   "open": "Open",
+  "open3DModel": "3D Model",
   "open3dModel": "Open 3D Model",
+  "openModel": "Open 3D Model →",
+  "openProject": "Open project",
   "overview": "Overview",
+  "pending": "Pending",
   "phases": {
     "brief": "Brief and site study",
     "concept": "Concept design",
@@ -55,14 +76,49 @@
   "projectProgress": "Project progress",
   "projectTitle": "Project title",
   "publicPortfolio": "Public portfolio",
+  "publishProject": "Publish project",
   "publishToPublic": "Publish to public portfolio",
   "publishUpdate": "Publish update",
   "reject": "Reject",
+  "rejected": "Rejected",
   "removeFromPublic": "Remove from public portfolio",
   "reopen": "Reopen",
   "requestApproval": "Request approval",
   "resolve": "Resolve",
+  "returnHome": "Return home",
+  "returnToWorkspace": "Return to workspace",
   "saveStatus": "Save status",
+  "searchPlaceholder": "Search…",
+  "seeded": {
+    "approvals": {
+      "publicFactsCheck": "Public facts check",
+      "showcaseFraming": "Showcase framing"
+    },
+    "documents": {
+      "localMediaMappingMeta": "Concept coordination · ARCH_TECH",
+      "localMediaMappingName": "Local media mapping",
+      "officialReferenceMeta": "Concept Showcase · public source",
+      "officialReferenceName": "Official project reference"
+    },
+    "notifications": {
+      "architectEc": "Corporate campus reference is ready for coordination.",
+      "architectZfll": "Public source mapping is ready for coordination.",
+      "clientWa": "Hospitality reference is ready for review.",
+      "clientZfll": "Showcase framing is ready for review."
+    },
+    "updates": {
+      "portfolioFactsCheckedBody": "Location, scale and development description were aligned with the official public source.",
+      "portfolioFactsCheckedTitle": "Portfolio facts checked",
+      "projectReferencePreparedCcsBody": "Office-center information is organized for the showcase dossier.",
+      "projectReferencePreparedSaccBody": "Public project information is organized for the showcase dossier.",
+      "projectReferencePreparedTitle": "Project reference prepared",
+      "showcaseMediaReviewEcBody": "Corporate campus imagery is staged for the ARCH_TECH Concept Showcase.",
+      "showcaseMediaReviewTitle": "Showcase media review",
+      "showcaseMediaReviewUlBody": "Educational campus imagery is staged for the ARCH_TECH Concept Showcase.",
+      "showcaseMediaReviewWaBody": "Hospitality project imagery and public facts are ready for review.",
+      "showcaseMediaReviewZfllBody": "Official portfolio imagery and public facts are ready for the ARCH_TECH Concept Showcase."
+    }
+  },
   "serviceUnavailable": {
     "defaultMessage": "Unable to load remote project and account records. Please check the network connection and try again.",
     "eyebrow": "503 / Service unavailable",
@@ -70,6 +126,39 @@
     "retry": "Retry connection",
     "returnWorkspace": "Return to workspace",
     "title": "Service temporarily unavailable."
+  },
+  "shell": {
+    "showcaseEyebrow": "Portfolio Showcase / Concept Prototype",
+    "homeAria": "GARNIER ARCHITECTURE home",
+    "roles": {
+      "admin": "Executive Administration",
+      "architect": "Architect Studio",
+      "client": "Client Workspace"
+    },
+    "homeNav": {
+      "admin": "Register",
+      "architect": "Workboard",
+      "client": "Projects"
+    },
+    "nav": {
+      "overview": "Overview",
+      "projects": "Projects",
+      "documents": "Documents",
+      "approvals": "Approvals",
+      "insights": "Insights",
+      "assistant": "Assistant",
+      "people": "People",
+      "analytics": "Analytics",
+      "news": "News"
+    },
+    "light": "Light",
+    "dark": "Dark",
+    "a11y": "A11y",
+    "signOut": "Sign out",
+    "useLightMode": "Use light mode",
+    "useDarkMode": "Use dark mode",
+    "openA11y": "Open accessibility panel",
+    "adjustmentsActive": "Adjustments active"
   },
   "siteIntelligence": {
     "analyzeSite": "Analyze Site",
@@ -101,38 +190,19 @@
     "weatherUnavailable": "Weather is temporarily unavailable.",
     "wind": "Wind: {{val}}"
   },
+  "status": "Status",
   "studioManagement": "Studio management",
+  "tabs": {
+    "Overview": "Overview",
+    "Updates": "Updates",
+    "Milestones": "Milestones",
+    "Documents": "Documents",
+    "Approvals": "Approvals",
+    "Model": "Model"
+  },
+  "unpublishProject": "Unpublish project",
+  "upcoming": "Upcoming",
   "updateBody": "Update body",
   "updateTitle": "Update title",
-  "whatChanged": "What changed?",
-  "seeded": {
-    "approvals": {
-      "publicFactsCheck": "Public facts check",
-      "showcaseFraming": "Showcase framing"
-    },
-    "documents": {
-      "localMediaMappingMeta": "Concept coordination · ARCH_TECH",
-      "localMediaMappingName": "Local media mapping",
-      "officialReferenceMeta": "Concept Showcase · public source",
-      "officialReferenceName": "Official project reference"
-    },
-    "notifications": {
-      "architectEc": "Corporate campus reference is ready for coordination.",
-      "architectZfll": "Public source mapping is ready for coordination.",
-      "clientWa": "Hospitality reference is ready for review.",
-      "clientZfll": "Showcase framing is ready for review."
-    },
-    "updates": {
-      "portfolioFactsCheckedBody": "Location, scale and development description were aligned with the official public source.",
-      "portfolioFactsCheckedTitle": "Portfolio facts checked",
-      "projectReferencePreparedCcsBody": "Office-center information is organized for the showcase dossier.",
-      "projectReferencePreparedSaccBody": "Public project information is organized for the showcase dossier.",
-      "projectReferencePreparedTitle": "Project reference prepared",
-      "showcaseMediaReviewEcBody": "Corporate campus imagery is staged for the ARCH_TECH Concept Showcase.",
-      "showcaseMediaReviewTitle": "Showcase media review",
-      "showcaseMediaReviewUlBody": "Educational campus imagery is staged for the ARCH_TECH Concept Showcase.",
-      "showcaseMediaReviewWaBody": "Hospitality project imagery and public facts are ready for review.",
-      "showcaseMediaReviewZfllBody": "Official portfolio imagery and public facts are ready for the ARCH_TECH Concept Showcase."
-    }
-  }
+  "whatChanged": "What changed?"
 }

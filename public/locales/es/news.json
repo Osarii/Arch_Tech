@@ -1,4 +1,9 @@
 {
+  "allCategories": "Todas las categorías",
+  "allProjects": "Todos los proyectos",
+  "allUpdates": "Todas las actualizaciones",
+  "archiveDescription": "Un registro continuo de los proyectos, decisiones y referencias públicas que dan forma al portafolio.",
+  "archiveHeading": "Actualizaciones de proyectos.",
   "articles": {
     "news-archived-concept-brief": {
       "body": "Estudios volumétricos iniciales realizados durante la fase de factibilidad de 2024 explorando alturas de torre y efectos de túnel de viento alrededor del perímetro del parque La Sabana.",
@@ -42,5 +47,20 @@
       "sourceLabel": "Editorial Garnier Architecture",
       "title": "Zona Franca La Lima anuncia expansión de manufactura avanzada en Fase 4"
     }
-  }
+  },
+  "categoryLabel": "Categoría",
+  "editorialNote": "Nota editorial",
+  "homeAria": "GARNIER ARCHITECTURE inicio",
+  "journalEyebrow": "GARNIER ARCHITECTURE / Publicaciones",
+  "newsNavAria": "Navegación de noticias",
+  "nextUpdate": "Actualización siguiente",
+  "noUpdates": "No hay actualizaciones que coincidan con esta selección.",
+  "portfolio": "Portafolio",
+  "previousUpdate": "Actualización anterior",
+  "projectLabel": "Proyecto",
+  "publicReferenceCaption": "Referencia pública de proyecto / Muestra de concepto GARNIER ARCHITECTURE",
+  "readAria": "Leer",
+  "timelineJournal": "04 / Publicaciones",
+  "timelineTitle": "Actualizaciones de proyectos",
+  "viewRelatedProject": "Ver proyecto relacionado"
 }

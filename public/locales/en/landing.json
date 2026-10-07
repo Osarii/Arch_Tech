@@ -1,89 +1,176 @@
 {
-  "capabilitiesSection": {
-    "eyebrow": "02 // CAPABILITIES",
-    "heading": "Architectural capabilities.",
-    "items": {
-      "generate": {
-        "description": "Synthesize multi-storey structural frames from parametric parameters with strict spatial hierarchy rules. A secondary grounded assistant handles spatial queries and storey synthesis before detached round-trip semantic validation ensures clean, verified IFC export.",
-        "lead": "Parametric building synthesis and detached ISO 10303-21 persistence.",
-        "specs": {
-          "0": "Deterministic IFC4 Authoring",
-          "1": "Secondary Grounded Assistant",
-          "2": "Idempotent STEP-21 Export"
-        },
-        "title": "Generate & export"
+  "about": {
+    "eyebrow": "About / development context",
+    "heading": "Development is more than the building.",
+    "body1": "Garnier & Garnier brings 30 years of real-estate development experience in Costa Rica to projects shaped by their market, setting and long-term use.",
+    "body2": "Its public work spans industrial parks and free trade zones, corporate and commercial environments, hospitality and other complex development typologies. The group participates across design, construction, sales and promotion through an integrated development process.",
+    "sourceCaption": "Public source image / Garnier & Garnier",
+    "factualContext": "Factual context adapted from the official public source / garnier.cr",
+    "mediaAlt": "Interior workplace environment from the official Garnier public portfolio",
+    "facts": [
+      {
+        "value": "30 YEARS",
+        "label": "Real-estate development experience"
       },
-      "inspect": {
-        "description": "Load and parse ISO 16739 IFC4 and IFC2x3 files directly in browser memory via native WebAssembly. Traverse full spatial containment trees, query property sets, and generate orthographic 2D floor plans at storey elevations without cloud dependencies.",
-        "lead": "Client-side spatial parsing and property extraction.",
-        "specs": {
-          "0": "IFC4 & IFC2x3 Ingestion",
-          "1": "Storey-by-Storey 2D Slicing",
-          "2": "Full Attribute & Pset Inspector"
-        },
-        "title": "Inspect IFC"
+      {
+        "value": "COSTA RICA",
+        "label": "Primary market"
       },
-      "modify": {
-        "description": "Execute 3D coordinate translations, relative vector rotations, and element deletions. Every modification is isolated in a non-destructive proxy layer and logged chronologically in an immutable JSON ChangeSet with full undo and redo capability.",
-        "lead": "Non-destructive proxy transforms and transactional audit logs.",
-        "specs": {
-          "0": "Transactional Proxy Layer",
-          "1": "Relative Coordinate Deltas",
-          "2": "JSON ChangeSet History"
-        },
-        "title": "Modify models"
+      {
+        "value": "INTEGRATED",
+        "label": "Development approach"
+      },
+      {
+        "value": "DESIGN → DELIVERY",
+        "label": "End-to-end project perspective"
       }
-    },
-    "module": "MODULE {{index}}",
-    "subtitle": "THREE CORE OPENBIM MODULES"
+    ]
   },
-  "finalCta": {
-    "body": "Design, inspect and modify IFC models directly in your browser.",
-    "enterWorkspace": "ENTER WORKSPACE",
-    "eyebrow": "START WORKING",
-    "heading": "Open your model.",
-    "standards": "100% Client-Side WebAssembly · Open Standard IFC4 & IFC2x3"
-  },
-  "productPreview": {
-    "captionDesc": "SPATIAL BIM TREE, ELEMENT INSPECTOR & 3D VIEWPORT",
-    "captionFig": "FIG 02.00 // BIM LAB V1 RUNTIME",
-    "enterWorkspace": "ENTER WORKSPACE",
-    "enterWorkspaceArrow": "ENTER WORKSPACE →",
-    "eyebrow": "01 // THE WORKSPACE",
-    "heading": "One workspace.",
-    "screenshotAlt": "Arch_Tech BIM Workspace Screenshot",
-    "subheading": "IFC from inspection to export."
-  },
-  "technology": {
-    "coreStack": "CORE TECHNOLOGY STACK",
-    "runtime": "CLIENT-SIDE RUNTIME // ISO 16739"
-  },
-  "workflow": {
-    "eyebrow": "03 // WORKFLOW",
-    "heading": "The engineering pipeline.",
-    "lifecycle": "FOUR-STAGE DETERMINISTIC LIFECYCLE",
-    "phase": "PHASE {{number}}",
-    "steps": {
-      "edit": {
-        "description": "Apply 3D translations, relative rotations, or parametric storey generation to a transactional proxy layer.",
-        "phase": "EDIT",
-        "subtitle": "Non-Destructive Edits"
+  "capabilities": {
+    "eyebrow": "Development capability",
+    "heading": "Structure for complex development.",
+    "description": "GARNIER ARCHITECTURE connects site, program, infrastructure, coordination and digital project information into one development framework.",
+    "items": [
+      {
+        "number": "01",
+        "label": "SITE + LAND STRATEGY",
+        "description": "Context, access, constraints and development potential."
       },
-      "export": {
-        "description": "Execute detached semantic verification before exporting pure ISO 10303-21 IFC files.",
-        "phase": "EXPORT",
-        "subtitle": "STEP-21 Persistence"
+      {
+        "number": "02",
+        "label": "MASTERPLANNING",
+        "description": "Program, plots, circulation, phasing and long-term structure."
       },
-      "import": {
-        "description": "Stream local .ifc file into web-ifc WebAssembly memory. Zero cloud transmission.",
-        "phase": "IMPORT",
-        "subtitle": "Client WASM Ingestion"
+      {
+        "number": "03",
+        "label": "INFRASTRUCTURE FRAMEWORK",
+        "description": "Mobility, utilities, servicing and operational systems."
       },
-      "inspect": {
-        "description": "Traverse project hierarchy, query entity properties, and slice orthographic 2D floor plans.",
-        "phase": "INSPECT",
-        "subtitle": "Spatial Coordination"
+      {
+        "number": "04",
+        "label": "DEVELOPMENT COORDINATION",
+        "description": "Design, technical information, milestones and decision control."
+      },
+      {
+        "number": "05",
+        "label": "DIGITAL PROJECT DELIVERY",
+        "description": "Structured project information and OpenBIM coordination where useful."
+      },
+      {
+        "number": "06",
+        "label": "OPERATIONAL CONTINUITY",
+        "description": "Carry development intent from planning into operation and future change."
       }
-    }
+    ]
+  },
+  "development": {
+    "eyebrow": "The development lifecycle",
+    "heading": "From opportunity to operation.",
+    "description": "The work is a sequence of decisions that connects land, program, delivery and the life of a place over time.",
+    "stages": [
+      {
+        "number": "01",
+        "label": "Opportunity",
+        "title": "Read the ground.",
+        "body": "Land, context, market and the operating idea establish the direction before a plan is drawn."
+      },
+      {
+        "number": "02",
+        "label": "Structure",
+        "title": "Build the framework.",
+        "body": "Program, movement, landscape and phasing give each development a structure that can grow with its purpose."
+      },
+      {
+        "number": "03",
+        "label": "Delivery",
+        "title": "Carry decisions forward.",
+        "body": "A clear development path keeps intent visible as the project advances through design, coordination and delivery."
+      },
+      {
+        "number": "04",
+        "label": "Operation",
+        "title": "Make the place last.",
+        "body": "Long-term value is shaped by how a place works, adapts and remains useful after the first opening."
+      }
+    ],
+    "privatePortalEyebrow": "Private project portal",
+    "privatePortalHeading": "The public portfolio is the beginning of the conversation.",
+    "privatePortalDescription": "Clients follow the working life of their development through a private view of progress, decisions, documents and the next milestone.",
+    "enterPortal": "Enter project portal"
+  },
+  "footer": {
+    "closingEyebrow": "GARNIER ARCHITECTURE / closing statement",
+    "closingHeading": "Built for complex development.",
+    "closingBody": "Development, infrastructure and digital project delivery from first opportunity through long-term operation.",
+    "directoryEyebrow": "Directory",
+    "directoryHeading": "A clear route through the public experience.",
+    "footerDirectory": "Footer directory",
+    "exploreGroup": "Explore",
+    "platformGroup": "Platform",
+    "contextGroup": "Context",
+    "projectPortal": "Project Portal",
+    "openBim": "OpenBIM",
+    "developmentWorkflow": "Development Workflow",
+    "contextCountry": "Costa Rica",
+    "contextShowcase": "Garnier & Garnier Showcase",
+    "contextPrototype": "Concept Prototype",
+    "wordmark": "GARNIER ARCHITECTURE / public development platform",
+    "copyright": "© 2026 GARNIER ARCHITECTURE",
+    "deliverySubtitle": "Development / Infrastructure / Digital Delivery",
+    "conceptShowcase": "Concept showcase",
+    "backToTop": "Back to top ↑"
+  },
+  "hero": {
+    "eyebrow": "GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype",
+    "headingLine1": "Development",
+    "headingLine2": "at a larger scale.",
+    "body": "GARNIER ARCHITECTURE positions and advances free zones, campuses, districts and infrastructure — from first opportunity through delivery and operation.",
+    "explorePortfolio": "Explore the portfolio",
+    "showcaseContext": "Official project showcase",
+    "opportunityToOperation": "Opportunity to operation",
+    "sectors": [
+      "Free zones",
+      "Industrial / logistics",
+      "Compute + energy infrastructure",
+      "Corporate districts",
+      "Healthcare campuses",
+      "Masterplans"
+    ]
+  },
+  "navbar": {
+    "projects": "Projects",
+    "capabilities": "Capabilities",
+    "about": "About",
+    "team": "Team",
+    "updates": "Updates",
+    "projectPortal": "Project Portal",
+    "a11yControls": "Accessibility controls",
+    "toggleMenu": "Toggle menu",
+    "homeAria": "GARNIER ARCHITECTURE home",
+    "langSelection": "Language selection",
+    "a11yShort": "A11y",
+    "langToggle": "Language / Idioma"
+  },
+  "news": {
+    "eyebrow": "Journal / Project updates",
+    "heading": "Latest updates.",
+    "viewAll": "View all updates"
+  },
+  "projects": {
+    "eyebrow": "GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype",
+    "heading": "A portfolio built for consequence.",
+    "description": "Six official Garnier developments presented through a GARNIER ARCHITECTURE showcase interface. Public facts and project photography remain attributed to their source.",
+    "principalBadge": "01 · Principal development · ",
+    "market": "Market",
+    "stage": "Stage",
+    "scale": "Scale",
+    "numberLabel": "No."
+  },
+  "team": {
+    "eyebrow": "Team / leadership",
+    "heading": "The people behind the development.",
+    "description": "A multidisciplinary leadership group connecting strategy, engineering, finance, new business, people and sustainability.",
+    "leadershipCaption": "Leadership / Garnier & Garnier",
+    "groupPhotoAlt": "Garnier & Garnier leadership team gathered in an outdoor courtyard"
   }
 }
