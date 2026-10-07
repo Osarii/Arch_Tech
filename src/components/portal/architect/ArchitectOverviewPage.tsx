@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ArrowRight, CheckCircle2, FileText, Layers, Sparkles } from 'lucide-react';
 import { getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, ProjectIdentityButton, PortalEmptyState, portalStatusClass } from '../PortalCommon';
@@ -13,6 +14,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { architectPortal, clientPortal, portalCommon } = useLocale();
 
   const [, setRemoteVersion] = useState(0);
   const architect = getPortalUser(portalAuth.getSession()?.email ?? '');
@@ -49,13 +51,13 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
       {/* Header section */}
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Architect workspace / Overview
+          {architectPortal.overviewEyebrow}
         </p>
         <h1 className="mt-4 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">
-          Work in progress.
+          {architectPortal.overviewHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          A focused overview of the projects, decisions, and deliverables currently assigned to this architectural studio.
+          {architectPortal.overviewSubtitle}
         </p>
       </div>
 
@@ -66,9 +68,9 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
           onClick={() => navigate('/architect/projects')}
           className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Assigned workload</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{architectPortal.assignedWorkload}</p>
           <p className="mt-3 font-serif text-3xl">{projects.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">active projects →</p>
+          <p className="mt-1 text-xs text-stone-600">{architectPortal.activeProjects}</p>
         </button>
 
         <button
@@ -76,9 +78,9 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
           onClick={() => navigate('/architect/insights')}
           className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Average progress</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{architectPortal.averageProgress}</p>
           <p className="mt-3 font-serif text-3xl">{averageProgress}%</p>
-          <p className="mt-1 text-xs text-stone-600">across assigned work →</p>
+          <p className="mt-1 text-xs text-stone-600">{architectPortal.acrossAssignedWork}</p>
         </button>
 
         <button
@@ -86,15 +88,15 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
           onClick={() => navigate('/architect/approvals')}
           className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Client decisions</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{architectPortal.clientDecisions}</p>
           <p className="mt-3 font-serif text-3xl">{approvals.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">responses pending →</p>
+          <p className="mt-1 text-xs text-stone-600">{architectPortal.responsesPending}</p>
         </button>
 
         <div className="portal-overview-tile bg-[#E6DED2] p-5">
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Next milestones</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{architectPortal.nextMilestones}</p>
           <p className="mt-3 font-serif text-3xl">{milestones.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">in the active sequence</p>
+          <p className="mt-1 text-xs text-stone-600">{architectPortal.inActiveSequence}</p>
         </div>
       </section>
 
@@ -103,7 +105,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 id="architect-projects-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-              Assigned projects
+              {architectPortal.assignedProjects}
             </h2>
             <span className="font-mono text-[10px] text-stone-500">
               {projects.length.toString().padStart(2, '0')} active · {projectsForReview.length.toString().padStart(2, '0')} decisions pending
@@ -114,7 +116,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
             onClick={() => navigate('/architect/projects')}
             className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-stone-600 hover:text-black"
           >
-            <span>View all projects</span>
+            <span>{clientPortal.viewAllProjects}</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -131,7 +133,7 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
                 />
                 <div>
                   <p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
-                    <span>Progress</span>
+                    <span>{portalCommon.progress}</span>
                     <span>{project.progress}%</span>
                   </p>
                   <div className="portal-progress-track h-px bg-black/15">
@@ -149,13 +151,13 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
                     onClick={() => navigate(`/architect/projects/${project.id}`)}
                     className="border border-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]"
                   >
-                    Open project
+                    {portalCommon.openProject}
                   </button>
                   <button
                     onClick={() => navigate('/workspace')}
                     className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white"
                   >
-                    3D model
+                    {portalCommon.open3DModel}
                   </button>
                 </div>
               </article>

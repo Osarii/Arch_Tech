@@ -935,13 +935,14 @@ const getRoleHome = (role?: PortalRole) =>
   role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard';
 
 export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => {
+  const { portalCommon } = useLocale();
   const session = portalAuth.getSession();
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">404 / Page not found</p>
-      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">Page not found.</h1>
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">{portalCommon.notFoundEyebrow}</p>
+      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">{portalCommon.notFoundTitle}.</h1>
       <p className="mt-3 max-w-md text-sm text-[#57534E]">
-        The requested page, project or resource does not exist or has been moved.
+        {portalCommon.notFoundSubtitle}
       </p>
       <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
         {session && (
@@ -950,7 +951,7 @@ export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => {
             data-testid="return-workspace"
             className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
           >
-            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return to workspace
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {portalCommon.returnToWorkspace}
           </button>
         )}
         <button
@@ -958,7 +959,7 @@ export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => {
           data-testid="return-home"
           className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
         >
-          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> Return home
+          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {portalCommon.returnHome}
         </button>
       </div>
     </main>

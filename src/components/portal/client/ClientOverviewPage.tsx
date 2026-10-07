@@ -11,11 +11,13 @@ import {
   PortalEmptyState,
 } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { useLocale } from '../../../portal/locale';
 
 export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
   onSignOut,
 }) => {
+  const { clientPortal, portalCommon } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
 
@@ -74,13 +76,13 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
       {/* Header section */}
       <div className="grid gap-10 border-b border-black/15 pb-12 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">Client portal / Overview</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{clientPortal.overviewEyebrow}</p>
           <h1 className="mt-5 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">
-            Projects in progress.
+            {clientPortal.overviewHeading}
           </h1>
         </div>
         <p className="max-w-sm text-sm leading-6 text-stone-600">
-          A clear view of where each project stands, what needs your decision and what has changed since your last visit.
+          {clientPortal.overviewSubtitle}
         </p>
       </div>
 
@@ -91,9 +93,9 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
           onClick={() => navigate('/dashboard/projects')}
           className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Assigned projects</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{clientPortal.assignedProjects}</p>
           <p className="mt-3 font-serif text-4xl">{projects.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">active developments →</p>
+          <p className="mt-1 text-xs text-stone-600">{clientPortal.activeDevelopments}</p>
         </button>
 
         <button
@@ -101,9 +103,9 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
           onClick={() => navigate('/dashboard/insights')}
           className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Portfolio progress</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{clientPortal.portfolioProgress}</p>
           <p className="mt-3 font-serif text-4xl">{averageProgress}%</p>
-          <p className="mt-1 text-xs text-stone-600">average completion →</p>
+          <p className="mt-1 text-xs text-stone-600">{clientPortal.averageCompletion}</p>
         </button>
 
         <button
@@ -111,17 +113,17 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
           onClick={() => navigate('/dashboard/approvals')}
           className="portal-overview-tile bg-[#E6DED2] p-5 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Pending approvals</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{clientPortal.pendingApprovals}</p>
           <p className="mt-3 font-serif text-4xl">{pendingApprovals.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-xs text-stone-600">decisions waiting →</p>
+          <p className="mt-1 text-xs text-stone-600">{clientPortal.decisionsWaiting}</p>
         </button>
 
         <div className="portal-overview-tile bg-[#E6DED2] p-5">
-          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">Next milestone</p>
+          <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{clientPortal.nextMilestone}</p>
           <p className="mt-3 truncate font-serif text-2xl" title={projects[0]?.nextMilestone ?? 'None pending'}>
             {projects[0]?.nextMilestone ?? '—'}
           </p>
-          <p className="mt-1 text-xs text-stone-600">key delivery event</p>
+          <p className="mt-1 text-xs text-stone-600">{clientPortal.keyDeliveryEvent}</p>
         </div>
       </section>
 
@@ -130,16 +132,16 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 id="client-projects-title" className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-              Your projects
+              {clientPortal.yourProjects}
             </h2>
-            <p className="mt-1 text-xs text-stone-600">{projects.length} developments in scope</p>
+            <p className="mt-1 text-xs text-stone-600">{projects.length} {clientPortal.developmentsInScope}</p>
           </div>
           <button
             type="button"
             onClick={() => navigate('/dashboard/projects')}
             className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-stone-600 hover:text-black"
           >
-            <span>View all projects</span>
+            <span>{clientPortal.viewAllProjects}</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -153,11 +155,11 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                   onNavigate={navigate}
                   detailPath={(id) => `/dashboard/projects/${id}`}
                   testId={`dashboard-project-${project.id}`}
-                  meta={<>{project.phase} · {project.progress}% complete</>}
+                  meta={<>{project.phase} · {project.progress}% {portalCommon.complete}</>}
                 />
                 <div>
                   <p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
-                    <span>Progress</span>
+                    <span>{portalCommon.progress}</span>
                     <span>{project.progress}%</span>
                   </p>
                   <div className="portal-progress-track h-px bg-black/15">
@@ -166,7 +168,7 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                   <p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase tracking-[0.12em]">
-                      Pending decision
+                      {clientPortal.pendingDecision}
                     </p>
                   )}
                 </div>
@@ -175,13 +177,13 @@ export const ClientOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut
                     onClick={() => navigate(`/dashboard/projects/${project.id}`)}
                     className="border border-black/20 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]"
                   >
-                    Open project
+                    {portalCommon.openProject}
                   </button>
                   <button
                     onClick={() => navigate('/workspace')}
                     className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white"
                   >
-                    3D model
+                    {portalCommon.open3DModel}
                   </button>
                 </div>
               </article>

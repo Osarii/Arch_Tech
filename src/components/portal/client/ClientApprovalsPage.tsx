@@ -6,11 +6,13 @@ import { projectWorkflowService } from '../../../services/projectWorkflowService
 import { userService } from '../../../services/userService';
 import { NavigationProps, PortalEmptyState, portalStatusClass } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { useLocale } from '../../../portal/locale';
 
 export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
   onSignOut,
 }) => {
+  const { clientPortal } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
 
@@ -59,13 +61,13 @@ export const ClientApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOu
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Client workspace / Approvals
+          {clientPortal.approvalsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Decisions & approvals.
+          {clientPortal.approvalsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Review, approve, or request changes on milestone submissions, design packages, and architectural framing.
+          {clientPortal.approvalsSubtitle}
         </p>
       </div>
 

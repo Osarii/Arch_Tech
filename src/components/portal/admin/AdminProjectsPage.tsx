@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { getPortalSnapshot } from '../../../portal/data';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import {
@@ -16,6 +17,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { adminPortal } = useLocale();
 
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [createOpen, setCreateOpen] = useState(false);
@@ -73,13 +75,13 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-              Administration / Projects
+              {adminPortal.projectsEyebrow}
             </p>
             <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-              Project portfolio register.
+              {adminPortal.projectsHeading}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-              Complete project register: manage developments, status, phases, and launch 3D BIM workspace CAD models.
+              {adminPortal.projectsSubtitle}
             </p>
           </div>
           <button
@@ -90,7 +92,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
             }}
             className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white hover:bg-stone-800"
           >
-            Create project
+            {adminPortal.createNewProject}
           </button>
         </div>
         {operationFeedback && (

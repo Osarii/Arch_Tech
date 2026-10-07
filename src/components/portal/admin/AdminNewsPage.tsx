@@ -25,6 +25,7 @@ import {
 } from '../../../portal/data';
 import { newsService } from '../../../services/newsService';
 import { NavigationProps, PortalEmptyState } from '../PortalCommon';
+import { useLocale } from '../../../portal/locale';
 import { PortalShell, usePortalShell } from '../PortalShell';
 
 interface NewsModalProps {
@@ -398,6 +399,7 @@ export const AdminNewsPage: React.FC<Partial<NavigationProps> & { onSignOut?: ()
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { adminPortal } = useLocale();
 
   const [articles, setArticles] = useState<NewsArticle[]>(() => getPortalSnapshot().db.news ?? []);
   const [search, setSearch] = useState('');
@@ -477,13 +479,13 @@ export const AdminNewsPage: React.FC<Partial<NavigationProps> & { onSignOut?: ()
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-              Administration / News & Telemetry
+              {adminPortal.newsEyebrow}
             </p>
             <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-              Editorial news register.
+              {adminPortal.newsHeading}
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-6 text-stone-600">
-              Manage project news broadcasts, site intelligence reports, and automated n8n pipeline draft telemetry.
+              {adminPortal.newsSubtitle}
             </p>
           </div>
           <button

@@ -5,11 +5,13 @@ import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, ProjectIdentityButton, PortalEmptyState } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { useLocale } from '../../../portal/locale';
 
 export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
   onSignOut,
 }) => {
+  const { clientPortal, portalCommon } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
 
@@ -30,13 +32,13 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Client workspace / Projects
+          {clientPortal.projectsEyebrow ?? 'Client workspace / Projects'}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Assigned projects.
+          {clientPortal.projectsHeading ?? 'Assigned projects.'}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Full register of active developments currently assigned to your organization, with progress, milestones, and 3D models.
+          {clientPortal.projectsSubtitle ?? 'Full register of active developments currently assigned to your organization, with progress, milestones, and 3D models.'}
         </p>
       </div>
 
@@ -62,11 +64,11 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
                   onNavigate={navigate}
                   detailPath={(id) => `/dashboard/projects/${id}`}
                   testId={`dashboard-project-${project.id}`}
-                  meta={<>{project.phase} · {project.progress}% complete</>}
+                  meta={<>{project.phase} · {project.progress}% {portalCommon.complete}</>}
                 />
                 <div>
                   <p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
-                    <span>Progress</span>
+                    <span>{portalCommon.progress}</span>
                     <span>{project.progress}%</span>
                   </p>
                   <div className="portal-progress-track h-px bg-black/15">
@@ -75,7 +77,7 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
                   <p className="mt-3 text-xs text-stone-600">Next: {project.nextMilestone}</p>
                   {project.approvals.some((approval) => approval.status === 'Pending') && (
                     <p className="portal-status-pending mt-2 font-mono text-[9px] uppercase tracking-[0.12em]">
-                      Pending decision
+                      {clientPortal.pendingDecision}
                     </p>
                   )}
                 </div>
@@ -84,13 +86,13 @@ export const ClientProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut
                     onClick={() => navigate(`/dashboard/projects/${project.id}`)}
                     className="border border-black/20 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] hover:border-black"
                   >
-                    Open project
+                    {portalCommon.openProject}
                   </button>
                   <button
                     onClick={() => navigate('/workspace')}
                     className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white hover:bg-stone-800"
                   >
-                    3D model
+                    {portalCommon.open3DModel}
                   </button>
                 </div>
               </article>

@@ -6,11 +6,13 @@ import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, PortalEmptyState } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { useLocale } from '../../../portal/locale';
 
 export const ClientDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
   onSignOut,
 }) => {
+  const { clientPortal, portalCommon } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
 
@@ -40,13 +42,13 @@ export const ClientDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOu
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Client workspace / Documents
+          {clientPortal.documentsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Document vault.
+          {clientPortal.documentsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Aggregated technical documents, project specifications, and architectural deliverables across your assigned portfolio.
+          {clientPortal.documentsSubtitle}
         </p>
       </div>
 
@@ -85,7 +87,7 @@ export const ClientDocumentsPage: React.FC<Partial<NavigationProps> & { onSignOu
                     onClick={() => navigate(`/dashboard/projects/${document.projectId}`)}
                     className="border border-black/20 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:border-black"
                   >
-                    Open project
+                    {portalCommon.openProject}
                   </button>
                 </div>
               </div>

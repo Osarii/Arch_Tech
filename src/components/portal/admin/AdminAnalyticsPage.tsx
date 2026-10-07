@@ -1,5 +1,6 @@
 import React, { useEffect, useId, useState } from 'react';
 import { getPortalSnapshot, type ProgressSnapshot } from '../../../portal/data';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { analyticsService } from '../../../services/analyticsService';
@@ -256,6 +257,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
   onSignOut,
 }) => {
   const { insideShell } = usePortalShell();
+  const { adminPortal } = useLocale();
 
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [snapshots, setSnapshots] = useState<ProgressSnapshot[]>(() => getPortalSnapshot().db.progressSnapshots ?? []);
@@ -348,13 +350,13 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
       {/* Page Header */}
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Administration / Analytics
+          {adminPortal.analyticsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Portfolio analytics & signals.
+          {adminPortal.analyticsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Executive KPIs, stage distribution, and deterministic progress telemetry across all active developments.
+          {adminPortal.analyticsSubtitle}
         </p>
         <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-stone-500">
           Historical telemetry represents internal GARNIER ARCHITECTURE concept coordination, not official construction contractor records.

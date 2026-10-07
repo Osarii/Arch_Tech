@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getPortalSnapshot, getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { projectWorkflowService } from '../../../services/projectWorkflowService';
 import { userService } from '../../../services/userService';
@@ -13,6 +14,7 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { architectPortal } = useLocale();
 
   const [, setSnapshot] = useState(getPortalSnapshot);
   const [operationFeedback, setOperationFeedback] = useState('');
@@ -62,13 +64,13 @@ export const ArchitectApprovalsPage: React.FC<Partial<NavigationProps> & { onSig
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Architect workspace / Approvals
+          {architectPortal.approvalsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Client decisions & reviews.
+          {architectPortal.approvalsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Monitor client responses, pending decision submissions, and sign-offs required to proceed with design documentation.
+          {architectPortal.approvalsSubtitle}
         </p>
       </div>
 

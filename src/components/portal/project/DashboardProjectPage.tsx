@@ -22,6 +22,7 @@ import {
   ProjectOverview,
 } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { useLocale } from '../../../portal/locale';
 
 export interface DashboardProjectPageProps extends Partial<NavigationProps> {
   projectId: string;
@@ -39,6 +40,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
   homePath = '/dashboard',
   role = 'client',
 }) => {
+  const { portalCommon } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
   const handleOpenWorkspace = onOpenWorkspace ?? (() => navigate('/workspace'));
@@ -273,7 +275,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
                 : 'border-transparent text-stone-400 hover:border-current hover:text-stone-700'
             }`}
           >
-            {tab}
+            {(portalCommon.tabs as Record<string, string>)[tab] ?? tab}
           </button>
         ))}
       </div>

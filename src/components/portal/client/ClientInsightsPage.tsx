@@ -5,11 +5,13 @@ import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { useLocale } from '../../../portal/locale';
 
 export const ClientInsightsPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
   onSignOut,
 }) => {
+  const { clientPortal } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
 
@@ -49,13 +51,13 @@ export const ClientInsightsPage: React.FC<Partial<NavigationProps> & { onSignOut
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Client workspace / Insights
+          {clientPortal.insightsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Portfolio insights.
+          {clientPortal.insightsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Deterministic delivery signals, progress summaries, and milestone fulfillment across your assigned developments.
+          {clientPortal.insightsSubtitle}
         </p>
       </div>
 

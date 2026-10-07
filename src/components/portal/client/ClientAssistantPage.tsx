@@ -1,11 +1,13 @@
 import React from 'react';
 import { NavigationProps, PortalAIAssistantView } from '../PortalCommon';
 import { PortalShell, usePortalShell } from '../PortalShell';
+import { useLocale } from '../../../portal/locale';
 
 export const ClientAssistantPage: React.FC<Partial<NavigationProps> & { onSignOut?: () => void }> = ({
   onNavigate,
   onSignOut,
 }) => {
+  const { portalAi } = useLocale();
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
 
@@ -16,10 +18,10 @@ export const ClientAssistantPage: React.FC<Partial<NavigationProps> & { onSignOu
           Client workspace / Assistant
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          BIM AI Assistant.
+          {portalAi.heading}.
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Dedicated intelligent assistant for querying model elements, calculating volume and spatial metrics, and exploring project coordination data.
+          {portalAi.subtitle}
         </p>
       </div>
 

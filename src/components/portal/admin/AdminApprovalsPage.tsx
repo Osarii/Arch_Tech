@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getPortalSnapshot } from '../../../portal/data';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, PortalEmptyState, portalStatusClass } from '../PortalCommon';
@@ -11,6 +12,7 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { adminPortal } = useLocale();
 
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const { db, projects } = snapshot;
@@ -41,13 +43,13 @@ export const AdminApprovalsPage: React.FC<Partial<NavigationProps> & { onSignOut
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Administration / Approvals
+          {adminPortal.approvalsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Approval queue & review.
+          {adminPortal.approvalsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Executive oversight for milestone approvals, client review status, and real-time automated system notifications.
+          {adminPortal.approvalsSubtitle}
         </p>
       </div>
 

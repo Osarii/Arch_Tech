@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getPortalSnapshot, PortalRole } from '../../../portal/data';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps } from '../PortalCommon';
@@ -10,6 +11,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
   onSignOut,
 }) => {
   const { insideShell } = usePortalShell();
+  const { adminPortal } = useLocale();
 
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [userError, setUserError] = useState('');
@@ -83,13 +85,13 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Administration / People
+          {adminPortal.peopleEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          People & access.
+          {adminPortal.peopleHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Manage client accounts, architect studios, roles, active/inactive statuses, and project assignments across the platform.
+          {adminPortal.peopleSubtitle}
         </p>
         {operationFeedback && (
           <p role="status" className="mt-4 text-sm text-stone-600">

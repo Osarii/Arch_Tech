@@ -8,6 +8,7 @@ import { roleHome } from '../../router/guards';
 import { useAccessibility } from '../../portal/useAccessibility';
 import { AccessibilityPanel } from './AccessibilityPanel';
 import { AccessibilityOverlay } from './AccessibilityOverlay';
+import { useLocale, SiteLocale, portalShellTranslations } from '../../portal/locale';
 
 export interface PortalShellProps {
   role: PortalRole;
@@ -50,6 +51,14 @@ export const PORTAL_NAV_ITEMS: Record<PortalRole, NavItemConfig[]> = {
   ],
 };
 
+export const getPortalNavItems = (role: PortalRole, locale: SiteLocale = 'en'): NavItemConfig[] => {
+  const dictionary = portalShellTranslations[locale]?.nav ?? portalShellTranslations.en.nav;
+  return PORTAL_NAV_ITEMS[role].map((item) => ({
+    ...item,
+    label: (dictionary as Record<string, string>)[item.key] ?? item.label,
+  }));
+};
+
 export interface PortalShellContextValue {
   insideShell: boolean;
   navigate: (path: string) => void;
@@ -76,6 +85,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
   currentPath,
   navigate,
 }) => {
+  const { portalShell } = useLocale();
   const [dark, setDark] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -127,7 +137,10 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     preferences.highlightLinks ||
     preferences.reduceMotion;
 
-  const navItems = PORTAL_NAV_ITEMS[role];
+  const navItems = PORTAL_NAV_ITEMS[role].map((item) => ({
+    ...item,
+    label: (portalShell.nav as Record<string, string>)[item.key] ?? item.label,
+  }));
   const homePath = roleHome(role);
   const session = portalAuth.getSession();
   const currentUser = session ? getPortalUser(session.email) : null;
@@ -142,12 +155,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
     }
   };
 
-  const roleLabel =
-    role === 'admin'
-      ? 'Executive Administration'
-      : role === 'architect'
-        ? 'Architect Studio'
-        : 'Client Workspace';
+  const roleLabel = portalShell.roles[role];
 
   return (
     <PortalShellContext.Provider value={{ insideShell: true, navigate }}>
@@ -163,7 +171,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
               >
                 <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="arch-tech-logo-portal" />
                 <span className="hidden font-mono text-[8px] uppercase tracking-[0.16em] text-stone-400 sm:inline">
-                  Portfolio Showcase / Concept Prototype
+                  {portalShell.showcaseEyebrow}
                 </span>
               </button>
               <span className="hidden rounded border border-white/15 bg-white/5 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-stone-300 md:inline-block">
@@ -177,18 +185,18 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 onClick={() => navigate(homePath)}
                 className="transition-colors hover:text-black"
               >
-                {role === 'admin' ? 'Register' : role === 'architect' ? 'Workboard' : 'Projects'}
+                {portalShell.homeNav[role]}
               </button>
 
               <button
                 type="button"
                 onClick={() => setDark((value) => !value)}
-                aria-label={dark ? 'Use light mode' : 'Use dark mode'}
+                aria-label={dark ? portalShell.useLightMode : portalShell.useDarkMode}
                 data-testid="theme-toggle"
                 className="inline-flex items-center gap-2 transition-colors hover:text-black"
               >
                 {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}{' '}
-                {dark ? 'Light' : 'Dark'}
+                {dark ? portalShell.light : portalShell.dark}
               </button>
 
               {/* Compact GARNIER ARCHITECTURE accessibility control */}
@@ -196,7 +204,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 ref={a11yTriggerRef}
                 type="button"
                 onClick={() => setIsA11yPanelOpen(true)}
-                aria-label="Open accessibility panel"
+                aria-label={portalShell.openA11y}
                 aria-expanded={isA11yPanelOpen}
                 data-testid="accessibility-panel-trigger"
                 className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 transition-colors ${
@@ -206,9 +214,9 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 }`}
               >
                 <Sliders className="h-3.5 w-3.5" />
-                <span>A11y</span>
+                <span>{portalShell.a11y}</span>
                 {hasActivePreferences && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-label="Adjustments active" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-500" aria-label={portalShell.adjustmentsActive} />
                 )}
               </button>
 
@@ -217,7 +225,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 onClick={handleSignOut}
                 className="inline-flex items-center gap-2 transition-colors hover:text-black"
               >
-                Sign out <LogOut className="h-3.5 w-3.5" />
+                {portalShell.signOut} <LogOut className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, ProjectIdentityButton, PortalEmptyState } from '../PortalCommon';
@@ -12,6 +13,7 @@ export const ArchitectProjectsPage: React.FC<Partial<NavigationProps> & { onSign
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { architectPortal, portalCommon } = useLocale();
 
   const [, setRemoteVersion] = useState(0);
   const architect = getPortalUser(portalAuth.getSession()?.email ?? '');
@@ -31,13 +33,13 @@ export const ArchitectProjectsPage: React.FC<Partial<NavigationProps> & { onSign
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Architect workspace / Projects
+          {architectPortal.projectsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Assigned projects.
+          {architectPortal.projectsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Full architectural register of developments assigned to this studio, including phase progress, client decision status, and direct 3D model links.
+          {architectPortal.projectsSubtitle}
         </p>
       </div>
 
@@ -66,7 +68,7 @@ export const ArchitectProjectsPage: React.FC<Partial<NavigationProps> & { onSign
                 />
                 <div>
                   <p className="mb-2 flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
-                    <span>Progress</span>
+                    <span>{portalCommon.progress}</span>
                     <span>{project.progress}%</span>
                   </p>
                   <div className="portal-progress-track h-px bg-black/15">
@@ -84,13 +86,13 @@ export const ArchitectProjectsPage: React.FC<Partial<NavigationProps> & { onSign
                     onClick={() => navigate(`/architect/projects/${project.id}`)}
                     className="border border-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em]"
                   >
-                    Open project
+                    {portalCommon.openProject}
                   </button>
                   <button
                     onClick={() => navigate('/workspace')}
                     className="bg-black px-3 py-2 font-mono text-[9px] uppercase tracking-[0.12em] text-white"
                   >
-                    3D model
+                    {portalCommon.open3DModel}
                   </button>
                 </div>
               </article>

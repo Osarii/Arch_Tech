@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BarChart2, CheckCircle2, Layers, Sparkles, Users } from 'lucide-react';
 import { getPortalSnapshot } from '../../../portal/data';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import {
@@ -16,6 +17,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { adminPortal } = useLocale();
 
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [createOpen, setCreateOpen] = useState(false);
@@ -63,13 +65,13 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
       {/* Header section */}
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Administration / Portal overview
+          {adminPortal.overviewEyebrow}
         </p>
         <h1 className="mt-4 max-w-3xl font-serif text-5xl font-light tracking-tight sm:text-7xl">
-          The project register.
+          {adminPortal.overviewHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Executive portfolio overview: active projects, milestones, approvals and shared information across the GARNIER ARCHITECTURE platform.
+          {adminPortal.overviewSubtitle}
         </p>
       </div>
 
@@ -83,9 +85,9 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
           }}
           className="admin-primary-action bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white hover:bg-stone-800"
         >
-          Create project
+          {adminPortal.createNewProject}
         </button>
-        <p className="text-sm text-stone-600">Create projects, manage people, assignments and approvals.</p>
+        <p className="text-sm text-stone-600">{adminPortal.createProjectDescription}</p>
         {operationFeedback && (
           <p role="status" className="basis-full text-sm text-stone-600">
             {operationFeedback}
@@ -100,9 +102,9 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
           onClick={() => navigate('/admin/projects')}
           className="admin-overview-tile bg-[#E6DED2] p-6 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Active projects</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{adminPortal.activeProjects}</p>
           <p className="mt-3 font-serif text-5xl">{activeProjects.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-sm text-stone-600">currently active</p>
+          <p className="mt-1 text-sm text-stone-600">{adminPortal.currentlyActive}</p>
         </button>
 
         <button
@@ -110,9 +112,9 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
           onClick={() => navigate('/admin/analytics')}
           className="admin-overview-tile bg-[#E6DED2] p-6 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Average progress</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{adminPortal.averageProgress}</p>
           <p className="mt-3 font-serif text-5xl">{averageProgress}%</p>
-          <p className="mt-1 text-sm text-stone-600">across active work</p>
+          <p className="mt-1 text-sm text-stone-600">{adminPortal.acrossActiveWork}</p>
         </button>
 
         <button
@@ -120,15 +122,15 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
           onClick={() => navigate('/admin/approvals')}
           className="admin-overview-tile bg-[#E6DED2] p-6 text-left transition-colors hover:bg-[#ded4c6]"
         >
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Pending approvals</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{adminPortal.pendingApprovals}</p>
           <p className="mt-3 font-serif text-5xl">{pendingApprovals.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-sm text-stone-600">requiring review</p>
+          <p className="mt-1 text-sm text-stone-600">{adminPortal.requiringReview}</p>
         </button>
 
         <div className="admin-overview-tile bg-[#E6DED2] p-6">
-          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">Upcoming milestones</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-stone-500">{adminPortal.upcomingMilestones}</p>
           <p className="mt-3 font-serif text-5xl">{upcomingMilestones.length.toString().padStart(2, '0')}</p>
-          <p className="mt-1 text-sm text-stone-600">in the active sequence</p>
+          <p className="mt-1 text-sm text-stone-600">{adminPortal.inActiveSequence}</p>
         </div>
       </section>
 

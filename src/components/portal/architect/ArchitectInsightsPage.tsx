@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getPortalSnapshot, getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps } from '../PortalCommon';
@@ -12,6 +13,7 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { architectPortal } = useLocale();
 
   const [, setSnapshot] = useState(getPortalSnapshot);
   const architect = getPortalUser(portalAuth.getSession()?.email ?? '');
@@ -48,13 +50,13 @@ export const ArchitectInsightsPage: React.FC<Partial<NavigationProps> & { onSign
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Architect workspace / Insights
+          {architectPortal.insightsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Studio workload & metrics.
+          {architectPortal.insightsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Deterministic progress summaries, delivery velocity, and active project distribution for this architectural studio.
+          {architectPortal.insightsSubtitle}
         </p>
       </div>
 

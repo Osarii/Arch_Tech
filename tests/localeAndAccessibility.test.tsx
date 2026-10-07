@@ -18,6 +18,10 @@ import {
   STORAGE_KEY_A11Y,
 } from '../src/portal/accessibility';
 import { LandingNavbar } from '../src/components/landing/LandingNavbar';
+import { NewsArchivePage } from '../src/components/news/NewsArchivePage';
+import { NewsDetailPage } from '../src/components/news/NewsDetailPage';
+import { PublicProjectPage } from '../src/components/portal/PublicProjectPage';
+import { PortalShell } from '../src/components/portal/PortalShell';
 import { AIAgent } from '../src/bim/ai/AIAgent';
 import { aiService } from '../src/services/aiService';
 import { automationService } from '../src/services/automationService';
@@ -261,6 +265,138 @@ describe('Global Accessibility & Bilingual Support Suite', () => {
       expect(body.locale).toBe('es');
       expect(body.event).toBe('project.updated');
       expect(body.projectId).toBe('p-1');
+    });
+  });
+
+  describe('6. News Archive EN / ES Coverage', () => {
+    it('renders News Archive in EN and ES', () => {
+      setStoredLocale('en');
+      render(<NewsArchivePage onNavigate={vi.fn()} />);
+
+      expect(screen.getByText('Portfolio')).toBeDefined();
+      expect(screen.getByText('GARNIER ARCHITECTURE / Journal')).toBeDefined();
+      expect(screen.getByText('Project updates.')).toBeDefined();
+      expect(screen.getAllByText('All projects').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('All categories').length).toBeGreaterThan(0);
+
+      cleanup();
+      setStoredLocale('es');
+      render(<NewsArchivePage onNavigate={vi.fn()} />);
+
+      expect(screen.getByText('Portafolio')).toBeDefined();
+      expect(screen.getByText('GARNIER ARCHITECTURE / Publicaciones')).toBeDefined();
+      expect(screen.getByText('Actualizaciones de proyectos.')).toBeDefined();
+      expect(screen.getAllByText('Todos los proyectos').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('Todas las categorías').length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('7. News Detail Controls EN / ES Coverage', () => {
+    it('renders News Detail controls in EN and ES', () => {
+      setStoredLocale('en');
+      render(<NewsDetailPage updateId="news-waldorf-astoria-groundbreaking" onNavigate={vi.fn()} />);
+
+      expect(screen.getByText('All updates')).toBeDefined();
+      expect(screen.getByText('View related project')).toBeDefined();
+      expect(screen.getByRole('navigation', { name: 'News navigation' })).toBeDefined();
+
+      cleanup();
+      setStoredLocale('es');
+      render(<NewsDetailPage updateId="news-waldorf-astoria-groundbreaking" onNavigate={vi.fn()} />);
+
+      expect(screen.getByText('Todas las actualizaciones')).toBeDefined();
+      expect(screen.getByText('Ver proyecto relacionado')).toBeDefined();
+      expect(screen.getByRole('navigation', { name: 'Navegación de noticias' })).toBeDefined();
+    });
+  });
+
+  describe('8. Public Project Labels EN / ES Coverage', () => {
+    it('renders Public Project labels in EN and ES', () => {
+      setStoredLocale('en');
+      render(<PublicProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} />);
+
+      expect(screen.getByText('Development portfolio')).toBeDefined();
+      expect(screen.getByText('Project intent')).toBeDefined();
+      expect(screen.getByText('Development mandate')).toBeDefined();
+      expect(screen.getByText('Development path')).toBeDefined();
+      expect(screen.getByText('Milestone')).toBeDefined();
+
+      cleanup();
+      setStoredLocale('es');
+      render(<PublicProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} />);
+
+      expect(screen.getByText('Portafolio de desarrollo')).toBeDefined();
+      expect(screen.getByText('Propósito del proyecto')).toBeDefined();
+      expect(screen.getByText('Mandato de desarrollo')).toBeDefined();
+      expect(screen.getByText('Ruta de desarrollo')).toBeDefined();
+      expect(screen.getByText('Hito')).toBeDefined();
+    });
+  });
+
+  describe('9. PortalShell Navigation EN / ES Coverage', () => {
+    it('renders PortalShell navigation in EN and ES for client role', () => {
+      setStoredLocale('en');
+      render(<PortalShell role="client"><p>Content</p></PortalShell>);
+
+      expect(screen.getByTestId('portal-nav-overview').textContent).toBe('Overview');
+      expect(screen.getByTestId('portal-nav-projects').textContent).toBe('Projects');
+      expect(screen.getByTestId('portal-nav-documents').textContent).toBe('Documents');
+      expect(screen.getByTestId('portal-nav-approvals').textContent).toBe('Approvals');
+      expect(screen.getByTestId('portal-nav-insights').textContent).toBe('Insights');
+      expect(screen.getByTestId('portal-nav-assistant').textContent).toBe('Assistant');
+      expect(screen.getByText('Sign out')).toBeDefined();
+
+      cleanup();
+      setStoredLocale('es');
+      render(<PortalShell role="client"><p>Content</p></PortalShell>);
+
+      expect(screen.getByTestId('portal-nav-overview').textContent).toBe('Resumen');
+      expect(screen.getByTestId('portal-nav-projects').textContent).toBe('Proyectos');
+      expect(screen.getByTestId('portal-nav-documents').textContent).toBe('Documentos');
+      expect(screen.getByTestId('portal-nav-approvals').textContent).toBe('Aprobaciones');
+      expect(screen.getByTestId('portal-nav-insights').textContent).toBe('Indicadores');
+      expect(screen.getByTestId('portal-nav-assistant').textContent).toBe('Asistente');
+      expect(screen.getByText('Cerrar sesión')).toBeDefined();
+    });
+
+    it('renders PortalShell navigation in EN and ES for architect and admin roles', () => {
+      setStoredLocale('en');
+      render(<PortalShell role="architect"><p>Content</p></PortalShell>);
+      expect(screen.getByTestId('portal-nav-overview').textContent).toBe('Overview');
+      expect(screen.getByTestId('portal-nav-projects').textContent).toBe('Projects');
+      cleanup();
+
+      setStoredLocale('es');
+      render(<PortalShell role="admin"><p>Content</p></PortalShell>);
+      expect(screen.getByTestId('portal-nav-overview').textContent).toBe('Resumen');
+      expect(screen.getByTestId('portal-nav-projects').textContent).toBe('Proyectos');
+      expect(screen.getByTestId('portal-nav-people').textContent).toBe('Personas');
+      expect(screen.getByTestId('portal-nav-news').textContent).toBe('Noticias');
+    });
+  });
+
+  describe('10. Locale Persistence Across Navigation Paths', () => {
+    it('persists locale when navigating Landing → Project → News → Portal', () => {
+      // 1. Landing: user switches to Spanish
+      setStoredLocale('es');
+      expect(getStoredLocale()).toBe('es');
+      expect(window.localStorage.getItem(STORAGE_KEY_LOCALE)).toBe('es');
+
+      // 2. Public Project respects persisted locale
+      render(<PublicProjectPage projectId="zona-franca-la-lima" onNavigate={vi.fn()} />);
+      expect(screen.getByText('Portafolio de desarrollo')).toBeDefined();
+      cleanup();
+
+      // 3. News page respects persisted locale
+      render(<NewsArchivePage onNavigate={vi.fn()} />);
+      expect(screen.getByText('Portafolio')).toBeDefined();
+      expect(screen.getByText('Actualizaciones de proyectos.')).toBeDefined();
+      cleanup();
+
+      // 4. Portal respects persisted locale
+      render(<PortalShell role="client"><p>Portal Area</p></PortalShell>);
+      expect(screen.getByTestId('portal-nav-overview').textContent).toBe('Resumen');
+      expect(getStoredLocale()).toBe('es');
     });
   });
 });

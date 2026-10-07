@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FileText } from 'lucide-react';
 import { getPortalSnapshot, getPortalUser, getProjectsForUser } from '../../../portal/data';
 import { portalAuth } from '../../../portal/demoAuth';
+import { useLocale } from '../../../portal/locale';
 import { projectService } from '../../../services/projectService';
 import { userService } from '../../../services/userService';
 import { NavigationProps, PortalEmptyState } from '../PortalCommon';
@@ -13,6 +14,7 @@ export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSig
 }) => {
   const { insideShell, navigate: shellNavigate } = usePortalShell();
   const navigate = onNavigate ?? shellNavigate;
+  const { architectPortal, portalCommon } = useLocale();
 
   const [, setSnapshot] = useState(getPortalSnapshot);
   const architect = getPortalUser(portalAuth.getSession()?.email ?? '');
@@ -38,13 +40,13 @@ export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSig
     <div className="space-y-12">
       <div className="border-b border-black/15 pb-10">
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
-          Architect workspace / Documents
+          {architectPortal.documentsEyebrow}
         </p>
         <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">
-          Deliverables & documents.
+          {architectPortal.documentsHeading}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-6 text-stone-600">
-          Technical specifications, BIM documentation packages, and architectural deliverables issued for assigned projects.
+          {architectPortal.documentsSubtitle}
         </p>
       </div>
 
@@ -88,7 +90,7 @@ export const ArchitectDocumentsPage: React.FC<Partial<NavigationProps> & { onSig
                     onClick={() => navigate(`/architect/projects/${document.projectId}`)}
                     className="border border-black px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] hover:bg-black hover:text-white"
                   >
-                    Open project
+                    {portalCommon.openProject}
                   </button>
                 </div>
               </div>
