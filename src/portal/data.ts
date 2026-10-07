@@ -397,6 +397,8 @@ const isPortalStateRoot = (value: unknown): value is Partial<PortalDatabase> => 
   typeof value === 'object' && value !== null && !Array.isArray(value)
 );
 
+// Users are authoritative in db.json / HTTP mode and are intentionally excluded from localStorage.
+// Passwords and user credentials must never be written to browser client storage.
 const serializePortalStateForStorage = (state: PortalDatabase): string => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { users: _users, ...persistedState } = state;

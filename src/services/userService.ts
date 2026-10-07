@@ -1,18 +1,29 @@
 import {
   createPortalRecordId,
-  createPortalUser,
   getPortalSnapshot,
   getPortalUser,
   removePortalUserInMemory,
   syncPortalUsers,
-  updatePortalUser,
   type CreatePortalUserInput,
   type PortalUser,
 } from '../portal/data';
 import { apiClient, getApiBaseUrl } from './apiClient';
 
+export const DATABASE_DISCONNECTED_ERROR =
+  'User database is not connected. Start the local JSON Server to manage portal users.';
+
 export const userService = {
   isRemote: () => Boolean(getApiBaseUrl()),
+
+  async checkConnection(): Promise<boolean> {
+    if (!getApiBaseUrl()) return false;
+    try {
+      const users = await apiClient.get<PortalUser[]>('/users');
+      return Array.isArray(users);
+    } catch {
+      return false;
+    }
+  },
 
   async list(): Promise<PortalUser[]> {
     if (!getApiBaseUrl()) return getPortalSnapshot().db.users;
@@ -48,13 +59,13 @@ export const userService = {
   },
 
   async create(input: CreatePortalUserInput): Promise<PortalUser> {
+    if (!getApiBaseUrl()) {
+      throw new Error(DATABASE_DISCONNECTED_ERROR);
+    }
+
     const email = input.email.trim().toLowerCase();
     if (!input.name.trim() || !email || !input.password) {
       throw new Error('Name, email and password are required.');
-    }
-
-    if (!getApiBaseUrl()) {
-      return createPortalUser(input);
     }
 
     // Authoritative remote check for duplicate email before creation
@@ -80,9 +91,9 @@ export const userService = {
 
   async update(id: string, changes: Partial<PortalUser>): Promise<PortalUser | undefined> {
     if (!getApiBaseUrl()) {
-      updatePortalUser(id, changes);
-      return getPortalSnapshot().db.users.find((user) => user.id === id);
+      throw new Error(DATABASE_DISCONNECTED_ERROR);
     }
+
     const user = await apiClient.patch<PortalUser>(`/users/${id}`, changes);
     syncPortalUsers([user]);
     return user;
@@ -90,9 +101,9 @@ export const userService = {
 
   async delete(id: string): Promise<boolean> {
     if (!getApiBaseUrl()) {
-      removePortalUserInMemory(id);
-      return true;
+      throw new Error(DATABASE_DISCONNECTED_ERROR);
     }
+
     await apiClient.delete(`/users/${id}`);
     removePortalUserInMemory(id);
     return true;

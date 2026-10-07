@@ -10,6 +10,7 @@ import {
   getPublicNews,
   newsService,
 } from '../src/services/newsService';
+import { userService, DATABASE_DISCONNECTED_ERROR } from '../src/services/userService';
 
 describe('portal service layer', () => {
   afterEach(() => {
@@ -90,26 +91,136 @@ describe('portal service layer', () => {
     expect(fetchMock.mock.calls.some(([url, init]) => String(url).endsWith(`/projects/${remoteProjectId}`) && init?.method === 'PATCH')).toBe(true);
   });
 
-  it('uses HTTP for user creation, role/status updates and project assignments', async () => {
+  it('rejects userService.create without VITE_API_BASE_URL and preserves users snapshot', async () => {
+    const initialUsers = [...getPortalSnapshot().db.users];
+    await expect(
+      userService.create({
+        name: 'Offline Candidate',
+        email: 'offline@arch-tech.studio',
+        password: 'password-123',
+      })
+    ).rejects.toThrow(DATABASE_DISCONNECTED_ERROR);
+    expect(getPortalSnapshot().db.users).toEqual(initialUsers);
+  });
+
+  it('rejects userService.update without API and does not mutate user', async () => {
+    const targetUser = getPortalSnapshot().db.users[0];
+    await expect(
+      userService.update(targetUser.id, { name: 'Attempted Local Edit' })
+    ).rejects.toThrow(DATABASE_DISCONNECTED_ERROR);
+    expect(getPortalSnapshot().db.users.find((u) => u.id === targetUser.id)?.name).toBe(targetUser.name);
+  });
+
+  it('rejects userService.delete without API and does not remove user', async () => {
+    const targetUser = getPortalSnapshot().db.users[0];
+    await expect(
+      userService.delete(targetUser.id)
+    ).rejects.toThrow(DATABASE_DISCONNECTED_ERROR);
+    expect(getPortalSnapshot().db.users.some((u) => u.id === targetUser.id)).toBe(true);
+  });
+
+  it('performs HTTP create with GET duplicate check, POST /users, and syncs returned user', async () => {
     vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
-    const createdUser = { id: 'portal-user-http-1', name: 'HTTP Operator', email: 'operator@arch-tech.studio', password: 'operator-password', role: 'client' as const, status: 'active' as const, projectIds: [] };
-    const updatedUser = { ...createdUser, role: 'architect' as const, status: 'inactive' as const, projectIds: ['zona-franca-la-lima'] };
+    const newUser = {
+      id: 'portal-user-http-created',
+      name: 'Created HTTP User',
+      email: 'created.http@arch-tech.studio',
+      password: 'password-123',
+      role: 'client' as const,
+      status: 'active' as const,
+      projectIds: [],
+    };
     const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
       const parsedUrl = new URL(url);
-      const path = parsedUrl.pathname;
-      if (init?.method === 'POST' && path === '/users') return new Response(JSON.stringify(createdUser), { status: 201 });
-      if (init?.method === 'PATCH' && path === `/users/${createdUser.id}`) return new Response(JSON.stringify(updatedUser), { status: 200 });
-      if (path === '/users' && parsedUrl.searchParams.get('email') === createdUser.email) return new Response('[]', { status: 200 });
-      if (path === '/users') return new Response(JSON.stringify([createdUser]), { status: 200 });
-      throw new Error(`Unexpected request: ${init?.method ?? 'GET'} ${path}`);
+      if (init?.method === 'POST' && parsedUrl.pathname === '/users') {
+        return new Response(JSON.stringify(newUser), { status: 201 });
+      }
+      if (parsedUrl.pathname === '/users' && parsedUrl.searchParams.get('email') === newUser.email) {
+        return new Response('[]', { status: 200 });
+      }
+      throw new Error(`Unexpected request: ${init?.method ?? 'GET'} ${parsedUrl.pathname}`);
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    const created = await (await import('../src/services/userService')).userService.create(createdUser);
-    expect(created).toMatchObject({ id: createdUser.id });
-    const updated = await (await import('../src/services/userService')).userService.update(createdUser.id, { role: 'architect', status: 'inactive', projectIds: ['zona-franca-la-lima'] });
-    expect(updated).toMatchObject({ role: 'architect', status: 'inactive', projectIds: ['zona-franca-la-lima'] });
-    expect(fetchMock.mock.calls.filter(([url, init]) => String(url).includes(`/users/${createdUser.id}`) && init?.method === 'PATCH')).toHaveLength(1);
+    const created = await userService.create(newUser);
+    expect(created).toEqual(newUser);
+    expect(getPortalSnapshot().db.users).toEqual(expect.arrayContaining([expect.objectContaining({ id: newUser.id })]));
+    expect(fetchMock.mock.calls.some(([url]) => String(url).includes('/users?email='))).toBe(true);
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(true);
+  });
+
+  it('performs HTTP update with PATCH /users/:id and synchronizes user', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    const existing = getPortalSnapshot().db.users[0];
+    const updatedUser = { ...existing, name: 'Patched Remote Name', role: 'architect' as const };
+    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      const parsedUrl = new URL(url);
+      if (init?.method === 'PATCH' && parsedUrl.pathname === `/users/${existing.id}`) {
+        return new Response(JSON.stringify(updatedUser), { status: 200 });
+      }
+      throw new Error(`Unexpected: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await userService.update(existing.id, { name: 'Patched Remote Name', role: 'architect' });
+    expect(result).toMatchObject({ id: existing.id, name: 'Patched Remote Name', role: 'architect' });
+    expect(getPortalSnapshot().db.users.find((u) => u.id === existing.id)?.name).toBe('Patched Remote Name');
+  });
+
+  it('performs HTTP delete with DELETE /users/:id and synchronizes cache', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    const targetUser = getPortalSnapshot().db.users[0];
+    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      const parsedUrl = new URL(url);
+      if (init?.method === 'DELETE' && parsedUrl.pathname === `/users/${targetUser.id}`) {
+        return new Response(null, { status: 204 });
+      }
+      throw new Error(`Unexpected: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const deleted = await userService.delete(targetUser.id);
+    expect(deleted).toBe(true);
+    expect(getPortalSnapshot().db.users.some((u) => u.id === targetUser.id)).toBe(false);
+  });
+
+  it('surfaces API failure on mutation and causes no false local mutation', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ message: 'JSON Server down' }), { status: 500 })));
+
+    await expect(
+      userService.create({
+        name: 'Failing User',
+        email: 'fail@arch-tech.studio',
+        password: 'password-123',
+      })
+    ).rejects.toThrow();
+
+    expect(getPortalSnapshot().db.users.some((u) => u.email === 'fail@arch-tech.studio')).toBe(false);
+  });
+
+  it('ensures users and passwords remain strictly absent from localStorage portal state', () => {
+    getPortalSnapshot();
+    const stored = window.localStorage.getItem('arch-tech-portal-state');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      expect(parsed.users).toBeUndefined();
+      expect(JSON.stringify(parsed)).not.toContain('password');
+    }
+  });
+
+  it('checks connection returning true on success and false on failure or missing env', async () => {
+    expect(await userService.checkConnection()).toBe(false);
+
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify([]), { status: 200 })));
+    expect(await userService.checkConnection()).toBe(true);
+
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Connection refused')));
+    expect(await userService.checkConnection()).toBe(false);
+
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('Internal Server Error', { status: 500 })));
+    expect(await userService.checkConnection()).toBe(false);
   });
 
   it('reconciles related records and assignments when deleting a runtime project over HTTP', async () => {

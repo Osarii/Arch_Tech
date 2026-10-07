@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot, PortalRole } from '../../../portal/data';
 import { useLocale } from '../../../portal/locale';
@@ -16,6 +16,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
   const { adminPortal } = useLocale();
 
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
+  const [dbStatus, setDbStatus] = useState<'checking' | 'connected' | 'offline'>('checking');
   const [userError, setUserError] = useState('');
   const [operationFeedback, setOperationFeedback] = useState('');
   const [newUser, setNewUser] = useState({
@@ -33,12 +34,48 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
 
   const refresh = () => setSnapshot(getPortalSnapshot());
 
-  useEffect(() => {
-    if (!projectService.isRemote()) return;
-    void Promise.all([projectService.list(), userService.list()]).then(refresh);
+  const checkDb = useCallback(async () => {
+    setDbStatus('checking');
+    try {
+      if (!userService.isRemote()) {
+        setDbStatus('offline');
+        return;
+      }
+      const isConnected = await userService.checkConnection();
+      if (isConnected) {
+        setDbStatus('connected');
+        if (projectService.isRemote()) {
+          await Promise.all([projectService.list(), userService.list()]);
+        } else {
+          await userService.list();
+        }
+        refresh();
+      } else {
+        setDbStatus('offline');
+      }
+    } catch {
+      setDbStatus('offline');
+    }
   }, []);
 
+  useEffect(() => {
+    void checkDb();
+  }, [checkDb]);
+
   const toggleAssignment = async (userId: string, projectId: string) => {
+    setUserError('');
+    setOperationFeedback('');
+
+    if (dbStatus !== 'connected') {
+      const isConnected = await userService.checkConnection();
+      if (!isConnected) {
+        setDbStatus('offline');
+        setUserError(t('userChangesRequireDatabase', 'User changes require a connected database.'));
+        return;
+      }
+      setDbStatus('connected');
+    }
+
     const current = getPortalSnapshot().db;
     const user = current.users.find((candidate) => candidate.id === userId);
     const project = current.projects.find((candidate) => candidate.id === projectId);
@@ -49,31 +86,74 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
       : [...user.projectIds, projectId];
     try {
       await userService.update(userId, { projectIds });
+      await userService.list();
       refresh();
     } catch (error) {
       setUserError(error instanceof Error ? error.message : t('assignmentSaveError', 'Assignment could not be saved.'));
+      const isConnected = await userService.checkConnection();
+      if (!isConnected) setDbStatus('offline');
     }
   };
 
   const createUser = async () => {
     setUserError('');
+    setOperationFeedback('');
+
+    if (dbStatus !== 'connected') {
+      const isConnected = await userService.checkConnection();
+      if (!isConnected) {
+        setDbStatus('offline');
+        setUserError(t('userChangesRequireDatabase', 'User changes require a connected database.'));
+        return;
+      }
+      setDbStatus('connected');
+    }
+
     try {
       const user = await userService.create({ ...newUser, status: 'active', projectIds: [] });
       setNewUser({ name: '', email: '', password: '', role: 'client' });
+      // Authoritative re-read from JSON Server
+      await userService.list();
       setOperationFeedback(t('userAddedSuccess', '{{name}} was added as an active {{role}}.', { name: user.name, role: user.role }));
       refresh();
     } catch (error) {
       setUserError(error instanceof Error ? error.message : t('userCreateError', 'Unable to create the user.'));
+      const isConnected = await userService.checkConnection();
+      if (!isConnected) setDbStatus('offline');
     }
   };
 
   const updateUser = async (id: string, changes: Parameters<typeof userService.update>[1]) => {
-    await userService.update(id, changes);
-    setOperationFeedback(t('userAccessUpdated', 'User access updated.'));
-    refresh();
+    setUserError('');
+    setOperationFeedback('');
+
+    if (dbStatus !== 'connected') {
+      const isConnected = await userService.checkConnection();
+      if (!isConnected) {
+        setDbStatus('offline');
+        setUserError(t('userChangesRequireDatabase', 'User changes require a connected database.'));
+        return;
+      }
+      setDbStatus('connected');
+    }
+
+    try {
+      await userService.update(id, changes);
+      await userService.list();
+      setOperationFeedback(t('userAccessUpdated', 'User access updated.'));
+      refresh();
+    } catch (error) {
+      setUserError(error instanceof Error ? error.message : t('userUpdateError', 'Unable to update the user.'));
+      const isConnected = await userService.checkConnection();
+      if (!isConnected) setDbStatus('offline');
+    }
   };
 
   const editUserName = async (userId: string, currentName: string) => {
+    if (dbStatus !== 'connected') {
+      setUserError(t('userChangesRequireDatabase', 'User changes require a connected database.'));
+      return;
+    }
     const nextName = window.prompt(t('updateUserNamePrompt', 'Update user name'), currentName)?.trim();
     if (!nextName || nextName === currentName) return;
     try {
@@ -82,6 +162,8 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
       setUserError(error instanceof Error ? error.message : t('userUpdateError', 'Unable to update the user.'));
     }
   };
+
+  const isMutationDisabled = dbStatus !== 'connected';
 
   const content = (
     <div className="space-y-12">
@@ -108,27 +190,31 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
           <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('clients', 'Clients')}</h2>
           <div className="mt-4 divide-y divide-black/15 border-y border-black/15">
             {clients.map((user) => (
-              <div key={user.id} className="py-4 flex flex-wrap items-center justify-between gap-4">
+              <div key={user.id} data-testid={`admin-user-row-${user.id}`} className="py-4 flex flex-wrap items-center justify-between gap-4">
                 <div>
                   <span className="block font-serif text-2xl">{user.name}</span>
                   <span className="font-mono text-[10px] text-stone-500">{user.email}</span>
                 </div>
                 <div className="flex flex-wrap justify-end gap-2">
                   <button
+                    disabled={isMutationDisabled}
                     onClick={() => void editUserName(user.id, user.name)}
-                    className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
+                    className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-stone-300"
                   >
                     {t('editName', 'Edit name')}
                   </button>
                   <button
+                    disabled={isMutationDisabled}
                     onClick={() => void updateUser(user.id, { role: 'architect' })}
-                    className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
+                    className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-stone-300"
                   >
                     {t('makeArchitect', 'Make architect')}
                   </button>
                   <button
+                    data-testid={`admin-user-status-toggle-${user.id}`}
+                    disabled={isMutationDisabled}
                     onClick={() => void updateUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' })}
-                    className={`font-mono text-[9px] uppercase ${user.status === 'active' ? 'text-stone-700' : 'text-stone-400'}`}
+                    className={`font-mono text-[9px] uppercase disabled:cursor-not-allowed disabled:text-stone-300 ${user.status === 'active' ? 'text-stone-700' : 'text-stone-400'}`}
                   >
                     {user.status}
                   </button>
@@ -142,7 +228,7 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
           <h2 className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('architects', 'Architects')}</h2>
           <div className="mt-4 divide-y divide-black/15 border-y border-black/15">
             {architects.map((user) => (
-              <div key={user.id} className="py-4">
+              <div key={user.id} data-testid={`admin-user-row-${user.id}`} className="py-4">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
                     <span className="block font-serif text-2xl">{user.name}</span>
@@ -150,20 +236,24 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                   </div>
                   <div className="flex flex-wrap justify-end gap-2">
                     <button
+                      disabled={isMutationDisabled}
                       onClick={() => void editUserName(user.id, user.name)}
-                      className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
+                      className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-stone-300"
                     >
                       {t('editName', 'Edit name')}
                     </button>
                     <button
+                      disabled={isMutationDisabled}
                       onClick={() => void updateUser(user.id, { role: 'client' })}
-                      className="font-mono text-[9px] uppercase text-stone-500 hover:text-black"
+                      className="font-mono text-[9px] uppercase text-stone-500 hover:text-black disabled:cursor-not-allowed disabled:text-stone-300"
                     >
                       {t('makeClient', 'Make client')}
                     </button>
                     <button
+                      data-testid={`admin-user-status-toggle-${user.id}`}
+                      disabled={isMutationDisabled}
                       onClick={() => void updateUser(user.id, { status: user.status === 'active' ? 'inactive' : 'active' })}
-                      className={`font-mono text-[9px] uppercase ${user.status === 'active' ? 'text-stone-700' : 'text-stone-400'}`}
+                      className={`font-mono text-[9px] uppercase disabled:cursor-not-allowed disabled:text-stone-300 ${user.status === 'active' ? 'text-stone-700' : 'text-stone-400'}`}
                     >
                       {user.status}
                     </button>
@@ -201,8 +291,9 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
                   <button
                     key={user.id}
                     data-testid={`admin-assignment-${project.id}-${user.id}`}
+                    disabled={isMutationDisabled}
                     onClick={() => toggleAssignment(user.id, project.id)}
-                    className={`border px-2 py-1 font-mono text-[9px] uppercase transition-colors ${
+                    className={`border px-2 py-1 font-mono text-[9px] uppercase transition-colors disabled:cursor-not-allowed disabled:opacity-40 ${
                       user.projectIds.includes(project.id)
                         ? 'border-black bg-black text-white'
                         : 'border-black/15 bg-white/50 text-stone-600 hover:border-black'
@@ -221,7 +312,35 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
       <section className="border-t border-black/15 pt-10" aria-labelledby="create-user-title">
         <div className="flex flex-wrap items-end justify-between gap-5">
           <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('peopleManagement', 'People management')}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500">{t('peopleManagement', 'People management')}</p>
+              <div
+                data-testid="db-status-badge"
+                className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.14em]"
+              >
+                <span className="text-stone-400">{t('database', 'DATABASE')}</span>
+                {dbStatus === 'connected' ? (
+                  <span className="text-stone-900 font-medium">
+                    {t('databaseConnected', '● Connected · db.json')}
+                  </span>
+                ) : dbStatus === 'checking' ? (
+                  <span className="text-stone-500">
+                    {t('databaseChecking', 'Checking...')}
+                  </span>
+                ) : (
+                  <span className="text-stone-500 flex items-center gap-1.5">
+                    <span>{t('databaseOffline', '○ Offline · user changes are not persistent')}</span>
+                    <button
+                      type="button"
+                      onClick={() => void checkDb()}
+                      className="underline text-stone-700 hover:text-black ml-1"
+                    >
+                      {t('retryConnection', 'Retry connection')}
+                    </button>
+                  </span>
+                )}
+              </div>
+            </div>
             <h2 id="create-user-title" className="mt-2 font-serif text-3xl">
               {t('addPortalAccess', 'Add portal access.')}
             </h2>
@@ -230,6 +349,22 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
             {t('addPortalAccessDesc', 'Create an active client or architect account, then assign projects from the register above.')}
           </p>
         </div>
+
+        {dbStatus === 'offline' && (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border border-black/15 bg-stone-50 px-3 py-2 text-xs text-stone-600 font-mono">
+            <span>
+              <span>{t('userChangesRequireDatabase', 'User changes require a connected database.')}</span>{' '}
+              <span>{t('startLocalDatabase', 'Start local database: npm run dev:portal')}</span>
+            </span>
+            <button
+              type="button"
+              onClick={() => void checkDb()}
+              className="text-[10px] uppercase underline hover:text-black"
+            >
+              {t('retryConnection', 'Retry connection')}
+            </button>
+          </div>
+        )}
 
         <form
           className="mt-7 grid gap-4 border-y border-black/15 py-6 sm:grid-cols-2 lg:grid-cols-[1.2fr_1.2fr_1fr_auto_auto]"
@@ -285,7 +420,8 @@ export const AdminPeoplePage: React.FC<Partial<NavigationProps> & { onSignOut?: 
           <button
             data-testid="create-user"
             type="submit"
-            className="self-end bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white hover:bg-stone-800"
+            disabled={isMutationDisabled}
+            className="self-end bg-black px-4 py-3 font-mono text-[9px] uppercase tracking-[0.14em] text-white hover:bg-stone-800 disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-500"
           >
             {t('addUser', 'Add user')}
           </button>
