@@ -185,7 +185,6 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const roleLabel = portalShell.roles[role];
-  const activeNavItem = navItems.find((n) => currentPath === n.path || (n.path !== homePath && currentPath.startsWith(n.path + '/')));
 
   return (
     <PortalShellContext.Provider value={{ insideShell: true, navigate }}>
@@ -255,29 +254,30 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
         {/* Desktop Persistent Left Navigation Rail */}
         <aside
           aria-label={`${role} navigation rail`}
-          className="portal-rail hidden md:flex md:w-56 lg:w-64 shrink-0 flex-col border-r border-[var(--portal-border)] bg-[var(--portal-surface)] z-20"
+          className="portal-rail hidden md:flex md:w-56 lg:w-64 shrink-0 flex-col border-r border-[var(--portal-border)] bg-[var(--portal-surface)] z-20 h-screen"
         >
-          {/* Top Mark & Brand Title */}
-          <div className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--portal-border)] px-4 lg:px-5">
+          {/* Top Brand Block */}
+          <div className="shrink-0 border-b border-[var(--portal-border)] p-4 lg:p-5">
             <button
               type="button"
               onClick={() => navigate('/')}
               aria-label={portalShell.homeAria || 'GARNIER ARCHITECTURE home'}
-              className="flex items-center gap-3 text-left transition-opacity hover:opacity-80"
+              className="block w-full text-left transition-opacity hover:opacity-85"
             >
-              <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="arch-tech-logo-portal h-6 w-6" />
-              <div className="min-w-0">
-                <span className="block font-serif text-xs font-semibold tracking-tight text-[var(--portal-text)] truncate">
-                  {portalShell.brandName || 'GARNIER'}
-                </span>
-                <span className="block font-mono text-[7px] uppercase tracking-[0.16em] text-[var(--portal-muted)] truncate">
-                  {portalShell.showcaseEyebrow}
-                </span>
-              </div>
+              <ArchTechLogo
+                variant="full"
+                theme={dark ? 'dark' : 'light'}
+                className="portal-sidebar-logo block"
+              />
             </button>
-            <span className="rounded border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.14em] text-[var(--portal-muted)]">
-              {roleLabel}
-            </span>
+            <div className="mt-2.5 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.16em]">
+              <span className="rounded border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-1.5 py-0.5 text-[8px] text-[var(--portal-muted)]">
+                {roleLabel}
+              </span>
+              <span className="text-[8px] text-[var(--portal-muted)] opacity-75 truncate max-w-[120px]">
+                {portalShell.showcaseEyebrow}
+              </span>
+            </div>
           </div>
 
           {/* Navigation Items with Lucide Icons */}
@@ -312,107 +312,99 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
             })}
           </nav>
 
-          {/* User Status / Bottom identity */}
-          {currentUser && (
-            <div className="border-t border-[var(--portal-border)] p-3">
-              <div className="truncate font-mono text-[9px] text-[var(--portal-muted)]">
-                <span className="block truncate font-medium text-[var(--portal-text)]">{currentUser.name}</span>
-                <span className="block truncate opacity-75">{currentUser.email}</span>
+          {/* Bottom Sidebar: Utility Controls Directly ABOVE User Identity */}
+          <div className="shrink-0 border-t border-[var(--portal-border)] p-3 lg:p-4 space-y-3 bg-[var(--portal-surface)]">
+            {/* Utility controls row: Theme | Accessibility | Sign Out */}
+            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.14em]">
+              <div className="flex items-center gap-1.5">
+                {/* Theme toggle */}
+                <button
+                  type="button"
+                  onClick={() => setDark((value) => !value)}
+                  aria-label={dark ? portalShell.useLightMode : portalShell.useDarkMode}
+                  data-testid="theme-toggle"
+                  title={dark ? portalShell.useLightMode : portalShell.useDarkMode}
+                  className="flex h-7 w-7 items-center justify-center rounded-sm border border-[var(--portal-border)] text-[var(--portal-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
+                >
+                  {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+                </button>
+
+                {/* Accessibility control */}
+                <button
+                  ref={a11yTriggerRef}
+                  type="button"
+                  onClick={() => setIsA11yPanelOpen(true)}
+                  aria-label={portalShell.openA11y}
+                  aria-expanded={isA11yPanelOpen}
+                  data-testid="accessibility-panel-trigger"
+                  title={portalShell.openA11y}
+                  className={`flex h-7 items-center gap-1 rounded-sm border px-2 transition-colors ${
+                    hasActivePreferences
+                      ? 'border-[var(--portal-accent)] bg-[var(--portal-accent-soft)] text-[var(--portal-text)] font-semibold'
+                      : 'border-[var(--portal-border)] text-[var(--portal-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'
+                  }`}
+                >
+                  <Sliders className="h-3 w-3" />
+                  <span className="text-[9px]">{portalShell.a11y}</span>
+                  {hasActivePreferences && (
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#FFBF00]" aria-label={portalShell.adjustmentsActive} />
+                  )}
+                </button>
               </div>
+
+              {/* Sign out: aligned to far right */}
+              <button
+                type="button"
+                onClick={handleSignOut}
+                aria-label={portalShell.signOut}
+                title={portalShell.signOut}
+                className="flex h-7 items-center gap-1 text-[var(--portal-muted)] transition-colors hover:text-[var(--portal-text)]"
+              >
+                <span className="text-[9px]">{portalShell.signOut}</span>
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
             </div>
-          )}
+
+            {/* User identity below utility controls */}
+            {currentUser && (
+              <div className="border-t border-[var(--portal-border)]/50 pt-2.5">
+                <div className="font-mono text-[9px] leading-tight text-[var(--portal-muted)]">
+                  <span className="block truncate font-medium text-[var(--portal-text)]">
+                    {currentUser.name}
+                  </span>
+                  <span className="mt-0.5 block truncate opacity-75">
+                    {currentUser.email}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
         </aside>
 
-        {/* Right side: Top Utility Bar + Scrollable Content */}
+        {/* Right side: Mobile Header (on small screens only) + Main Scrollable Content */}
         <div className="flex flex-1 flex-col overflow-hidden min-w-0">
-          <header className="portal-header flex h-14 shrink-0 items-center justify-between border-b border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 sm:px-6 lg:px-8">
+          {/* Mobile Top Bar (hidden on md and up) */}
+          <header className="flex h-14 shrink-0 items-center justify-between border-b border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 md:hidden">
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setMobileNavOpen(true)}
                 aria-label={portalShell.openNavigation || 'Open navigation menu'}
-                className="flex h-8 w-8 items-center justify-center rounded-sm border border-[var(--portal-border)] text-[var(--portal-text)] md:hidden"
+                className="flex h-8 w-8 items-center justify-center rounded-sm border border-[var(--portal-border)] text-[var(--portal-text)]"
               >
                 <Menu className="h-4 w-4" />
               </button>
 
-              <div className="flex items-center gap-2 md:hidden">
+              <div className="flex items-center gap-2">
                 <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="h-5 w-5" />
                 <span className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--portal-muted)]">
                   {roleLabel}
                 </span>
               </div>
-
-              {/* Breadcrumb / current location on desktop */}
-              <div className="hidden md:flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--portal-muted)]">
-                <button
-                  type="button"
-                  onClick={() => navigate(homePath)}
-                  className="transition-colors hover:text-[var(--portal-text)]"
-                >
-                  {portalShell.homeNav[role]}
-                </button>
-                <span>/</span>
-                <span className="text-[var(--portal-text)] font-semibold">
-                  {activeNavItem?.label ?? roleLabel}
-                </span>
-              </div>
-            </div>
-
-            {/* Top Utility Controls */}
-            <div className="flex items-center gap-3 sm:gap-4 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--portal-muted)]">
-              {currentUser && (
-                <span className="hidden font-mono text-[9px] text-[var(--portal-muted)] xl:inline-block">
-                  {currentUser.name}
-                </span>
-              )}
-
-              {/* Theme toggle */}
-              <button
-                type="button"
-                onClick={() => setDark((value) => !value)}
-                aria-label={dark ? portalShell.useLightMode : portalShell.useDarkMode}
-                data-testid="theme-toggle"
-                className="inline-flex items-center gap-1.5 transition-colors hover:text-[var(--portal-text)]"
-              >
-                {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-                <span className="hidden sm:inline">{dark ? portalShell.light : portalShell.dark}</span>
-              </button>
-
-              {/* Accessibility control */}
-              <button
-                ref={a11yTriggerRef}
-                type="button"
-                onClick={() => setIsA11yPanelOpen(true)}
-                aria-label={portalShell.openA11y}
-                aria-expanded={isA11yPanelOpen}
-                data-testid="accessibility-panel-trigger"
-                className={`inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 transition-colors ${
-                  hasActivePreferences
-                    ? 'border-[var(--portal-accent)] bg-[var(--portal-accent-soft)] text-[var(--portal-text)] font-semibold'
-                    : 'border-[var(--portal-border)] bg-transparent text-[var(--portal-muted)] hover:text-[var(--portal-text)] hover:border-[var(--portal-border-strong)]'
-                }`}
-              >
-                <Sliders className="h-3.5 w-3.5" />
-                <span>{portalShell.a11y}</span>
-                {hasActivePreferences && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#FFBF00]" aria-label={portalShell.adjustmentsActive} />
-                )}
-              </button>
-
-              {/* Sign out */}
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="inline-flex items-center gap-1.5 text-[var(--portal-muted)] hover:text-[var(--portal-text)] transition-colors"
-              >
-                <span>{portalShell.signOut}</span>
-                <LogOut className="h-3.5 w-3.5" />
-              </button>
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto px-6 py-6 sm:px-8 lg:px-10 lg:py-8">
+          <main className="flex-1 overflow-y-auto px-6 py-8 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
             <div className="mx-auto w-full max-w-[1560px]">
               {children ?? <Outlet />}
             </div>

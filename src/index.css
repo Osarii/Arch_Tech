@@ -734,6 +734,12 @@ html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
   height: 1.65rem;
   width: 1.65rem;
 }
+.portal-sidebar-logo .arch-tech-logo-lockup {
+  height: 2.25rem;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+}
 .news-header-lockup .arch-tech-logo-lockup {
   width: clamp(12rem, 20vw, 16rem);
 }

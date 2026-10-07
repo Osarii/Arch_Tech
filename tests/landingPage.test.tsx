@@ -217,7 +217,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     const portalHome = screen.getByRole('button', { name: 'GARNIER ARCHITECTURE home' });
-    expect(portalHome.querySelector('.arch-tech-logo-mark img')?.getAttribute('src')).toBe('/brand/garnier-architecture/09_symbol_black.png');
+    expect(portalHome.querySelector('.arch-tech-logo-full img')?.getAttribute('src')).toBe('/brand/garnier-architecture/02_logo_horizontal_black.png');
     expect(screen.getByText('Portfolio Showcase / Concept Prototype')).toBeDefined();
   });
 
