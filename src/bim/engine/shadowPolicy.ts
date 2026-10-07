@@ -1,15 +1,23 @@
 import * as THREE from 'three';
 
-/** Applies shadows only to local static site masses, never arbitrary IFC fragments. */
+const CASTERS = new Set(['IndustrialWarehouses', 'MultitenantBuilding', 'CorporateBuildings']);
+const RECEIVERS = new Set([
+  'SiteBase',
+  'GreenBuffers',
+  'RoadSurfaces',
+  'LogisticsYards',
+  'CorporateDistrictPad',
+  'ParkingPads',
+]);
+
+/** Applies shadows only to major local architecture and ground surfaces, never IFC fragments or site detail. */
 export function applySelectiveShadows(scene: THREE.Scene, enabled: boolean): void {
   const site = scene.getObjectByName('LaLimaConceptSite');
   if (!site) return;
   site.traverse((object) => {
     const mesh = object as THREE.Mesh;
     if (!mesh.isMesh) return;
-    const [x, y, z] = mesh.scale.toArray();
-    const largeMass = x * y * z >= 30000;
-    mesh.castShadow = enabled && largeMass;
-    mesh.receiveShadow = enabled && (largeMass || y <= 2);
+    mesh.castShadow = enabled && CASTERS.has(mesh.name);
+    mesh.receiveShadow = enabled && RECEIVERS.has(mesh.name);
   });
 }

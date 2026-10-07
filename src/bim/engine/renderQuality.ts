@@ -6,10 +6,13 @@ export type RenderQualityConfig = {
   maxDpr: number;
   minDpr: number;
   adaptiveResolution: boolean;
+  adaptiveDownFps: number;
+  adaptiveUpFps: number;
   toneMapping: THREE.ToneMapping;
   exposure: number;
   shadows: boolean;
   shadowResolution: number;
+  shadowFrustum: { near: number; far: number; extent: number };
   hemisphereIntensity: number;
   sunIntensity: number;
 };
@@ -21,10 +24,13 @@ export const renderQualityProfiles: Record<RenderQualityProfile, RenderQualityCo
     maxDpr: 1.25,
     minDpr: 0.9,
     adaptiveResolution: true,
+    adaptiveDownFps: 45,
+    adaptiveUpFps: 58,
     toneMapping: THREE.NoToneMapping,
     exposure: 1,
     shadows: false,
     shadowResolution: 0,
+    shadowFrustum: { near: 1, far: 900, extent: 500 },
     hemisphereIntensity: 1.1,
     sunIntensity: 1.25,
   },
@@ -32,21 +38,27 @@ export const renderQualityProfiles: Record<RenderQualityProfile, RenderQualityCo
     maxDpr: 1.25,
     minDpr: 0.9,
     adaptiveResolution: true,
+    adaptiveDownFps: 52,
+    adaptiveUpFps: 58,
     toneMapping: THREE.ACESFilmicToneMapping,
     exposure: 1,
     shadows: true,
     shadowResolution: 1024,
-    hemisphereIntensity: 1.25,
-    sunIntensity: 1.45,
+    shadowFrustum: { near: 1, far: 900, extent: 500 },
+    hemisphereIntensity: 1.2,
+    sunIntensity: 1.35,
   },
   quality: {
     maxDpr: 1.5,
     minDpr: 1,
     adaptiveResolution: false,
+    adaptiveDownFps: 45,
+    adaptiveUpFps: 58,
     toneMapping: THREE.ACESFilmicToneMapping,
     exposure: 1.05,
     shadows: true,
     shadowResolution: 2048,
+    shadowFrustum: { near: 1, far: 1400, extent: 650 },
     hemisphereIntensity: 1.35,
     sunIntensity: 1.6,
   },

@@ -24,12 +24,12 @@ export class SceneLighting {
     this.sun.intensity = profile.sunIntensity;
     this.sun.castShadow = profile.shadows;
     this.sun.shadow.mapSize.set(profile.shadowResolution || 1, profile.shadowResolution || 1);
-    this.sun.shadow.camera.near = 1;
-    this.sun.shadow.camera.far = 1400;
-    this.sun.shadow.camera.left = -650;
-    this.sun.shadow.camera.right = 650;
-    this.sun.shadow.camera.top = 650;
-    this.sun.shadow.camera.bottom = -650;
+    this.sun.shadow.camera.near = profile.shadowFrustum.near;
+    this.sun.shadow.camera.far = profile.shadowFrustum.far;
+    this.sun.shadow.camera.left = -profile.shadowFrustum.extent;
+    this.sun.shadow.camera.right = profile.shadowFrustum.extent;
+    this.sun.shadow.camera.top = profile.shadowFrustum.extent;
+    this.sun.shadow.camera.bottom = -profile.shadowFrustum.extent;
     this.sun.shadow.bias = -0.00015;
     this.sun.shadow.camera.updateProjectionMatrix();
     return this.sun;
