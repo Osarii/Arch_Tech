@@ -7,7 +7,8 @@
 ## 1. Project Purpose & Scope
 **Verified application checkpoint:**
 - Documentation refresh base: `4ee4e0d4` (`docs(contract): swap agent tool assignments`).
-- Latest fully verified application implementation: `a4a28d37` (`fix(motion): prevent scroll jumps on project route transitions`). Commits after this verified application checkpoint are documentation-only unless a newer verified implementation checkpoint is explicitly recorded.
+- Latest fully verified application implementation: `c6e9c01c` (`merge(portal): integrate durable admin user persistence`). Integrates durable portal user CRUD via JSON Server (`db.json`) as authoritative persistence during local development (`fix/admin-user-db-persistence`).
+- Active feature branches: `feature/render-engine-v2` remains an isolated active render branch and was not touched by this integration.
 - Current remote `main` must always be resolved live at the start of a new task.
 
 **ARCH_TECH** is a dual-capability architecture & engineering platform with this product hierarchy:
@@ -251,9 +252,9 @@ The next session should begin by auditing the existing ARCH_TECH identity before
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint` / `tsc --noEmit`).
-- **i18n Verification**: **SUCCESS** (`npm run i18n:check` — 0 issues, 100% Spanish translation coverage across all 883 keys).
-- **Vitest Unit/Domain Tests**: **345 / 345 PASSED** across 26 test files.
+- **i18n Verification**: **SUCCESS** (`npm run i18n:check` — 0 issues, 100% Spanish translation coverage across all 870 keys).
+- **Vitest Unit/Domain Tests**: **386 / 386 PASSED** across 30 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0). The existing large-chunk warning remains expected for the BIM workspace and web-ifc worker.
-- **Playwright E2E Tests**: **14 / 14 PASSED**, including the public landing, project route transitions, full OpenBIM workflow and AI confirmation flows.
+- **Playwright E2E Tests**: **15 / 15 PASSED**, including admin user persistence, public landing, project route transitions, full OpenBIM workflow and AI confirmation flows.
 - **Git Diff**: Verified clean with `git diff --check`.
 
