@@ -115,7 +115,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.activeProjects}</span>
             <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('portfolioBadge', 'PORTFOLIO')}</span>
           </div>
-          <p className="my-4 font-serif text-5xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+          <p className="admin-kpi-value my-4 font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
             {activeProjects.length.toString().padStart(2, '0')}
           </p>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
@@ -133,7 +133,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.averageProgress}</span>
             <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('avgBadge', 'AVG')}</span>
           </div>
-          <p className="my-4 font-serif text-5xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+          <p className="admin-kpi-value my-4 font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
             {averageProgress}%
           </p>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
@@ -151,7 +151,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.pendingApprovals}</span>
             <span className={`h-2 w-2 rounded-full ${pendingApprovals.length > 0 ? 'bg-[#FFBF00]' : 'bg-[var(--portal-accent)]'}`} />
           </div>
-          <p className="my-4 font-serif text-5xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+          <p className="admin-kpi-value my-4 font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
             {pendingApprovals.length.toString().padStart(2, '0')}
           </p>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
@@ -164,7 +164,7 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.upcomingMilestones}</span>
             <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('queueBadge', 'QUEUE')}</span>
           </div>
-          <p className="my-4 font-serif text-5xl font-light tracking-tight text-[var(--portal-text)]">
+          <p className="admin-kpi-value my-4 font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)]">
             {upcomingMilestones.length.toString().padStart(2, '0')}
           </p>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">

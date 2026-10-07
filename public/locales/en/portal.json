@@ -134,7 +134,7 @@
     "showcaseEyebrow": "Portfolio Showcase / Concept Prototype",
     "homeAria": "GARNIER ARCHITECTURE home",
     "roles": {
-      "admin": "Executive Administration",
+      "admin": "Executive Portal",
       "architect": "Architect Studio",
       "client": "Client Workspace"
     },
@@ -156,12 +156,16 @@
     },
     "light": "Light",
     "dark": "Dark",
-    "a11y": "A11y",
+    "a11y": "Accessibility",
     "signOut": "Sign out",
     "useLightMode": "Use light mode",
     "useDarkMode": "Use dark mode",
     "openA11y": "Open accessibility panel",
-    "adjustmentsActive": "Adjustments active"
+    "adjustmentsActive": "Adjustments active",
+    "spanish": "Español",
+    "english": "English",
+    "es": "ES",
+    "en": "EN"
   },
   "siteIntelligence": {
     "analyzeSite": "Analyze Site",

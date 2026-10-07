@@ -586,9 +586,12 @@ html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
 .portal-admin [class~="text-[9px]"] {
   font-size: 0.6875rem !important;
 }
-.portal-admin .admin-overview-tile .font-serif {
+.portal-admin .admin-overview-tile .admin-kpi-value,
+.portal-admin .admin-overview-tile .font-sans.text-5xl {
   font-size: 2.75rem !important;
   line-height: 1 !important;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.03em;
 }
 .portal-admin .admin-overview-tile > p:last-child {
   font-size: 0.8125rem !important;

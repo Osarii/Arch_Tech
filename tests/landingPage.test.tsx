@@ -437,7 +437,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     cleanup();
     render(<AdminDashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     expect(screen.getAllByText('Showcase framing').length).toBeGreaterThan(0);
-    expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelector('.font-serif')?.className).toContain('text-5xl');
+    expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelector('.admin-kpi-value')?.className).toContain('text-5xl');
     expect(screen.getByRole('region', { name: 'Portfolio overview' }).className).toContain('admin-kpi-strip');
     expect(screen.getByRole('region', { name: 'Portfolio overview' }).querySelectorAll('.admin-overview-tile')).toHaveLength(4);
     expect(screen.getByRole('region', { name: 'Review and delivery signals' }).className).not.toContain('portal-review-section');

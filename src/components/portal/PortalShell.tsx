@@ -112,7 +112,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
   currentPath,
   navigate,
 }) => {
-  const { portalShell } = useLocale();
+  const { portalShell, locale, setLocale } = useLocale();
   const [dark, setDark] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -270,11 +270,11 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 className="portal-sidebar-logo block"
               />
             </button>
-            <div className="mt-2.5 flex items-center justify-between font-mono text-[9px] uppercase tracking-[0.16em]">
-              <span className="rounded border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-1.5 py-0.5 text-[8px] text-[var(--portal-muted)]">
+            <div className="mt-3.5 space-y-0.5">
+              <span className="block font-serif text-xs font-semibold tracking-tight text-[var(--portal-text)] leading-snug">
                 {roleLabel}
               </span>
-              <span className="text-[8px] text-[var(--portal-muted)] opacity-75 truncate max-w-[120px]">
+              <span className="block font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--portal-muted)] opacity-80 leading-normal">
                 {portalShell.showcaseEyebrow}
               </span>
             </div>
@@ -313,42 +313,73 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
           </nav>
 
           {/* Bottom Sidebar: Utility Controls Directly ABOVE User Identity */}
-          <div className="shrink-0 border-t border-[var(--portal-border)] p-3 lg:p-4 space-y-3 bg-[var(--portal-surface)]">
-            {/* Utility controls row: Theme | Accessibility | Sign Out */}
-            <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.14em]">
-              <div className="flex items-center gap-1.5">
-                {/* Theme toggle */}
-                <button
-                  type="button"
-                  onClick={() => setDark((value) => !value)}
-                  aria-label={dark ? portalShell.useLightMode : portalShell.useDarkMode}
-                  data-testid="theme-toggle"
-                  title={dark ? portalShell.useLightMode : portalShell.useDarkMode}
-                  className="flex h-7 w-7 items-center justify-center rounded-sm border border-[var(--portal-border)] text-[var(--portal-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
-                >
-                  {dark ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-                </button>
+          <div className="shrink-0 border-t border-[var(--portal-border)] p-3 lg:p-3.5 space-y-2.5 bg-[var(--portal-surface)]">
+            {/* Utility controls row: Dark/Light | Accesibilidad | ES / EN | Cerrar sesión */}
+            <div className="flex items-center justify-between gap-1 font-mono text-[9px] uppercase tracking-[0.12em]">
+              {/* Theme toggle */}
+              <button
+                type="button"
+                onClick={() => setDark((value) => !value)}
+                aria-label={dark ? portalShell.useLightMode : portalShell.useDarkMode}
+                data-testid="theme-toggle"
+                title={dark ? portalShell.useLightMode : portalShell.useDarkMode}
+                className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-sm border border-[var(--portal-border)] text-[var(--portal-muted)] transition-colors hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]"
+              >
+                {dark ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
+              </button>
 
-                {/* Accessibility control */}
+              {/* Accessibility control */}
+              <button
+                ref={a11yTriggerRef}
+                type="button"
+                onClick={() => setIsA11yPanelOpen(true)}
+                aria-label={portalShell.openA11y}
+                aria-expanded={isA11yPanelOpen}
+                data-testid="accessibility-panel-trigger"
+                title={portalShell.openA11y}
+                className={`flex h-6.5 shrink-0 items-center gap-1 rounded-sm border px-1.5 transition-colors ${
+                  hasActivePreferences
+                    ? 'border-[var(--portal-accent)] bg-[var(--portal-accent-soft)] text-[var(--portal-text)] font-semibold'
+                    : 'border-[var(--portal-border)] text-[var(--portal-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'
+                }`}
+              >
+                <Sliders className="h-3 w-3 shrink-0" />
+                <span className="leading-none">{portalShell.a11y}</span>
+                {hasActivePreferences && (
+                  <span className="h-1 w-1 rounded-full bg-[#FFBF00]" aria-label={portalShell.adjustmentsActive} />
+                )}
+              </button>
+
+              {/* Locale switch: ES / EN */}
+              <div className="flex h-6.5 shrink-0 items-center rounded-sm border border-[var(--portal-border)] p-0.5 font-mono text-[8px] tracking-normal">
+                {/* i18next-instrument-ignore */}
                 <button
-                  ref={a11yTriggerRef}
                   type="button"
-                  onClick={() => setIsA11yPanelOpen(true)}
-                  aria-label={portalShell.openA11y}
-                  aria-expanded={isA11yPanelOpen}
-                  data-testid="accessibility-panel-trigger"
-                  title={portalShell.openA11y}
-                  className={`flex h-7 items-center gap-1 rounded-sm border px-2 transition-colors ${
-                    hasActivePreferences
-                      ? 'border-[var(--portal-accent)] bg-[var(--portal-accent-soft)] text-[var(--portal-text)] font-semibold'
-                      : 'border-[var(--portal-border)] text-[var(--portal-muted)] hover:border-[var(--portal-border-strong)] hover:text-[var(--portal-text)]'
+                  onClick={() => setLocale('es')}
+                  aria-label={portalShell.spanish || 'Español'}
+                  title={portalShell.spanish || 'Español'}
+                  className={`px-1 py-0.5 rounded-2xs transition-colors ${
+                    locale === 'es'
+                      ? 'bg-[var(--portal-text)] text-[var(--portal-surface)] font-bold'
+                      : 'text-[var(--portal-muted)] hover:text-[var(--portal-text)]'
                   }`}
                 >
-                  <Sliders className="h-3 w-3" />
-                  <span className="text-[9px]">{portalShell.a11y}</span>
-                  {hasActivePreferences && (
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#FFBF00]" aria-label={portalShell.adjustmentsActive} />
-                  )}
+                  {portalShell.es || 'ES'}
+                </button>
+                <span className="text-[var(--portal-border)] text-[7px] select-none">/</span>
+                {/* i18next-instrument-ignore */}
+                <button
+                  type="button"
+                  onClick={() => setLocale('en')}
+                  aria-label={portalShell.english || 'English'}
+                  title={portalShell.english || 'English'}
+                  className={`px-1 py-0.5 rounded-2xs transition-colors ${
+                    locale === 'en'
+                      ? 'bg-[var(--portal-text)] text-[var(--portal-surface)] font-bold'
+                      : 'text-[var(--portal-muted)] hover:text-[var(--portal-text)]'
+                  }`}
+                >
+                  {portalShell.en || 'EN'}
                 </button>
               </div>
 
@@ -358,16 +389,16 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
                 onClick={handleSignOut}
                 aria-label={portalShell.signOut}
                 title={portalShell.signOut}
-                className="flex h-7 items-center gap-1 text-[var(--portal-muted)] transition-colors hover:text-[var(--portal-text)]"
+                className="flex h-6.5 shrink-0 items-center gap-1 text-[var(--portal-muted)] transition-colors hover:text-[var(--portal-text)] whitespace-nowrap ml-auto"
               >
-                <span className="text-[9px]">{portalShell.signOut}</span>
-                <LogOut className="h-3.5 w-3.5" />
+                <span className="leading-none">{portalShell.signOut}</span>
+                <LogOut className="h-3 w-3 shrink-0" />
               </button>
             </div>
 
             {/* User identity below utility controls */}
             {currentUser && (
-              <div className="border-t border-[var(--portal-border)]/50 pt-2.5">
+              <div className="border-t border-[var(--portal-border)]/50 pt-2">
                 <div className="font-mono text-[9px] leading-tight text-[var(--portal-muted)]">
                   <span className="block truncate font-medium text-[var(--portal-text)]">
                     {currentUser.name}

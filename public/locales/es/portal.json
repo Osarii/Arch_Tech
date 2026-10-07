@@ -131,10 +131,10 @@
     "brandName": "GARNIER",
     "closeNavigation": "Cerrar navegación",
     "openNavigation": "Abrir menú de navegación",
-    "showcaseEyebrow": "Muestra de Portafolio / Prototipo Conceptual",
+    "showcaseEyebrow": "Muestra de Portafolio",
     "homeAria": "GARNIER ARCHITECTURE inicio",
     "roles": {
-      "admin": "Administración Ejecutiva",
+      "admin": "Portal Ejecutivo",
       "architect": "Taller de Arquitectura",
       "client": "Espacio del Cliente"
     },
@@ -156,12 +156,16 @@
     },
     "light": "Claro",
     "dark": "Oscuro",
-    "a11y": "A11y",
+    "a11y": "Accesibilidad",
     "signOut": "Cerrar sesión",
     "useLightMode": "Usar modo claro",
     "useDarkMode": "Usar modo oscuro",
     "openA11y": "Abrir panel de accesibilidad",
-    "adjustmentsActive": "Ajustes activos"
+    "adjustmentsActive": "Ajustes activos",
+    "spanish": "Español",
+    "english": "English",
+    "es": "ES",
+    "en": "EN"
   },
   "siteIntelligence": {
     "analyzeSite": "Analizar Sitio",
