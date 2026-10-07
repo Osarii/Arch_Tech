@@ -36,6 +36,7 @@ export const HeaderBar: React.FC = () => {
   const cameraMode = useBimStore((s) => s.cameraMode);
   const setCameraMode = useBimStore((s) => s.setCameraMode);
   const perfStats = useBimStore((s) => s.perfStats);
+  const renderQuality = useBimStore((s) => s.renderQuality);
   const togglePerfOpen = useBimStore((s) => s.togglePerfOpen);
   const isTreeOpen = useBimStore((s) => s.isTreeOpen);
   const toggleTreeOpen = useBimStore((s) => s.toggleTreeOpen);
@@ -131,6 +132,7 @@ export const HeaderBar: React.FC = () => {
       if (!scene) throw new Error('BIM scene is not initialized.');
       laLimaSiteContextService.attach(scene);
       laLimaSiteContextService.load();
+      bimEngine.setRenderQuality(bimEngine.getRenderQuality());
       const store = useBimStore.getState();
       store.setActiveSiteContextId(LA_LIMA_SITE_CONTEXT_ID);
       store.setActiveSiteContextLabel(t('laLimaSite', 'La Lima Site'));
@@ -363,6 +365,19 @@ export const HeaderBar: React.FC = () => {
           <Camera className="w-3.5 h-3.5 text-sky-400" />
           <span className="font-mono text-[11px] capitalize">{cameraMode}</span>
         </button>
+
+        <select
+          value={renderQuality}
+          onChange={(event) => bimEngine.setRenderQuality(event.target.value as 'performance' | 'balanced' | 'quality')}
+          data-testid="render-quality-select"
+          className="rounded bg-[#181b24] hover:bg-[#202532] border border-[#2a3040] px-2 py-1 text-[11px] font-mono text-slate-300 outline-none focus:ring-1 focus:ring-sky-500"
+          aria-label={t('renderQuality', 'Render quality')}
+          title={t('renderQualityTooltip', 'Select renderer quality profile')}
+        >
+          <option value="performance">{t('renderQualityPerformance', 'Performance')}</option>
+          <option value="balanced">{t('renderQualityBalanced', 'Balanced')}</option>
+          <option value="quality">{t('renderQualityQuality', 'Quality')}</option>
+        </select>
 
         {/* Panel Toggles */}
         <div className="flex items-center space-x-1 border-l border-[#2d3342] pl-2">

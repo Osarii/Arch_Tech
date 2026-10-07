@@ -64,6 +64,22 @@ export const PerformanceMonitor: React.FC = () => {
           <span className="text-slate-100">{perfStats.geometries}</span>
         </div>
         <div className="flex justify-between">
+          <span className="text-slate-400 font-sans">{t('textures', 'Textures:')}</span>
+          <span className="text-slate-100">{perfStats.textures}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-slate-400 font-sans">{t('renderQuality', 'Quality')}</span>
+          <span className="text-sky-300 capitalize">{t(`renderQuality${perfStats.qualityProfile[0].toUpperCase()}${perfStats.qualityProfile.slice(1)}`, perfStats.qualityProfile)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-slate-400 font-sans">{t('effectiveDpr', 'DPR')}</span>
+          <span className="text-slate-100">{perfStats.effectiveDpr.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-slate-400 font-sans">{t('shadows', 'Shadows')}</span>
+          <span className="text-slate-100">{perfStats.shadowsEnabled ? `${perfStats.shadowResolution} / Soft` : t('off', 'Off')}</span>
+        </div>
+        <div className="flex justify-between">
           <span className="text-slate-400 font-sans">{t('loadedElements', 'Loaded Elements:')}</span>
           <span className="text-sky-400 font-medium">
             {modelMetadata ? modelMetadata.elementCount : 0}

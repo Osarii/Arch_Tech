@@ -16,6 +16,16 @@ import { bimEditService } from '../edit/bimEditService';
 import { bimGenerationService } from '../generation/generationService';
 import { laLimaSiteContextService } from '../site';
 import { useBimStore } from '@/stores/bimStore';
+import { AdaptiveResolution } from './adaptiveResolution';
+import {
+  getStoredRenderQualityProfile,
+  renderQualityProfiles,
+  storeRenderQualityProfile,
+  type RenderQualityProfile,
+} from './renderQuality';
+import { SceneLighting } from './sceneLighting';
+import { applySelectiveShadows } from './shadowPolicy';
+import { EnvironmentLighting } from './environmentLighting';
 
 export class BimEngine {
   public components!: OBC.Components;
@@ -46,6 +56,12 @@ export class BimEngine {
   private initPromise: Promise<void> | null = null;
   private disposePromise: Promise<void> | null = null;
   private isDisposed = false;
+  private readonly lighting = new SceneLighting();
+  private readonly environmentLighting = new EnvironmentLighting();
+  private readonly adaptiveResolution = new AdaptiveResolution();
+  private qualityProfile: RenderQualityProfile = getStoredRenderQualityProfile();
+  private effectiveDpr = renderQualityProfiles[this.qualityProfile].maxDpr;
+  private isDocumentVisible = typeof document === 'undefined' || document.visibilityState !== 'hidden';
 
   // Selection callback
   public onElementSelected?: (details: SelectedElementDetails | null) => void;
@@ -56,6 +72,15 @@ export class BimEngine {
   private lastRendererFrame = 0;
   private fps = 60;
   private frameTimeMs = 16.6;
+
+  private readonly handleVisibilityChange = (): void => {
+    this.isDocumentVisible = document.visibilityState !== 'hidden';
+    if (this.isDocumentVisible) {
+      const renderer = this.world?.renderer?.three;
+      this.lastTime = performance.now();
+      this.lastRendererFrame = renderer?.info.render.frame ?? 0;
+    }
+  };
 
   constructor() {
     this.createCoreComponents();
@@ -68,6 +93,7 @@ export class BimEngine {
     if (typeof window !== 'undefined' && isDevOrTest) {
       (window as any).bimEngine = this;
     }
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', this.handleVisibilityChange);
   }
 
   private createCoreComponents(): void {
@@ -151,12 +177,7 @@ export class BimEngine {
       // Configure background and ambient light
       if (this.world.scene.three) {
         this.world.scene.three.background = new THREE.Color(0x0e1117);
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x333945, 1.2);
-        this.world.scene.three.add(hemiLight);
-
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-        dirLight.position.set(20, 40, 20);
-        this.world.scene.three.add(dirLight);
+        this.lighting.attach(this.world.scene.three);
 
         bimEditService.initSceneLayer(this.world.scene.three);
         bimGenerationService.initSceneLayer(this.world.scene.three);
@@ -182,8 +203,7 @@ export class BimEngine {
       }
       this.world.renderer = new OBC.SimpleRenderer(this.components, container);
       if (this.world.renderer.three) {
-        this.world.renderer.three.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
-        this.world.renderer.three.shadowMap.enabled = false;
+        this.applyRenderQuality(this.qualityProfile, false);
         this.world.renderer.three.domElement.style.position = 'absolute';
         this.world.renderer.three.domElement.style.inset = '0';
         this.setupWebGLContextListeners(this.world.renderer.three.domElement);
@@ -326,7 +346,7 @@ export class BimEngine {
       if (canvas.parentElement !== container) {
         container.appendChild(canvas);
       }
-      threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+      threeRenderer.setPixelRatio(this.effectiveDpr);
       this.setupWebGLContextListeners(canvas);
     }
 
@@ -399,7 +419,7 @@ export class BimEngine {
 
     this.performanceTimerId = setInterval(() => {
       const activeRenderer = this.world?.renderer?.three;
-      if (!activeRenderer) return;
+      if (!activeRenderer || !this.isDocumentVisible) return;
 
       const now = performance.now();
       const delta = now - this.lastTime;
@@ -410,6 +430,18 @@ export class BimEngine {
       this.lastRendererFrame = currentFrame;
       this.lastTime = now;
 
+      const nextDpr = this.adaptiveResolution.next(
+        this.fps,
+        this.effectiveDpr,
+        renderQualityProfiles[this.qualityProfile],
+        now
+      );
+      if (nextDpr !== null) {
+        this.effectiveDpr = nextDpr;
+        activeRenderer.setPixelRatio(nextDpr);
+        this.resize();
+      }
+
       this.onPerformanceUpdate?.({
         fps: this.fps,
         frameTimeMs: this.frameTimeMs,
@@ -417,6 +449,10 @@ export class BimEngine {
         triangles: activeRenderer.info.render.triangles,
         geometries: activeRenderer.info.memory.geometries,
         textures: activeRenderer.info.memory.textures,
+        effectiveDpr: this.effectiveDpr,
+        qualityProfile: this.qualityProfile,
+        shadowsEnabled: Boolean(activeRenderer.shadowMap?.enabled),
+        shadowResolution: renderQualityProfiles[this.qualityProfile].shadowResolution,
       });
     }, 1000);
   }
@@ -431,6 +467,46 @@ export class BimEngine {
     if (!this.workerBlobUrl) return;
     URL.revokeObjectURL(this.workerBlobUrl);
     this.workerBlobUrl = null;
+  }
+
+  public getRenderQuality(): RenderQualityProfile {
+    return this.qualityProfile;
+  }
+
+  public setRenderQuality(profile: RenderQualityProfile): void {
+    this.applyRenderQuality(profile, true);
+  }
+
+  private applyRenderQuality(profile: RenderQualityProfile, persist: boolean): void {
+    this.qualityProfile = profile;
+    const config = renderQualityProfiles[profile];
+    this.adaptiveResolution.reset();
+    this.effectiveDpr = Math.min(window.devicePixelRatio || 1, config.maxDpr);
+    const renderer = this.world?.renderer?.three;
+    if (renderer) {
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = config.toneMapping;
+      renderer.toneMappingExposure = config.exposure;
+      renderer.setPixelRatio(this.effectiveDpr);
+      renderer.shadowMap.enabled = config.shadows;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      const scene = this.world?.scene?.three;
+      if (scene) this.environmentLighting.apply(renderer, scene, profile !== 'performance');
+      this.resize();
+    }
+    const scene = this.world?.scene?.three;
+    if (scene) {
+      this.lighting.applyProfile(config);
+      applySelectiveShadows(scene, config.shadows);
+    }
+    if (persist) storeRenderQualityProfile(profile);
+    useBimStore.getState().setRenderQuality(profile);
+    this.onPerformanceUpdate?.({
+      effectiveDpr: this.effectiveDpr,
+      qualityProfile: profile,
+      shadowsEnabled: config.shadows,
+      shadowResolution: config.shadowResolution,
+    });
   }
 
   private handleModelIdMapSelection(modelIdMap: OBC.ModelIdMap) {
@@ -970,6 +1046,9 @@ export class BimEngine {
       this.stopPerformanceSampler();
       this.disconnectResizeObserver();
       this.setupWebGLContextListeners(null);
+      this.lighting.dispose();
+      this.environmentLighting.dispose();
+      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', this.handleVisibilityChange);
       await this.unloadModel();
       try {
         this.components.dispose();

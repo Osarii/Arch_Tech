@@ -17,6 +17,7 @@ import {
   EditMode,
   BimChange,
 } from '@/types/bim';
+import type { RenderQualityProfile } from '@/bim/engine/renderQuality';
 
 interface BimState {
   // Tools & Navigation
@@ -126,6 +127,8 @@ interface BimState {
   // Performance Monitor
   perfStats: PerformanceStats;
   setPerfStats: (stats: Partial<PerformanceStats>) => void;
+  renderQuality: RenderQualityProfile;
+  setRenderQuality: (profile: RenderQualityProfile) => void;
   isPerfOpen: boolean;
   togglePerfOpen: () => void;
 
@@ -153,6 +156,10 @@ const initialPerf: PerformanceStats = {
   geometries: 0,
   textures: 0,
   loadedElements: 0,
+  effectiveDpr: 1.25,
+  qualityProfile: 'balanced',
+  shadowsEnabled: true,
+  shadowResolution: 1024,
 };
 
 const initialFilter: BimFilterCriteria = {
@@ -302,6 +309,8 @@ export const useBimStore = create<BimState>((set) => ({
   perfStats: initialPerf,
   setPerfStats: (stats) =>
     set((state) => ({ perfStats: { ...state.perfStats, ...stats } })),
+  renderQuality: 'balanced',
+  setRenderQuality: (renderQuality) => set({ renderQuality }),
   isPerfOpen: true,
   togglePerfOpen: () => set((state) => ({ isPerfOpen: !state.isPerfOpen })),
 

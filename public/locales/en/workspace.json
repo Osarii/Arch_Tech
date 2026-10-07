@@ -277,5 +277,14 @@
   "viewportOnlyTooltip": "Viewport styling only (transient)",
   "views": "Views",
   "visualAppearanceOverrides": "Visual Appearance Overrides",
-  "volumeFormatM3": "{{val}} m³"
+  "volumeFormatM3": "{{val}} m³",
+  "effectiveDpr": "DPR",
+  "renderQuality": "Quality",
+  "renderQualityTooltip": "Select renderer quality profile",
+  "renderQualityPerformance": "Performance",
+  "renderQualityBalanced": "Balanced",
+  "renderQualityQuality": "Quality",
+  "shadows": "Shadows",
+  "textures": "Textures:",
+  "off": "Off"
 }

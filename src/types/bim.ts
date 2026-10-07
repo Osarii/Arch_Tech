@@ -80,6 +80,10 @@ export interface PerformanceStats {
   geometries: number;
   textures: number;
   loadedElements: number;
+  effectiveDpr: number;
+  qualityProfile: 'performance' | 'balanced' | 'quality';
+  shadowsEnabled: boolean;
+  shadowResolution: number;
 }
 
 export interface StoreyData {
