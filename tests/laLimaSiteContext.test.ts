@@ -49,9 +49,15 @@ describe('La Lima concept site context', () => {
     expect(roads.count).toBeGreaterThanOrEqual(8);
     expect(group.getObjectByName('LogisticsYards')).toBeDefined();
     expect(group.getObjectByName('ParkingAreas')).toBeDefined();
+    expect(group.getObjectByName('IndustrialDockDoors')).toBeDefined();
+    expect(group.getObjectByName('IndustrialSkylights')).toBeDefined();
+    expect(group.getObjectByName('LogisticsDockDoors')).toBeDefined();
+    expect(group.getObjectByName('CorporateGlassBands')).toBeDefined();
+    expect(group.getObjectByName('CorporateEntrances')).toBeDefined();
+    expect(group.getObjectByName('ParkingMedians')).toBeDefined();
     expect(group.userData.corporateDistrictAreaHectares).toBeCloseTo(8, 1);
-    expect(drawables).toBe(15);
-    expect(logicalObjects).toBe(222);
+    expect(drawables).toBe(21);
+    expect(logicalObjects).toBe(297);
   });
 
   it('load is idempotent and never duplicates the site group', () => {

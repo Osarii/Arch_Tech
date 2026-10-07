@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { createLaLimaMaterialPalette } from './laLimaMaterials';
 
 export const LA_LIMA_SITE_CONTEXT_ID = 'la-lima-concept-site';
 export const LA_LIMA_SITE_CONTEXT_LABEL = 'La Lima Concept Site';
@@ -36,24 +37,17 @@ export class LaLimaSiteContextService {
       corporateDistrictAreaHectares: 7.98,
       warehouseCount: 6,
       corporateBuildingCount: 5,
-      estimatedDrawCalls: 15,
+      logicalObjectCount: 297,
+      estimatedDrawCalls: 21,
+      estimatedTriangles: 3564,
     };
 
     const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const materials = {
-      ground: new THREE.MeshStandardMaterial({ color: 0x313942, roughness: 1 }),
-      green: new THREE.MeshStandardMaterial({ color: 0x315f46, roughness: 1 }),
-      asphalt: new THREE.MeshStandardMaterial({ color: 0x171b20, roughness: 0.95 }),
-      marking: new THREE.MeshBasicMaterial({ color: 0xd8bb68 }),
-      warehouse: new THREE.MeshStandardMaterial({ color: 0x87929c, roughness: 0.8 }),
-      roof: new THREE.MeshStandardMaterial({ color: 0x4d5d69, roughness: 0.75 }),
-      concrete: new THREE.MeshStandardMaterial({ color: 0x69737a, roughness: 0.95 }),
-      corporate: new THREE.MeshStandardMaterial({ color: 0x4f8171, roughness: 0.45, metalness: 0.15 }),
-    };
+    const materials = createLaLimaMaterialPalette();
 
-    group.add(this.createBox('SiteBase', geometry, materials.ground, [0, -1, 0], [1000, 2, 790]));
+    group.add(this.createBox('SiteBase', geometry, materials.terrain, [0, -1, 0], [1000, 2, 790]));
     group.add(
-      this.createInstances('GreenBuffers', geometry, materials.green, [
+      this.createInstances('GreenBuffers', geometry, materials.grass, [
         { position: [0, 0.25, -385], scale: [1000, 0.5, 20] },
         { position: [0, 0.25, 385], scale: [1000, 0.5, 20] },
         { position: [-490, 0.25, 0], scale: [20, 0.5, 750] },
@@ -75,7 +69,7 @@ export class LaLimaSiteContextService {
       { position: [-185, 0.45, -175], scale: [540, 0.5, 18] },
       { position: [145, 0.45, 215], scale: [18, 0.5, 240] },
     ];
-    roadGroup.add(this.createInstances('RoadSurfaces', geometry, materials.asphalt, roads));
+    roadGroup.add(this.createInstances('RoadSurfaces', geometry, materials.roadAsphalt, roads));
 
     const markings: BoxTransform[] = [];
     for (const x of [170, 192]) {
@@ -88,7 +82,7 @@ export class LaLimaSiteContextService {
         markings.push({ position: [x, 0.73, z], scale: [18, 0.08, 0.7] });
       }
     }
-    roadGroup.add(this.createInstances('RoadMarkings', geometry, materials.marking, markings));
+    roadGroup.add(this.createInstances('RoadMarkings', geometry, materials.roadMarking, markings));
     group.add(roadGroup);
 
     const industrialGroup = new THREE.Group();
@@ -105,7 +99,7 @@ export class LaLimaSiteContextService {
       this.createInstances(
         'IndustrialWarehouses',
         geometry,
-        materials.warehouse,
+        materials.industrialPanel,
         warehouseCenters.map(([x, z]) => ({ position: [x, 9, z], scale: [160, 18, 82] })),
         { kind: 'warehouse', logicalCount: 6 }
       )
@@ -114,7 +108,7 @@ export class LaLimaSiteContextService {
       this.createInstances(
         'IndustrialWarehouseRoofs',
         geometry,
-        materials.roof,
+        materials.industrialRoof,
         warehouseCenters.map(([x, z]) => ({ position: [x, 18.4, z], scale: [164, 1.2, 86] }))
       )
     );
@@ -122,7 +116,7 @@ export class LaLimaSiteContextService {
       this.createInstances(
         'LoadingDocks',
         geometry,
-        materials.concrete,
+        materials.loadingDock,
         warehouseCenters.flatMap(([x, z]) => [
           { position: [x - 42, 1.2, z - 47], scale: [34, 2.4, 10] as [number, number, number] },
           { position: [x + 42, 1.2, z - 47], scale: [34, 2.4, 10] as [number, number, number] },
@@ -130,10 +124,36 @@ export class LaLimaSiteContextService {
       )
     );
     industrialGroup.add(
-      this.createBox('MultitenantBuilding', geometry, materials.corporate, [40, 12, -35], [180, 24, 72])
+      this.createInstances(
+        'IndustrialDockDoors',
+        geometry,
+        materials.darkMetal,
+        warehouseCenters.flatMap(([x, z]) =>
+          [-48, 0, 48].map((offset) => ({
+            position: [x + offset, 5.5, z - 41.6] as [number, number, number],
+            scale: [24, 9, 0.8] as [number, number, number],
+          }))
+        )
+      )
     );
     industrialGroup.add(
-      this.createBox('MultitenantRoof', geometry, materials.roof, [40, 24.6, -35], [184, 1.2, 76])
+      this.createInstances(
+        'IndustrialSkylights',
+        geometry,
+        materials.corporateFacade,
+        warehouseCenters.flatMap(([x, z]) =>
+          [-45, 0, 45].map((offset) => ({
+            position: [x + offset, 19.15, z] as [number, number, number],
+            scale: [24, 0.3, 12] as [number, number, number],
+          }))
+        )
+      )
+    );
+    industrialGroup.add(
+      this.createBox('MultitenantBuilding', geometry, materials.industrialPanel, [40, 12, -35], [180, 24, 72])
+    );
+    industrialGroup.add(
+      this.createBox('MultitenantRoof', geometry, materials.industrialRoof, [40, 24.6, -35], [184, 1.2, 76])
     );
     group.add(industrialGroup);
 
@@ -143,12 +163,25 @@ export class LaLimaSiteContextService {
       this.createInstances(
         'LogisticsYards',
         geometry,
-        materials.concrete,
+        materials.industrialConcrete,
         [
           { position: [-340, 0.6, -255], scale: [190, 1.2, 120] },
           { position: [-105, 0.6, -255], scale: [190, 1.2, 120] },
         ],
         { kind: 'logistics-yard', logicalCount: 2 }
+      )
+    );
+    logisticsGroup.add(
+      this.createInstances(
+        'LogisticsDockDoors',
+        geometry,
+        materials.darkMetal,
+        [-340, -105].flatMap((x) =>
+          [-60, -20, 20, 60].map((offset) => ({
+            position: [x + offset, 3, -194.5] as [number, number, number],
+            scale: [24, 6, 1] as [number, number, number],
+          }))
+        )
       )
     );
     group.add(logisticsGroup);
@@ -157,7 +190,7 @@ export class LaLimaSiteContextService {
     corporateGroup.name = 'CorporateDistrict';
     corporateGroup.userData.areaHectares = 7.98;
     corporateGroup.add(
-      this.createBox('CorporateDistrictPad', geometry, materials.green, [350, 0.2, -247.5], [280, 0.4, 285])
+      this.createBox('CorporateDistrictPad', geometry, materials.grass, [350, 0.2, -247.5], [280, 0.4, 285])
     );
     const corporateBuildings: BoxTransform[] = [
       { position: [255, 16, -305], scale: [44, 32, 44] },
@@ -167,7 +200,7 @@ export class LaLimaSiteContextService {
       { position: [405, 20, -185], scale: [66, 40, 42] },
     ];
     corporateGroup.add(
-      this.createInstances('CorporateBuildings', geometry, materials.corporate, corporateBuildings, {
+      this.createInstances('CorporateBuildings', geometry, materials.corporateConcrete, corporateBuildings, {
         kind: 'corporate-building',
         logicalCount: 5,
       })
@@ -176,10 +209,34 @@ export class LaLimaSiteContextService {
       this.createInstances(
         'CorporateRoofs',
         geometry,
-        materials.roof,
+        materials.industrialRoof,
         corporateBuildings.map(({ position, scale }) => ({
           position: [position[0], position[1] * 2 + 0.6, position[2]],
           scale: [scale[0] + 3, 1.2, scale[2] + 3],
+        }))
+      )
+    );
+    corporateGroup.add(
+      this.createInstances(
+        'CorporateGlassBands',
+        geometry,
+        materials.corporateFacade,
+        corporateBuildings.flatMap(({ position: [x, y, z], scale: [width, , depth] }) => [
+          { position: [x, y * 0.75, z + depth / 2 + 0.45], scale: [width * 0.72, 4, 0.8] },
+          { position: [x, y * 1.25, z + depth / 2 + 0.45], scale: [width * 0.72, 4, 0.8] },
+          { position: [x + width / 2 + 0.45, y * 0.75, z], scale: [0.8, 4, depth * 0.72] },
+          { position: [x + width / 2 + 0.45, y * 1.25, z], scale: [0.8, 4, depth * 0.72] },
+        ])
+      )
+    );
+    corporateGroup.add(
+      this.createInstances(
+        'CorporateEntrances',
+        geometry,
+        materials.corporateFacade,
+        corporateBuildings.map(({ position: [x, , z], scale: [, , depth] }) => ({
+          position: [x, 2.5, z + depth / 2 + 2],
+          scale: [12, 5, 4],
         }))
       )
     );
@@ -192,7 +249,7 @@ export class LaLimaSiteContextService {
       { position: [350, 0.55, -245], scale: [250, 0.7, 30] },
       { position: [40, 0.55, -78], scale: [180, 0.7, 24] },
     ];
-    parkingGroup.add(this.createInstances('ParkingPads', geometry, materials.asphalt, parkingPads));
+    parkingGroup.add(this.createInstances('ParkingPads', geometry, materials.parkingAsphalt, parkingPads));
     const parkingLines: BoxTransform[] = [];
     for (const z of [-365, -245]) {
       for (let x = 235; x <= 465; x += 12) {
@@ -202,7 +259,20 @@ export class LaLimaSiteContextService {
     for (let x = -40; x <= 120; x += 10) {
       parkingLines.push({ position: [x, 0.94, -78], scale: [0.3, 0.08, 10] });
     }
-    parkingGroup.add(this.createInstances('ParkingLines', geometry, materials.marking, parkingLines));
+    parkingGroup.add(this.createInstances('ParkingLines', geometry, materials.parkingMarking, parkingLines));
+    parkingGroup.add(
+      this.createInstances(
+        'ParkingMedians',
+        geometry,
+        materials.industrialConcrete,
+        [-365, -245].flatMap((z) =>
+          [235, 350, 465].map((x) => ({
+            position: [x, 1.1, z] as [number, number, number],
+            scale: [7, 1.4, 24] as [number, number, number],
+          }))
+        )
+      )
+    );
     group.add(parkingGroup);
 
     this.group = group;
@@ -216,6 +286,7 @@ export class LaLimaSiteContextService {
     if (!this.group) return;
     const geometries = new Set<THREE.BufferGeometry>();
     const materials = new Set<THREE.Material>();
+    const textures = new Set<THREE.Texture>();
     this.group.traverse((object) => {
       const mesh = object as THREE.Mesh;
       if (mesh.geometry) geometries.add(mesh.geometry);
@@ -224,7 +295,14 @@ export class LaLimaSiteContextService {
     });
     this.group.removeFromParent();
     this.group.clear();
+    materials.forEach((material) => {
+      const mapped = material as THREE.MeshStandardMaterial;
+      for (const texture of [mapped.map, mapped.normalMap, mapped.roughnessMap, mapped.metalnessMap]) {
+        if (texture) textures.add(texture);
+      }
+    });
     geometries.forEach((geometry) => geometry.dispose());
+    textures.forEach((texture) => texture.dispose());
     materials.forEach((material) => material.dispose());
     this.group = null;
     this.bounds.makeEmpty();
