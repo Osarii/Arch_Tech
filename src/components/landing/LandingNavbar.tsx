@@ -50,7 +50,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
     >
       <div className="landing-navbar-inner mx-auto flex h-20 max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-12">
         <a href="#hero" aria-label={t.homeAria || 'GARNIER ARCHITECTURE home'} className="text-stone-100 transition-opacity hover:opacity-90">
-          <ArchTechLogo variant="mark" tone="mint-cream" theme="dark" />
+          <ArchTechLogo variant="mark" tone="mint-cream" theme="dark" label="GARNIER ARCHITECTURE" />
         </a>
 
         <div className="landing-navbar-links hidden items-center gap-7 lg:flex">

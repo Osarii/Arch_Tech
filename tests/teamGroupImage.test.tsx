@@ -17,7 +17,7 @@ describe('TeamSection leadership group image', () => {
     const groupPhoto = screen.getByRole('img', {
       name: 'Garnier & Garnier leadership team gathered in an outdoor courtyard',
     });
-    expect(groupPhoto.getAttribute('src')).toBe('/team/garnier-team-group.png');
+    expect(groupPhoto.getAttribute('src')).toBe('/team/garnier-team-group.webp');
     expect(groupPhoto.closest('[data-reveal-variant]')?.getAttribute('data-reveal-variant')).toBe('fade-up');
     expect(groupPhoto.closest('[data-reveal-variant]')?.getAttribute('data-reveal-delay')).toBe('150');
   });

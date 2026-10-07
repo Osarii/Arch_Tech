@@ -94,7 +94,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
 
     expect(screen.getByRole('heading', { name: 'The people behind the development.' })).toBeDefined();
     const groupPhoto = screen.getByRole('img', { name: 'Garnier & Garnier leadership team gathered in an outdoor courtyard' });
-    expect(groupPhoto.getAttribute('src')).toBe('/team/garnier-team-group.png');
+    expect(groupPhoto.getAttribute('src')).toBe('/team/garnier-team-group.webp');
     expect(groupPhoto.getAttribute('loading')).toBe('lazy');
     expect(groupPhoto.getAttribute('decoding')).toBe('async');
     expect(teamMembers).toHaveLength(8);

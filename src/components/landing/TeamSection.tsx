@@ -58,7 +58,7 @@ export const TeamSection: React.FC = () => {
             <figcaption className="mb-3 font-mono text-[9px] uppercase tracking-[0.18em] text-stone-500">{t.leadershipCaption}</figcaption>
             <div className="landing-team-group-frame overflow-hidden border border-white/[0.14] bg-[#79B791]">
               <img
-                src="/team/garnier-team-group.png"
+                src="/team/garnier-team-group.webp"
                 alt={t.groupPhotoAlt || 'Garnier & Garnier leadership team gathered in an outdoor courtyard'}
                 loading="lazy"
                 decoding="async"
