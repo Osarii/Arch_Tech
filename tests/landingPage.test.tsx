@@ -314,6 +314,24 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
   });
 
   it('registers an active client without project assignments', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
+    let registeredUser: any = null;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      const parsedUrl = new URL(url);
+      const path = parsedUrl.pathname;
+      if (init?.method === 'POST' && path === '/users') {
+        registeredUser = JSON.parse(String(init.body));
+        return new Response(JSON.stringify(registeredUser), { status: 201 });
+      }
+      if (path === '/users' && parsedUrl.searchParams.get('email')) {
+        return new Response('[]', { status: 200 });
+      }
+      if (path === '/users') {
+        return new Response(JSON.stringify(registeredUser ? [registeredUser] : []), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
     const onSuccess = vi.fn();
     render(<LoginOverlay open onClose={vi.fn()} onSuccess={onSuccess} />);
     fireEvent.click(screen.getByRole('button', { name: 'Register' }));
@@ -515,8 +533,32 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
   });
 
   it('creates an active portal user from Admin people management', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
+    const existingUsers = getPortalSnapshot().db.users;
+    let usersList = [...existingUsers];
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      const parsedUrl = new URL(url);
+      const path = parsedUrl.pathname;
+      if (init?.method === 'POST' && path === '/users') {
+        const body = JSON.parse(String(init.body));
+        usersList = [body, ...usersList];
+        return new Response(JSON.stringify(body), { status: 201 });
+      }
+      if (path === '/users' && parsedUrl.searchParams.get('email')) {
+        return new Response('[]', { status: 200 });
+      }
+      if (path === '/users') {
+        return new Response(JSON.stringify(usersList), { status: 200 });
+      }
+      if (path === '/projects') {
+        return new Response(JSON.stringify(getPortalSnapshot().projects), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
     render(<AdminPeoplePage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
+    await waitFor(() => expect((screen.getByTestId('create-user') as HTMLButtonElement).disabled).toBe(false));
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Operations Client' } });
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'operations.client@arch-tech.studio' } });
     fireEvent.change(screen.getByLabelText('Temporary password'), { target: { value: 'operations-password' } });
@@ -580,7 +622,8 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     }
   });
 
-  it('limits admin assignments to active users and active projects', () => {
+  it('limits admin assignments to active users and active projects', async () => {
+    vi.stubEnv('VITE_API_BASE_URL', 'http://api.test');
     portalAuth.signIn('andrea.quesada@arch-tech.studio', 'admin-access');
     const initial = getPortalSnapshot().db;
     const activeProject = initial.projects.find((project) => project.id === 'zona-franca-la-lima');
@@ -592,18 +635,40 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
       ...current,
       users: current.users.map((user) => user.id === activeClient.id || user.id === activeArchitect.id ? { ...user, projectIds: [] } : user),
     }));
-    render(<AdminPeoplePage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
 
+    let currentUsers = getPortalSnapshot().db.users;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(async (url: string, init?: RequestInit) => {
+      const parsedUrl = new URL(url);
+      const path = parsedUrl.pathname;
+      if (init?.method === 'PATCH' && path.startsWith('/users/')) {
+        const id = path.replace('/users/', '');
+        const changes = JSON.parse(String(init.body));
+        currentUsers = currentUsers.map((u) => u.id === id ? { ...u, ...changes } : u);
+        const updated = currentUsers.find((u) => u.id === id);
+        return new Response(JSON.stringify(updated), { status: 200 });
+      }
+      if (path === '/users') {
+        return new Response(JSON.stringify(currentUsers), { status: 200 });
+      }
+      if (path === '/projects') {
+        return new Response(JSON.stringify(getPortalSnapshot().projects), { status: 200 });
+      }
+      return new Response('[]', { status: 200 });
+    }));
+
+    render(<AdminPeoplePage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
     const clientAssignment = screen.getByTestId(`admin-assignment-${activeProject.id}-${activeClient.id}`);
     const architectAssignment = screen.getByTestId(`admin-assignment-${activeProject.id}-${activeArchitect.id}`);
+    await waitFor(() => expect((clientAssignment as HTMLButtonElement).disabled).toBe(false));
+
     fireEvent.click(clientAssignment);
-    expect(getPortalSnapshot().db.users.find((user) => user.id === activeClient.id)?.projectIds).toContain(activeProject.id);
+    await waitFor(() => expect(getPortalSnapshot().db.users.find((user) => user.id === activeClient.id)?.projectIds).toContain(activeProject.id));
     fireEvent.click(clientAssignment);
-    expect(getPortalSnapshot().db.users.find((user) => user.id === activeClient.id)?.projectIds).not.toContain(activeProject.id);
+    await waitFor(() => expect(getPortalSnapshot().db.users.find((user) => user.id === activeClient.id)?.projectIds).not.toContain(activeProject.id));
     fireEvent.click(architectAssignment);
-    expect(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds).toContain(activeProject.id);
+    await waitFor(() => expect(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds).toContain(activeProject.id));
     fireEvent.click(architectAssignment);
-    expect(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds).not.toContain(activeProject.id);
+    await waitFor(() => expect(getPortalSnapshot().db.users.find((user) => user.id === activeArchitect.id)?.projectIds).not.toContain(activeProject.id));
 
     updatePortalDatabase((current) => ({
       ...current,
