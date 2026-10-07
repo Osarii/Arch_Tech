@@ -594,6 +594,24 @@ describe('Phase 6A Lifecycle Hardening: Viewport & Engine Lifecycle', () => {
     vi.useRealTimers();
   });
 
+  it('does not resize while applying a render profile before camera initialization', () => {
+    const engine = new BimEngine();
+    const resize = vi.spyOn(engine, 'resize');
+    engine.world = {
+      renderer: {
+        three: {
+          setPixelRatio: vi.fn(),
+          shadowMap: {},
+        },
+      },
+      scene: { three: new THREE.Scene() },
+    } as any;
+
+    engine.setRenderQuality('performance');
+
+    expect(resize).not.toHaveBeenCalled();
+  });
+
   it('dispose waits for model cleanup and is idempotent', async () => {
     const engine = new BimEngine();
     const unload = vi.spyOn(engine, 'unloadModel').mockResolvedValue(undefined);

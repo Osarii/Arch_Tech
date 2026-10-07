@@ -203,7 +203,8 @@ export class BimEngine {
       }
       this.world.renderer = new OBC.SimpleRenderer(this.components, container);
       if (this.world.renderer.three) {
-        this.applyRenderQuality(this.qualityProfile, false);
+        this.effectiveDpr = Math.min(window.devicePixelRatio || 1, renderQualityProfiles[this.qualityProfile].maxDpr);
+        this.configureRenderer(this.world.renderer.three, this.qualityProfile);
         this.world.renderer.three.domElement.style.position = 'absolute';
         this.world.renderer.three.domElement.style.inset = '0';
         this.setupWebGLContextListeners(this.world.renderer.three.domElement);
@@ -223,6 +224,9 @@ export class BimEngine {
 
       // Initialize That Open components
       this.components.init();
+
+      // Apply scene, shadow, environment and resize-dependent quality work only after the camera exists.
+      this.applyRenderQuality(this.qualityProfile, false);
 
       // 4. FragmentsManager Worker setup
       try {
@@ -484,15 +488,10 @@ export class BimEngine {
     this.effectiveDpr = Math.min(window.devicePixelRatio || 1, config.maxDpr);
     const renderer = this.world?.renderer?.three;
     if (renderer) {
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.toneMapping = config.toneMapping;
-      renderer.toneMappingExposure = config.exposure;
-      renderer.setPixelRatio(this.effectiveDpr);
-      renderer.shadowMap.enabled = config.shadows;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      this.configureRenderer(renderer, profile);
       const scene = this.world?.scene?.three;
       if (scene) this.environmentLighting.apply(renderer, scene, profile !== 'performance');
-      this.resize();
+      if (this.world?.camera) this.resize();
     }
     const scene = this.world?.scene?.three;
     if (scene) {
@@ -507,6 +506,16 @@ export class BimEngine {
       shadowsEnabled: config.shadows,
       shadowResolution: config.shadowResolution,
     });
+  }
+
+  private configureRenderer(renderer: THREE.WebGLRenderer, profile: RenderQualityProfile): void {
+    const config = renderQualityProfiles[profile];
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = config.toneMapping;
+    renderer.toneMappingExposure = config.exposure;
+    renderer.setPixelRatio(this.effectiveDpr);
+    renderer.shadowMap.enabled = config.shadows;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   }
 
   private handleModelIdMapSelection(modelIdMap: OBC.ModelIdMap) {
