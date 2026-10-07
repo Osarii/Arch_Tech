@@ -1,0 +1,50 @@
+:root { color: #edf4ed; background: #07110d; font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif; font-synthesis: none; }
+* { box-sizing: border-box; }
+html, body, #root { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+button, select { font: inherit; }
+button { color: inherit; }
+.lab-shell, canvas { width: 100%; height: 100%; }
+.lab-shell { position: relative; background: #07110d; }
+canvas { display: block; touch-action: none; outline: none; }
+.lab-header { position: absolute; inset: 0 0 auto 0; display: flex; align-items: flex-start; justify-content: space-between; padding: 24px 28px; pointer-events: none; }
+.lab-header > * { pointer-events: auto; }
+small { display: block; color: #abd1b5; font-size: 10px; letter-spacing: .18em; }
+h1 { margin: 8px 0 0; font-size: clamp(27px, 3vw, 46px); line-height: .9; letter-spacing: -.055em; font-weight: 520; }
+.mode-switch, .segmented { display: flex; padding: 3px; gap: 3px; border: 1px solid rgb(171 209 181 / 28%); background: rgb(0 0 0 / 55%); backdrop-filter: blur(12px); }
+button { border: 1px solid rgb(171 209 181 / 26%); background: rgb(0 0 0 / 32%); padding: 8px 10px; cursor: pointer; transition: background .18s, color .18s, border-color .18s; }
+button:hover:not(:disabled), button:focus-visible { border-color: #79b791; background: rgb(121 183 145 / 18%); outline: none; }
+button.active, .primary { border-color: #79b791; background: #79b791; color: #000; }
+button:disabled { cursor: not-allowed; opacity: .5; }
+.lab-panel { position: absolute; top: 104px; right: 20px; bottom: 48px; width: min(326px, calc(100vw - 40px)); display: grid; align-content: start; gap: 8px; overflow-y: auto; scrollbar-width: thin; }
+.control-card, .benchmark-card { border: 1px solid rgb(171 209 181 / 20%); background: rgb(2 9 6 / 80%); backdrop-filter: blur(18px); padding: 14px; }
+.section-heading { display: flex; align-items: baseline; gap: 9px; margin-bottom: 12px; }
+.section-heading span { color: #ffbf00; font: 11px ui-monospace, monospace; }
+h2 { margin: 0; font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+p { color: #abd1b5; font-size: 12px; line-height: 1.45; margin: 0 0 11px; }
+.ifc-stats { color: #edf4ed; }
+.action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+label { display: grid; gap: 6px; color: #abd1b5; font-size: 11px; margin-bottom: 11px; }
+select { width: 100%; color: #edf4ed; border: 1px solid rgb(171 209 181 / 26%); background: #07110d; padding: 8px; }
+.segmented { display: grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 11px; }
+.segmented button { padding-inline: 4px; font-size: 10px; text-transform: uppercase; }
+.toggle { display: flex; align-items: center; gap: 9px; margin: 9px 0 0; }
+.toggle input { accent-color: #79b791; }
+dl { margin: 0 0 12px; display: grid; gap: 4px; }
+dl div { display: grid; grid-template-columns: 84px minmax(0, 1fr); gap: 8px; padding-bottom: 4px; border-bottom: 1px solid rgb(171 209 181 / 10%); }
+dt { color: #79b791; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+dd { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 10px ui-monospace, monospace; text-align: right; }
+.primary { width: 100%; }
+.result { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgb(171 209 181 / 20%); font: 10px ui-monospace, monospace; }
+.result strong, .result button { grid-column: 1 / -1; }
+.lab-footer { position: absolute; inset: auto 0 0; display: flex; justify-content: space-between; padding: 12px 24px; border-top: 1px solid rgb(171 209 181 / 18%); background: rgb(0 0 0 / 64%); color: #abd1b5; font: 10px ui-monospace, monospace; letter-spacing: .08em; }
+.loading, .error { position: absolute; left: 50%; top: 50%; translate: -50% -50%; padding: 16px 20px; background: #000; border: 1px solid #79b791; font-size: 12px; }
+.error { border-color: #ffbf00; color: #ffbf00; max-width: 520px; }
+@media (max-width: 760px) {
+  .lab-header { padding: 16px; }
+  .lab-header h1 { font-size: 28px; }
+  .mode-switch { margin-top: 0; }
+  .lab-panel { top: auto; left: 12px; right: 12px; bottom: 42px; width: auto; max-height: 42vh; grid-template-columns: 1fr; }
+  .control-card.intro { display: none; }
+  .lab-footer { padding: 10px 12px; }
+  .lab-footer span:last-child { display: none; }
+}
