@@ -31,7 +31,7 @@ export const PublicProjectPage: React.FC<NavigationProps & { projectId?: string;
     <div className="h-screen overflow-y-auto bg-[#0a0b0d] text-[#f4efe8]">
       <header className="border-b border-white/[0.12]">
         <div className="mx-auto grid h-14 max-w-7xl grid-cols-[auto_1fr_auto] items-center gap-6 px-6 sm:px-8 lg:px-12">
-          <button onClick={() => onNavigate('/')} aria-label={publicProject.homeAria || 'GARNIER ARCHITECTURE home'} className="transition-opacity hover:opacity-80">
+          <button onClick={() => onNavigate('/')} aria-label={publicProject.homeAria || 'ARCH_TECH home'} className="transition-opacity hover:opacity-80">
             <ArchTechLogo variant="mark" tone="mint-cream" theme="dark" />
           </button>
           <p className="hidden items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-500 sm:flex">

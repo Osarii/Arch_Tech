@@ -113,7 +113,7 @@ export const FeaturedProjectCarousel: React.FC<FeaturedProjectCarouselProps> = (
     return (
       <div data-testid="hero-gallery" className="landing-image-fallback min-h-[30rem]" role="img" aria-label={t('carousel.fallbackAria', 'Featured project imagery unavailable')}>
         {/* i18next-instrument-ignore */}
-        <span>GARNIER ARCHITECTURE / DEVELOPMENT PORTFOLIO</span>
+        <span>ARCH_TECH / DEVELOPMENT PORTFOLIO</span>
       </div>
     );
   }

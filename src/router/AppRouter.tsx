@@ -44,6 +44,9 @@ import {
   RoleRoute,
   roleHome,
 } from './guards';
+import { DemoTourProvider } from '../demo/DemoTourContext';
+import { DemoIntroModal } from '../components/demo/DemoIntroModal';
+import { DemoTourBar } from '../components/demo/DemoTourBar';
 
 const Workspace = React.lazy(() => import('../components/layout/Workspace').then((module) => ({ default: module.Workspace })));
 
@@ -241,12 +244,16 @@ const RoutedApp: React.FC = () => {
         </Route>
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>
+      <DemoIntroModal />
+      <DemoTourBar />
     </>
   );
 };
 
 export const AppRouter: React.FC = () => (
   <BrowserRouter>
-    <RoutedApp />
+    <DemoTourProvider>
+      <RoutedApp />
+    </DemoTourProvider>
   </BrowserRouter>
 );

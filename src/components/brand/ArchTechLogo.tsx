@@ -14,23 +14,23 @@ interface ArchTechLogoProps {
 
 const assets: Record<ArchTechLogoVariant, Partial<Record<ArchTechLogoTone, string>>> = {
   full: {
-    'full-color': '/brand/garnier-architecture/01_logo_horizontal_full_color.png',
-    black: '/brand/garnier-architecture/02_logo_horizontal_black.png',
-    'mint-cream': '/brand/garnier-architecture/03_logo_horizontal_mint_cream.png',
-    celadon: '/brand/garnier-architecture/04_logo_horizontal_celadon.png',
+    'full-color': '/brand/arch-tech/architectural-full.png',
+    black: '/brand/arch-tech/architectural-full.png',
+    'mint-cream': '/brand/arch-tech/geometric-mint.png',
+    celadon: '/brand/arch-tech/geometric-mint.png',
   },
   stacked: {
-    'full-color': '/brand/garnier-architecture/05_logo_stacked_full_color.png',
-    black: '/brand/garnier-architecture/06_logo_stacked_black.png',
-    'mint-cream': '/brand/garnier-architecture/07_logo_stacked_mint_cream.png',
+    'full-color': '/brand/arch-tech/architectural-full.png',
+    black: '/brand/arch-tech/architectural-full.png',
+    'mint-cream': '/brand/arch-tech/geometric-mint.png',
   },
   mark: {
-    'full-color': '/brand/garnier-architecture/08_symbol_full_color.png',
-    black: '/brand/garnier-architecture/09_symbol_black.png',
-    'mint-cream': '/brand/garnier-architecture/10_symbol_mint_cream.png',
-    celadon: '/brand/garnier-architecture/11_symbol_celadon.png',
-    'muted-teal': '/brand/garnier-architecture/12_symbol_muted_teal.png',
-    'amber-gold': '/brand/garnier-architecture/13_symbol_amber_gold.png',
+    'full-color': '/brand/arch-tech/penrose-mint-charcoal.png',
+    black: '/brand/arch-tech/penrose-mint-charcoal.png',
+    'mint-cream': '/brand/arch-tech/penrose-mint-charcoal.png',
+    celadon: '/brand/arch-tech/penrose-mint-charcoal.png',
+    'muted-teal': '/brand/arch-tech/penrose-mint-charcoal.png',
+    'amber-gold': '/brand/arch-tech/penrose-mint-charcoal.png',
   },
 };
 

@@ -645,7 +645,7 @@ export const createPortalProjectRecord = (input: CreatePortalProjectInput): Port
     phase: input.phase.trim(),
     progress: Math.max(0, Math.min(100, Number(input.progress))),
     nextMilestone: input.nextMilestone?.trim() || 'Project review to be scheduled',
-    summary: input.summary?.trim() || 'Runtime development project created in the GARNIER ARCHITECTURE portal.',
+    summary: input.summary?.trim() || 'Runtime development project created in the ARCH_TECH portal.',
     statement: input.statement?.trim() || 'A project record ready for coordinated development delivery.',
     image: input.image?.startsWith('/projects/') ? input.image : '',
     market: input.market?.trim() || 'Costa Rica',

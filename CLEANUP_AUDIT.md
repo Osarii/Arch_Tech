@@ -78,7 +78,7 @@ Audit performed via static import search, `npm ls`, and peer dependency resoluti
 | `public/web-ifc-mt.wasm` | 1,563,334 bytes (~1.49 MB) | Multi-threaded WebAssembly engine loaded by `web-ifc-api.js:215` when cross-origin isolation is enabled. | **Keep** |
 | `public/web-ifc-node.wasm` | 1,524,422 bytes (~1.45 MB) | Node.js WebAssembly binary. In Node/Vitest environments, `web-ifc-api-node.js` loads this from `node_modules/web-ifc/web-ifc-node.wasm`, never from `public/`. | **Deferred Candidate** (Verify with Playwright/headless tests before deletion) |
 | `public/workspace_preview.png` | 106,496 bytes (~104 KB) | Only referenced by dead component `ProductPreview.tsx`. | **Delete** with component |
-| `public/brand/garnier-architecture/*` | 2.44 MB across 19 files | Identity assets prepared for approved Garnier Architecture brand migration. | **Keep** (Brand assets) |
+| `public/brand/arch-tech/*` | Three supplied ARCH_TECH PNG assets | Canonical product identity family: two horizontal lockups and one Penrose symbol. | **Keep** (Brand assets) |
 | `public/locales/**` | ~180 KB across 22 files | JSON translation resources for `en` and `es`. | **Keep** (Consolidate with runtime) |
 
 ---
@@ -124,25 +124,17 @@ Audit performed via static import search, `npm ls`, and peer dependency resoluti
 ### Current State
 `index.html` (lines 7–17) contains **11 separate `<link>` icon tags** with redundant entries:
 ```html
-<link rel="icon" type="image/png" href="/brand/garnier-architecture/14_app_icon_dark_512.png" media="(prefers-color-scheme: dark)" />
-<link rel="icon" type="image/png" href="/brand/garnier-architecture/15_app_icon_light_512.png" media="(prefers-color-scheme: light)" />
-<link rel="icon" type="image/png" href="/brand/garnier-architecture/14_app_icon_dark_512.png" />
-<link rel="apple-touch-icon" href="/brand/garnier-architecture/14_app_icon_dark_512.png" />
+<link rel="icon" type="image/png" href="/brand/arch-tech/penrose-mint-charcoal.png" />
+<link rel="apple-touch-icon" href="/brand/arch-tech/penrose-mint-charcoal.png" />
 <link rel="preload" as="image" href="/projects/zona-franca-la-lima/garnier-cover.webp" type="image/webp" fetchpriority="high" />
-<link rel="icon" type="image/png" sizes="512x512" href="/brand/garnier-architecture/14_app_icon_dark_512.png" media="(prefers-color-scheme: dark)" />
-<link rel="icon" type="image/png" sizes="512x512" href="/brand/garnier-architecture/15_app_icon_light_512.png" media="(prefers-color-scheme: light)" />
-<link rel="icon" type="image/png" sizes="512x512" href="/brand/garnier-architecture/16_app_icon_full_color_512.png" />
-<link rel="icon" type="image/png" sizes="192x192" href="/brand/garnier-architecture/17_app_icon_dark_192.png" media="(prefers-color-scheme: dark)" />
-<link rel="icon" type="image/png" sizes="192x192" href="/brand/garnier-architecture/18_app_icon_light_192.png" media="(prefers-color-scheme: light)" />
-<link rel="icon" type="image/png" sizes="192x192" href="/brand/garnier-architecture/19_app_icon_full_color_192.png" />
+<link rel="icon" type="image/png" href="/brand/arch-tech/penrose-mint-charcoal.png" />
+<link rel="apple-touch-icon" href="/brand/arch-tech/penrose-mint-charcoal.png" />
 ```
 
 ### Clean Minimum Set (4 Tags)
 ```html
-<link rel="icon" type="image/png" href="/brand/garnier-architecture/14_app_icon_dark_512.png" media="(prefers-color-scheme: dark)" />
-<link rel="icon" type="image/png" href="/brand/garnier-architecture/15_app_icon_light_512.png" media="(prefers-color-scheme: light)" />
-<link rel="icon" type="image/png" href="/brand/garnier-architecture/14_app_icon_dark_512.png" />
-<link rel="apple-touch-icon" href="/brand/garnier-architecture/14_app_icon_dark_512.png" />
+<link rel="icon" type="image/png" href="/brand/arch-tech/penrose-mint-charcoal.png" />
+<link rel="apple-touch-icon" href="/brand/arch-tech/penrose-mint-charcoal.png" />
 ```
 
 ---
@@ -316,4 +308,3 @@ When the safe cleanup is executed, the following reductions will be achieved:
   - `/workspace`: Verified "Sample (Fast)", "La Lima Site" (with PBR textures loaded), and "Sample (House)".
   - Total 404 / failed requests: **0**.
   - Total console errors: **0**.
-

@@ -1,8 +1,8 @@
-# PRESENTATION_READY.md — Live Presentation Runbook & Demo Freeze
+# PRESENTATION_READY.md — Live Presentation Runbook & Demo Tour Guide
 
-> **Presentation Date & Time:** Tomorrow at 12:25 PM  
+> **Presentation Date & Time:** 12:25 PM
 > **Target Branch:** `bim/shared-development`  
-> **Status:** Code & Feature Freeze Verified (ARCH_TECH Platform Hierarchy + Presentation Mode + V3.4 Integrated)
+> **Architecture:** Professional Guided Demo Tour (Intro Video → Real Landing → Real Portal → Real BIM / 3D Engine → NVIDIA Vision)
 
 ---
 
@@ -26,87 +26,107 @@ Open the browser at:
 
 ---
 
-## DEMO ROUTE (6–8 Minutes)
+## DEMO TOUR FLOW (7 Minutes Live Target)
 
-Recommended live demo sequence:
+The platform is presenter-controlled. The guided Demo Tour mode maintains live application state while seamlessly steering between real routes and activating prepared BIM camera presets.
 
-### 1. Landing Page & Cinematic Presentation (0:00 - 1:30)
-- Showcase enterprise hero & positioning (corporate districts, infrastructure, free zones).
-- Toggle Theme: switch **Dark ↔ Light** (demonstrating editorial light architectural palette).
-- Toggle Language: switch **ES ↔ EN** (demonstrating full bilingual synchronization).
-- Click **PRESENTACIÓN** button (in Hero or Header) to start full Presentation Mode with fullscreen.
-- Watch or narrate the **Cinematic Opening (45–60s)**:
-  - *Problem:* "Un proyecto puede tener toda la información necesaria... y aun así nadie tener la imagen completa."
-  - *Fragmentation:* Floating disconnected fragments (`BIM`, `PLANOS`, `DATOS`, `APROBACIONES`, `AVANCES`, `EQUIPOS`, `DECISIONES`).
-  - *Question & Convergence:* "¿Y si el proyecto volviera a ser el punto donde todo se conecta?" → Fragments converge into `ARCH_TECH`.
-  - *Solution:* "Información. Personas. BIM. Decisiones. Inteligencia. Un solo contexto."
-
-### 2. Guided Chapters & Platform Hierarchy (1:30 - 3:00)
-- Step through guided chapters using on-screen controls or keyboard (`ArrowRight` / `ArrowLeft`):
-  - **02 Platform Architecture:** Software platform unifiying development lifecycles.
-  - **03 Garnier Architecture Workspace:** Multi-role coordination (Client, Architect, Admin).
-  - **04 Zona Franca La Lima:** Unified project dossier, 2.5M m² industrial park.
-  - **05 Project Intelligence:** Deterministic KPI analytics and real-time Site Intelligence (weather + seismicity).
-- Voice narration speaks automatically via browser `SpeechSynthesis` (with Latin American Spanish `es-419` preference), with live captions always visible. Voice can be toggled via **Voice ON / OFF**.
-
-### 3. OpenBIM 3D Viewport & Visual Quality (3:00 - 4:15)
-- **06 BIM / 3D Engine:** WebGL viewport initializes with La Lima masterplan.
-- Orbit (Left Drag), Pan (Right Drag), Zoom (Scroll).
-- **09 Visual Engine:**
-  - Cycle Lighting Presets: **Day** (architectural daylight) ↔ **Overcast** (diffuse sky).
-  - Cycle Quality Profiles: **Performance** (DPR 1.0) ↔ **Balanced** (DPR 1.25) ↔ **Presentation** (selective shadows).
-
-### 4. Selection, Explorer & Analysis Tools (4:15 - 5:30)
-- **07 Model Explorer + Inspector:** Tree hierarchy syncs bidirectionally with 3D selection; Hide, Isolate, Show All.
-- **08 BIM Analysis Tools:**
-  - **Distance**: 2-point span/clearance measurement in meters.
-  - **Polyline**: multi-segment site access routes with live total.
-  - **Area**: closed polygonal building footprint calculation in m².
-  - **Section Plane**: dynamic cutting plane along X, Y, Z axes with offset and invert.
-
-### 5. Explore Mode & Technical Explainer (5:30 - 6:30)
-- Click **Explore** in the presentation controls bar to enter Explore Mode.
-- Inspect registered explainable components (**17 registered systems** with verified source files and data flows).
-- Click any component (e.g. `BIM Viewer`, `Model Explorer`, `Site Intelligence`, `Area`):
-  - **WHAT IS IT?**
-  - **HOW DOES IT WORK?**
-  - **DATA FLOW**
-  - **SOURCE FILES**
-  - **TECHNOLOGIES**
-  - Click **ASK ARCH ABOUT THIS** to query ARCH Assistant with active component context.
-
-### 6. Closing (6:30 - 7:30)
-- Chapter **12 Closing**:
-  - *"ARCH_TECH — ONE CONNECTED ENVIRONMENT FOR COMPLEX DEVELOPMENT. FROM OPPORTUNITY TO OPERATION."*
-  - Narration: *"ARCH_TECH. Un entorno conectado para comprender, coordinar y desarrollar proyectos complejos. Desde la oportunidad... hasta la operación."*
-  - Action buttons: **ENTER PLATFORM**, **RESTART PRESENTATION**, **EXIT**.
+```text
+[INICIAR RECORRIDO]
+        │
+        ▼
+01. INTRO VIDEO (00:00–00:31) ──► Fullscreen cinematic intro (/demo/intro.mp4 / .mov)
+        │
+        ▼
+02. REAL LANDING (00:31–01:10) ──► Public portfolio, enterprise positioning, theme & locale
+        │
+        ▼
+03. REAL PORTAL (01:10–02:15) ──► Client & Admin workspaces, project intelligence & approvals
+        │
+        ▼
+04. REAL BIM / 3D (02:15–05:45) ──► Masterplan, logistics hub, explorer, tools & measurements
+        │
+        ▼
+05. NVIDIA / VISION (05:45–07:00) ──► Architectural camera preset for future digital twin vision
+```
 
 ---
 
-## FALLBACKS
+### Step-by-Step Live Walkthrough
+
+#### 1. Intro Video (00:00 - 00:31)
+- Click **INICIAR RECORRIDO** on the Landing Hero or Top Navbar.
+- The clean fullscreen Intro Video Modal appears with `#07080a` backdrop.
+- Controls available:
+  - **Omitir Introducción** (Skip) / `Escape` key: jumps straight to the live Landing page.
+  - **Sound Toggle**: un-mute / mute.
+  - **Play / Pause**: click or `Spacebar`.
+  - When the video ends, it transitions automatically to the live Landing page.
+
+#### 2. Real Landing Page (00:31 - 01:10)
+- Minimal floating **Demo Tour Bar** docks cleanly at the bottom without obscuring content.
+- Presenter demonstrates:
+  - Enterprise positioning (corporate districts, free zones, large infrastructure).
+  - Bilingual switcher (**ES ↔ EN**) and Theme switcher (**Dark ↔ Light**).
+  - Featured 6-project carousel with dossier previews.
+  - **ARCH Assistant** brand launcher.
+- Click **Ir al Portal** or **03 PORTAL** on the Demo Tour Bar.
+
+#### 3. Real Interactive Portal (01:10 - 02:15)
+- Automatically authenticates with demo session and opens `/dashboard`.
+- Presenter demonstrates:
+  - Role-scoped workspaces (Client, Architect, Admin).
+  - **Project Intelligence**: Deterministic operational signals and real-time Site Intelligence (weather + seismicity).
+  - **Zona Franca La Lima**: Project progress (68%), milestones, approvals, and document repository.
+- Click **Abrir Visor 3D** or **04 BIM / 3D** on the Demo Tour Bar.
+
+#### 4. Real OpenBIM / 3D Engine (02:15 - 05:45)
+- Seamlessly transitions to `/workspace` with La Lima campus loaded.
+- Presenter uses the dedicated **BIM Quick Presets** on the Demo Tour Bar:
+  - **Masterplan**: General isometric overview of the 2.5M m² campus (`[180, 140, 180]`).
+  - **Hub Logístico**: Focused perspective on industrial warehouses and logistics access (`[80, 45, 60]`).
+  - **Medición**: Activates the distance measurement tool with snap markers.
+- Presenter manually showcases interactive capabilities:
+  - **Model Explorer & Spatial Tree**: Category hierarchy and element selection.
+  - **Inspector**: Real-time property sets and geometric metadata.
+  - **Render Profiles**: Day ↔ Overcast lighting presets, Balanced ↔ Presentation shadows.
+  - **Section Plane**: Dynamic cutting planes across X, Y, Z axes.
+
+#### 5. NVIDIA / Future Vision & Closing (05:45 - 07:00)
+- Presenter clicks the **NVIDIA / Futuro** preset on the Demo Tour Bar (`[40, 22, -30]`).
+- Clean architectural perspective framing the future development horizon for spoken remarks on AI twin workflows and Omniverse integration.
+- The tour remains inside the 3D engine (does NOT automatically return to Portal).
+
+---
+
+## DEMO CONTROLS & UTILITIES
+
+| Control | Action | Keyboard / Trigger |
+| :--- | :--- | :--- |
+| **INICIAR RECORRIDO** | Starts guided demo flow starting at Intro Video | Header CTA / Hero Button |
+| **Omitir / Skip** | Skips intro video immediately to Landing | `demo-intro-skip` / `Escape` |
+| **Stage Breadcrumbs** | Jump directly to `01 INTRO`, `02 LANDING`, `03 PORTAL`, `04 BIM` | `tour-stage-[id]` |
+| **Vistas BIM** | Quick camera/tool presets (`Masterplan`, `Hub Logístico`, `Medición`, `NVIDIA / Futuro`) | `bim-preset-[id]` |
+| **Reiniciar (Reset)** | Resets BIM camera/state and restarts from Intro | `tour-reset` |
+| **Salir (Exit)** | Closes Demo Tour Bar and returns to manual navigation | `tour-exit` |
+| **Pantalla Completa** | Toggles browser fullscreen | `tour-toggle-fullscreen` |
+
+---
+
+## FALLBACKS & CONTINGENCIES
 
 | Scenario | Contingency / Immediate Presenter Action |
 | :--- | :--- |
-| **SpeechSynthesis / Audio Unavailable or Muted** | Live synchronized captions are always prominently displayed on screen. Presentation continues without audio disruption. |
-| **Fullscreen Denied / Blocked by Browser** | Non-blocking inline banner displays *"Fullscreen unavailable — continuing in page view."* Presentation continues seamlessly. |
-| **n8n / AI Assistant Unavailable** | Assistant automatically falls back to deterministic local knowledge without crashing or hanging. Continue demo uninterrupted. |
-| **Local Backend / API Down (Port 3001)** | Portal seamlessly falls back to embedded `localStorage` snapshot cache (Schema v4). Data remains fully readable and interactive. |
-| **Accidental Browser Refresh** | Workspace and landing restore smoothly. Direct URLs (`/workspace`, `/dashboard`) remain fully available. |
-| **3D Engine Warmup** | Keep browser tab open before going on stage. If reload occurs, allow 2 seconds for Fragment geometry build. |
-| **Projector / Screen DPI Lag** | Switch quality preset from **Presentation** to **Balanced** or **Performance** directly from the top bar. |
+| **Video Autoplay Blocked** | Click the visible "HAGA CLIC PARA INICIAR EL VIDEO" overlay or hit `Escape` / "Omitir" to jump directly to Landing. |
+| **Fullscreen Denied by Browser** | Continues cleanly in windowed mode without breaking flow. |
+| **Local Backend / API Down (Port 3001)** | Portal seamlessly operates using embedded `localStorage` snapshot cache (Schema v4). |
+| **Accidental Page Reload** | Direct routes (`/`, `/dashboard`, `/workspace`) restore instantly. Demo Tour Bar preserves stage synchronization with current URL. |
+| **Low-End Display / Projector Lag** | Switch render profile to **Balanced** or **Performance** directly in the BIM header. |
 
 ---
 
-## VERIFIED CHECKPOINT
+## VERIFICATION STATUS
 
-- **Hierarchy Verified:**
-  - `ARCH_TECH`: software product / platform (primary brand)
-  - `GARNIER ARCHITECTURE`: demo organization / workspace
-  - `ZONA FRANCA LA LIMA`: project inside workspace
-  - `ARCH Assistant`: visible conversational intelligence
-- **Presentation Mode:** 12 chapters, 45-60s cinematic intro, SpeechSynthesis narration (`es-419` preference), live captions, 17 registered components in Explore Mode, technical explainer.
-- **Test Suite:** 38 test files, **437 / 437 passed** (0 failing)
-- **TypeScript & Lint:** 0 errors (`npm run lint` clean)
-- **Translations:** 100% synchronized (`es` / `en`, 970 keys)
-- **Production Build:** `npm run build` verified clean
-- **Hardware Profile:** Optimized for Intel UHD Graphics 630 / MacBook Pro 2019 baseline (DPR ≤ 1.25, controlled draw calls, selective shadows).
+- **Tests:** 38 test suites, 444 tests passing (100% green)
+- **TypeScript:** `tsc --noEmit` clean (0 errors)
+- **i18n:** 100% parity across English and Spanish namespaces (930 keys)
+- **Production Bundle:** `vite build` completed successfully

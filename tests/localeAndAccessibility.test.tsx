@@ -274,7 +274,7 @@ describe('Global Accessibility & Bilingual Support Suite', () => {
       render(<NewsArchivePage onNavigate={vi.fn()} />);
 
       expect(screen.getByText('Portfolio')).toBeDefined();
-      expect(screen.getByText('GARNIER ARCHITECTURE / Journal')).toBeDefined();
+      expect(screen.getByText('ARCH_TECH / Journal')).toBeDefined();
       expect(screen.getByText('Project updates.')).toBeDefined();
       expect(screen.getAllByText('All projects').length).toBeGreaterThan(0);
       expect(screen.getAllByText('All categories').length).toBeGreaterThan(0);
@@ -284,7 +284,7 @@ describe('Global Accessibility & Bilingual Support Suite', () => {
       render(<NewsArchivePage onNavigate={vi.fn()} />);
 
       expect(screen.getByText('Portafolio')).toBeDefined();
-      expect(screen.getByText('GARNIER ARCHITECTURE / Publicaciones')).toBeDefined();
+      expect(screen.getByText('ARCH_TECH / Publicaciones')).toBeDefined();
       expect(screen.getByText('Actualizaciones de proyectos.')).toBeDefined();
       expect(screen.getAllByText('Todos los proyectos').length).toBeGreaterThan(0);
       expect(screen.getAllByText('Todas las categorías').length).toBeGreaterThan(0);

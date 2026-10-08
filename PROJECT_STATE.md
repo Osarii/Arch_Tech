@@ -245,16 +245,19 @@ The next session should begin by auditing the existing ARCH_TECH identity before
 - **Coordinate Mapping**: UI X -> IFC X, UI Y (vertical) -> IFC Z, UI Z (depth) -> IFC Y.
 - **Detached Persistence**: Always run persistence exports against isolated temporary WebIFC models, keeping active model untouched.
 - **Human Confirmation Gate**: All `WRITE` tools (edits, generation commit, persistence save) require explicit human confirmation.
-- **Sample Files**: Do not delete `public/small_model.ifc` or `public/ifc_open_house.ifc`.
-- **Documentation Policy**: Extend `docs/context/CONTEXT.md` or update `PROJECT_STATE.md` / `README.md`; do not create duplicate `.md` files without approval.
+- **Demo Tour Architecture**: Replaced automated Presentation Mode (SpeechSynthesis narration, chapter timers, auto-advance overlays) with a professional presenter-guided Demo Tour flow (`src/demo/DemoTourContext.tsx`, `src/components/demo/DemoIntroModal.tsx`, `src/components/demo/DemoTourBar.tsx`). The flow integrates:
+  1. Fullscreen cinematic intro video modal (`/demo/intro.mp4` / `.mov`) with skip, sound control, and play/pause.
+  2. Real Public Landing (`/`) with lightweight floating tour bar and live enterprise showcase.
+  3. Real Interactive Portal (`/dashboard`) with authenticated demo session and project intelligence signals.
+  4. Real OpenBIM / 3D Engine (`/workspace`) with interactive camera presets (Masterplan, Hub Logístico, Medición, NVIDIA / Futuro vision).
+  5. The tour remains inside the 3D engine upon completion without automated redirection.
 
 ---
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint` / `tsc --noEmit`).
-- **i18n Verification**: **SUCCESS** (`npm run i18n:check` — 0 issues, 100% Spanish translation coverage across all 879 keys in 9 namespaces).
-- **Vitest Unit/Domain Tests**: **391 / 391 PASSED** across 31 test files.
+- **i18n Verification**: **SUCCESS** (`npm run i18n:check` — 0 issues, 100% Spanish translation coverage across 930 keys in 9 namespaces).
+- **Vitest Unit/Domain Tests**: **444 / 444 PASSED** across 38 test files.
 - **Production Build**: **SUCCESS** (`tsc -b && vite build` clean exit code 0).
-- **Playwright E2E Tests**: **15 / 15 PASSED**, including admin user persistence, public landing, project route transitions, full OpenBIM workflow and AI confirmation flows.
 - **Git Diff**: Verified clean with `git diff --check`.
 

@@ -29,7 +29,7 @@
   "capabilities": {
     "eyebrow": "Capacidades de desarrollo",
     "heading": "Estructura para el desarrollo complejo.",
-    "description": "GARNIER ARCHITECTURE conecta sitio, programa, infraestructura, coordinación e información digital del proyecto en un marco único de desarrollo.",
+    "description": "ARCH_TECH conecta sitio, programa, infraestructura, coordinación e información digital del proyecto en un marco único de desarrollo.",
     "items": [
       {
         "number": "01",
@@ -99,7 +99,7 @@
     "enterPortal": "Ingresar al portal de proyectos"
   },
   "footer": {
-    "closingEyebrow": "GARNIER ARCHITECTURE / declaración final",
+    "closingEyebrow": "ARCH_TECH / declaración final",
     "closingHeading": "Construido para el desarrollo complejo.",
     "closingBody": "Desarrollo, infraestructura y entrega digital de proyectos desde la primera oportunidad hasta la operación a largo plazo.",
     "directoryEyebrow": "Directorio",
@@ -114,17 +114,17 @@
     "contextCountry": "Costa Rica",
     "contextShowcase": "Muestra Garnier & Garnier",
     "contextPrototype": "Prototipo Conceptual",
-    "wordmark": "GARNIER ARCHITECTURE / public development platform",
-    "copyright": "© 2026 GARNIER ARCHITECTURE",
+    "wordmark": "ARCH_TECH / public development platform",
+    "copyright": "© 2026 ARCH_TECH",
     "deliverySubtitle": "Desarrollo / Infraestructura / Entrega Digital",
     "conceptShowcase": "Muestra conceptual",
     "backToTop": "Volver arriba ↑"
   },
   "hero": {
-    "eyebrow": "GARNIER ARCHITECTURE / Muestra de Portafolio / Prototipo Conceptual",
+    "eyebrow": "ARCH_TECH / Muestra de Portafolio / Prototipo Conceptual",
     "headingLine1": "Desarrollo",
     "headingLine2": "a mayor escala.",
-    "body": "GARNIER ARCHITECTURE posiciona y desarrolla zonas francas, campus, distritos e infraestructura — desde la primera oportunidad hasta la entrega y operación.",
+    "body": "ARCH_TECH posiciona y desarrolla zonas francas, campus, distritos e infraestructura — desde la primera oportunidad hasta la entrega y operación.",
     "explorePortfolio": "Explorar el portafolio",
     "showcaseContext": "Muestra oficial de proyectos",
     "opportunityToOperation": "De la oportunidad a la operación",
@@ -146,7 +146,7 @@
     "projectPortal": "Portal de Proyectos",
     "a11yControls": "Controles de accesibilidad",
     "toggleMenu": "Alternar menú",
-    "homeAria": "GARNIER ARCHITECTURE inicio",
+    "homeAria": "Inicio de ARCH_TECH",
     "langSelection": "Selección de idioma",
     "a11yShort": "Accesibilidad",
     "langToggle": "Idioma / Language"
@@ -157,9 +157,9 @@
     "viewAll": "Ver todas las actualizaciones"
   },
   "projects": {
-    "eyebrow": "GARNIER ARCHITECTURE / Muestra de Portafolio / Prototipo Conceptual",
+    "eyebrow": "ARCH_TECH / Muestra de Portafolio / Prototipo Conceptual",
     "heading": "Un portafolio diseñado con propósito.",
-    "description": "Seis desarrollos oficiales de Garnier presentados a través de la interfaz de exhibición GARNIER ARCHITECTURE. Los datos públicos y fotografías de proyectos permanecen atribuidos a su fuente.",
+    "description": "Seis desarrollos oficiales de Garnier presentados a través de la interfaz de exhibición ARCH_TECH. Los datos públicos y fotografías de proyectos permanecen atribuidos a su fuente.",
     "principalBadge": "01 · Desarrollo principal · ",
     "market": "Mercado",
     "stage": "Etapa",

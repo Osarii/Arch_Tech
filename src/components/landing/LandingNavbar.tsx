@@ -4,7 +4,7 @@ import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { useScrollProgress } from '../motion/useScrollProgress';
 import { useLocale } from '../../portal/locale';
 
-const presentationLabel = 'PRESENTACIÓN';
+const demoTourLabel = 'INICIAR RECORRIDO';
 
 interface LandingNavbarProps {
   onLogin: (trigger?: HTMLElement) => void;
@@ -14,6 +14,7 @@ interface LandingNavbarProps {
   lightTheme?: boolean;
   onToggleTheme?: () => void;
   onStartPresentation?: () => void;
+  onStartDemoTour?: () => void;
 }
 
 export const LandingNavbar: React.FC<LandingNavbarProps> = ({
@@ -24,11 +25,13 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
   lightTheme = false,
   onToggleTheme,
   onStartPresentation,
+  onStartDemoTour,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isScrolled } = useScrollProgress('[data-landing-scroll-container]');
   const { locale, setLocale, landing } = useLocale();
   const t = landing.navbar;
+  const handleStart = onStartDemoTour ?? onStartPresentation;
 
   const viewProjects = () => {
     setMobileMenuOpen(false);
@@ -64,36 +67,18 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
         {/* Visual Brand Anchor */}
         <a
           href="#hero"
-          aria-label={t.homeAria || 'GARNIER ARCHITECTURE home'}
+          aria-label={t.homeAria || 'ARCH_TECH home'}
           className={`group flex items-center gap-3.5 transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 ${
             lightTheme ? 'text-black focus-visible:outline-black' : 'text-stone-100 focus-visible:outline-[#ABD1B5]'
           }`}
         >
           <ArchTechLogo
-            variant="mark"
+            variant="full"
             tone={lightTheme ? 'black' : 'mint-cream'}
             theme={lightTheme ? 'light' : 'dark'}
-            label="GARNIER ARCHITECTURE"
-            className="h-7 w-7 transition-transform duration-200 group-hover:scale-105"
+            label="ARCH_TECH"
+            className="arch-tech-navbar-lockup transition-transform duration-200 group-hover:scale-[1.01]"
           />
-          <div className="flex flex-col text-left">
-            {/* i18next-instrument-ignore */}
-            <span
-              className={`font-mono text-[11.5px] font-semibold tracking-[0.22em] uppercase leading-none ${
-                lightTheme ? 'text-black' : 'text-stone-100'
-              }`}
-            >
-              GARNIER
-            </span>
-            {/* i18next-instrument-ignore */}
-            <span
-              className={`font-mono text-[8px] tracking-[0.3em] uppercase leading-none mt-1 ${
-                lightTheme ? 'text-stone-500' : 'text-stone-400'
-              }`}
-            >
-              ARCHITECTURE
-            </span>
-          </div>
         </a>
 
         {/* Intentionally Grouped Primary Navigation */}
@@ -238,18 +223,18 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
             </button>
           </div>
 
-          {onStartPresentation && (
+          {handleStart && (
             <button
               type="button"
-              data-testid="presentation-start"
-              onClick={onStartPresentation}
+              data-testid="demo-tour-start"
+              onClick={handleStart}
               className={`border px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors ${
                 lightTheme
                   ? 'border-black/30 text-black hover:border-[#79B791] hover:text-[#4e8064]'
                   : 'border-[#ABD1B5]/40 text-[#EDF4ED] hover:border-[#79B791] hover:text-[#79B791]'
               }`}
             >
-              {presentationLabel}
+              {demoTourLabel}
             </button>
           )}
 
@@ -393,19 +378,19 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
             <Sliders className="h-4 w-4" />
           </button>
 
-          {onStartPresentation && (
+          {handleStart && (
             <button
               type="button"
-              data-testid="mobile-presentation-start"
+              data-testid="mobile-demo-tour-start"
               onClick={() => {
                 setMobileMenuOpen(false);
-                onStartPresentation();
+                handleStart();
               }}
               className={`flex w-full items-center justify-between border px-4 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] rounded-sm ${
                 lightTheme ? 'border-[#79B791] text-black bg-[#79B791]/10' : 'border-[#79B791]/70 text-[#79B791] bg-[#79B791]/10'
               }`}
             >
-              <span>{presentationLabel}</span>
+              <span>{demoTourLabel}</span>
               <span aria-hidden="true">↗</span>
             </button>
           )}

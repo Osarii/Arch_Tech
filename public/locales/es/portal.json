@@ -15,7 +15,7 @@
   "createProjectUpdate": "Crear actualización del proyecto",
   "current": "Actual",
   "currentProjectModel": "Modelo actual del proyecto",
-  "currentProjectModelDesc": "Abra el modelo del proyecto en el espacio de trabajo existente de GARNIER ARCHITECTURE.",
+  "currentProjectModelDesc": "Abra el modelo del proyecto en el espacio de trabajo existente de ARCH_TECH.",
   "date": "Fecha",
   "deleteProject": "Eliminar proyecto",
   "deleteRuntimeProject": "Eliminar proyecto en tiempo de ejecución",
@@ -128,11 +128,11 @@
     "title": "Servicio temporalmente no disponible."
   },
   "shell": {
-    "brandName": "GARNIER",
+    "brandName": "ARCH_TECH",
     "closeNavigation": "Cerrar navegación",
     "openNavigation": "Abrir menú de navegación",
     "showcaseEyebrow": "Muestra de Portafolio",
-    "homeAria": "GARNIER ARCHITECTURE inicio",
+    "homeAria": "Inicio de ARCH_TECH",
     "roles": {
       "admin": "Portal Ejecutivo",
       "architect": "Taller de Arquitectura",

@@ -9,13 +9,15 @@ interface HeroProps {
   onViewProjects: () => void;
   onOpenProject: (id: string) => void;
   onStartPresentation?: () => void;
+  onStartDemoTour?: () => void;
 }
 
-const presentationLabel = 'PRESENTACIÓN';
+const demoTourLabel = 'INICIAR RECORRIDO';
 
-export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject, onStartPresentation }) => {
+export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject, onStartPresentation, onStartDemoTour }) => {
   const { landing } = useLocale();
   const t = landing.hero;
+  const handleStart = onStartDemoTour ?? onStartPresentation;
 
   return (
     <section id="hero" className="landing-hero relative overflow-hidden border-b border-white/[0.08] px-6 pb-20 pt-32 sm:px-8 lg:px-12 lg:pb-28 lg:pt-40">
@@ -46,15 +48,15 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject, onSta
                   {t.explorePortfolio}
                   <ArrowDownRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:translate-y-0.5" />
                 </button>
-                {onStartPresentation && (
+                {handleStart && (
                   <button
                     type="button"
-                    data-testid="hero-presentation-start"
-                    onClick={onStartPresentation}
+                    data-testid="hero-demo-tour-start"
+                    onClick={handleStart}
                     className="group inline-flex items-center gap-2 rounded-full border border-[#79B791]/50 bg-[#79B791]/10 px-3.5 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[#79B791] transition-all hover:bg-[#79B791] hover:text-black shadow-xs"
                   >
                     <Play className="h-3 w-3 fill-current" />
-                    <span>{presentationLabel}</span>
+                    <span>{demoTourLabel}</span>
                   </button>
                 )}
               </div>

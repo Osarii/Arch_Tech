@@ -916,7 +916,7 @@ const ErrorPageHeader: React.FC<{ isLight: boolean; onToggleTheme: () => void }>
       />
       {/* i18next-instrument-ignore */}
       <span className={`font-mono text-[10px] font-semibold uppercase tracking-[0.24em] ${isLight ? 'text-[#17181A]' : 'text-[#EDF4ED]'}`}>
-        GARNIER
+        ARCH_TECH
       </span>
     </div>
     {/* i18next-instrument-ignore */}

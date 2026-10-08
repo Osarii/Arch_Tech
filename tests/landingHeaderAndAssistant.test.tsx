@@ -22,23 +22,20 @@ describe('Public Landing Header & Garnier Assistant Polish', () => {
     it('renders the architectural brand lockup with symbol and wordmark', () => {
       render(<LandingNavbar onLogin={vi.fn()} />);
 
-      const homeLink = screen.getByRole('link', { name: /GARNIER ARCHITECTURE home/i });
+      const homeLink = screen.getByRole('link', { name: /ARCH_TECH home/i });
       expect(homeLink).toBeDefined();
 
-      const symbol = homeLink.querySelector('.arch-tech-logo-mark img');
+      const symbol = homeLink.querySelector('.arch-tech-logo-full img');
       expect(symbol).not.toBeNull();
-      expect(symbol?.getAttribute('src')).toContain('10_symbol_mint_cream.png');
-
-      expect(within(homeLink).getByText('GARNIER')).toBeDefined();
-      expect(within(homeLink).getByText('ARCHITECTURE')).toBeDefined();
+      expect(symbol?.getAttribute('src')).toContain('geometric-mint.png');
     });
 
     it('renders the light-theme brand lockup when lightTheme=true', () => {
       render(<LandingNavbar onLogin={vi.fn()} lightTheme={true} />);
 
-      const homeLink = screen.getByRole('link', { name: /GARNIER ARCHITECTURE home/i });
-      const symbol = homeLink.querySelector('.arch-tech-logo-mark img');
-      expect(symbol?.getAttribute('src')).toContain('09_symbol_black.png');
+      const homeLink = screen.getByRole('link', { name: /ARCH_TECH home/i });
+      const symbol = homeLink.querySelector('.arch-tech-logo-full img');
+      expect(symbol?.getAttribute('src')).toContain('architectural-full.png');
     });
 
     it('renders navigation links and handles section navigation', () => {
@@ -97,12 +94,13 @@ describe('Public Landing Header & Garnier Assistant Polish', () => {
       expect(onLogin).toHaveBeenCalledTimes(1);
     });
 
-    it('starts the presentation from the public header', () => {
-      const onStartPresentation = vi.fn();
-      render(<LandingNavbar onLogin={vi.fn()} onStartPresentation={onStartPresentation} />);
+    it('starts the demo tour from the public header', () => {
+      const onStartDemoTour = vi.fn();
+      render(<LandingNavbar onLogin={vi.fn()} onStartDemoTour={onStartDemoTour} />);
 
-      fireEvent.click(screen.getByTestId('presentation-start'));
-      expect(onStartPresentation).toHaveBeenCalledTimes(1);
+      const btn = screen.getByTestId('demo-tour-start');
+      fireEvent.click(btn);
+      expect(onStartDemoTour).toHaveBeenCalledTimes(1);
     });
 
     it('toggles mobile drawer with accessible controls', () => {
@@ -146,7 +144,7 @@ describe('Public Landing Header & Garnier Assistant Polish', () => {
 
       const symbol = launcher.querySelector('.arch-tech-logo-mark img');
       expect(symbol).not.toBeNull();
-      expect(symbol?.getAttribute('src')).toContain('symbol');
+      expect(symbol?.getAttribute('src')).toContain('penrose-mint-charcoal.png');
     });
 
     it('opens and closes the assistant panel with button and escape key', () => {
@@ -243,11 +241,11 @@ describe('Public Landing Header & Garnier Assistant Polish', () => {
     it('respects lightTheme prop in launcher and docked shell', () => {
       const { rerender } = render(<LandingAssistantLauncher lightTheme={false} />);
       const darkLauncher = screen.getByTestId('landing-assistant-launcher');
-      expect(darkLauncher.querySelector('.arch-tech-logo-mark img')?.getAttribute('src')).toContain('11_symbol_celadon.png');
+      expect(darkLauncher.querySelector('.arch-tech-logo-mark img')?.getAttribute('src')).toContain('penrose-mint-charcoal.png');
 
       rerender(<LandingAssistantLauncher lightTheme={true} />);
       const lightLauncher = screen.getByTestId('landing-assistant-launcher');
-      expect(lightLauncher.querySelector('.arch-tech-logo-mark img')?.getAttribute('src')).toContain('09_symbol_black.png');
+      expect(lightLauncher.querySelector('.arch-tech-logo-mark img')?.getAttribute('src')).toContain('penrose-mint-charcoal.png');
     });
   });
 });

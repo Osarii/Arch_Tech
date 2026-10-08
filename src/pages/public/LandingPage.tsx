@@ -13,15 +13,14 @@ import { useAccessibility } from '../../portal/useAccessibility';
 import { AccessibilityOverlay } from '../../components/portal/AccessibilityOverlay';
 import { AccessibilityPanel } from '../../components/portal/AccessibilityPanel';
 import { LandingAssistantLauncher } from '../../components/landing/LandingAssistantLauncher';
-import { PresentationMode } from '../../components/presentation/PresentationMode';
-import { PresentationProvider, usePresentation } from '../../presentation/PresentationContext';
+import { useDemoTour } from '../../demo/DemoTourContext';
 
 interface LandingPageProps {
   onNavigate: (path: string) => void;
   onLogin: (trigger?: HTMLElement) => void;
 }
 
-const LandingPageContent: React.FC<LandingPageProps> = ({ onNavigate, onLogin }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin }) => {
   const [lightTheme, setLightTheme] = useState(() => typeof window !== 'undefined' && window.localStorage.getItem('garnier-public-theme') === 'light');
   useEffect(() => { window.localStorage.setItem('garnier-public-theme', lightTheme ? 'light' : 'dark'); }, [lightTheme]);
   const {
@@ -42,7 +41,7 @@ const LandingPageContent: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
     announcement,
     activeLocale,
   } = useAccessibility();
-  const presentation = usePresentation();
+  const demoTour = useDemoTour();
 
   const viewProjects = () => document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' });
 
@@ -63,13 +62,13 @@ const LandingPageContent: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         isA11yPanelOpen={isA11yPanelOpen}
         lightTheme={lightTheme}
         onToggleTheme={() => setLightTheme((value) => !value)}
-        onStartPresentation={presentation.start}
+        onStartPresentation={() => demoTour.startTour('intro')}
       />
       <main>
         <Hero
           onViewProjects={viewProjects}
           onOpenProject={(id) => onNavigate(`/projects/${id}`)}
-          onStartPresentation={presentation.start}
+          onStartPresentation={() => demoTour.startTour('intro')}
         />
         <ProjectShowcase onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
         <NewsSection onNavigate={onNavigate} />
@@ -81,7 +80,6 @@ const LandingPageContent: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
       <Footer onLogin={onLogin} />
       <LandingAssistantLauncher
         lightTheme={lightTheme}
-        presentationContext={presentation.isActive ? presentation.assistantContext : undefined}
       />
 
       {/* Shared accessibility reading overlays */}
@@ -108,13 +106,6 @@ const LandingPageContent: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         triggerRef={a11yTriggerRef}
         locale={activeLocale}
       />
-      <PresentationMode />
     </div>
   );
 };
-
-export const LandingPage: React.FC<LandingPageProps> = (props) => (
-  <PresentationProvider>
-    <LandingPageContent {...props} />
-  </PresentationProvider>
-);

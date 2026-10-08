@@ -51,7 +51,7 @@ export const ProjectShowcase: React.FC<ProjectShowcaseProps> = ({ onOpenProject 
               className="landing-projects-featured group mt-12 block w-full text-left"
             >
               <span className="relative block aspect-[16/9] overflow-hidden bg-stone-300 md:aspect-[21/9]">
-                <WireframeToSolid tag="GARNIER ARCHITECTURE // PRINCIPAL-01" trigger="auto" className="h-full w-full">
+                <WireframeToSolid tag="ARCH_TECH // PRINCIPAL-01" trigger="auto" className="h-full w-full">
                   <ProjectImage project={featured} usage="showcase" alt={`${featured.title} development context`} loading="lazy" fetchPriority="low" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.015]" />
                 </WireframeToSolid>
               </span>

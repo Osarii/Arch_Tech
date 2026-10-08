@@ -29,7 +29,7 @@
   "capabilities": {
     "eyebrow": "Development capability",
     "heading": "Structure for complex development.",
-    "description": "GARNIER ARCHITECTURE connects site, program, infrastructure, coordination and digital project information into one development framework.",
+    "description": "ARCH_TECH connects site, program, infrastructure, coordination and digital project information into one development framework.",
     "items": [
       {
         "number": "01",
@@ -99,7 +99,7 @@
     "enterPortal": "Enter project portal"
   },
   "footer": {
-    "closingEyebrow": "GARNIER ARCHITECTURE / closing statement",
+    "closingEyebrow": "ARCH_TECH / closing statement",
     "closingHeading": "Built for complex development.",
     "closingBody": "Development, infrastructure and digital project delivery from first opportunity through long-term operation.",
     "directoryEyebrow": "Directory",
@@ -114,17 +114,17 @@
     "contextCountry": "Costa Rica",
     "contextShowcase": "Garnier & Garnier Showcase",
     "contextPrototype": "Concept Prototype",
-    "wordmark": "GARNIER ARCHITECTURE / public development platform",
-    "copyright": "© 2026 GARNIER ARCHITECTURE",
+    "wordmark": "ARCH_TECH / public development platform",
+    "copyright": "© 2026 ARCH_TECH",
     "deliverySubtitle": "Development / Infrastructure / Digital Delivery",
     "conceptShowcase": "Concept showcase",
     "backToTop": "Back to top ↑"
   },
   "hero": {
-    "eyebrow": "GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype",
+    "eyebrow": "ARCH_TECH / Portfolio Showcase / Concept Prototype",
     "headingLine1": "Development",
     "headingLine2": "at a larger scale.",
-    "body": "GARNIER ARCHITECTURE positions and advances free zones, campuses, districts and infrastructure — from first opportunity through delivery and operation.",
+    "body": "ARCH_TECH positions and advances free zones, campuses, districts and infrastructure — from first opportunity through delivery and operation.",
     "explorePortfolio": "Explore the portfolio",
     "showcaseContext": "Official project showcase",
     "opportunityToOperation": "Opportunity to operation",
@@ -146,7 +146,7 @@
     "projectPortal": "Project Portal",
     "a11yControls": "Accessibility controls",
     "toggleMenu": "Toggle menu",
-    "homeAria": "GARNIER ARCHITECTURE home",
+    "homeAria": "ARCH_TECH home",
     "langSelection": "Language selection",
     "a11yShort": "A11y",
     "langToggle": "Language / Idioma"
@@ -157,9 +157,9 @@
     "viewAll": "View all updates"
   },
   "projects": {
-    "eyebrow": "GARNIER ARCHITECTURE / Portfolio Showcase / Concept Prototype",
+    "eyebrow": "ARCH_TECH / Portfolio Showcase / Concept Prototype",
     "heading": "A portfolio built for consequence.",
-    "description": "Six official Garnier developments presented through a GARNIER ARCHITECTURE showcase interface. Public facts and project photography remain attributed to their source.",
+    "description": "Six official Garnier developments presented through an ARCH_TECH showcase interface. Public facts and project photography remain attributed to their source.",
     "principalBadge": "01 · Principal development · ",
     "market": "Market",
     "stage": "Stage",

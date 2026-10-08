@@ -153,7 +153,7 @@ export const LoginOverlay: React.FC<{ open: boolean; onClose: () => void; onSucc
         </button>
         <div className="flex flex-col items-center pt-3 text-center">
           <div className="mb-6 flex justify-center">
-            <ArchTechLogo variant="stacked" theme="dark" className="login-overlay-mark" />
+            <ArchTechLogo variant="full" theme="dark" className="login-overlay-mark" />
           </div>
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">{t('login.privateAccess', 'Private access')}</p>
           <h1 id="client-login-title" className="mt-5 font-serif text-5xl font-light tracking-tight">

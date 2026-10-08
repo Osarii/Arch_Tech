@@ -184,40 +184,40 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     expect(showcaseImage?.startsWith('/projects/zona-franca-la-lima/')).toBe(true);
   });
 
-  it('renders every approved GARNIER ARCHITECTURE logo asset without a CSS recreation', () => {
+  it('renders the three canonical ARCH_TECH assets without a CSS recreation', () => {
     const { rerender } = render(<ArchTechLogo variant="full" tone="full-color" />);
     const assets = [
-      ['full', 'full-color', '01_logo_horizontal_full_color.png'],
-      ['full', 'black', '02_logo_horizontal_black.png'],
-      ['full', 'mint-cream', '03_logo_horizontal_mint_cream.png'],
-      ['full', 'celadon', '04_logo_horizontal_celadon.png'],
-      ['stacked', 'full-color', '05_logo_stacked_full_color.png'],
-      ['stacked', 'black', '06_logo_stacked_black.png'],
-      ['stacked', 'mint-cream', '07_logo_stacked_mint_cream.png'],
-      ['mark', 'full-color', '08_symbol_full_color.png'],
-      ['mark', 'black', '09_symbol_black.png'],
-      ['mark', 'mint-cream', '10_symbol_mint_cream.png'],
-      ['mark', 'celadon', '11_symbol_celadon.png'],
-      ['mark', 'muted-teal', '12_symbol_muted_teal.png'],
-      ['mark', 'amber-gold', '13_symbol_amber_gold.png'],
+      ['full', 'full-color', 'architectural-full.png'],
+      ['full', 'black', 'architectural-full.png'],
+      ['full', 'mint-cream', 'geometric-mint.png'],
+      ['full', 'celadon', 'geometric-mint.png'],
+      ['stacked', 'full-color', 'architectural-full.png'],
+      ['stacked', 'black', 'architectural-full.png'],
+      ['stacked', 'mint-cream', 'geometric-mint.png'],
+      ['mark', 'full-color', 'penrose-mint-charcoal.png'],
+      ['mark', 'black', 'penrose-mint-charcoal.png'],
+      ['mark', 'mint-cream', 'penrose-mint-charcoal.png'],
+      ['mark', 'celadon', 'penrose-mint-charcoal.png'],
+      ['mark', 'muted-teal', 'penrose-mint-charcoal.png'],
+      ['mark', 'amber-gold', 'penrose-mint-charcoal.png'],
     ] as const;
     for (const [variant, tone, filename] of assets) {
       rerender(<ArchTechLogo variant={variant} tone={tone} />);
-      expect(document.querySelector(`.arch-tech-logo-${variant} img`)?.getAttribute('src')).toBe(`/brand/garnier-architecture/${filename}`);
+      expect(document.querySelector(`.arch-tech-logo-${variant} img`)?.getAttribute('src')).toBe(`/brand/arch-tech/${filename}`);
     }
     expect(screen.queryByText('ARCH_TECH')).toBeNull();
   });
 
   it('uses the reusable supplied brand lockup in landing and portal headers', () => {
     render(<LandingNavbar onLogin={vi.fn()} />);
-    const landingHome = screen.getByRole('link', { name: 'GARNIER ARCHITECTURE home' });
-    expect(landingHome.querySelector('.arch-tech-logo-mark img')?.getAttribute('src')).toBe('/brand/garnier-architecture/10_symbol_mint_cream.png');
+    const landingHome = screen.getByRole('link', { name: 'ARCH_TECH home' });
+    expect(landingHome.querySelector('.arch-tech-logo-full img')?.getAttribute('src')).toBe('/brand/arch-tech/geometric-mint.png');
 
     cleanup();
     portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
     render(<DashboardPage onNavigate={vi.fn()} onSignOut={vi.fn()} />);
-    const portalHome = screen.getByRole('button', { name: 'GARNIER ARCHITECTURE home' });
-    expect(portalHome.querySelector('.arch-tech-logo-full img')?.getAttribute('src')).toBe('/brand/garnier-architecture/02_logo_horizontal_black.png');
+    const portalHome = screen.getByRole('button', { name: 'ARCH_TECH home' });
+    expect(portalHome.querySelector('.arch-tech-logo-full img')?.getAttribute('src')).toBe('/brand/arch-tech/architectural-full.png');
     expect(screen.getByText('Portfolio Showcase / Concept Prototype')).toBeDefined();
   });
 
@@ -268,7 +268,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     const symbolLogo = launcher.querySelector('.arch-tech-logo-mark');
     expect(symbolLogo).not.toBeNull();
     const logoImg = symbolLogo?.querySelector('img');
-    expect(logoImg?.getAttribute('src')).toContain('symbol');
+    expect(logoImg?.getAttribute('src')).toContain('penrose-mint-charcoal.png');
 
     // 3. Panel opens on click
     fireEvent.click(launcher);
@@ -1237,7 +1237,7 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
     expect(within(footer).getByTestId('footer-about-link').getAttribute('href')).toBe('#about');
     expect(within(footer).getByTestId('footer-team-link').getAttribute('href')).toBe('#team');
     expect(within(footer).getByText('Garnier & Garnier Showcase')).toBeDefined();
-    expect(within(footer).getByText('GARNIER ARCHITECTURE / public development platform')).toBeDefined();
+    expect(within(footer).getByText('ARCH_TECH / public development platform')).toBeDefined();
   });
 
   it('scrolls from footer directory links and returns to the landing top', () => {

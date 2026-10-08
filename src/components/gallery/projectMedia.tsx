@@ -63,7 +63,7 @@ export const ProjectImage: React.FC<ProjectImageProps> = ({ project, alt, classN
         className={`landing-image-fallback ${className}`}
       >
         {/* i18next-instrument-ignore */}
-        <span>GARNIER ARCHITECTURE / DEVELOPMENT</span>
+        <span>ARCH_TECH / DEVELOPMENT</span>
       </span>
     );
   }

@@ -15,7 +15,7 @@
   "createProjectUpdate": "Create project update",
   "current": "Current",
   "currentProjectModel": "Current project model",
-  "currentProjectModelDesc": "Open the project model in the existing GARNIER ARCHITECTURE workspace.",
+  "currentProjectModelDesc": "Open the project model in the existing ARCH_TECH workspace.",
   "date": "Date",
   "deleteProject": "Delete project",
   "deleteRuntimeProject": "Delete runtime project",
@@ -128,11 +128,11 @@
     "title": "Service temporarily unavailable."
   },
   "shell": {
-    "brandName": "GARNIER",
+    "brandName": "ARCH_TECH",
     "closeNavigation": "Close navigation",
     "openNavigation": "Open navigation menu",
     "showcaseEyebrow": "Portfolio Showcase / Concept Prototype",
-    "homeAria": "GARNIER ARCHITECTURE home",
+    "homeAria": "ARCH_TECH home",
     "roles": {
       "admin": "Executive Portal",
       "architect": "Architect Studio",

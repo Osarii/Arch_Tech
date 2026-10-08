@@ -340,7 +340,7 @@ describe('Phase 6: Portfolio Analytics & Progress History', () => {
 
       expect(screen.getAllByText(/Historical checkpoint/i).length).toBeGreaterThan(0);
       expect(screen.getAllByText(/Live registered progress/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByText(/GARNIER ARCHITECTURE concept telemetry/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/ARCH_TECH concept telemetry/i).length).toBeGreaterThan(0);
     });
 
     it('keeps existing development stages, live project comparison, and site intelligence intact', () => {

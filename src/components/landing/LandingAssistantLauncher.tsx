@@ -185,8 +185,8 @@ export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> =
             emptyDescription={
               aiT.landingGreeting ||
               (locale === 'es'
-                ? 'Bienvenido a GARNIER ARCHITECTURE. ¿En qué puedo orientarle respecto a nuestros proyectos, servicios o acceso al portal?'
-                : 'Welcome to GARNIER ARCHITECTURE. How can I assist you with our developments, services, or project portals?')
+                ? 'Bienvenido a ARCH_TECH. ¿En qué puedo orientarle respecto a nuestros proyectos, servicios o acceso al portal?'
+                : 'Welcome to ARCH_TECH. How can I assist you with our developments, services, or project portals?')
             }
             placeholder={
               locale === 'es'

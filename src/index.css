@@ -81,7 +81,7 @@
 .landing-navbar-links {
   gap: clamp(1.25rem, 2.4vw, 2.25rem);
 }
-/* Shared Garnier Architecture public surface palette (Dark Mode default). */
+/* Shared ARCH_TECH public surface palette (Dark Mode default). */
 .landing-surface:not(.landing-light) {
   background-color: #000000;
   color: #EDF4ED;
@@ -766,6 +766,9 @@ html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
 .arch-tech-logo-stacked {
   display: block;
 }
+.arch-tech-navbar-lockup .arch-tech-logo-lockup {
+  width: clamp(9.5rem, 18vw, 13rem);
+}
 .arch-tech-logo-lockup {
   display: block;
   height: auto;
@@ -807,8 +810,8 @@ html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
   justify-content: center;
   margin: 0 auto;
 }
-.login-overlay-mark .arch-tech-logo-stacked {
-  width: clamp(10rem, 36vw, 13.5rem);
+.login-overlay-mark .arch-tech-logo-lockup {
+  width: clamp(13rem, 58vw, 22rem);
 }
 .landing-hero-mark .arch-tech-logo-symbol {
   height: clamp(10rem, 22vw, 18rem);
@@ -1178,7 +1181,7 @@ html.portal-reduce-motion button[data-testid^="public-project-"]:active {
 
 /* ==========================================================================
    PUBLIC LIGHT THEME — ARCHITECTURAL PALETTE
-   Consistent with GARNIER ARCHITECTURE visual identity
+   Consistent with ARCH_TECH visual identity
    Surface: Warm Ivory / Stone / Linen (#F5F3EF, #FAF8F5, #EFECE6, #EAE7E1)
    Text: Dark Graphite / Charcoal (#17181A, #2D3035)
    Secondary Text: Muted Stone (#4D5156, #5C6168)

@@ -21,7 +21,7 @@
   "heading": "GARNIER ASSISTANT",
   "helperCopy": "Project intelligence and natural language coordination engine.",
   "inputPlaceholder": "Ask about model quantities, elements or building generation…",
-  "landingGreeting": "Welcome to GARNIER ARCHITECTURE. How can I assist you with our developments, services, or project portals?",
+  "landingGreeting": "Welcome to ARCH_TECH. How can I assist you with our developments, services, or project portals?",
   "landingQuickPrompts": [
     "What types of projects do you develop?",
     "Show me industrial projects",

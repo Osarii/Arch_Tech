@@ -219,7 +219,7 @@ const TrendLineChart: React.FC<TrendLineChartProps> = ({
             </span>
           </div>
           <span className="font-mono text-[9px] opacity-70 uppercase tracking-wider">
-            {t('conceptTelemetry', 'GARNIER ARCHITECTURE concept telemetry')}
+            {t('conceptTelemetry', 'ARCH_TECH concept telemetry')}
           </span>
         </div>
       </div>
@@ -362,7 +362,7 @@ export const AdminAnalyticsPage: React.FC<Partial<NavigationProps> & { onSignOut
           {adminPortal.analyticsSubtitle}
         </p>
         <p className="mt-2 font-mono text-[10px] uppercase tracking-wider text-stone-500">
-          {t('telemetryDisclaimer', 'Historical telemetry represents internal GARNIER ARCHITECTURE concept coordination, not official construction contractor records.')}
+            {t('telemetryDisclaimer', 'Historical telemetry represents internal ARCH_TECH concept coordination, not official construction contractor records.')}
         </p>
       </div>
 

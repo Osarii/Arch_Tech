@@ -206,7 +206,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
           <div className="flex h-14 items-center justify-between border-b border-[var(--portal-border)] px-4 shrink-0">
             <div className="flex items-center gap-2">
               <ArchTechLogo variant="mark" theme={dark ? 'dark' : 'light'} className="h-5 w-5" />
-              <span className="font-serif text-sm font-semibold tracking-tight text-[var(--portal-text)]">{portalShell.brandName || 'GARNIER'}</span>
+              <span className="font-serif text-sm font-semibold tracking-tight text-[var(--portal-text)]">{portalShell.brandName || 'ARCH_TECH'}</span>
             </div>
             <button
               type="button"
@@ -262,7 +262,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
             <button
               type="button"
               onClick={() => navigate('/')}
-              aria-label={portalShell.homeAria || 'GARNIER ARCHITECTURE home'}
+              aria-label={portalShell.homeAria || 'ARCH_TECH home'}
               className="block w-full text-left transition-opacity hover:opacity-85"
             >
               <ArchTechLogo

@@ -178,7 +178,7 @@ export const HeaderBar: React.FC = () => {
       {/* Left: Brand & File Actions */}
       <div className="flex items-center space-x-3">
         <div className="flex items-center space-x-2">
-          <ArchTechLogo variant="mark" tone="mint-cream" theme="dark" className="arch-tech-logo-workspace" label="GARNIER ARCHITECTURE" />
+          <ArchTechLogo variant="mark" tone="mint-cream" theme="dark" className="arch-tech-logo-workspace" label="ARCH_TECH" />
           <span className="font-semibold text-slate-100 text-sm tracking-tight">
             <span className="text-[10px] text-sky-400 font-mono bg-sky-950/70 border border-sky-800 px-1 py-0.5 rounded">{t('openbimWorkspaceBadge', 'OPENBIM WORKSPACE')}</span>
           </span>

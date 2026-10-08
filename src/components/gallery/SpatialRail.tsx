@@ -76,7 +76,7 @@ const RailImage: React.FC<{ src?: string; alt: string; loading?: 'eager' | 'lazy
     return (
       <div data-testid="rail-image-fallback" role="img" aria-label={t('gallery.imageUnavailable', '{{alt}} image unavailable', { alt })} className={`landing-image-fallback ${className}`}>
         {/* i18next-instrument-ignore */}
-        <span>GARNIER ARCHITECTURE / PROJECT MEDIA</span>
+        <span>ARCH_TECH / PROJECT MEDIA</span>
       </div>
     );
   }

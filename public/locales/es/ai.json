@@ -21,7 +21,7 @@
   "heading": "ASISTENTE GARNIER",
   "helperCopy": "Motor de inteligencia de proyectos y coordinación en lenguaje natural.",
   "inputPlaceholder": "Pregunte sobre cuantificación, elementos o generación volumétrica…",
-  "landingGreeting": "Bienvenido a GARNIER ARCHITECTURE. ¿En qué puedo orientarle respecto a nuestros proyectos, servicios o acceso al portal?",
+  "landingGreeting": "Bienvenido a ARCH_TECH. ¿En qué puedo orientarle respecto a nuestros proyectos, servicios o acceso al portal?",
   "landingQuickPrompts": [
     "¿Qué tipo de proyectos desarrollan?",
     "Muéstrame proyectos industriales",
