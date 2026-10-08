@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowDownRight } from 'lucide-react';
+import { ArrowDownRight, Play } from 'lucide-react';
 import { FeaturedProjectCarousel } from '../gallery/FeaturedProjectCarousel';
 import { Reveal } from '../motion/Reveal';
 import { ArchTechLogo } from '../brand/ArchTechLogo';
@@ -8,9 +8,12 @@ import { useLocale } from '../../portal/locale';
 interface HeroProps {
   onViewProjects: () => void;
   onOpenProject: (id: string) => void;
+  onStartPresentation?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => {
+const presentationLabel = 'PRESENTACIÓN';
+
+export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject, onStartPresentation }) => {
   const { landing } = useLocale();
   const t = landing.hero;
 
@@ -34,14 +37,27 @@ export const Hero: React.FC<HeroProps> = ({ onViewProjects, onOpenProject }) => 
           <div className="landing-hero-support border-l border-white/15 pl-6 lg:mb-3">
             <Reveal variant="fade-up" delay={200}>
               <p className="max-w-sm text-base leading-7 text-stone-300">{t.body}</p>
-              <button
-                data-testid="hero-view-projects"
-                onClick={onViewProjects}
-                className="arch-interactive-button group mt-7 inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-300 transition-colors hover:text-white"
-              >
-                {t.explorePortfolio}
-                <ArrowDownRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:translate-y-0.5" />
-              </button>
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <button
+                  data-testid="hero-view-projects"
+                  onClick={onViewProjects}
+                  className="arch-interactive-button group inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-stone-300 transition-colors hover:text-white"
+                >
+                  {t.explorePortfolio}
+                  <ArrowDownRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:translate-y-0.5" />
+                </button>
+                {onStartPresentation && (
+                  <button
+                    type="button"
+                    data-testid="hero-presentation-start"
+                    onClick={onStartPresentation}
+                    className="group inline-flex items-center gap-2 rounded-full border border-[#79B791]/50 bg-[#79B791]/10 px-3.5 py-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[#79B791] transition-all hover:bg-[#79B791] hover:text-black shadow-xs"
+                  >
+                    <Play className="h-3 w-3 fill-current" />
+                    <span>{presentationLabel}</span>
+                  </button>
+                )}
+              </div>
             </Reveal>
           </div>
         </div>

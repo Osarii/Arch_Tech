@@ -1,39 +1,57 @@
-import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useBimStore } from '@/stores/bimStore';
-import { getPresentationComponent, presentationChapters, type PresentationAssistantContext } from './componentRegistry';
+import type { ToolType } from '@/types/bim';
+import { getPresentationComponent, presentationChapters, type PresentationAssistantContext, type PresentationChapter } from './componentRegistry';
+import { speechService } from './speechService';
 
-export type { PresentationAssistantContext } from './componentRegistry';
+export type { PresentationAssistantContext, PresentationChapter } from './componentRegistry';
 
 type PresentationState = {
   isActive: boolean;
   isPaused: boolean;
   isExploring: boolean;
+  isVoiceEnabled: boolean;
   chapterIndex: number;
+  chapter: PresentationChapter;
   currentComponentId: string | null;
   assistantContext: PresentationAssistantContext;
   start: () => void;
   exit: () => void;
+  restart: () => void;
   previous: () => void;
   next: () => void;
+  goToChapter: (index: number) => void;
   setPaused: (paused: boolean) => void;
   setExploring: (exploring: boolean) => void;
+  toggleVoice: () => void;
   setCurrentComponentId: (id: string | null) => void;
 };
 
 const noop = () => undefined;
+const defaultChapter = presentationChapters[0];
 const defaultContext: PresentationState = {
   isActive: false,
   isPaused: false,
   isExploring: false,
+  isVoiceEnabled: true,
   chapterIndex: 0,
+  chapter: defaultChapter,
   currentComponentId: null,
-  assistantContext: { chapter: 'ARCH_TECH', section: 'Opening', projectContext: 'ARCH_TECH platform overview', currentComponent: null },
+  assistantContext: {
+    chapter: 'ARCH_TECH',
+    section: 'Opening',
+    projectContext: 'ARCH_TECH platform overview',
+    currentComponent: null,
+  },
   start: noop,
   exit: noop,
+  restart: noop,
   previous: noop,
   next: noop,
+  goToChapter: noop,
   setPaused: noop,
   setExploring: noop,
+  toggleVoice: noop,
   setCurrentComponentId: noop,
 };
 
@@ -41,62 +59,169 @@ const PresentationContext = createContext<PresentationState>(defaultContext);
 
 export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [isActive, setIsActive] = useState(false);
-  const [isPaused, setPaused] = useState(false);
-  const [isExploring, setExploring] = useState(false);
+  const [isPaused, setPausedState] = useState(false);
+  const [isExploring, setExploringState] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
   const [chapterIndex, setChapterIndex] = useState(0);
   const [currentComponentId, setCurrentComponentId] = useState<string | null>(null);
+
   const selectedElement = useBimStore((state) => state.selectedElement);
   const selectedSceneElements = useBimStore((state) => state.selectedSceneElements);
-  const snapshotRef = useRef<unknown>(null);
 
-  const chapter = presentationChapters[chapterIndex];
+  // Store initial BIM state snapshot to restore on exit
+  const snapshotRef = useRef<{
+    activeTool: ToolType;
+    selectedElement: typeof selectedElement;
+  } | null>(null);
+
+  const chapter = presentationChapters[chapterIndex] ?? presentationChapters[0];
   const currentComponent = getPresentationComponent(currentComponentId ?? chapter.componentIds[0] ?? null);
-  const selectedBimContext = selectedElement?.name ?? (selectedSceneElements.map((element) => element.name).join(', ') || undefined);
+  const selectedBimContext =
+    selectedElement?.name ?? (selectedSceneElements.map((element) => element.name).join(', ') || undefined);
 
-  const value = useMemo<PresentationState>(() => ({
-    isActive,
-    isPaused,
-    isExploring,
-    chapterIndex,
-    currentComponentId,
-    assistantContext: {
-      chapter: chapter.headline,
-      section: chapter.section,
-      projectContext: 'ARCH_TECH large-scale development platform',
+  // Safe non-destructive BIM tool selection for specific presentation chapters
+  useEffect(() => {
+    if (!isActive) return;
+
+    if (chapter.id === 'bim-analysis-tools') {
+      useBimStore.getState().setActiveTool('measure');
+      useBimStore.getState().setMeasureMode('distance');
+    } else if (chapter.id === 'model-explorer-inspector') {
+      useBimStore.getState().setActiveTool('select');
+    }
+  }, [isActive, chapter.id]);
+
+  const start = useCallback(() => {
+    const store = useBimStore.getState();
+    snapshotRef.current = {
+      activeTool: store.activeTool,
+      selectedElement: store.selectedElement,
+    };
+    setChapterIndex(0);
+    setCurrentComponentId(null);
+    setExploringState(false);
+    setPausedState(false);
+    setIsActive(true);
+  }, []);
+
+  const exit = useCallback(() => {
+    speechService.stop();
+    // Restore BIM tool snapshot safely
+    if (snapshotRef.current) {
+      const store = useBimStore.getState();
+      store.setActiveTool(snapshotRef.current.activeTool);
+      snapshotRef.current = null;
+    }
+    setIsActive(false);
+    setExploringState(false);
+    setPausedState(false);
+    setCurrentComponentId(null);
+    setChapterIndex(0);
+  }, []);
+
+  const restart = useCallback(() => {
+    speechService.stop();
+    setChapterIndex(0);
+    setCurrentComponentId(null);
+    setExploringState(false);
+    setPausedState(false);
+  }, []);
+
+  const previous = useCallback(() => {
+    speechService.stop();
+    setCurrentComponentId(null);
+    setChapterIndex((index) => Math.max(0, index - 1));
+  }, []);
+
+  const next = useCallback(() => {
+    speechService.stop();
+    setCurrentComponentId(null);
+    setChapterIndex((index) => Math.min(presentationChapters.length - 1, index + 1));
+  }, []);
+
+  const goToChapter = useCallback((index: number) => {
+    speechService.stop();
+    setCurrentComponentId(null);
+    setChapterIndex(Math.max(0, Math.min(presentationChapters.length - 1, index)));
+  }, []);
+
+  const setPaused = useCallback((paused: boolean) => {
+    setPausedState(paused);
+    if (paused) {
+      speechService.pause();
+    } else {
+      speechService.resume();
+    }
+  }, []);
+
+  const setExploring = useCallback((exploring: boolean) => {
+    setExploringState(exploring);
+    if (exploring) {
+      speechService.stop();
+      setPausedState(true);
+    }
+  }, []);
+
+  const toggleVoice = useCallback(() => {
+    setIsVoiceEnabled((prev) => {
+      const nextVal = !prev;
+      speechService.setVoiceEnabled(nextVal);
+      if (!nextVal) {
+        speechService.stop();
+      }
+      return nextVal;
+    });
+  }, []);
+
+  const value = useMemo<PresentationState>(
+    () => ({
+      isActive,
+      isPaused,
+      isExploring,
+      isVoiceEnabled,
+      chapterIndex,
+      chapter,
+      currentComponentId,
+      assistantContext: {
+        chapter: chapter.headline,
+        section: chapter.section,
+        projectContext: 'ARCH_TECH enterprise development platform',
+        currentComponent,
+        selectedBimContext,
+        route: chapter.route,
+      },
+      start,
+      exit,
+      restart,
+      previous,
+      next,
+      goToChapter,
+      setPaused,
+      setExploring,
+      toggleVoice,
+      setCurrentComponentId,
+    }),
+    [
+      isActive,
+      isPaused,
+      isExploring,
+      isVoiceEnabled,
+      chapterIndex,
+      chapter,
+      currentComponentId,
       currentComponent,
       selectedBimContext,
-    },
-    start: () => {
-      // Presentation is read-only; this snapshot documents the state it must never overwrite.
-      snapshotRef.current = { activeTool: useBimStore.getState().activeTool, selectedElement: useBimStore.getState().selectedElement };
-      setChapterIndex(0);
-      setCurrentComponentId(null);
-      setExploring(false);
-      setPaused(false);
-      setIsActive(true);
-    },
-    exit: () => {
-      snapshotRef.current = null;
-      setIsActive(false);
-      setExploring(false);
-      setPaused(false);
-      setCurrentComponentId(null);
-    },
-    previous: () => {
-      setCurrentComponentId(null);
-      setChapterIndex((index) => Math.max(0, index - 1));
-    },
-    next: () => {
-      setCurrentComponentId(null);
-      setChapterIndex((index) => Math.min(presentationChapters.length - 1, index + 1));
-    },
-    setPaused,
-    setExploring: (exploring) => {
-      setExploring(exploring);
-      if (exploring) setPaused(true);
-    },
-    setCurrentComponentId,
-  }), [chapter, chapterIndex, currentComponent, currentComponentId, isActive, isExploring, isPaused, selectedBimContext]);
+      start,
+      exit,
+      restart,
+      previous,
+      next,
+      goToChapter,
+      setPaused,
+      setExploring,
+      toggleVoice,
+    ]
+  );
 
   return <PresentationContext.Provider value={value}>{children}</PresentationContext.Provider>;
 };

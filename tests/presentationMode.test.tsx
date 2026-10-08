@@ -1,80 +1,164 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { PresentationMode } from '../src/components/presentation/PresentationMode';
 import { PresentationProvider, usePresentation } from '../src/presentation/PresentationContext';
 import { presentationChapters, presentationComponents } from '../src/presentation/componentRegistry';
 import { useBimStore } from '../src/stores/bimStore';
+import { speechService } from '../src/presentation/speechService';
+import { publicAssistant } from '../src/services/publicAssistantService';
 
 const Harness = () => {
   const presentation = usePresentation();
   return (
     <>
-      <button type="button" onClick={presentation.start}>PRESENTACIÓN</button>
+      <button type="button" onClick={presentation.start}>
+        PRESENTACIÓN
+      </button>
       <PresentationMode />
     </>
   );
 };
 
-const renderPresentation = () => render(
-  <PresentationProvider>
-    <Harness />
-  </PresentationProvider>,
-);
+const renderPresentation = () =>
+  render(
+    <PresentationProvider>
+      <Harness />
+    </PresentationProvider>
+  );
 
-describe('Presentation Mode', () => {
+describe('Presentation Mode & ARCH_TECH Hierarchy', () => {
   beforeEach(() => {
     useBimStore.getState().resetModel();
+    publicAssistant.clearHistory();
+    vi.restoreAllMocks();
   });
 
-  it('registers the requested chapters and explainable components with real source references', () => {
-    expect(presentationChapters.map((chapter) => chapter.headline)).toEqual([
+  it('registers all 12 chapters and explainable components with authentic source references', () => {
+    expect(presentationChapters).toHaveLength(12);
+    expect(presentationChapters.map((ch) => ch.headline)).toEqual([
       'ARCH_TECH',
-      'Large-Scale Development',
-      'Platform',
+      'Platform Architecture',
+      'Garnier Architecture Workspace',
+      'Zona Franca La Lima',
       'Project Intelligence',
-      'La Lima BIM',
-      'BIM Exploration',
-      'BIM Analysis',
+      'BIM / 3D Engine',
+      'Model Explorer + Inspector',
+      'BIM Analysis Tools',
       'Visual Engine',
-      'Garnier Assistant',
+      'ARCH Assistant',
+      'Explore Mode',
       'Closing',
     ]);
-    expect(presentationComponents.map((component) => component.label)).toEqual(expect.arrayContaining([
-      'Landing Hero', 'Portal', 'KPI Cards', 'Site Intelligence', 'Garnier Assistant', 'BIM Viewer',
-      'Model Explorer', 'Search', 'Inspector', 'Selection', 'Multi-selection', 'Distance', 'Polyline',
-      'Area', 'Section Plane', 'Saved Views', 'Day / Overcast', 'Performance / Balanced / Presentation',
-    ]));
-    expect(presentationComponents.every((component) => component.sourceFiles.length > 0 && component.technologies.length > 0)).toBe(true);
+
+    expect(presentationComponents.map((component) => component.label)).toEqual(
+      expect.arrayContaining([
+        'Landing Hero',
+        'Portal',
+        'KPI Cards',
+        'Site Intelligence',
+        'BIM Viewer',
+        'Model Explorer',
+        'Search',
+        'Inspector',
+        'Selection',
+        'Multi-selection',
+        'Distance',
+        'Polyline',
+        'Area',
+        'Section Plane',
+        'Saved Views',
+        'Day / Overcast',
+        'Performance / Balanced / Presentation',
+        'ARCH Assistant',
+      ])
+    );
+
+    // Verify all components reference authentic files
+    expect(
+      presentationComponents.every(
+        (component) => component.sourceFiles.length > 0 && component.technologies.length > 0
+      )
+    ).toBe(true);
   });
 
-  it('progresses deterministically, supports exploration, and exits with Escape', async () => {
+  it('starts presentation, displays cinematic opening, captions, and navigates chapters', async () => {
+    const speakSpy = vi.spyOn(speechService, 'speak');
     renderPresentation();
 
     fireEvent.click(screen.getByRole('button', { name: 'PRESENTACIÓN' }));
     expect(screen.getByTestId('presentation-mode')).toBeDefined();
-    expect(screen.getByRole('heading', { name: 'ARCH_TECH' })).toBeDefined();
 
+    // Cinematic Intro Phase
+    expect(screen.getByText(/Problem · The Information Paradox/i)).toBeDefined();
+    expect(screen.getByText(/Captions/i)).toBeDefined();
+
+    // Check speech synthesis was invoked
+    expect(speakSpy).toHaveBeenCalled();
+
+    // Navigate to next chapter (02 Platform)
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByRole('heading', { name: 'Large-Scale Development' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Platform Architecture' })).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Explore' }));
-    expect(screen.getByText('The platform, explained on demand.')).toBeDefined();
-    fireEvent.click(screen.getByTestId('presentation-component-bim-viewer'));
-    expect(screen.getByTestId('presentation-explainer').textContent).toContain('WHAT IS IT?');
-    expect(screen.getByTestId('presentation-explainer').textContent).toContain('src/components/bim/BimViewport.tsx');
+    // Voice toggle
+    const voiceBtn = screen.getByRole('button', { name: /Voice/i });
+    expect(voiceBtn).toBeDefined();
+    fireEvent.click(voiceBtn); // Toggle OFF
+    fireEvent.click(voiceBtn); // Toggle ON
 
+    // Navigate to Chapter 03 (Workspace)
+    fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    expect(screen.getByRole('heading', { name: 'Garnier Architecture Workspace' })).toBeDefined();
+
+    // Exit with Escape key
     fireEvent.keyDown(window, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByTestId('presentation-mode')).toBeNull());
   });
 
-  it('continues in page view when fullscreen is unavailable and leaves BIM state unchanged', async () => {
+  it('supports Explore Mode, Technical Explainer, and Ask ARCH about component', async () => {
+    const sendMessageSpy = vi.spyOn(publicAssistant, 'sendMessage').mockResolvedValueOnce({
+      id: 'mock-1',
+      role: 'assistant',
+      content: 'BIM Viewer uses WebGL, That Open Components and Three.js.',
+      timestamp: '12:00',
+    });
+
+    renderPresentation();
+    fireEvent.click(screen.getByRole('button', { name: 'PRESENTACIÓN' }));
+
+    // Click Explore button
+    fireEvent.click(screen.getByRole('button', { name: 'Explore' }));
+    expect(screen.getByText('The platform, explained on demand.')).toBeDefined();
+
+    // Select BIM Viewer component
+    fireEvent.click(screen.getByTestId('presentation-component-bim-viewer'));
+
+    const explainer = screen.getByTestId('presentation-explainer');
+    expect(explainer.textContent).toContain('WHAT IS IT?');
+    expect(explainer.textContent).toContain('HOW DOES IT WORK?');
+    expect(explainer.textContent).toContain('DATA FLOW');
+    expect(explainer.textContent).toContain('SOURCE FILES');
+    expect(explainer.textContent).toContain('src/components/bim/BimViewport.tsx');
+    expect(explainer.textContent).toContain('TECHNOLOGIES');
+
+    // Ask ARCH about this component
+    fireEvent.click(screen.getByRole('button', { name: /ASK ARCH ABOUT THIS/i }));
+    await waitFor(() => {
+      expect(sendMessageSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles fullscreen fallback gracefully and restores initial BIM tool upon exit', async () => {
     useBimStore.getState().setActiveTool('section');
+
     renderPresentation();
 
     fireEvent.click(screen.getByRole('button', { name: 'PRESENTACIÓN' }));
     await waitFor(() => expect(screen.getByTestId('presentation-fullscreen-fallback')).toBeDefined());
+
+    // Exit presentation
     fireEvent.click(screen.getByRole('button', { name: 'Exit' }));
 
+    // State restored cleanly
     expect(useBimStore.getState().activeTool).toBe('section');
   });
 });

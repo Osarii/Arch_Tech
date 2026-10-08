@@ -11,6 +11,8 @@ interface LandingAssistantLauncherProps {
   presentationContext?: PresentationAssistantContext;
 }
 
+const contextPrefix = 'CONTEXT:';
+
 export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> = ({ lightTheme, presentationContext }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<AIMessage[]>([]);
@@ -83,9 +85,14 @@ export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> =
     : [
         locale === 'es' ? '¿Qué tipo de proyectos desarrollan?' : 'What types of projects do you develop?',
         locale === 'es' ? 'Muéstrame proyectos industriales' : 'Show me industrial projects',
-        locale === 'es' ? 'Cuéntame sobre La Lima' : 'Tell me about La Lima',
-        locale === 'es' ? '¿Qué puedo consultar aquí?' : 'What can I review here?',
+        locale === 'es' ? 'Cuéntame sobre sus servicios' : 'Tell me about your services',
+        locale === 'es' ? '¿Cómo ingreso a mi portal de proyecto?' : 'How do I access my project portal?',
       ];
+
+  const assistantSubtitle =
+    locale === 'es'
+      ? 'Orientación de arquitectura y desarrollo'
+      : 'Architecture & development concierge';
 
   return (
     <>
@@ -149,29 +156,42 @@ export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> =
           aria-label={aiT.publicAssistantTitle || 'GARNIER ASSISTANT'}
           className={`fixed inset-3 ${presentationContext ? 'z-[90] sm:bottom-20' : 'z-40 sm:bottom-6'} flex flex-col sm:inset-auto sm:right-6 sm:h-[580px] sm:w-[380px] animate-in fade-in zoom-in-95 duration-200`}
         >
+          {/* Active Presentation Context Pill */}
+          {presentationContext && (
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-white/10 bg-[#79B791]/10 font-mono text-[9px] uppercase tracking-wider text-[#79B791]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#79B791] animate-pulse" />
+              <span className="truncate">
+                {contextPrefix} {presentationContext.chapter}
+                {presentationContext.currentComponent ? ` / ${presentationContext.currentComponent.label}` : ''}
+              </span>
+            </div>
+          )}
+
           <GarnierChatShell
             variant="docked"
             lightTheme={isLight}
             className="h-full"
             title={aiT.publicAssistantTitle || (locale === 'es' ? 'ASISTENTE GARNIER' : 'GARNIER ASSISTANT')}
-            subtitle={aiT.publicAssistantSubtitle || (locale === 'es' ? 'Orientación de arquitectura y desarrollo' : 'Architecture & development concierge')}
+            subtitle={aiT.publicAssistantSubtitle || assistantSubtitle}
             statusLabel={aiT.onlineStatus || (locale === 'es' ? 'En línea' : 'Online')}
             isOnline={true}
             messages={messages}
             isProcessing={isProcessing}
             onSendMessage={handleSend}
             onClose={handleClose}
-            closeAriaLabel={aiT.launcherAriaClose || 'Close GARNIER assistant'}
+            closeAriaLabel={aiT.launcherAriaClose || 'Close assistant'}
             quickPrompts={quickPrompts}
             emptyHeading={aiT.publicAssistantTitle || (locale === 'es' ? 'ASISTENTE GARNIER' : 'GARNIER ASSISTANT')}
             emptyDescription={
               aiT.landingGreeting ||
               (locale === 'es'
-                ? 'Bienvenido a GARNIER ARCHITECTURE. ¿En qué podemos orientarle sobre nuestros proyectos y servicios?'
+                ? 'Bienvenido a GARNIER ARCHITECTURE. ¿En qué puedo orientarle respecto a nuestros proyectos, servicios o acceso al portal?'
                 : 'Welcome to GARNIER ARCHITECTURE. How can I assist you with our developments, services, or project portals?')
             }
             placeholder={
-              locale === 'es' ? 'Consulte sobre proyectos, sectores o acceso…' : 'Ask about projects, sectors or access…'
+              locale === 'es'
+                ? 'Consulte sobre proyectos, código, herramientas o BIM…'
+                : 'Ask about projects, code, tools, or BIM…'
             }
             sendLabel={aiT.send || 'Send'}
             thinkingLabel={aiT.thinking || (locale === 'es' ? 'Pensando…' : 'Thinking…')}

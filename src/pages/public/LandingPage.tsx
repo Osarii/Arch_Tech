@@ -66,7 +66,11 @@ const LandingPageContent: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         onStartPresentation={presentation.start}
       />
       <main>
-        <Hero onViewProjects={viewProjects} onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
+        <Hero
+          onViewProjects={viewProjects}
+          onOpenProject={(id) => onNavigate(`/projects/${id}`)}
+          onStartPresentation={presentation.start}
+        />
         <ProjectShowcase onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
         <NewsSection onNavigate={onNavigate} />
         <AboutSection />
