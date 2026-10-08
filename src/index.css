@@ -1,16 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Manrope:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-.font-serif {
-  font-family: 'Cormorant Garamond', serif;
-}
-.font-sans,
-.font-mono {
-  font-family: 'Manrope', sans-serif;
-}
 
 .landing-about-media {
   aspect-ratio: 4 / 3;
@@ -284,6 +276,8 @@
 
 
 :root {
+  --font-ui: 'IBM Plex Sans', sans-serif;
+  --font-display: 'IBM Plex Serif', serif;
   --background: 224 15% 7%;
   --foreground: 220 10% 92%;
   --card: 224 14% 10%;
@@ -310,14 +304,25 @@
   box-sizing: border-box;
 }
 
+html {
+  font-family: var(--font-ui);
+}
+
 body {
   margin: 0;
   padding: 0;
   overflow: hidden;
   background-color: #0d0f12;
   color: #e2e8f0;
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font-ui);
   -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
 }
 
 /* Custom scrollbars for technical desktop UI */
@@ -572,7 +577,7 @@ html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
   padding: 0.35rem;
   color: var(--portal-text);
   background-color: var(--portal-surface-raised);
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.5rem;
   letter-spacing: 0.12em;
   line-height: 1.3;
@@ -666,7 +671,7 @@ html.portal-dark .portal-surface [data-testid="site-intelligence-analyze"] {
     #111216;
   background-size: 2.5rem 2.5rem;
   color: rgb(244 239 232 / 0.55);
-  font-family: 'Manrope', sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.6rem;
   letter-spacing: 0.16em;
   line-height: 1.4;
@@ -1205,5 +1210,10 @@ html.portal-reduce-motion button[data-testid^="public-project-"]:active {
 
 /* Tailwind's technical aliases still resolve to the public two-family system. */
 .font-sans,
-.font-mono { font-family: 'Manrope', sans-serif !important; }
-.font-serif { font-family: 'Cormorant Garamond', serif !important; }
+.font-mono {
+  font-family: var(--font-ui) !important;
+}
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+.font-serif { font-family: var(--font-display) !important; }
