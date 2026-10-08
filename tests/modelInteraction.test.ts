@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { ModelInteraction, getCameraFocusBounds } from '@/bim/interaction';
+import {
+  ModelInteraction,
+  filterSceneInteractionTargets,
+  getCameraFocusBounds,
+  groupSceneInteractionTargets,
+} from '@/bim/interaction';
 
 const buildScene = () => {
   const scene = new THREE.Scene();
@@ -49,16 +54,22 @@ describe('procedural model interaction', () => {
     expect(first.details.material).toBeUndefined();
 
     interaction.setSelected(first);
+    interaction.toggleSelected(second);
     expect(interaction.isolateSelected()).toBe(true);
-    expect(interaction.getHiddenIds()).toEqual(new Set(['mass:two']));
-    expect(interaction.getIsolatedId()).toBe('mass:one');
+    expect(interaction.getHiddenIds()).toEqual(new Set());
+    expect(interaction.getIsolatedIds()).toEqual(new Set(['mass:one', 'mass:two']));
 
+    interaction.setSelected(first);
     interaction.showAll();
+    interaction.isolateSelected();
     const after = new THREE.Matrix4();
+    mesh.getMatrixAt(1, after);
+    expect(after.equals(before)).toBe(false);
+    interaction.showAll();
     mesh.getMatrixAt(1, after);
     expect(after.equals(before)).toBe(true);
     expect(interaction.getHiddenIds()).toEqual(new Set());
-    expect(interaction.getIsolatedId()).toBeNull();
+    expect(interaction.getIsolatedIds()).toEqual(new Set());
 
     interaction.setSelected(second);
     expect(interaction.hideSelected()).toBe(true);
@@ -67,6 +78,32 @@ describe('procedural model interaction', () => {
     interaction.showAll();
     mesh.getMatrixAt(1, after);
     expect(after.equals(before)).toBe(true);
+  });
+
+  it('adds and removes multi-selection without changing source materials', () => {
+    const { scene, mesh } = buildScene();
+    const material = mesh.material;
+    const interaction = new ModelInteraction();
+    interaction.attach(scene);
+    const [first, second] = interaction.getSelectableTargets();
+
+    interaction.setSelected(first);
+    interaction.toggleSelected(second);
+    expect(interaction.getSelectedTargets().map((target) => target.id)).toEqual(['mass:one', 'mass:two']);
+    interaction.toggleSelected(first);
+    expect(interaction.getSelectedTargets().map((target) => target.id)).toEqual(['mass:two']);
+    expect(mesh.material).toBe(material);
+  });
+
+  it('groups and filters only real selectable metadata for the explorer', () => {
+    const { scene } = buildScene();
+    const interaction = new ModelInteraction();
+    interaction.attach(scene);
+    const targets = interaction.getSelectableTargets();
+
+    expect(groupSceneInteractionTargets(targets).map((group) => group.name)).toEqual(['Corporate', 'Industrial']);
+    expect(filterSceneInteractionTargets(targets, 'north').map((target) => target.id)).toEqual(['mass:one']);
+    expect(filterSceneInteractionTargets(targets, 'missing')).toEqual([]);
   });
 
   it('creates a bounded focus box around the selected element', () => {

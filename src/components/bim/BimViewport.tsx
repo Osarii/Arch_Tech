@@ -7,6 +7,13 @@ import { LA_LIMA_SITE_CONTEXT_ID, laLimaSiteContextService } from '@/bim/site';
 import { Box, UploadCloud, Compass, AlertCircle, RefreshCw, Layers, Maximize, RotateCcw, Eye } from 'lucide-react';
 import { StandardViewDirection } from '@/types/bim';
 import { BimInteractionPanel } from './BimInteractionPanel';
+import { BimModelExplorer } from './BimModelExplorer';
+
+const isTypingElement = (target: EventTarget | null): boolean =>
+  target instanceof HTMLInputElement
+  || target instanceof HTMLTextAreaElement
+  || target instanceof HTMLSelectElement
+  || (target instanceof HTMLElement && target.isContentEditable);
 
 export const BimViewport: React.FC = () => {
   const { t } = useTranslation('workspace');
@@ -19,9 +26,12 @@ export const BimViewport: React.FC = () => {
   const loading = useBimStore((s) => s.loading);
   const setSelectedElement = useBimStore((s) => s.setSelectedElement);
   const setSelectedSceneElement = useBimStore((s) => s.setSelectedSceneElement);
+  const setSelectedSceneElements = useBimStore((s) => s.setSelectedSceneElements);
   const setHoveredSceneElementId = useBimStore((s) => s.setHoveredSceneElementId);
   const setPerfStats = useBimStore((s) => s.setPerfStats);
   const setSelectedNodeId = useBimStore((s) => s.setSelectedNodeId);
+  const activeTool = useBimStore((s) => s.activeTool);
+  const setActiveTool = useBimStore((s) => s.setActiveTool);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -36,6 +46,7 @@ export const BimViewport: React.FC = () => {
       }
     };
     bimEngine.onSceneElementSelected = setSelectedSceneElement;
+    bimEngine.onSceneElementsSelected = setSelectedSceneElements;
     bimEngine.onSceneElementHovered = setHoveredSceneElementId;
 
     // Connect performance stats callback
@@ -51,10 +62,36 @@ export const BimViewport: React.FC = () => {
     return () => {
       bimEngine.onElementSelected = undefined;
       bimEngine.onSceneElementSelected = undefined;
+      bimEngine.onSceneElementsSelected = undefined;
       bimEngine.onSceneElementHovered = undefined;
       bimEngine.onPerformanceUpdate = undefined;
     };
-  }, [setHoveredSceneElementId, setSelectedElement, setSelectedNodeId, setSelectedSceneElement, setPerfStats]);
+  }, [setHoveredSceneElementId, setSelectedElement, setSelectedNodeId, setSelectedSceneElement, setSelectedSceneElements, setPerfStats]);
+
+  useEffect(() => {
+    const handleShortcut = (event: KeyboardEvent) => {
+      if (isTypingElement(event.target) || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        if (activeTool === 'measure') {
+          bimEngine.cancelMeasurement();
+          setActiveTool('select');
+        } else {
+          void bimEngine.clearCurrentSelection();
+        }
+      } else if (event.key.toLowerCase() === 'f') {
+        if (!useBimStore.getState().selectedElement && useBimStore.getState().selectedSceneElements.length === 0) return;
+        event.preventDefault();
+        void bimEngine.focusSelected();
+      } else if (event.key.toLowerCase() === 'h') {
+        if (!useBimStore.getState().selectedElement && useBimStore.getState().selectedSceneElements.length === 0) return;
+        event.preventDefault();
+        void bimEngine.hideSelected();
+      }
+    };
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
+  }, [activeTool, setActiveTool]);
 
   // Drag & drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -258,6 +295,7 @@ export const BimViewport: React.FC = () => {
             </button>
           </div>
           <BimInteractionPanel />
+          <BimModelExplorer />
           <div className="absolute top-3 right-3 z-20">
             <div className="relative">
             <button

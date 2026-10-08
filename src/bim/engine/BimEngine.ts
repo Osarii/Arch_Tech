@@ -17,8 +17,11 @@ import { bimGenerationService } from '../generation/generationService';
 import { laLimaSiteContextService } from '../site';
 import {
   ModelInteraction,
+  filterSceneInteractionTargets,
+  groupSceneInteractionTargets,
   getCameraFocusBounds,
   type SceneInteractionDetails,
+  type SceneInteractionGroup,
   type SceneInteractionTarget,
 } from '../interaction';
 import { useBimStore } from '@/stores/bimStore';
@@ -78,6 +81,7 @@ export class BimEngine {
   // Selection callback
   public onElementSelected?: (details: SelectedElementDetails | null) => void;
   public onSceneElementSelected?: (details: SceneInteractionDetails | null) => void;
+  public onSceneElementsSelected?: (details: SceneInteractionDetails[]) => void;
   public onSceneElementHovered?: (id: string | null) => void;
   public onPerformanceUpdate?: (stats: Partial<PerformanceStats>) => void;
 
@@ -130,7 +134,7 @@ export class BimEngine {
     const target = this.pickSceneInteraction(event.clientX, event.clientY);
     if (!target) return;
     event.stopImmediatePropagation();
-    void this.selectSceneInteraction(target);
+    void this.selectSceneInteraction(target, event.shiftKey || event.metaKey || event.ctrlKey);
   };
 
   constructor() {
@@ -153,6 +157,9 @@ export class BimEngine {
     };
     this.modelInteraction.onSelectionChange = (target) => {
       this.onSceneElementSelected?.(target?.details ?? null);
+    };
+    this.modelInteraction.onSelectionSetChange = (targets) => {
+      this.onSceneElementsSelected?.(targets.map((target) => target.details));
     };
   }
 
@@ -241,10 +248,14 @@ export class BimEngine {
     if (this.interactionCanvas) this.interactionCanvas.style.cursor = target ? 'pointer' : '';
   }
 
-  private async selectSceneInteraction(target: SceneInteractionTarget): Promise<void> {
+  private async selectSceneInteraction(target: SceneInteractionTarget, append = false): Promise<void> {
     if (this.highlighter) await this.highlighter.clear('select');
     this.emitIfcSelection(null);
-    this.modelInteraction.setSelected(target);
+    if (append) {
+      this.modelInteraction.toggleSelected(target);
+    } else {
+      this.modelInteraction.setSelected(target);
+    }
   }
 
   public async waitForInit(): Promise<void> {
@@ -412,6 +423,10 @@ export class BimEngine {
       // 9. Measurements setup
       this.lengthMeasure = this.components.get(OBF.LengthMeasurement);
       this.lengthMeasure.world = this.world;
+      this.lengthMeasure.units = 'm';
+      this.lengthMeasure.rounding = 2;
+      this.lengthMeasure.mode = 'free';
+      this.lengthMeasure.pickMode = OBF.MeasurementPickMode.MOUSE_STOP;
       this.lengthMeasure.enabled = false;
 
       this.areaMeasure = this.components.get(OBF.AreaMeasurement);
@@ -686,19 +701,19 @@ export class BimEngine {
 
   private emitIfcSelection(details: SelectedElementDetails | null): void {
     this.onElementSelected?.(details);
-    this.onSceneElementSelected?.(
-      details
-        ? {
-            id: `ifc:${details.expressID}`,
-            name: details.name,
-            category: details.type,
-            type: details.type,
-            level: details.storey,
-            material: details.materials?.join(', '),
-            elementId: String(details.expressID),
-          }
-        : null
-    );
+    const sceneDetails = details
+      ? {
+          id: `ifc:${details.expressID}`,
+          name: details.name,
+          category: details.type,
+          type: details.type,
+          level: details.storey,
+          material: details.materials?.join(', '),
+          elementId: String(details.expressID),
+        }
+      : null;
+    this.onSceneElementSelected?.(sceneDetails);
+    this.onSceneElementsSelected?.(sceneDetails ? [sceneDetails] : []);
   }
 
   // --- CAMERA & VIEWPORT CONTROLS ---
@@ -926,7 +941,7 @@ export class BimEngine {
 
   public async clearCurrentSelection(): Promise<void> {
     if (this.modelInteraction.getSelected()) {
-      this.modelInteraction.setSelected(null);
+      this.modelInteraction.clearSelection();
       return;
     }
     await this.clearSelection();
@@ -966,8 +981,7 @@ export class BimEngine {
   }
 
   public focusSelected(): void | Promise<void> {
-    const siteSelection = this.modelInteraction.getSelected();
-    if (siteSelection) {
+    if (this.modelInteraction.getSelectedTargets().length > 0) {
       const bounds = this.modelInteraction.getSelectedBounds();
       if (bounds && !bounds.isEmpty() && this.world?.camera?.controls) {
         void this.world.camera.controls.fitToBox(getCameraFocusBounds(bounds), this.shouldAnimateCamera(), {
@@ -1007,13 +1021,25 @@ export class BimEngine {
     useBimStore.getState().setIsIsolated(true);
   }
 
+  public getSceneExplorerGroups(query = ''): SceneInteractionGroup[] {
+    return groupSceneInteractionTargets(filterSceneInteractionTargets(this.modelInteraction.getSelectableTargets(), query));
+  }
+
+  public async selectSceneElements(ids: string[], append = false, focus = false): Promise<void> {
+    if (!laLimaSiteContextService.isActive()) return;
+    if (this.highlighter) await this.highlighter.clear('select');
+    this.emitIfcSelection(null);
+    this.modelInteraction.selectByIds(ids, append);
+    if (focus) this.focusSelected();
+  }
+
   public getSceneInteractionState(): {
     hiddenIds: Set<string>;
-    isolatedId: string | null;
+    isolatedIds: Set<string>;
   } {
     return {
       hiddenIds: this.modelInteraction.getHiddenIds(),
-      isolatedId: this.modelInteraction.getIsolatedId(),
+      isolatedIds: this.modelInteraction.getIsolatedIds(),
     };
   }
 
@@ -1022,13 +1048,14 @@ export class BimEngine {
     this.syncSceneInteractionState();
     this.onSceneElementHovered?.(null);
     this.onSceneElementSelected?.(null);
+    this.onSceneElementsSelected?.([]);
   }
 
   private syncSceneInteractionState(): void {
     const state = this.getSceneInteractionState();
     const store = useBimStore.getState();
     store.setHiddenSceneElementIds(state.hiddenIds);
-    store.setIsolatedSceneElementId(state.isolatedId);
+    store.setIsolatedSceneElementIds(state.isolatedIds);
   }
 
   public getProperties(expressID: number): SelectedElementDetails | null {
@@ -1151,6 +1178,7 @@ export class BimEngine {
     if (this.angleMeasure) this.angleMeasure.enabled = false;
 
     if (type === 'distance' && this.lengthMeasure) {
+      this.lengthMeasure.units = 'm';
       this.lengthMeasure.enabled = true;
       this.lengthMeasure.create();
     } else if (type === 'area' && this.areaMeasure) {
@@ -1175,6 +1203,17 @@ export class BimEngine {
       this.angleMeasure.delete();
       this.angleMeasure.enabled = false;
     }
+  }
+
+  public clearCurrentDistanceMeasurement(): void {
+    if (!this.lengthMeasure) return;
+    this.lengthMeasure.cancelCreation();
+  }
+
+  public cancelMeasurement(): void {
+    if (!this.lengthMeasure) return;
+    this.lengthMeasure.cancelCreation();
+    this.lengthMeasure.enabled = false;
   }
 
   // --- PHASE 2: LOCAL BIM VIEWPOINTS ---
@@ -1345,6 +1384,7 @@ export class BimEngine {
       this.setupModelInteractionCallbacks();
       this.onElementSelected = undefined;
       this.onSceneElementSelected = undefined;
+      this.onSceneElementsSelected = undefined;
       this.onSceneElementHovered = undefined;
       this.onPerformanceUpdate = undefined;
       this.isInitialized = false;

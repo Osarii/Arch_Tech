@@ -287,5 +287,15 @@
   "viewportOnlyTooltip": "Estilo del visor únicamente (transitorio)",
   "views": "Vistas",
   "visualAppearanceOverrides": "Reemplazos de Apariencia Visual",
-  "volumeFormatM3": "{{val}} m³"
+  "volumeFormatM3": "{{val}} m³",
+  "clearCurrent": "Limpiar actual",
+  "clearCurrentMeasurementTitle": "Limpiar medición actual",
+  "classification": "Clasificación",
+  "identity": "Identidad",
+  "location": "Ubicación",
+  "modelExplorer": "Explorador de modelo",
+  "multiSelection": "Múltiples elementos",
+  "noElementsFound": "No se encontraron elementos",
+  "searchElements": "Buscar elementos",
+  "selectionShortcuts": "F enfocar · H ocultar · Esc limpiar"
 }

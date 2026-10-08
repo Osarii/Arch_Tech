@@ -23,12 +23,15 @@ export const BottomToolbar: React.FC = () => {
   const activeTool = useBimStore((s) => s.activeTool);
   const setActiveTool = useBimStore((s) => s.setActiveTool);
   const selectedElement = useBimStore((s) => s.selectedElement);
+  const selectedSceneElements = useBimStore((s) => s.selectedSceneElements);
   const modelMetadata = useBimStore((s) => s.modelMetadata);
+  const activeSiteContextId = useBimStore((s) => s.activeSiteContextId);
   const measureMode = useBimStore((s) => s.measureMode);
   const setMeasureMode = useBimStore((s) => s.setMeasureMode);
   const sectionPlaneCount = useBimStore((s) => s.sectionPlaneCount);
   const is2DMode = useBimStore((s) => s.is2DMode);
   const activeFloorPlanStorey = useBimStore((s) => s.activeFloorPlanStorey);
+  const hasSelection = Boolean(selectedElement || selectedSceneElements.length > 0);
 
   const handleToolChange = (tool: ToolType) => {
     setActiveTool(tool);
@@ -41,7 +44,7 @@ export const BottomToolbar: React.FC = () => {
       bimEngine.clipper.enabled = true;
     } else {
       bimEngine.clipper.enabled = false;
-      bimEngine.deleteMeasurements();
+      bimEngine.cancelMeasurement();
       bimEngine.highlighter.enabled = true;
     }
   };
@@ -68,22 +71,11 @@ export const BottomToolbar: React.FC = () => {
   };
 
   const handleHideSelection = async () => {
-    if (selectedElement) {
-      await bimEngine.hideElements([selectedElement.expressID]);
-      useBimStore
-        .getState()
-        .setHiddenExpressIds(
-          new Set([...useBimStore.getState().hiddenExpressIds, selectedElement.expressID])
-        );
-      await bimEngine.clearSelection();
-    }
+    await bimEngine.hideSelected();
   };
 
   const handleIsolateSelection = async () => {
-    if (selectedElement) {
-      await bimEngine.isolateElements([selectedElement.expressID]);
-      useBimStore.getState().setIsIsolated(true);
-    }
+    await bimEngine.isolateSelected();
   };
 
   const handleShowAll = async () => {
@@ -97,11 +89,8 @@ export const BottomToolbar: React.FC = () => {
   };
 
   const handleFocusSelection = async () => {
-    if (selectedElement) {
-      await bimEngine.focusElements([selectedElement.expressID]);
-    } else {
-      bimEngine.fitModel();
-    }
+    if (hasSelection) return bimEngine.focusSelected();
+    bimEngine.fitModel();
   };
 
   const handleToggle2D3D = async () => {
@@ -120,7 +109,7 @@ export const BottomToolbar: React.FC = () => {
     }
   };
 
-  if (!modelMetadata) return null;
+  if (!modelMetadata && !activeSiteContextId) return null;
 
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center bg-[#13161f]/95 border border-[#262c3b] rounded-xl shadow-2xl p-1.5 space-x-1 backdrop-blur-md select-none">
@@ -297,6 +286,15 @@ export const BottomToolbar: React.FC = () => {
               <Trash2 className="w-3 h-3" />
               <span>{t('clearMeasurements', 'Clear')}</span>
             </button>
+            <button
+              onClick={() => bimEngine.clearCurrentDistanceMeasurement()}
+              data-testid="measure-btn-clear-current"
+              className="flex items-center space-x-1 px-2 py-1 rounded border border-[#2d3345] text-slate-300 hover:bg-[#1e2330] text-xs font-medium transition"
+              title={t('clearCurrentMeasurementTitle', 'Clear current measurement')}
+            >
+              <Trash2 className="w-3 h-3" />
+              <span>{t('clearCurrent', 'Clear current')}</span>
+            </button>
           </div>
         </>
       )}
@@ -307,7 +305,7 @@ export const BottomToolbar: React.FC = () => {
       <div className="flex items-center space-x-1">
         <button
           onClick={handleHideSelection}
-          disabled={!selectedElement}
+          disabled={!hasSelection}
           data-testid="action-hide"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
           title={t('hideSelectedTitle', 'Hide Selected Element')}
@@ -318,7 +316,7 @@ export const BottomToolbar: React.FC = () => {
 
         <button
           onClick={handleIsolateSelection}
-          disabled={!selectedElement}
+          disabled={!hasSelection}
           data-testid="action-isolate"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
           title={t('isolateSelectedTitle', 'Isolate Selected Element')}
@@ -354,7 +352,7 @@ export const BottomToolbar: React.FC = () => {
 
         <button
           onClick={handleFocusSelection}
-          disabled={!selectedElement}
+          disabled={!hasSelection}
           data-testid="action-focus"
           className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:bg-[#1e2330] hover:text-slate-100 transition disabled:opacity-40 disabled:hover:bg-transparent"
           title={t('focusSelectedTitle', 'Focus Selected Element')}
