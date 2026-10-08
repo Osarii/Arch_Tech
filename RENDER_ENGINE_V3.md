@@ -55,3 +55,13 @@ The V3 foundation does not add geometry, textures, materials, draw calls, shadow
 - No GPU timer-query instrumentation: WebGL support is inconsistent and the low-frequency renderer counters are sufficient for profile decisions.
 - No automatic scene LOD: revisit only after a validated IFC/site exceeds the current draw-call or triangle budgets.
 - Quality selection is engine API only in this foundation; public UI controls are intentionally outside this render-scope change.
+
+## V3.2 interaction and camera controls
+
+V3.2 adds a procedural-scene interaction layer without changing La Lima geometry, material ownership, instancing, quality presets, or adaptive DPR. Semantic warehouse, logistics-yard, multitenant, and corporate-massing instances carry existing concept-site metadata for selection. IFC selection continues through That Open's Highlighter and property extraction.
+
+- Hover and selection use two reusable `Box3Helper` overlays. Source material instances are never recolored or cloned.
+- An `InstancedMesh` remains instanced; instance IDs identify selected and hidden site masses. Hide/isolate saves original instance matrices and `Show All` restores them without a scene reload.
+- The compact viewport inspector only shows supplied metadata. It provides Focus, Isolate, Hide, Close Selection, and Show All.
+- Architectural camera controls constrain dolly distance to 4–3000m, prevent under-terrain orbiting, retain cursor dolly, and respect system reduced motion for Fit, Reset, standard views, and selection focus.
+- The static La Lima baseline remains 21 draw calls, 3,564 triangles, and 18 textures. A selected/hovered mass adds only the visible helper-line overlay draw calls; no site geometry or texture count changes.

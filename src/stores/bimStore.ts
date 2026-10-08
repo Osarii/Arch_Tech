@@ -17,6 +17,7 @@ import {
   EditMode,
   BimChange,
 } from '@/types/bim';
+import type { SceneInteractionDetails } from '@/bim/interaction';
 
 interface BimState {
   // Tools & Navigation
@@ -69,6 +70,14 @@ interface BimState {
   // Selection
   selectedElement: SelectedElementDetails | null;
   setSelectedElement: (element: SelectedElementDetails | null) => void;
+  selectedSceneElement: SceneInteractionDetails | null;
+  setSelectedSceneElement: (element: SceneInteractionDetails | null) => void;
+  hoveredSceneElementId: string | null;
+  setHoveredSceneElementId: (id: string | null) => void;
+  hiddenSceneElementIds: Set<string>;
+  setHiddenSceneElementIds: (ids: Set<string>) => void;
+  isolatedSceneElementId: string | null;
+  setIsolatedSceneElementId: (id: string | null) => void;
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;
 
@@ -212,6 +221,14 @@ export const useBimStore = create<BimState>((set) => ({
 
   selectedElement: null,
   setSelectedElement: (element) => set({ selectedElement: element }),
+  selectedSceneElement: null,
+  setSelectedSceneElement: (element) => set({ selectedSceneElement: element }),
+  hoveredSceneElementId: null,
+  setHoveredSceneElementId: (id) => set({ hoveredSceneElementId: id }),
+  hiddenSceneElementIds: new Set<string>(),
+  setHiddenSceneElementIds: (ids) => set({ hiddenSceneElementIds: ids }),
+  isolatedSceneElementId: null,
+  setIsolatedSceneElementId: (id) => set({ isolatedSceneElementId: id }),
   selectedNodeId: null,
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 
@@ -316,6 +333,10 @@ export const useBimStore = create<BimState>((set) => ({
       activeSiteContextId: null,
       activeSiteContextLabel: null,
       selectedElement: null,
+      selectedSceneElement: null,
+      hoveredSceneElementId: null,
+      hiddenSceneElementIds: new Set<string>(),
+      isolatedSceneElementId: null,
       selectedNodeId: null,
       spatialTree: [],
       categories: [],

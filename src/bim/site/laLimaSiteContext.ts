@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { createLaLimaMaterialPalette } from './laLimaMaterials';
+import type { SceneInteractionDetails } from '../interaction';
 
 export const LA_LIMA_SITE_CONTEXT_ID = 'la-lima-concept-site';
 export const LA_LIMA_SITE_CONTEXT_LABEL = 'La Lima Concept Site';
@@ -8,6 +9,24 @@ type BoxTransform = {
   position: [number, number, number];
   scale: [number, number, number];
 };
+
+const siteElement = (
+  id: string,
+  name: string,
+  type: string,
+  category: string,
+  zone: string,
+  material: string
+): SceneInteractionDetails => ({
+  id,
+  name,
+  type,
+  category,
+  zone,
+  project: LA_LIMA_SITE_CONTEXT_LABEL,
+  material,
+  elementId: id,
+});
 
 export class LaLimaSiteContextService {
   private scene: THREE.Scene | null = null;
@@ -101,7 +120,19 @@ export class LaLimaSiteContextService {
         geometry,
         materials.industrialPanel,
         warehouseCenters.map(([x, z]) => ({ position: [x, 9, z], scale: [160, 18, 82] })),
-        { kind: 'warehouse', logicalCount: 6 }
+        {
+          kind: 'warehouse',
+          logicalCount: 6,
+          selectable: true,
+          interaction: warehouseCenters.map((_, index) => siteElement(
+            `la-lima:warehouse:${index + 1}`,
+            `Industrial Warehouse ${index + 1}`,
+            'Warehouse massing',
+            'Industrial',
+            'Industrial District',
+            'La Lima Industrial Metal Panel'
+          )),
+        }
       )
     );
     industrialGroup.add(
@@ -150,7 +181,24 @@ export class LaLimaSiteContextService {
       )
     );
     industrialGroup.add(
-      this.createBox('MultitenantBuilding', geometry, materials.industrialPanel, [40, 12, -35], [180, 24, 72])
+      this.createBox(
+        'MultitenantBuilding',
+        geometry,
+        materials.industrialPanel,
+        [40, 12, -35],
+        [180, 24, 72],
+        {
+          selectable: true,
+          interaction: siteElement(
+            'la-lima:multitenant',
+            'Multitenant Building',
+            'Multitenant massing',
+            'Industrial',
+            'Industrial District',
+            'La Lima Industrial Metal Panel'
+          ),
+        }
+      )
     );
     industrialGroup.add(
       this.createBox('MultitenantRoof', geometry, materials.industrialRoof, [40, 24.6, -35], [184, 1.2, 76])
@@ -168,7 +216,19 @@ export class LaLimaSiteContextService {
           { position: [-340, 0.6, -255], scale: [190, 1.2, 120] },
           { position: [-105, 0.6, -255], scale: [190, 1.2, 120] },
         ],
-        { kind: 'logistics-yard', logicalCount: 2 }
+        {
+          kind: 'logistics-yard',
+          logicalCount: 2,
+          selectable: true,
+          interaction: ['North Logistics Yard', 'South Logistics Yard'].map((name, index) => siteElement(
+            `la-lima:logistics-yard:${index + 1}`,
+            name,
+            'Logistics yard',
+            'Logistics',
+            'Logistics District',
+            'La Lima Industrial Concrete'
+          )),
+        }
       )
     );
     logisticsGroup.add(
@@ -203,6 +263,15 @@ export class LaLimaSiteContextService {
       this.createInstances('CorporateBuildings', geometry, materials.corporateConcrete, corporateBuildings, {
         kind: 'corporate-building',
         logicalCount: 5,
+        selectable: true,
+        interaction: corporateBuildings.map((_, index) => siteElement(
+          `la-lima:corporate:${index + 1}`,
+          `Corporate Building ${index + 1}`,
+          'Corporate office massing',
+          'Corporate',
+          'Corporate District',
+          'La Lima Corporate Concrete'
+        )),
       })
     );
     corporateGroup.add(
@@ -321,12 +390,14 @@ export class LaLimaSiteContextService {
     geometry: THREE.BoxGeometry,
     material: THREE.Material,
     position: [number, number, number],
-    scale: [number, number, number]
+    scale: [number, number, number],
+    userData: Record<string, unknown> = {}
   ): THREE.Mesh {
     const mesh = new THREE.Mesh(geometry, material);
     mesh.name = name;
     mesh.position.set(...position);
     mesh.scale.set(...scale);
+    mesh.userData = userData;
     return mesh;
   }
 

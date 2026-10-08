@@ -46,6 +46,10 @@ describe('La Lima concept site context', () => {
     expect(service.getBounds().isEmpty()).toBe(false);
     expect(warehouses.count).toBe(6);
     expect(corporateBuildings.count).toBe(5);
+    expect(warehouses.userData.selectable).toBe(true);
+    expect(warehouses.userData.interaction).toHaveLength(6);
+    expect(corporateBuildings.userData.selectable).toBe(true);
+    expect(corporateBuildings.userData.interaction).toHaveLength(5);
     expect(roads.count).toBeGreaterThanOrEqual(8);
     expect(group.getObjectByName('LogisticsYards')).toBeDefined();
     expect(group.getObjectByName('ParkingAreas')).toBeDefined();

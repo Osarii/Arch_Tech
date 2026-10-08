@@ -15,6 +15,12 @@ import { extractElementProperties } from '../properties/propertyExtractor';
 import { bimEditService } from '../edit/bimEditService';
 import { bimGenerationService } from '../generation/generationService';
 import { laLimaSiteContextService } from '../site';
+import {
+  ModelInteraction,
+  getCameraFocusBounds,
+  type SceneInteractionDetails,
+  type SceneInteractionTarget,
+} from '../interaction';
 import { useBimStore } from '@/stores/bimStore';
 import { AdaptiveResolution } from './adaptiveResolution';
 import { renderQualityProfiles, type RenderDiagnostics, type RenderQualityProfile } from './renderQuality';
@@ -61,9 +67,18 @@ export class BimEngine {
   private trackedControls: CameraControlsEvents | null = null;
   private isCameraInteractive = false;
   private lastCameraActivityAt = 0;
+  private modelInteraction = new ModelInteraction();
+  private readonly interactionRaycaster = new THREE.Raycaster();
+  private readonly interactionPointer = new THREE.Vector2();
+  private interactionCanvas: HTMLCanvasElement | null = null;
+  private pointerFrameId: number | null = null;
+  private pendingPointer: { x: number; y: number } | null = null;
+  private pointerDown: { x: number; y: number } | null = null;
 
   // Selection callback
   public onElementSelected?: (details: SelectedElementDetails | null) => void;
+  public onSceneElementSelected?: (details: SceneInteractionDetails | null) => void;
+  public onSceneElementHovered?: (id: string | null) => void;
   public onPerformanceUpdate?: (stats: Partial<PerformanceStats>) => void;
 
   // Performance tracking
@@ -81,8 +96,46 @@ export class BimEngine {
     this.isCameraInteractive = false;
   };
 
+  private readonly handleInteractionPointerMove = (event: PointerEvent): void => {
+    if (useBimStore.getState().activeTool !== 'select') {
+      this.handleInteractionPointerLeave();
+      return;
+    }
+    this.pendingPointer = { x: event.clientX, y: event.clientY };
+    if (this.pointerFrameId !== null || typeof requestAnimationFrame !== 'function') {
+      if (this.pointerFrameId === null) this.updateSceneHover();
+      return;
+    }
+    this.pointerFrameId = requestAnimationFrame(() => {
+      this.pointerFrameId = null;
+      this.updateSceneHover();
+    });
+  };
+
+  private readonly handleInteractionPointerLeave = (): void => {
+    this.pendingPointer = null;
+    this.modelInteraction.setHovered(null);
+    if (this.interactionCanvas) this.interactionCanvas.style.cursor = '';
+  };
+
+  private readonly handleInteractionPointerDown = (event: PointerEvent): void => {
+    this.pointerDown = { x: event.clientX, y: event.clientY };
+  };
+
+  private readonly handleInteractionClick = (event: MouseEvent): void => {
+    if (!this.isSceneInteractionEnabled() || !this.pointerDown) return;
+    const moved = Math.hypot(event.clientX - this.pointerDown.x, event.clientY - this.pointerDown.y);
+    this.pointerDown = null;
+    if (moved > 4) return;
+    const target = this.pickSceneInteraction(event.clientX, event.clientY);
+    if (!target) return;
+    event.stopImmediatePropagation();
+    void this.selectSceneInteraction(target);
+  };
+
   constructor() {
     this.createCoreComponents();
+    this.setupModelInteractionCallbacks();
 
     const isDevOrTest =
       (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') ||
@@ -92,6 +145,15 @@ export class BimEngine {
     if (typeof window !== 'undefined' && isDevOrTest) {
       (window as any).bimEngine = this;
     }
+  }
+
+  private setupModelInteractionCallbacks(): void {
+    this.modelInteraction.onHoverChange = (target) => {
+      this.onSceneElementHovered?.(target?.id ?? null);
+    };
+    this.modelInteraction.onSelectionChange = (target) => {
+      this.onSceneElementSelected?.(target?.details ?? null);
+    };
   }
 
   private createCoreComponents(): void {
@@ -122,6 +184,67 @@ export class BimEngine {
       canvas.addEventListener('webglcontextlost', this.handleContextLost);
       canvas.addEventListener('webglcontextrestored', this.handleContextRestored);
     }
+  }
+
+  private setupSceneInteractionListeners(canvas: HTMLCanvasElement | null): void {
+    if (this.interactionCanvas === canvas) return;
+    if (this.interactionCanvas) {
+      this.interactionCanvas.removeEventListener('pointermove', this.handleInteractionPointerMove);
+      this.interactionCanvas.removeEventListener('pointerleave', this.handleInteractionPointerLeave);
+      this.interactionCanvas.removeEventListener('pointerdown', this.handleInteractionPointerDown, true);
+      this.interactionCanvas.removeEventListener('click', this.handleInteractionClick, true);
+    }
+    this.interactionCanvas = canvas;
+    if (canvas) {
+      canvas.addEventListener('pointermove', this.handleInteractionPointerMove, { passive: true });
+      canvas.addEventListener('pointerleave', this.handleInteractionPointerLeave, { passive: true });
+      canvas.addEventListener('pointerdown', this.handleInteractionPointerDown, true);
+      canvas.addEventListener('click', this.handleInteractionClick, true);
+    }
+  }
+
+  private cancelPendingInteractionFrame(): void {
+    if (this.pointerFrameId !== null && typeof cancelAnimationFrame === 'function') {
+      cancelAnimationFrame(this.pointerFrameId);
+    }
+    this.pointerFrameId = null;
+  }
+
+  private isSceneInteractionEnabled(): boolean {
+    return useBimStore.getState().activeTool === 'select' && laLimaSiteContextService.isActive();
+  }
+
+  private pickSceneInteraction(clientX: number, clientY: number): SceneInteractionTarget | null {
+    const canvas = this.interactionCanvas;
+    const camera = this.world?.camera?.three;
+    if (!canvas || !camera) return null;
+    const bounds = canvas.getBoundingClientRect();
+    if (bounds.width === 0 || bounds.height === 0) return null;
+    this.interactionPointer.set(
+      ((clientX - bounds.left) / bounds.width) * 2 - 1,
+      -((clientY - bounds.top) / bounds.height) * 2 + 1
+    );
+    return this.modelInteraction.pick(this.interactionRaycaster, camera, this.interactionPointer);
+  }
+
+  private updateSceneHover(): void {
+    if (!this.pendingPointer) return;
+    if (!this.isSceneInteractionEnabled()) {
+      if (this.highlighter?.enabled && this.currentModelId) {
+        void this.highlighter.highlight('hover', true, false);
+      }
+      return;
+    }
+    const { x, y } = this.pendingPointer;
+    const target = this.pickSceneInteraction(x, y);
+    this.modelInteraction.setHovered(target);
+    if (this.interactionCanvas) this.interactionCanvas.style.cursor = target ? 'pointer' : '';
+  }
+
+  private async selectSceneInteraction(target: SceneInteractionTarget): Promise<void> {
+    if (this.highlighter) await this.highlighter.clear('select');
+    this.emitIfcSelection(null);
+    this.modelInteraction.setSelected(target);
   }
 
   public async waitForInit(): Promise<void> {
@@ -180,6 +303,7 @@ export class BimEngine {
         bimEditService.initSceneLayer(this.world.scene.three);
         bimGenerationService.initSceneLayer(this.world.scene.three);
         laLimaSiteContextService.attach(this.world.scene.three);
+        this.modelInteraction.attach(this.world.scene.three);
         bimEditService.setSceneBridge({
           getWebIfcApi: () => this.webIfcApi,
           getWebIfcModelID: () => this.webIfcModelID,
@@ -206,6 +330,7 @@ export class BimEngine {
         this.world.renderer.three.domElement.style.position = 'absolute';
         this.world.renderer.three.domElement.style.inset = '0';
         this.setupWebGLContextListeners(this.world.renderer.three.domElement);
+        this.setupSceneInteractionListeners(this.world.renderer.three.domElement);
       }
 
       // 4. Setup Camera
@@ -215,9 +340,7 @@ export class BimEngine {
       this.world.camera.threeOrtho.far = 5000;
       this.world.camera.threeOrtho.updateProjectionMatrix();
       if (this.world.camera.controls) {
-        this.world.camera.controls.dollyToCursor = true;
-        this.world.camera.controls.infinityDolly = true;
-        this.world.camera.controls.smoothTime = 0.2;
+        this.configureArchitecturalCameraControls();
         this.setupCameraActivityTracking(this.world.camera.controls as unknown as CameraControlsEvents);
       }
 
@@ -261,6 +384,13 @@ export class BimEngine {
         selectName: 'select',
         autoHighlightOnClick: true,
       });
+      this.highlighter.styles.set('hover', {
+        color: new THREE.Color(0x79b791),
+        opacity: 0.22,
+        transparent: true,
+        renderedFaces: FRAGS.RenderedFaces.TWO,
+        preserveOriginalMaterial: true,
+      });
 
       // Wire up highlight events
       if (this.highlighter.events?.select) {
@@ -268,7 +398,7 @@ export class BimEngine {
           this.handleModelIdMapSelection(modelIdMap);
         });
         this.highlighter.events.select.onClear.add(() => {
-          if (this.onElementSelected) this.onElementSelected(null);
+          this.emitIfcSelection(null);
         });
       }
 
@@ -306,6 +436,8 @@ export class BimEngine {
       this.stopPerformanceSampler();
       this.disconnectResizeObserver();
       this.setupWebGLContextListeners(null);
+      this.setupSceneInteractionListeners(null);
+      this.cancelPendingInteractionFrame();
       this.setupCameraActivityTracking(null);
       this.lighting.dispose();
       this.revokeWorkerBlobUrl();
@@ -353,6 +485,7 @@ export class BimEngine {
       }
       threeRenderer.setPixelRatio(this.effectiveDpr);
       this.setupWebGLContextListeners(canvas);
+      this.setupSceneInteractionListeners(canvas);
     }
 
     // 3. Update That Open SimpleRenderer internal container reference & events
@@ -543,15 +676,56 @@ export class BimEngine {
     for (const [, expressIds] of Object.entries(modelIdMap)) {
       for (const expressID of expressIds) {
         const details = extractElementProperties(this.webIfcApi, this.webIfcModelID, expressID);
-        if (details && this.onElementSelected) {
-          this.onElementSelected(details);
+        if (details) {
+          this.emitIfcSelection(details);
           return;
         }
       }
     }
   }
 
+  private emitIfcSelection(details: SelectedElementDetails | null): void {
+    this.onElementSelected?.(details);
+    this.onSceneElementSelected?.(
+      details
+        ? {
+            id: `ifc:${details.expressID}`,
+            name: details.name,
+            category: details.type,
+            type: details.type,
+            level: details.storey,
+            material: details.materials?.join(', '),
+            elementId: String(details.expressID),
+          }
+        : null
+    );
+  }
+
   // --- CAMERA & VIEWPORT CONTROLS ---
+
+  private configureArchitecturalCameraControls(): void {
+    const controls = this.world?.camera?.controls;
+    if (!controls) return;
+    controls.dollyToCursor = true;
+    controls.infinityDolly = false;
+    controls.minDistance = 4;
+    controls.maxDistance = 3000;
+    controls.minZoom = 0.25;
+    controls.maxZoom = 8;
+    controls.minPolarAngle = 0.04;
+    controls.maxPolarAngle = Math.PI / 2 - 0.04;
+    controls.smoothTime = 0.18;
+    controls.draggingSmoothTime = 0.08;
+    controls.restThreshold = 0.01;
+  }
+
+  private shouldAnimateCamera(): boolean {
+    return !(
+      typeof window !== 'undefined'
+      && typeof window.matchMedia === 'function'
+      && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    );
+  }
 
   public setCameraMode(mode: CameraViewMode): void {
     if (!this.world?.camera) return;
@@ -624,8 +798,14 @@ export class BimEngine {
     }
 
     if (targetBox && !targetBox.isEmpty()) {
-      this.world.camera.controls.fitToBox(targetBox, true);
+      void this.world.camera.controls.fitToBox(targetBox, this.shouldAnimateCamera());
     }
+  }
+
+  public resetView(): void {
+    this.setCameraMode('perspective');
+    useBimStore.getState().setCameraMode('perspective');
+    this.setStandardView('isometric');
   }
 
   public setStandardView(direction: StandardViewDirection): void {
@@ -650,7 +830,7 @@ export class BimEngine {
           center.x,
           center.y,
           center.z,
-          true
+          this.shouldAnimateCamera()
         );
         break;
       case 'bottom':
@@ -661,7 +841,7 @@ export class BimEngine {
           center.x,
           center.y,
           center.z,
-          true
+          this.shouldAnimateCamera()
         );
         break;
       case 'front':
@@ -672,7 +852,7 @@ export class BimEngine {
           center.x,
           center.y,
           center.z,
-          true
+          this.shouldAnimateCamera()
         );
         break;
       case 'back':
@@ -683,7 +863,7 @@ export class BimEngine {
           center.x,
           center.y,
           center.z,
-          true
+          this.shouldAnimateCamera()
         );
         break;
       case 'left':
@@ -694,7 +874,7 @@ export class BimEngine {
           center.x,
           center.y,
           center.z,
-          true
+          this.shouldAnimateCamera()
         );
         break;
       case 'right':
@@ -705,7 +885,7 @@ export class BimEngine {
           center.x,
           center.y,
           center.z,
-          true
+          this.shouldAnimateCamera()
         );
         break;
       case 'isometric':
@@ -717,7 +897,7 @@ export class BimEngine {
           center.x,
           center.y,
           center.z,
-          true
+          this.shouldAnimateCamera()
         );
         break;
     }
@@ -734,16 +914,22 @@ export class BimEngine {
 
     if (expressIDs.length > 0 && this.webIfcApi && this.webIfcModelID !== null) {
       const details = extractElementProperties(this.webIfcApi, this.webIfcModelID, expressIDs[0]);
-      if (details && this.onElementSelected) {
-        this.onElementSelected(details);
-      }
+      this.emitIfcSelection(details);
     }
   }
 
   public async clearSelection(): Promise<void> {
     if (!this.highlighter) return;
     await this.highlighter.clear('select');
-    if (this.onElementSelected) this.onElementSelected(null);
+    this.emitIfcSelection(null);
+  }
+
+  public async clearCurrentSelection(): Promise<void> {
+    if (this.modelInteraction.getSelected()) {
+      this.modelInteraction.setSelected(null);
+      return;
+    }
+    await this.clearSelection();
   }
 
   public async hideElements(expressIDs: number[]): Promise<void> {
@@ -763,8 +949,12 @@ export class BimEngine {
   }
 
   public async showAll(): Promise<void> {
-    if (!this.hider) return;
-    await this.hider.set(true);
+    if (this.hider) await this.hider.set(true);
+    this.modelInteraction.showAll();
+    const store = useBimStore.getState();
+    store.setHiddenExpressIds(new Set());
+    store.setIsIsolated(false);
+    this.syncSceneInteractionState();
   }
 
   public async focusElements(expressIDs: number[]): Promise<void> {
@@ -773,6 +963,72 @@ export class BimEngine {
       return;
     }
     await this.selectElements(expressIDs, true);
+  }
+
+  public focusSelected(): void | Promise<void> {
+    const siteSelection = this.modelInteraction.getSelected();
+    if (siteSelection) {
+      const bounds = this.modelInteraction.getSelectedBounds();
+      if (bounds && !bounds.isEmpty() && this.world?.camera?.controls) {
+        void this.world.camera.controls.fitToBox(getCameraFocusBounds(bounds), this.shouldAnimateCamera(), {
+          paddingLeft: 0.12,
+          paddingRight: 0.12,
+          paddingTop: 0.12,
+          paddingBottom: 0.12,
+        });
+      }
+      return;
+    }
+    const selected = useBimStore.getState().selectedElement;
+    if (selected) return this.focusElements([selected.expressID]);
+  }
+
+  public async hideSelected(): Promise<void> {
+    if (this.modelInteraction.hideSelected()) {
+      this.syncSceneInteractionState();
+      return;
+    }
+    const selected = useBimStore.getState().selectedElement;
+    if (!selected) return;
+    await this.hideElements([selected.expressID]);
+    const store = useBimStore.getState();
+    store.setHiddenExpressIds(new Set([...store.hiddenExpressIds, selected.expressID]));
+    await this.clearSelection();
+  }
+
+  public async isolateSelected(): Promise<void> {
+    if (this.modelInteraction.isolateSelected()) {
+      this.syncSceneInteractionState();
+      return;
+    }
+    const selected = useBimStore.getState().selectedElement;
+    if (!selected) return;
+    await this.isolateElements([selected.expressID]);
+    useBimStore.getState().setIsIsolated(true);
+  }
+
+  public getSceneInteractionState(): {
+    hiddenIds: Set<string>;
+    isolatedId: string | null;
+  } {
+    return {
+      hiddenIds: this.modelInteraction.getHiddenIds(),
+      isolatedId: this.modelInteraction.getIsolatedId(),
+    };
+  }
+
+  public resetSceneInteractions(): void {
+    this.modelInteraction.reset();
+    this.syncSceneInteractionState();
+    this.onSceneElementHovered?.(null);
+    this.onSceneElementSelected?.(null);
+  }
+
+  private syncSceneInteractionState(): void {
+    const state = this.getSceneInteractionState();
+    const store = useBimStore.getState();
+    store.setHiddenSceneElementIds(state.hiddenIds);
+    store.setIsolatedSceneElementId(state.isolatedId);
   }
 
   public getProperties(expressID: number): SelectedElementDetails | null {
@@ -1002,6 +1258,7 @@ export class BimEngine {
     this.webIfcApi = null;
     this.webIfcModelID = null;
     this.invalidateModelBounds();
+    this.resetSceneInteractions();
     laLimaSiteContextService.clear();
     useBimStore.getState().setActiveSiteContextId(null);
     useBimStore.getState().setActiveSiteContextLabel(null);
@@ -1053,9 +1310,7 @@ export class BimEngine {
       }
     }
 
-    if (this.onElementSelected) {
-      this.onElementSelected(null);
-    }
+    this.emitIfcSelection(null);
   }
 
   public dispose(): Promise<void> {
@@ -1074,6 +1329,8 @@ export class BimEngine {
       this.stopPerformanceSampler();
       this.disconnectResizeObserver();
       this.setupWebGLContextListeners(null);
+      this.setupSceneInteractionListeners(null);
+      this.cancelPendingInteractionFrame();
       this.setupCameraActivityTracking(null);
       await this.unloadModel();
       this.lighting.dispose();
@@ -1083,7 +1340,12 @@ export class BimEngine {
         console.warn('Error disposing components:', err);
       }
       this.revokeWorkerBlobUrl();
+      this.modelInteraction.dispose();
+      this.modelInteraction = new ModelInteraction();
+      this.setupModelInteractionCallbacks();
       this.onElementSelected = undefined;
+      this.onSceneElementSelected = undefined;
+      this.onSceneElementHovered = undefined;
       this.onPerformanceUpdate = undefined;
       this.isInitialized = false;
       this.isDisposed = true;
