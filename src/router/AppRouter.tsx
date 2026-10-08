@@ -47,6 +47,7 @@ import {
 import { DemoTourProvider } from '../demo/DemoTourContext';
 import { DemoIntroModal } from '../components/demo/DemoIntroModal';
 import { DemoTourBar } from '../components/demo/DemoTourBar';
+import { PortalGuidedTour } from '../components/demo/PortalGuidedTour';
 
 const Workspace = React.lazy(() => import('../components/layout/Workspace').then((module) => ({ default: module.Workspace })));
 
@@ -246,6 +247,7 @@ const RoutedApp: React.FC = () => {
       </Routes>
       <DemoIntroModal />
       <DemoTourBar />
+      <PortalGuidedTour />
     </>
   );
 };

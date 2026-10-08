@@ -13,6 +13,7 @@ import { projectService } from '../../../services/projectService';
 import { projectWorkflowService } from '../../../services/projectWorkflowService';
 import { userService } from '../../../services/userService';
 import {
+  ExternalContextPanel,
   formatPortalDate,
   NavigationProps,
   NotFoundPage,
@@ -22,6 +23,7 @@ import {
   ProjectOverview,
 } from '../../../components/portal/PortalCommon';
 import { PortalShell, usePortalShell } from '../../../components/portal/PortalShell';
+import { useDemoTour } from '../../../demo/DemoTourContext';
 import { useLocale } from '../../../portal/locale';
 import { useTranslation } from 'react-i18next';
 import {
@@ -56,6 +58,14 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
 
   const [snapshot, setSnapshot] = useState(getPortalSnapshot);
   const [activeTab, setActiveTab] = useState('Overview');
+  const { isPortalTourActive, requestedPortalTab } = useDemoTour();
+
+  useEffect(() => {
+    if (isPortalTourActive && requestedPortalTab && requestedPortalTab !== activeTab) {
+      setActiveTab(requestedPortalTab);
+    }
+  }, [isPortalTourActive, requestedPortalTab, activeTab]);
+
   const [progress, setProgress] = useState('');
   const [progressError, setProgressError] = useState('');
   const [phase, setPhase] = useState('');
@@ -243,14 +253,14 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         <ArrowLeft className="h-3.5 w-3.5" /> {t('allProjects', 'All projects')}
       </button>
 
-      <div className="mt-8 grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
+      <div data-tour-id="portal-tour-overview" className="mt-8 grid gap-8 border-b border-black/15 pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-500">
             {project.code} / {getLocalizedProjectField(project.id, 'category', project.category)}
           </p>
           <h1 className="mt-4 font-serif text-5xl font-light tracking-tight sm:text-6xl">{project.title}</h1>
         </div>
-        <div className="min-w-64">
+        <div data-tour-id="portal-tour-progress" className="min-w-64">
           <div className="flex justify-between font-mono text-[9px] uppercase tracking-wider text-stone-500">
             <span>{getLocalizedProjectField(project.id, 'phase', project.phase)}</span>
             <span>{project.progress}%</span>
@@ -291,7 +301,14 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
 
       {/* Tab Panels */}
       <section className="py-12">
-        {activeTab === 'Overview' && <ProjectOverview project={project} />}
+        {activeTab === 'Overview' && (
+          <div className="space-y-12">
+            <ProjectOverview project={project} />
+            <div data-tour-id="portal-tour-intelligence" className="border-t border-black/15 pt-8">
+              <ExternalContextPanel />
+            </div>
+          </div>
+        )}
 
         {activeTab === 'Updates' && (
           <div className="divide-y divide-black/15 border-y border-black/15">
@@ -315,7 +332,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         )}
 
         {activeTab === 'Milestones' && (
-          <ol className="divide-y divide-black/15 border-y border-black/15">
+          <ol data-tour-id="portal-tour-milestones" className="divide-y divide-black/15 border-y border-black/15">
             {project.milestones.length ? (
               project.milestones.map((ms, index) => {
                 const locMs = getLocalizedMilestone(ms);
@@ -338,7 +355,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         )}
 
         {activeTab === 'Documents' && (
-          <div className="divide-y divide-black/15 border-y border-black/15">
+          <div data-tour-id="portal-tour-documents" className="divide-y divide-black/15 border-y border-black/15">
             {project.documents.length ? (
               project.documents.map((doc) => {
                 const locDoc = getLocalizedDocument(doc, project.id);
@@ -362,7 +379,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         )}
 
         {activeTab === 'Approvals' && (
-          <div className="divide-y divide-black/15 border-y border-black/15">
+          <div data-tour-id="portal-tour-approvals" className="divide-y divide-black/15 border-y border-black/15">
             {project.approvals.length ? (
               project.approvals.map((appr) => (
                 <div key={appr.title} className="flex items-center justify-between gap-6 py-6">
@@ -410,7 +427,7 @@ export const DashboardProjectPage: React.FC<DashboardProjectPageProps> = ({
         )}
 
         {activeTab === 'Model' && (
-          <div className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div data-tour-id="portal-tour-model" className="grid gap-10 lg:grid-cols-[1fr_auto] lg:items-end">
             <div>
               <Box className="h-6 w-6" />
               <h2 className="mt-8 font-serif text-4xl">{t('currentProjectModel', 'Current project model')}</h2>

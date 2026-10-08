@@ -254,6 +254,7 @@ const PortalShellCore: React.FC<ShellCoreProps> = ({
 
         {/* Desktop Persistent Left Navigation Rail */}
         <aside
+          data-tour-id="portal-tour-perspectives"
           aria-label={`${role} navigation rail`}
           className="portal-rail hidden md:flex md:w-56 lg:w-64 shrink-0 flex-col border-r border-[var(--portal-border)] bg-[var(--portal-surface)] z-20 h-screen"
         >
