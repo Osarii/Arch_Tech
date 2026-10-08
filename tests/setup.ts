@@ -56,3 +56,41 @@ if (typeof window !== 'undefined' && typeof window.matchMedia === 'undefined') {
     dispatchEvent: () => false,
   });
 }
+
+if (typeof window !== 'undefined') {
+  if (typeof (window as any).speechSynthesis === 'undefined') {
+    (window as any).speechSynthesis = {
+      speak: (utterance: any) => {
+        setTimeout(() => utterance.onend?.({}), 10);
+      },
+      cancel: () => {},
+      pause: () => {},
+      resume: () => {},
+      getVoices: () => [{ lang: 'es-419', name: 'Latam Voice' }],
+    };
+  }
+  if (typeof (window as any).SpeechSynthesisUtterance === 'undefined') {
+    (window as any).SpeechSynthesisUtterance = class {
+      text: string;
+      lang = 'es-419';
+      voice = null;
+      rate = 1;
+      pitch = 1;
+      onend: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      constructor(text = '') {
+        this.text = text;
+      }
+    };
+  }
+
+  if (typeof window.HTMLMediaElement !== 'undefined') {
+    window.HTMLMediaElement.prototype.play = function () {
+      return Promise.reject(new Error('Media playback not available in JSDOM test environment'));
+    };
+    window.HTMLMediaElement.prototype.pause = function () {
+      // noop
+    };
+  }
+}
+

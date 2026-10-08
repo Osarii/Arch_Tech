@@ -2,15 +2,17 @@ import React, { createContext, useContext, useEffect, useMemo, useRef, useState,
 import { useBimStore } from '@/stores/bimStore';
 import type { ToolType } from '@/types/bim';
 import { getPresentationComponent, presentationChapters, type PresentationAssistantContext, type PresentationChapter } from './componentRegistry';
-import { speechService } from './speechService';
+import { audioNarration, type PlaybackTier } from './audioNarrationService';
 
 export type { PresentationAssistantContext, PresentationChapter } from './componentRegistry';
+export type { PlaybackTier } from './audioNarrationService';
 
 type PresentationState = {
   isActive: boolean;
   isPaused: boolean;
   isExploring: boolean;
   isVoiceEnabled: boolean;
+  playbackTier: PlaybackTier;
   chapterIndex: number;
   chapter: PresentationChapter;
   currentComponentId: string | null;
@@ -34,6 +36,7 @@ const defaultContext: PresentationState = {
   isPaused: false,
   isExploring: false,
   isVoiceEnabled: true,
+  playbackTier: 'audio',
   chapterIndex: 0,
   chapter: defaultChapter,
   currentComponentId: null,
@@ -62,6 +65,7 @@ export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ childr
   const [isPaused, setPausedState] = useState(false);
   const [isExploring, setExploringState] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(true);
+  const [playbackTier, setPlaybackTier] = useState<PlaybackTier>('audio');
   const [chapterIndex, setChapterIndex] = useState(0);
   const [currentComponentId, setCurrentComponentId] = useState<string | null>(null);
 
@@ -79,14 +83,23 @@ export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ childr
   const selectedBimContext =
     selectedElement?.name ?? (selectedSceneElements.map((element) => element.name).join(', ') || undefined);
 
+  // Subscribe to audioNarration state
+  useEffect(() => {
+    setPlaybackTier(audioNarration.getPlaybackTier());
+    const unsubscribe = audioNarration.subscribe((state) => {
+      setPlaybackTier(state.tier);
+    });
+    return unsubscribe;
+  }, []);
+
   // Safe non-destructive BIM tool selection for specific presentation chapters
   useEffect(() => {
     if (!isActive) return;
 
-    if (chapter.id === 'bim-analysis-tools') {
+    if (chapter.id === 'analysis') {
       useBimStore.getState().setActiveTool('measure');
       useBimStore.getState().setMeasureMode('distance');
-    } else if (chapter.id === 'model-explorer-inspector') {
+    } else if (chapter.id === 'bim-exploration') {
       useBimStore.getState().setActiveTool('select');
     }
   }, [isActive, chapter.id]);
@@ -105,7 +118,7 @@ export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ childr
   }, []);
 
   const exit = useCallback(() => {
-    speechService.stop();
+    audioNarration.stop();
     // Restore BIM tool snapshot safely
     if (snapshotRef.current) {
       const store = useBimStore.getState();
@@ -120,7 +133,7 @@ export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ childr
   }, []);
 
   const restart = useCallback(() => {
-    speechService.stop();
+    audioNarration.stop();
     setChapterIndex(0);
     setCurrentComponentId(null);
     setExploringState(false);
@@ -128,19 +141,19 @@ export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ childr
   }, []);
 
   const previous = useCallback(() => {
-    speechService.stop();
+    audioNarration.stop();
     setCurrentComponentId(null);
     setChapterIndex((index) => Math.max(0, index - 1));
   }, []);
 
   const next = useCallback(() => {
-    speechService.stop();
+    audioNarration.stop();
     setCurrentComponentId(null);
     setChapterIndex((index) => Math.min(presentationChapters.length - 1, index + 1));
   }, []);
 
   const goToChapter = useCallback((index: number) => {
-    speechService.stop();
+    audioNarration.stop();
     setCurrentComponentId(null);
     setChapterIndex(Math.max(0, Math.min(presentationChapters.length - 1, index)));
   }, []);
@@ -148,27 +161,29 @@ export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ childr
   const setPaused = useCallback((paused: boolean) => {
     setPausedState(paused);
     if (paused) {
-      speechService.pause();
+      audioNarration.pause();
     } else {
-      speechService.resume();
+      audioNarration.resume();
     }
   }, []);
 
   const setExploring = useCallback((exploring: boolean) => {
     setExploringState(exploring);
     if (exploring) {
-      speechService.stop();
+      // Pause narration and preserve position
+      audioNarration.pause();
       setPausedState(true);
+    } else {
+      // Returning from explore allows resuming safely
+      setPausedState(false);
+      audioNarration.resume();
     }
   }, []);
 
   const toggleVoice = useCallback(() => {
     setIsVoiceEnabled((prev) => {
       const nextVal = !prev;
-      speechService.setVoiceEnabled(nextVal);
-      if (!nextVal) {
-        speechService.stop();
-      }
+      audioNarration.setMuted(!nextVal);
       return nextVal;
     });
   }, []);
@@ -179,6 +194,7 @@ export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ childr
       isPaused,
       isExploring,
       isVoiceEnabled,
+      playbackTier,
       chapterIndex,
       chapter,
       currentComponentId,
@@ -206,6 +222,7 @@ export const PresentationProvider: React.FC<React.PropsWithChildren> = ({ childr
       isPaused,
       isExploring,
       isVoiceEnabled,
+      playbackTier,
       chapterIndex,
       chapter,
       currentComponentId,

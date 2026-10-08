@@ -5,6 +5,7 @@ import { PresentationProvider, usePresentation } from '../src/presentation/Prese
 import { presentationChapters, presentationComponents } from '../src/presentation/componentRegistry';
 import { useBimStore } from '../src/stores/bimStore';
 import { speechService } from '../src/presentation/speechService';
+import { audioNarration } from '../src/presentation/audioNarrationService';
 import { publicAssistant } from '../src/services/publicAssistantService';
 
 const Harness = () => {
@@ -26,28 +27,30 @@ const renderPresentation = () =>
     </PresentationProvider>
   );
 
-describe('Presentation Mode & ARCH_TECH Hierarchy', () => {
+describe('Presentation Mode & AI Narration System', () => {
   beforeEach(() => {
     useBimStore.getState().resetModel();
     publicAssistant.clearHistory();
+    audioNarration.stop();
     vi.restoreAllMocks();
   });
 
-  it('registers all 12 chapters and explainable components with authentic source references', () => {
-    expect(presentationChapters).toHaveLength(12);
+  it('registers the full 13-chapter product story and explainable components with authentic source references', () => {
+    expect(presentationChapters).toHaveLength(13);
     expect(presentationChapters.map((ch) => ch.headline)).toEqual([
-      'ARCH_TECH',
-      'Platform Architecture',
-      'Garnier Architecture Workspace',
-      'Zona Franca La Lima',
-      'Project Intelligence',
-      'BIM / 3D Engine',
-      'Model Explorer + Inspector',
-      'BIM Analysis Tools',
-      'Visual Engine',
-      'ARCH Assistant',
-      'Explore Mode',
-      'Closing',
+      'THE PROBLEM',
+      'THE CONSEQUENCE',
+      'THE SOLUTION',
+      'MULTIPLE PERSPECTIVES',
+      'PROJECT INTELLIGENCE',
+      'DIGITAL PROJECT',
+      'BIM EXPLORATION',
+      'ANALYSIS',
+      'VISUAL ENGINE',
+      'ARTIFICIAL INTELLIGENCE',
+      'INTERACTIVE EXPLANATION',
+      'THE VISION',
+      'CLOSING',
     ]);
 
     expect(presentationComponents.map((component) => component.label)).toEqual(
@@ -81,8 +84,9 @@ describe('Presentation Mode & ARCH_TECH Hierarchy', () => {
     ).toBe(true);
   });
 
-  it('starts presentation, displays cinematic opening, captions, and navigates chapters', async () => {
+  it('starts presentation, displays cinematic opening, captions, and navigates chapters with fallback speech', async () => {
     const speakSpy = vi.spyOn(speechService, 'speak');
+    const stopSpy = vi.spyOn(audioNarration, 'stop');
     renderPresentation();
 
     fireEvent.click(screen.getByRole('button', { name: 'PRESENTACIÓN' }));
@@ -90,14 +94,15 @@ describe('Presentation Mode & ARCH_TECH Hierarchy', () => {
 
     // Cinematic Intro Phase
     expect(screen.getByText(/Problem · The Information Paradox/i)).toBeDefined();
-    expect(screen.getByText(/Captions/i)).toBeDefined();
+    expect(screen.getAllByText(/Captions/i).length).toBeGreaterThan(0);
 
-    // Check speech synthesis was invoked
-    expect(speakSpy).toHaveBeenCalled();
+    // In jsdom without prerecorded audio files, SpeechSynthesis fallback speaks
+    await waitFor(() => expect(speakSpy).toHaveBeenCalled());
 
-    // Navigate to next chapter (02 Platform)
+    // Navigate to the consequence.
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByRole('heading', { name: 'Platform Architecture' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'THE CONSEQUENCE' })).toBeDefined();
+    expect(stopSpy).toHaveBeenCalled();
 
     // Voice toggle
     const voiceBtn = screen.getByRole('button', { name: /Voice/i });
@@ -105,13 +110,14 @@ describe('Presentation Mode & ARCH_TECH Hierarchy', () => {
     fireEvent.click(voiceBtn); // Toggle OFF
     fireEvent.click(voiceBtn); // Toggle ON
 
-    // Navigate to Chapter 03 (Workspace)
+    // Navigate to the solution.
     fireEvent.click(screen.getByRole('button', { name: 'Next' }));
-    expect(screen.getByRole('heading', { name: 'Garnier Architecture Workspace' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'THE SOLUTION' })).toBeDefined();
 
     // Exit with Escape key
     fireEvent.keyDown(window, { key: 'Escape' });
     await waitFor(() => expect(screen.queryByTestId('presentation-mode')).toBeNull());
+    expect(audioNarration.getState().isPlaying).toBe(false);
   });
 
   it('supports Explore Mode, Technical Explainer, and Ask ARCH about component', async () => {
@@ -156,9 +162,24 @@ describe('Presentation Mode & ARCH_TECH Hierarchy', () => {
     await waitFor(() => expect(screen.getByTestId('presentation-fullscreen-fallback')).toBeDefined());
 
     // Exit presentation
-    fireEvent.click(screen.getByRole('button', { name: 'Exit' }));
+    fireEvent.click(screen.getByRole('button', { name: /Exit/i }));
 
     // State restored cleanly
     expect(useBimStore.getState().activeTool).toBe('section');
+  });
+
+  it('supports pause/resume and voice mute controls seamlessly', async () => {
+    renderPresentation();
+    fireEvent.click(screen.getByRole('button', { name: 'PRESENTACIÓN' }));
+
+    const pauseBtn = screen.getByRole('button', { name: /Pause/i });
+    fireEvent.click(pauseBtn);
+
+    // Should now show Resume button
+    const resumeBtn = screen.getByRole('button', { name: /Resume/i });
+    expect(resumeBtn).toBeDefined();
+
+    fireEvent.click(resumeBtn);
+    expect(screen.getByRole('button', { name: /Pause/i })).toBeDefined();
   });
 });

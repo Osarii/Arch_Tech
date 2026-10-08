@@ -19,6 +19,8 @@ export type PresentationChapter = {
   componentIds: string[];
   narrationEs: string;
   narrationEn: string;
+  screenCopy: string;
+  visualAction?: string;
   route?: string;
   bimAction?: string;
 };
@@ -245,173 +247,115 @@ export const presentationComponentsWithAlias: PresentationComponent[] = [
 
 export const presentationChapters: PresentationChapter[] = [
   {
-    id: 'arch-tech',
-    number: '01',
-    headline: 'ARCH_TECH',
-    supporting: 'Un entorno conectado para comprender, coordinar y desarrollar proyectos complejos.',
-    section: 'Cinematic Introduction',
+    id: 'problem', number: '01', headline: 'THE PROBLEM', section: 'The Problem',
+    supporting: 'A large-scale development can hold every answer and still leave nobody with the complete picture.',
+    screenCopy: 'COMPLEX DEVELOPMENT.\nFRAGMENTED INFORMATION.', visualAction: 'Landing focus',
     componentIds: ['landing-hero'],
-    narrationEs:
-      'Un proyecto puede tener toda la información necesaria... y aun así nadie tener la imagen completa. Porque el problema no siempre es la falta de información. Es lo que ocurre cuando la información pierde su contexto. El modelo vive en un lugar. Las decisiones, en otro. Los avances, en otro. Y cada equipo termina observando una parte distinta del mismo proyecto. ¿Y si el proyecto volviera a ser el punto donde todo se conecta? Eso es ARCH_TECH. Información. Personas. BIM. Decisiones. Inteligencia. Un solo contexto.',
-    narrationEn:
-      'A project can have all the necessary information, yet no one has the complete picture. The problem is what happens when information loses its context. The model lives in one place. Decisions in another. Progress in another. ARCH_TECH brings information, people, BIM, decisions, and intelligence into one connected environment.',
+    narrationEs: 'Un desarrollo de gran escala reúne diseño, infraestructura, planificación, operación, documentos y cientos de decisiones. El problema aparece cuando toda esa información vive en lugares diferentes.',
+    narrationEn: 'A large-scale development brings together design, infrastructure, planning, operations, documents, and hundreds of decisions. The problem appears when that information lives in different places.',
   },
   {
-    id: 'platform',
-    number: '02',
-    headline: 'Platform Architecture',
-    supporting: 'Software de grado empresarial para estructurar desarrollos desde la oportunidad hasta la operación.',
-    section: 'Platform',
+    id: 'consequence', number: '02', headline: 'THE CONSEQUENCE', section: 'The Consequence',
+    supporting: 'Disconnected information makes the real state of a project harder to understand.',
+    screenCopy: 'CONTEXT LOST.\nCOORDINATION SLOWS.', visualAction: 'Project focus',
     componentIds: ['landing-hero', 'portal'],
-    narrationEs:
-      'ARCH_TECH es la plataforma de software que unifica el ciclo completo de desarrollo a gran escala: desde parques industriales y distritos corporativos hasta infraestructura crítica.',
-    narrationEn:
-      'ARCH_TECH is the enterprise software platform unifying large-scale development lifecycles from industrial campuses to critical infrastructure.',
-    route: '/',
+    narrationEs: 'Cuando equipos, información y decisiones están desconectados, aumenta el tiempo de coordinación, se pierde contexto y es más difícil entender el estado real de un proyecto.',
+    narrationEn: 'When teams, information, and decisions are disconnected, coordination takes longer, context is lost, and the real state of a project becomes harder to understand.',
   },
   {
-    id: 'garnier-workspace',
-    number: '03',
-    headline: 'Garnier Architecture Workspace',
-    supporting: 'Espacios de trabajo coordinados para clientes, arquitectos y administración.',
-    section: 'Workspace',
+    id: 'solution', number: '03', headline: 'THE SOLUTION', section: 'The Solution',
+    supporting: 'ARCH_TECH creates one connected environment for complex development.',
+    screenCopy: 'ONE CONNECTED ENVIRONMENT.', visualAction: 'ARCH_TECH reveal',
+    componentIds: ['landing-hero', 'portal'],
+    narrationEs: 'ARCH_TECH propone un entorno digital conectado para gestionar proyectos complejos desde una sola plataforma.',
+    narrationEn: 'ARCH_TECH proposes a connected digital environment for managing complex projects from one platform.',
+  },
+  {
+    id: 'multiple-perspectives', number: '04', headline: 'MULTIPLE PERSPECTIVES', section: 'Platform',
+    supporting: 'One project, with workspaces shaped around each responsibility.',
+    screenCopy: 'ADMIN.\nARCHITECT.\nCLIENT.', visualAction: 'Portal roles',
     componentIds: ['portal', 'kpi-cards'],
-    narrationEs:
-      'Dentro de ARCH_TECH, organizaciones como Garnier Architecture coordinan clientes, arquitectos y administración en espacios de trabajo especializados pero conectados.',
-    narrationEn:
-      'Within ARCH_TECH, enterprise organizations like Garnier Architecture coordinate clients, architects, and administrators in specialized yet synchronized workspaces.',
+    narrationEs: 'Administradores, arquitectos y clientes acceden al mismo proyecto desde perspectivas diseñadas para sus responsabilidades.',
+    narrationEn: 'Administrators, architects, and clients access the same project from perspectives designed for their responsibilities.',
     route: '/dashboard',
   },
   {
-    id: 'la-lima-project',
-    number: '04',
-    headline: 'Zona Franca La Lima',
-    supporting: 'Parque industrial y tecnológico de 2.5 millones de m² con seguimiento unificado de hitos.',
-    section: 'Projects',
-    componentIds: ['portal'],
-    narrationEs:
-      'Cada proyecto, como Zona Franca La Lima, consolida planos, especificaciones técnicas, hitos de entrega y aprobaciones en un único registro verificable.',
-    narrationEn:
-      'Every project, such as La Lima Free Zone, consolidates drawings, technical specifications, delivery milestones, and approvals into a single source of truth.',
-    route: '/projects/la-lima',
-  },
-  {
-    id: 'project-intelligence',
-    number: '05',
-    headline: 'Project Intelligence',
-    supporting: 'Métricas deterministas de portafolio y contexto ambiental de sitio en tiempo real.',
-    section: 'Intelligence',
+    id: 'project-intelligence', number: '05', headline: 'PROJECT INTELLIGENCE', section: 'Project Intelligence',
+    supporting: 'Current project signals gain useful site and delivery context.',
+    screenCopy: 'DATA IN CONTEXT.', visualAction: 'La Lima context',
     componentIds: ['kpi-cards', 'site-intelligence'],
-    narrationEs:
-      'Inteligencia determinista sobre el portafolio: KPIs operativos, control riguroso de aprobaciones y contexto ambiental en tiempo real con datos de clima y sismicidad.',
-    narrationEn:
-      'Deterministic portfolio intelligence: operational KPIs, approval governance, and real-time site environmental telemetry including weather and seismicity.',
+    narrationEs: 'Los datos dejan de ser registros aislados. Se convierten en información contextual sobre proyectos, avances, decisiones y condiciones del sitio.',
+    narrationEn: 'Data stops being isolated records. It becomes contextual information about projects, progress, decisions, and site conditions.',
     route: '/admin/overview',
   },
   {
-    id: 'bim-3d',
-    number: '06',
-    headline: 'BIM / 3D Engine',
-    supporting: 'Capacidad OpenBIM nativa en WebGL para visualización fluida de modelos IFC y masterplans.',
-    section: 'BIM / 3D',
+    id: 'digital-project', number: '06', headline: 'DIGITAL PROJECT', section: 'La Lima BIM',
+    supporting: 'A masterplan becomes a space for inspection, discussion, and alignment.',
+    screenCopy: 'DATA BECOMES SPACE.', visualAction: 'La Lima masterplan',
     componentIds: ['bim-viewer', 'saved-views'],
-    narrationEs:
-      'Capacidad OpenBIM nativa en WebGL. Visualización y navegación fluida del masterplan tridimensional sin dependencias propietarias ni plugins externos.',
-    narrationEn:
-      'Native OpenBIM capability in WebGL. High-performance 3D visualization and navigation of complex masterplans without proprietary plugins.',
+    narrationEs: 'Y cuando esa información se conecta con el modelo tridimensional, el proyecto deja de ser solamente una lista de datos.',
+    narrationEn: 'When that information connects to the three-dimensional model, the project stops being only a list of data.',
     route: '/workspace',
   },
   {
-    id: 'model-explorer-inspector',
-    number: '07',
-    headline: 'Model Explorer + Inspector',
-    supporting: 'Estructura espacial ISO STEP-21, búsqueda por metadatos y aislamiento instantáneo.',
-    section: 'BIM Exploration',
+    id: 'bim-exploration', number: '07', headline: 'BIM EXPLORATION', section: 'BIM Exploration',
+    supporting: 'Every relevant element can be explored with technical context close at hand.',
+    screenCopy: 'EXPLORE.\nSELECT.\nUNDERSTAND.', visualAction: 'Explorer and inspector',
     componentIds: ['model-explorer', 'search', 'inspector', 'selection', 'multi-selection'],
-    narrationEs:
-      'El Explorador de Modelos y el Inspector extraen la estructura espacial ISO STEP-21. Búsqueda por metadatos, selección múltiple, ocultamiento y aislamiento instantáneo.',
-    narrationEn:
-      'The Model Explorer and Inspector extract ISO STEP-21 spatial structures, supporting metadata search, multi-selection, hiding, and instant element isolation.',
-    route: '/workspace',
-    bimAction: 'explorer',
+    narrationEs: 'ARCH_TECH permite explorar el desarrollo directamente desde el modelo. Cada elemento puede relacionarse con información técnica y contexto del proyecto.',
+    narrationEn: 'ARCH_TECH lets teams explore the development directly from the model. Each element can connect to technical information and project context.',
+    route: '/workspace', bimAction: 'explorer',
   },
   {
-    id: 'bim-analysis-tools',
-    number: '08',
-    headline: 'BIM Analysis Tools',
-    supporting: 'Medición directa de distancias, polilíneas, áreas y planos de corte dinámicos.',
-    section: 'BIM Analysis',
+    id: 'analysis', number: '08', headline: 'ANALYSIS', section: 'BIM Analysis',
+    supporting: 'Measure, inspect, isolate, and understand the project without leaving its digital environment.',
+    screenCopy: 'MEASURE.\nINSPECT.\nUNDERSTAND.', visualAction: 'Measurement and section tools',
     componentIds: ['distance', 'polyline', 'area', 'section-plane'],
-    narrationEs:
-      'Herramientas de precisión para análisis en obra: medición directa de distancias, polilíneas de recorridos, cálculo de áreas y planos de sección dinámicos.',
-    narrationEn:
-      'Precision analysis tools: direct distance measurement, polyline access routes, area calculation, and dynamic section planes.',
-    route: '/workspace',
-    bimAction: 'measure',
+    narrationEs: 'El modelo también se convierte en una herramienta de análisis: medir, inspeccionar, aislar y comprender el proyecto sin abandonar el entorno digital.',
+    narrationEn: 'The model also becomes an analysis tool: measure, inspect, isolate, and understand the project without leaving the digital environment.',
+    route: '/workspace', bimAction: 'measure',
   },
   {
-    id: 'visual-engine',
-    number: '09',
-    headline: 'Visual Engine',
-    supporting: 'Iluminación arquitectónica Día / Nublado y perfiles de calidad calibrados.',
-    section: 'Visual Engine',
+    id: 'visual-engine', number: '09', headline: 'VISUAL ENGINE', section: 'Visual Engine',
+    supporting: 'One model can serve technical work and executive communication.',
+    screenCopy: 'DAY → OVERCAST.\nBALANCED → PRESENTATION.', visualAction: 'Lighting and quality profiles',
     componentIds: ['day-overcast', 'quality-profiles'],
-    narrationEs:
-      'Motor de renderizado PBR calibrado con iluminación arquitectónica Día y Nublado, y perfiles de calidad optimizados desde laptops estándar hasta presentaciones de alta fidelidad.',
-    narrationEn:
-      'Calibrated PBR render engine with architectural Day and Overcast daylight presets, and quality profiles optimized from standard laptops to presentation fidelity.',
-    route: '/workspace',
-    bimAction: 'lighting',
+    narrationEs: 'La visualización puede adaptarse tanto al trabajo técnico como a la comunicación ejecutiva del proyecto.',
+    narrationEn: 'Visualization can adapt to both technical work and executive communication about the project.',
+    route: '/workspace', bimAction: 'lighting',
   },
   {
-    id: 'arch-assistant',
-    number: '10',
-    headline: 'ARCH Assistant',
-    supporting: 'Asistencia contextual conectada al proyecto y al visor BIM con respaldo local.',
-    section: 'Intelligence',
+    id: 'artificial-intelligence', number: '10', headline: 'ARTIFICIAL INTELLIGENCE', section: 'Intelligence',
+    supporting: 'Contextual guidance is ready to discuss the project in front of the user.',
+    screenCopy: 'GARNIER ASSISTANT', visualAction: 'Assistant focus',
     componentIds: ['arch-assistant'],
-    narrationEs:
-      'ARCH Assistant aporta asistencia contextual conectada a los metadatos del proyecto y al estado del visor BIM, con respuestas deterministas locales si la red no está disponible.',
-    narrationEn:
-      'ARCH Assistant delivers contextual AI assistance synchronized with project metadata and 3D BIM state, with guaranteed offline fallbacks.',
+    narrationEs: 'Sobre este contexto aparece una nueva capa: inteligencia artificial capaz de conversar sobre el proyecto y asistir al usuario utilizando la información que está viendo.',
+    narrationEn: 'On this context, a new layer appears: artificial intelligence able to discuss the project and assist the user using the information in view.',
   },
   {
-    id: 'explore-mode',
-    number: '11',
-    headline: 'Explore Mode',
-    supporting: 'Inspección interactiva bajo demanda de la arquitectura, flujos de datos y código fuente.',
-    section: 'Explore Mode',
-    componentIds: [
-      'landing-hero',
-      'portal',
-      'kpi-cards',
-      'site-intelligence',
-      'bim-viewer',
-      'model-explorer',
-      'search',
-      'inspector',
-      'selection',
-      'distance',
-      'section-plane',
-      'day-overcast',
-      'arch-assistant',
-    ],
-    narrationEs:
-      'El Modo Exploración permite inspeccionar la arquitectura de software, flujos de datos y archivos fuente reales detrás de cada componente de la plataforma.',
-    narrationEn:
-      'Explore Mode allows stakeholders to inspect the software architecture, data flows, and authentic source files behind every platform component.',
+    id: 'interactive-explanation', number: '11', headline: 'INTERACTIVE EXPLANATION', section: 'Explore Mode',
+    supporting: 'The platform can explain its systems as clearly as it presents the project.',
+    screenCopy: 'EXPLORE.\nUNDERSTAND.\nASK.', visualAction: 'Explore registered components',
+    componentIds: ['landing-hero', 'portal', 'kpi-cards', 'site-intelligence', 'bim-viewer', 'model-explorer', 'search', 'inspector', 'selection', 'distance', 'section-plane', 'day-overcast', 'arch-assistant'],
+    narrationEs: 'Y ARCH_TECH no solamente puede presentar el proyecto. También puede explicar cómo funciona.',
+    narrationEn: 'ARCH_TECH can do more than present the project. It can also explain how it works.',
   },
   {
-    id: 'closing',
-    number: '12',
-    headline: 'Closing',
-    supporting: 'ONE CONNECTED ENVIRONMENT FOR COMPLEX DEVELOPMENT. FROM OPPORTUNITY TO OPERATION.',
-    section: 'Closing',
+    id: 'vision', number: '12', headline: 'THE VISION', section: 'The Vision',
+    supporting: 'Bring information, people, and the physical project closer together.',
+    screenCopy: 'INFORMATION.\nPEOPLE.\nPROJECT.', visualAction: 'Masterplan return',
+    componentIds: ['bim-viewer', 'portal'],
+    narrationEs: 'La visión es sencilla: reducir la distancia entre información, personas y proyecto físico.',
+    narrationEn: 'The vision is simple: reduce the distance between information, people, and the physical project.',
+    route: '/workspace',
+  },
+  {
+    id: 'closing', number: '13', headline: 'CLOSING', section: 'Closing',
+    supporting: 'One connected environment for complex development, from opportunity to operation.',
+    screenCopy: 'ARCH_TECH\nONE CONNECTED ENVIRONMENT\nFOR COMPLEX DEVELOPMENT.\nFROM OPPORTUNITY TO OPERATION.', visualAction: 'Brand closing',
     componentIds: ['landing-hero', 'portal', 'bim-viewer', 'arch-assistant'],
-    narrationEs:
-      'ARCH_TECH. Un entorno conectado para comprender, coordinar y desarrollar proyectos complejos. Desde la oportunidad... hasta la operación.',
-    narrationEn:
-      'ARCH_TECH. One connected environment to understand, coordinate, and deliver complex developments. From opportunity to operation.',
+    narrationEs: 'ARCH_TECH. Un entorno conectado para comprender, coordinar y desarrollar proyectos complejos, desde la oportunidad hasta la operación.',
+    narrationEn: 'ARCH_TECH. One connected environment to understand, coordinate, and develop complex projects, from opportunity to operation.',
   },
 ];
 

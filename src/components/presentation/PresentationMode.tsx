@@ -17,10 +17,8 @@ import {
 } from 'lucide-react';
 import { getPresentationComponent, presentationChapters, presentationComponents, type PresentationComponent } from '@/presentation/componentRegistry';
 import { usePresentation } from '@/presentation/PresentationContext';
-import { speechService } from '@/presentation/speechService';
+import { audioNarration } from '@/presentation/audioNarrationService';
 import { publicAssistant } from '@/services/publicAssistantService';
-
-export const PRESENTATION_STEP_DURATION_MS = 14000;
 
 const FRAGMENTS = ['BIM', 'PLANOS', 'DATOS', 'APROBACIONES', 'AVANCES', 'EQUIPOS', 'DECISIONES'];
 
@@ -40,8 +38,8 @@ const copy = {
   technologiesTitle: 'TECHNOLOGIES',
   archResponseTitle: 'ARCH Assistant Response',
   problemTag: 'Problem · The Information Paradox',
-  problemH1: 'Un proyecto puede tener toda la información necesaria...',
-  problemH2: '...y aun así nadie tener la imagen completa.',
+  problemH1: 'COMPLEX DEVELOPMENT.',
+  problemH2: 'FRAGMENTED INFORMATION.',
   fragmentationTag: 'Fragmentation · Loss of Shared Context',
   fragmentationH1: 'El modelo vive en un lugar. Las decisiones, en otro. Los avances, en otro.',
   questionTag: 'The Core Question',
@@ -64,6 +62,9 @@ const copy = {
   renderingEngine: 'Rendering Engine',
   renderingValue: 'WebGL 2.0 / PBR 60fps',
   captionsTag: 'Captions',
+  tierAiVoice: 'AI Voice',
+  tierSpeech: 'Speech fallback',
+  tierCaptions: 'Captions only',
   previousBtn: 'Previous',
   pauseBtn: 'Pause',
   resumeBtn: 'Resume',
@@ -87,6 +88,7 @@ export const PresentationMode: React.FC = () => {
     isPaused,
     isExploring,
     isVoiceEnabled,
+    playbackTier,
     chapterIndex,
     chapter,
     currentComponentId,
@@ -132,55 +134,34 @@ export const PresentationMode: React.FC = () => {
     };
   }, [isActive]);
 
-  // Cinematic intro phase sequencing
-  useEffect(() => {
-    if (!isActive || !isCinematicChapter || isPaused || isExploring) return;
-
-    setCinematicPhase(0);
-    const t1 = setTimeout(() => setCinematicPhase(1), 3500); // Fragmentation
-    const t2 = setTimeout(() => setCinematicPhase(2), 7500); // Question
-    const t3 = setTimeout(() => setCinematicPhase(3), 11000); // Convergence into ARCH_TECH
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [isActive, isCinematicChapter, isPaused, isExploring]);
-
-  // Voice narration lifecycle per chapter
+  // Audio narration lifecycle per chapter - drives audio, fallback speech, captions and auto-advance
   useEffect(() => {
     if (!isActive || isExploring) {
-      speechService.stop();
       return;
     }
 
-    const narrationText = chapter.narrationEs;
-    setActiveSpeechCaption(narrationText);
+    setCinematicPhase(0);
+    audioNarration.play(chapter.id, {
+      locale: 'es',
+      onPhaseChange: (phase) => {
+        setCinematicPhase(phase);
+      },
+      onEnd: () => {
+        if (!isLastChapter) {
+          next();
+        }
+      },
+    });
+  }, [isActive, chapterIndex, chapter.id, isLastChapter, next]);
 
-    if (isVoiceEnabled && !isPaused) {
-      speechService.speak(narrationText, {
-        locale: 'es',
-        onEnd: () => {
-          // Voice narration completed
-        },
-      });
-    } else {
-      speechService.stop();
-    }
-
-    return () => {
-      speechService.stop();
-    };
-  }, [isActive, chapterIndex, isVoiceEnabled, isPaused, isExploring, chapter.narrationEs]);
-
-  // Auto-advance timer (when not paused and not exploring)
+  // Subscribe to audio narration caption updates
   useEffect(() => {
-    if (!isActive || isPaused || isExploring || isLastChapter) return;
-    const duration = isCinematicChapter ? 16000 : PRESENTATION_STEP_DURATION_MS;
-    const timer = window.setTimeout(next, duration);
-    return () => window.clearTimeout(timer);
-  }, [isActive, isExploring, isLastChapter, isPaused, isCinematicChapter, next, chapterIndex]);
+    setActiveSpeechCaption(audioNarration.getState().activeCaption || chapter.narrationEs);
+    const unsubscribe = audioNarration.subscribe((state) => {
+      setActiveSpeechCaption(state.activeCaption || chapter.narrationEs);
+    });
+    return unsubscribe;
+  }, [chapter.narrationEs]);
 
   // Keyboard navigation shortcuts
   useEffect(() => {
@@ -430,7 +411,7 @@ export const PresentationMode: React.FC = () => {
                     <span
                       key={word}
                       style={{ animationDelay: `${idx * 150}ms` }}
-                      className="inline-block rounded-full border border-white/20 bg-white/5 px-4 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-stone-200 shadow-md animate-bounce"
+                      className="inline-block rounded-full border border-white/20 bg-white/5 px-4 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-stone-200 shadow-md animate-in fade-in duration-500"
                     >
                       {word}
                     </span>
@@ -542,6 +523,14 @@ export const PresentationMode: React.FC = () => {
               <p className="mt-5 max-w-xl text-base leading-relaxed text-stone-300 sm:text-lg">
                 {chapter.supporting}
               </p>
+              <p className="mt-6 max-w-xl whitespace-pre-line font-mono text-[11px] uppercase tracking-[0.2em] text-[#79B791]">
+                {chapter.screenCopy}
+              </p>
+              {chapter.visualAction && (
+                <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.16em] text-stone-500">
+                  {chapter.visualAction}
+                </p>
+              )}
 
               {/* Related Explainable Components Pills */}
               <div className="mt-8">
@@ -617,13 +606,20 @@ export const PresentationMode: React.FC = () => {
       {/* Live Captions Bar (Always Shown) */}
       <div className="mx-auto w-full max-w-7xl border-t border-white/10 pt-3 pb-2">
         <div className="flex items-start gap-3 rounded bg-black/60 px-4 py-2.5 border border-white/5">
-          <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+          <div className="flex items-center gap-2 shrink-0 pt-0.5">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#79B791] opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#79B791]" />
             </span>
             <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-[#79B791]">
               {copy.captionsTag}
+            </span>
+            <span className="rounded border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-wider text-stone-300">
+              {playbackTier === 'audio'
+                ? copy.tierAiVoice
+                : playbackTier === 'speech'
+                ? copy.tierSpeech
+                : copy.tierCaptions}
             </span>
           </div>
           <p className="text-xs sm:text-sm leading-relaxed text-stone-200">
