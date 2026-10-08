@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, X } from 'lucide-react';
+import { ArrowRight, Moon, Sun, X } from 'lucide-react';
+import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { GarnierChatShell } from '../ai/GarnierChatShell';
 import {
   PortalProject,
@@ -876,33 +877,118 @@ export const ProjectOverview: React.FC<{ project: PortalProject }> = ({ project 
 const getRoleHome = (role?: PortalRole) =>
   role === 'admin' ? '/admin' : role === 'architect' ? '/architect' : '/dashboard';
 
+const useErrorTheme = () => {
+  const [isLight, setIsLight] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.localStorage.getItem('garnier-public-theme') === 'light' ||
+      window.localStorage.getItem('arch-tech-portal-theme') === 'light'
+    );
+  });
+
+  const toggleTheme = () => {
+    setIsLight((prev) => {
+      const next = !prev;
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('garnier-public-theme', next ? 'light' : 'dark');
+        window.localStorage.setItem('arch-tech-portal-theme', next ? 'light' : 'dark');
+        if (next) {
+          document.documentElement.classList.remove('portal-dark');
+        } else {
+          document.documentElement.classList.add('portal-dark');
+        }
+      }
+      return next;
+    });
+  };
+
+  return { isLight, toggleTheme };
+};
+
+const ErrorPageHeader: React.FC<{ isLight: boolean; onToggleTheme: () => void }> = ({ isLight, onToggleTheme }) => (
+  <header className="absolute inset-x-6 top-6 mx-auto flex max-w-5xl items-center justify-between">
+    <div className="flex items-center gap-2.5">
+      <ArchTechLogo
+        variant="mark"
+        tone={isLight ? 'black' : 'celadon'}
+        theme={isLight ? 'light' : 'dark'}
+        className="h-6 w-6"
+      />
+      {/* i18next-instrument-ignore */}
+      <span className={`font-mono text-[10px] font-semibold uppercase tracking-[0.24em] ${isLight ? 'text-[#17181A]' : 'text-[#EDF4ED]'}`}>
+        GARNIER
+      </span>
+    </div>
+    {/* i18next-instrument-ignore */}
+    <button
+      type="button"
+      onClick={onToggleTheme}
+      data-testid="error-theme-toggle"
+      aria-label={isLight ? 'Use dark theme' : 'Use light theme'}
+      className={`flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
+        isLight
+          ? 'border-black/15 bg-black/[0.04] text-[#17181A] hover:bg-black/[0.08]'
+          : 'border-white/15 bg-white/[0.05] text-[#EDF4ED] hover:bg-white/10'
+      }`}
+      title={isLight ? 'Use dark theme' : 'Use light theme'}
+    >
+      {isLight ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
+    </button>
+  </header>
+);
+
 export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => {
   const { portalCommon } = useLocale();
   const session = portalAuth.getSession();
+  const { isLight, toggleTheme } = useErrorTheme();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">{portalCommon.notFoundEyebrow}</p>
-      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">{portalCommon.notFoundTitle}.</h1>
-      <p className="mt-3 max-w-md text-sm text-[#57534E]">
-        {portalCommon.notFoundSubtitle}
-      </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
-        {session && (
+    <main
+      className={`relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center transition-colors duration-200 ${
+        isLight ? 'bg-[#F5F3EF] text-[#17181A]' : 'bg-[#0A0B0D] text-[#EDF4ED]'
+      }`}
+    >
+      <ErrorPageHeader isLight={isLight} onToggleTheme={toggleTheme} />
+      <div className="w-full max-w-xl">
+        <p className={`font-mono text-[10px] uppercase tracking-[0.24em] ${isLight ? 'text-[#3D7354]' : 'text-[#79B791]'}`}>
+          {portalCommon.notFoundEyebrow}
+        </p>
+        <h1 className={`mt-5 font-serif text-4xl sm:text-5xl font-light tracking-tight ${isLight ? 'text-[#17181A]' : 'text-[#EDF4ED]'}`}>
+          {portalCommon.notFoundTitle}.
+        </h1>
+        <p className={`mx-auto mt-4 max-w-md text-sm leading-6 ${isLight ? 'text-[#5A5D62]' : 'text-stone-400'}`}>
+          {portalCommon.notFoundSubtitle}
+        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
+          {session && (
+            <button
+              onClick={() => onNavigate(getRoleHome(session.role))}
+              data-testid="return-workspace"
+              className={`inline-flex items-center gap-2 rounded-xs border px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] font-semibold transition-all shadow-xs ${
+                isLight
+                  ? 'border-[#17181A] bg-[#17181A] text-[#F5F3EF] hover:bg-black hover:border-black active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-[#17181A]'
+                  : 'border-[#79B791] bg-[#79B791] text-black hover:bg-[#ABD1B5] hover:border-[#ABD1B5] active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-[#79B791]'
+              }`}
+            >
+              <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {portalCommon.returnToWorkspace}
+            </button>
+          )}
           <button
-            onClick={() => onNavigate(getRoleHome(session.role))}
-            data-testid="return-workspace"
-            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
+            onClick={() => onNavigate('/')}
+            data-testid="return-home"
+            className={`inline-flex items-center gap-2 rounded-xs border px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-all ${
+              !session
+                ? isLight
+                  ? 'border-[#17181A] bg-[#17181A] text-[#F5F3EF] font-semibold hover:bg-black hover:border-black shadow-xs'
+                  : 'border-[#79B791] bg-[#79B791] text-black font-semibold hover:bg-[#ABD1B5] shadow-xs'
+                : isLight
+                  ? 'border-black/15 bg-transparent text-[#17181A] hover:border-black/35 hover:bg-black/[0.04]'
+                  : 'border-white/20 bg-transparent text-[#EDF4ED] hover:border-white/40 hover:bg-white/5'
+            }`}
           >
-            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {portalCommon.returnToWorkspace}
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {portalCommon.returnHome}
           </button>
-        )}
-        <button
-          onClick={() => onNavigate('/')}
-          data-testid="return-home"
-          className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
-        >
-          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {portalCommon.returnHome}
-        </button>
+        </div>
       </div>
     </main>
   );
@@ -911,30 +997,55 @@ export const NotFoundPage: React.FC<NavigationProps> = ({ onNavigate }) => {
 export const ForbiddenPage: React.FC<NavigationProps> = ({ onNavigate }) => {
   const { t } = useTranslation('portal');
   const session = portalAuth.getSession();
+  const { isLight, toggleTheme } = useErrorTheme();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">{t('forbidden.eyebrow', '403 / Access restricted')}</p>
-      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">{t('forbidden.title', 'Access restricted.')}</h1>
-      <p className="mt-3 max-w-md text-sm text-[#57534E]">
-        {t('forbidden.subtitle', 'You do not have authorization to view this workspace, project or resource.')}
-      </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
-        {session && (
+    <main
+      className={`relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center transition-colors duration-200 ${
+        isLight ? 'bg-[#F5F3EF] text-[#17181A]' : 'bg-[#0A0B0D] text-[#EDF4ED]'
+      }`}
+    >
+      <ErrorPageHeader isLight={isLight} onToggleTheme={toggleTheme} />
+      <div className="w-full max-w-xl">
+        <p className={`font-mono text-[10px] uppercase tracking-[0.24em] ${isLight ? 'text-[#3D7354]' : 'text-[#79B791]'}`}>
+          {t('forbidden.eyebrow', '403 / Access restricted')}
+        </p>
+        <h1 className={`mt-5 font-serif text-4xl sm:text-5xl font-light tracking-tight ${isLight ? 'text-[#17181A]' : 'text-[#EDF4ED]'}`}>
+          {t('forbidden.title', 'Access restricted.')}
+        </h1>
+        <p className={`mx-auto mt-4 max-w-md text-sm leading-6 ${isLight ? 'text-[#5A5D62]' : 'text-stone-400'}`}>
+          {t('forbidden.subtitle', 'You do not have authorization to view this workspace, project or resource.')}
+        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
+          {session && (
+            <button
+              onClick={() => onNavigate(getRoleHome(session.role))}
+              data-testid="return-workspace"
+              className={`inline-flex items-center gap-2 rounded-xs border px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] font-semibold transition-all shadow-xs ${
+                isLight
+                  ? 'border-[#17181A] bg-[#17181A] text-[#F5F3EF] hover:bg-black hover:border-black active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-[#17181A]'
+                  : 'border-[#79B791] bg-[#79B791] text-black hover:bg-[#ABD1B5] hover:border-[#ABD1B5] active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-[#79B791]'
+              }`}
+            >
+              <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('forbidden.returnWorkspace', 'Return to authorized workspace')}
+            </button>
+          )}
           <button
-            onClick={() => onNavigate(getRoleHome(session.role))}
-            data-testid="return-workspace"
-            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
+            onClick={() => onNavigate('/')}
+            data-testid="return-home"
+            className={`inline-flex items-center gap-2 rounded-xs border px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-all ${
+              !session
+                ? isLight
+                  ? 'border-[#17181A] bg-[#17181A] text-[#F5F3EF] font-semibold hover:bg-black hover:border-black shadow-xs'
+                  : 'border-[#79B791] bg-[#79B791] text-black font-semibold hover:bg-[#ABD1B5] shadow-xs'
+                : isLight
+                  ? 'border-black/15 bg-transparent text-[#17181A] hover:border-black/35 hover:bg-black/[0.04]'
+                  : 'border-white/20 bg-transparent text-[#EDF4ED] hover:border-white/40 hover:bg-white/5'
+            }`}
           >
-            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('forbidden.returnWorkspace', 'Return to authorized workspace')}
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('forbidden.publicHome', 'Public home')}
           </button>
-        )}
-        <button
-          onClick={() => onNavigate('/')}
-          data-testid="return-home"
-          className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
-        >
-          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('forbidden.publicHome', 'Public home')}
-        </button>
+        </div>
       </div>
     </main>
   );
@@ -943,39 +1054,64 @@ export const ForbiddenPage: React.FC<NavigationProps> = ({ onNavigate }) => {
 export const ServiceUnavailablePage: React.FC<NavigationProps & { onRetry?: () => void; message?: string }> = ({ onNavigate, onRetry, message }) => {
   const { t } = useTranslation('portal');
   const session = portalAuth.getSession();
+  const { isLight, toggleTheme } = useErrorTheme();
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#D6CBB9] px-6 text-center text-[#211E1A]">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-stone-600">{t('serviceUnavailable.eyebrow', '503 / Service unavailable')}</p>
-      <h1 className="mt-4 font-serif text-4xl sm:text-5xl font-light text-[#211E1A]">{t('serviceUnavailable.title', 'Service temporarily unavailable.')}</h1>
-      <p className="mt-3 max-w-md text-sm text-[#57534E]">
-        {message || t('serviceUnavailable.defaultMessage', 'Unable to load remote project and account records. Please check the network connection and try again.')}
-      </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-6">
-        {onRetry && (
+    <main
+      className={`relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center transition-colors duration-200 ${
+        isLight ? 'bg-[#F5F3EF] text-[#17181A]' : 'bg-[#0A0B0D] text-[#EDF4ED]'
+      }`}
+    >
+      <ErrorPageHeader isLight={isLight} onToggleTheme={toggleTheme} />
+      <div className="w-full max-w-xl">
+        <p className={`font-mono text-[10px] uppercase tracking-[0.24em] ${isLight ? 'text-[#3D7354]' : 'text-[#79B791]'}`}>
+          {t('serviceUnavailable.eyebrow', '503 / Service unavailable')}
+        </p>
+        <h1 className={`mt-5 font-serif text-4xl sm:text-5xl font-light tracking-tight ${isLight ? 'text-[#17181A]' : 'text-[#EDF4ED]'}`}>
+          {t('serviceUnavailable.title', 'Service temporarily unavailable.')}
+        </h1>
+        <p className={`mx-auto mt-4 max-w-md text-sm leading-6 ${isLight ? 'text-[#5A5D62]' : 'text-stone-400'}`}>
+          {message || t('serviceUnavailable.defaultMessage', 'Unable to load remote project and account records. Please check the network connection and try again.')}
+        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-5">
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              data-testid="retry-service"
+              className={`inline-flex items-center gap-2 rounded-xs border px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] font-semibold transition-all shadow-xs ${
+                isLight
+                  ? 'border-[#17181A] bg-[#17181A] text-[#F5F3EF] hover:bg-black hover:border-black active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-[#17181A]'
+                  : 'border-[#79B791] bg-[#79B791] text-black hover:bg-[#ABD1B5] hover:border-[#ABD1B5] active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-[#79B791]'
+              }`}
+            >
+              {t('serviceUnavailable.retry', 'Retry connection')}
+            </button>
+          )}
+          {session && (
+            <button
+              onClick={() => onNavigate(getRoleHome(session.role))}
+              data-testid="return-workspace"
+              className={`inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] transition-colors ${
+                isLight
+                  ? 'text-[#17181A] hover:text-[#3D7354] hover:underline'
+                  : 'text-[#EDF4ED] hover:text-[#79B791] hover:underline'
+              }`}
+            >
+              <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('serviceUnavailable.returnWorkspace', 'Return to workspace')}
+            </button>
+          )}
           <button
-            onClick={onRetry}
-            data-testid="retry-service"
-            className="inline-flex items-center gap-2 border border-black/20 bg-stone-900 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-white hover:bg-black"
+            onClick={() => onNavigate('/')}
+            data-testid="return-home"
+            className={`inline-flex items-center gap-2 rounded-xs border px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-all ${
+              isLight
+                ? 'border-black/15 bg-transparent text-[#17181A] hover:border-black/35 hover:bg-black/[0.04] active:scale-[0.99]'
+                : 'border-white/20 bg-transparent text-[#EDF4ED] hover:border-white/40 hover:bg-white/5 active:scale-[0.99]'
+            }`}
           >
-            {t('serviceUnavailable.retry', 'Retry connection')}
+            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('serviceUnavailable.publicHome', 'Public home')}
           </button>
-        )}
-        {session && (
-          <button
-            onClick={() => onNavigate(getRoleHome(session.role))}
-            data-testid="return-workspace"
-            className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-[#211E1A] hover:underline"
-          >
-            <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('serviceUnavailable.returnWorkspace', 'Return to workspace')}
-          </button>
-        )}
-        <button
-          onClick={() => onNavigate('/')}
-          data-testid="return-home"
-          className="inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-stone-600 hover:text-black hover:underline"
-        >
-          <ArrowRight className="h-3.5 w-3.5 rotate-180" /> {t('serviceUnavailable.publicHome', 'Public home')}
-        </button>
+        </div>
       </div>
     </main>
   );

@@ -1709,4 +1709,39 @@ describe('GARNIER ARCHITECTURE client architecture portal', () => {
       expect(window.location.pathname).toBe('/');
     });
   });
+
+  it('supports light and dark theme toggling on landing and error pages with architectural palette tokens', async () => {
+    window.localStorage.removeItem('garnier-public-theme');
+    window.history.replaceState({}, '', '/');
+    const { unmount } = render(<App />);
+
+    const themeToggle = screen.getByTestId('public-theme-toggle');
+    expect(themeToggle).toBeDefined();
+
+    // Toggle to light mode
+    fireEvent.click(themeToggle);
+    expect(window.localStorage.getItem('garnier-public-theme')).toBe('light');
+
+    const landingContainer = document.querySelector('[data-landing-scroll-container]');
+    expect(landingContainer?.classList.contains('landing-light')).toBe(true);
+    expect(landingContainer?.classList.contains('bg-[#F5F3EF]')).toBe(true);
+
+    unmount();
+
+    // Now test error page theme toggling
+    window.history.replaceState({}, '', '/404');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('error-theme-toggle')).toBeDefined();
+      expect(screen.getByText('404 / Page not found')).toBeDefined();
+    });
+
+    const errorToggle = screen.getByTestId('error-theme-toggle');
+    fireEvent.click(errorToggle);
+    expect(window.localStorage.getItem('garnier-public-theme')).toBe('dark');
+
+    fireEvent.click(errorToggle);
+    expect(window.localStorage.getItem('garnier-public-theme')).toBe('light');
+  });
 });

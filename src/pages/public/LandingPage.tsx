@@ -46,7 +46,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
   return (
     <div
       data-landing-scroll-container
-      className={`landing-surface ${lightTheme ? 'landing-light' : ''} h-screen w-full overflow-y-auto overflow-x-hidden scroll-smooth bg-[#000000] font-sans text-[#EDF4ED] selection:bg-[#ABD1B5] selection:text-black`}
+      className={`landing-surface ${
+        lightTheme
+          ? 'landing-light bg-[#F5F3EF] text-[#17181A] selection:bg-[#D4E7DC] selection:text-[#17181A]'
+          : 'bg-[#000000] text-[#EDF4ED] selection:bg-[#ABD1B5] selection:text-black'
+      } h-screen w-full overflow-y-auto overflow-x-hidden scroll-smooth font-sans`}
     >
       <ScrollProgressBar />
       <LandingNavbar

@@ -81,71 +81,71 @@
 .landing-navbar-links {
   gap: clamp(1.25rem, 2.4vw, 2.25rem);
 }
-/* Shared Garnier Architecture public surface palette. */
-.landing-surface {
+/* Shared Garnier Architecture public surface palette (Dark Mode default). */
+.landing-surface:not(.landing-light) {
   background-color: #000000;
   color: #EDF4ED;
 }
-.landing-surface .landing-projects-section,
-.landing-surface .landing-about,
-.landing-surface #capabilities {
+.landing-surface:not(.landing-light) .landing-projects-section,
+.landing-surface:not(.landing-light) .landing-about,
+.landing-surface:not(.landing-light) #capabilities {
   background-color: #EDF4ED;
   color: #000000;
 }
-.landing-surface .landing-hero,
-.landing-surface .landing-team,
-.landing-surface #development,
-.landing-surface .landing-footer {
+.landing-surface:not(.landing-light) .landing-hero,
+.landing-surface:not(.landing-light) .landing-team,
+.landing-surface:not(.landing-light) #development,
+.landing-surface:not(.landing-light) .landing-footer {
   background-color: #000000;
   color: #EDF4ED;
 }
-.landing-surface .landing-navbar,
-.landing-surface .landing-navbar [class~="bg-[#000000]"] {
+.landing-surface:not(.landing-light) .landing-navbar,
+.landing-surface:not(.landing-light) .landing-navbar [class~="bg-[#000000]"] {
   background-color: #000000 !important;
 }
-.landing-surface .landing-hero [class~="text-stone-100"],
-.landing-surface .landing-hero [class~="text-stone-200"],
-.landing-surface .landing-team [class~="text-stone-100"],
-.landing-surface .landing-team [class~="text-[#EDF4ED]"],
-.landing-surface #development [class~="text-[#EDF4ED]"],
-.landing-surface .landing-footer [class~="text-stone-100"] { color: #EDF4ED !important; }
-.landing-surface .landing-hero [class~="text-stone-300"],
-.landing-surface .landing-hero [class~="text-stone-400"],
-.landing-surface .landing-hero [class~="text-stone-500"],
-.landing-surface .landing-team [class~="text-stone-300"],
-.landing-surface .landing-team [class~="text-stone-400"],
-.landing-surface .landing-team [class~="text-stone-500"],
-.landing-surface #development [class~="text-stone-300"],
-.landing-surface #development [class~="text-stone-400"],
-.landing-surface #development [class~="text-stone-500"],
-.landing-surface .landing-footer [class~="text-stone-300"],
-.landing-surface .landing-footer [class~="text-stone-400"],
-.landing-surface .landing-footer [class~="text-stone-500"],
-.landing-surface .landing-footer [class~="text-stone-600"] { color: #ABD1B5 !important; }
-.landing-surface .landing-projects-section [class~="text-stone-500"],
-.landing-surface .landing-projects-section [class~="text-stone-600"],
-.landing-surface .landing-projects-section [class~="text-stone-700"],
-.landing-surface .landing-about [class~="text-stone-500"],
-.landing-surface .landing-about [class~="text-stone-600"],
-.landing-surface .landing-about [class~="text-stone-700"],
-.landing-surface #capabilities [class~="text-stone-500"],
-.landing-surface #capabilities [class~="text-stone-600"] { color: #000000 !important; }
-.landing-surface .landing-hero [class*="border-white"],
-.landing-surface .landing-team [class*="border-white"],
-.landing-surface #development [class*="border-white"],
-.landing-surface .landing-footer [class*="border-white"] { border-color: rgb(237 244 237 / 0.18) !important; }
-.landing-surface .landing-hero [class*="bg-white"],
-.landing-surface .landing-navbar [class*="bg-white"] { background-color: rgb(237 244 237 / 0.2) !important; }
-.landing-surface .landing-projects-section [class*="border-black"],
-.landing-surface .landing-about [class*="border-black"],
-.landing-surface #capabilities [class*="border-black"] { border-color: rgb(0 0 0 / 0.2) !important; }
-.landing-surface .landing-projects-section [class*="bg-stone-300"] { background-color: #ABD1B5 !important; }
-.landing-surface .landing-navbar .arch-interactive-button:hover { background-color: #ABD1B5 !important; border-color: #ABD1B5 !important; color: #000000 !important; }
-.landing-surface .landing-projects-register-row:hover { background-color: #ABD1B5 !important; }
-.landing-surface .landing-footer-link:hover,
-.landing-surface .landing-footer-link:focus-visible { color: #EDF4ED !important; }
+.landing-surface:not(.landing-light) .landing-hero [class~="text-stone-100"],
+.landing-surface:not(.landing-light) .landing-hero [class~="text-stone-200"],
+.landing-surface:not(.landing-light) .landing-team [class~="text-stone-100"],
+.landing-surface:not(.landing-light) .landing-team [class~="text-[#EDF4ED]"],
+.landing-surface:not(.landing-light) #development [class~="text-[#EDF4ED]"],
+.landing-surface:not(.landing-light) .landing-footer [class~="text-stone-100"] { color: #EDF4ED !important; }
+.landing-surface:not(.landing-light) .landing-hero [class~="text-stone-300"],
+.landing-surface:not(.landing-light) .landing-hero [class~="text-stone-400"],
+.landing-surface:not(.landing-light) .landing-hero [class~="text-stone-500"],
+.landing-surface:not(.landing-light) .landing-team [class~="text-stone-300"],
+.landing-surface:not(.landing-light) .landing-team [class~="text-stone-400"],
+.landing-surface:not(.landing-light) .landing-team [class~="text-stone-500"],
+.landing-surface:not(.landing-light) #development [class~="text-stone-300"],
+.landing-surface:not(.landing-light) #development [class~="text-stone-400"],
+.landing-surface:not(.landing-light) #development [class~="text-stone-500"],
+.landing-surface:not(.landing-light) .landing-footer [class~="text-stone-300"],
+.landing-surface:not(.landing-light) .landing-footer [class~="text-stone-400"],
+.landing-surface:not(.landing-light) .landing-footer [class~="text-stone-500"],
+.landing-surface:not(.landing-light) .landing-footer [class~="text-stone-600"] { color: #ABD1B5 !important; }
+.landing-surface:not(.landing-light) .landing-projects-section [class~="text-stone-500"],
+.landing-surface:not(.landing-light) .landing-projects-section [class~="text-stone-600"],
+.landing-surface:not(.landing-light) .landing-projects-section [class~="text-stone-700"],
+.landing-surface:not(.landing-light) .landing-about [class~="text-stone-500"],
+.landing-surface:not(.landing-light) .landing-about [class~="text-stone-600"],
+.landing-surface:not(.landing-light) .landing-about [class~="text-stone-700"],
+.landing-surface:not(.landing-light) #capabilities [class~="text-stone-500"],
+.landing-surface:not(.landing-light) #capabilities [class~="text-stone-600"] { color: #000000 !important; }
+.landing-surface:not(.landing-light) .landing-hero [class*="border-white"],
+.landing-surface:not(.landing-light) .landing-team [class*="border-white"],
+.landing-surface:not(.landing-light) #development [class*="border-white"],
+.landing-surface:not(.landing-light) .landing-footer [class*="border-white"] { border-color: rgb(237 244 237 / 0.18) !important; }
+.landing-surface:not(.landing-light) .landing-hero [class*="bg-white"],
+.landing-surface:not(.landing-light) .landing-navbar [class*="bg-white"] { background-color: rgb(237 244 237 / 0.2) !important; }
+.landing-surface:not(.landing-light) .landing-projects-section [class*="border-black"],
+.landing-surface:not(.landing-light) .landing-about [class*="border-black"],
+.landing-surface:not(.landing-light) #capabilities [class*="border-black"] { border-color: rgb(0 0 0 / 0.2) !important; }
+.landing-surface:not(.landing-light) .landing-projects-section [class*="bg-stone-300"] { background-color: #ABD1B5 !important; }
+.landing-surface:not(.landing-light) .landing-navbar .arch-interactive-button:hover { background-color: #ABD1B5 !important; border-color: #ABD1B5 !important; color: #000000 !important; }
+.landing-surface:not(.landing-light) .landing-projects-register-row:hover { background-color: #ABD1B5 !important; }
+.landing-surface:not(.landing-light) .landing-footer-link:hover,
+.landing-surface:not(.landing-light) .landing-footer-link:focus-visible { color: #EDF4ED !important; }
 .landing-navbar-lang-active { background-color: #ffffff !important; color: #000000 !important; }
-.landing-light .landing-navbar-lang-active { background-color: #000000 !important; color: #ffffff !important; }
+.landing-light .landing-navbar-lang-active { background-color: #17181A !important; color: #F5F3EF !important; }
 
 
 @media (max-width: 639px) {
@@ -1176,37 +1176,221 @@ html.portal-reduce-motion button[data-testid^="public-project-"]:active {
   transform: none !important;
 }
 
-/* Public light theme uses the same semantic palette as the portal. */
+/* ==========================================================================
+   PUBLIC LIGHT THEME — ARCHITECTURAL PALETTE
+   Consistent with GARNIER ARCHITECTURE visual identity
+   Surface: Warm Ivory / Stone / Linen (#F5F3EF, #FAF8F5, #EFECE6, #EAE7E1)
+   Text: Dark Graphite / Charcoal (#17181A, #2D3035)
+   Secondary Text: Muted Stone (#4D5156, #5C6168)
+   Accent: Restrained Sage / Mint (#3D7354, soft tint rgba(61, 115, 84, 0.08))
+   Dividers: Hairline Architectural Dividers rgba(23, 24, 26, 0.12)
+   ========================================================================== */
+
+.landing-surface.landing-light,
 .landing-light {
-  background: #EDF4ED;
-  color: #000000;
+  background-color: #F5F3EF;
+  color: #17181A;
 }
-.landing-light .landing-navbar,
-.landing-light .landing-navbar [class~="bg-[#000000]"] {
-  background: #EDF4ED !important;
-  border-color: rgb(0 0 0 / 0.16) !important;
+
+/* Navbar */
+.landing-light .landing-navbar {
+  background-color: rgba(245, 243, 239, 0.92) !important;
+  border-color: rgba(23, 24, 26, 0.10) !important;
+  color: #17181A !important;
 }
-.landing-light .landing-navbar [class*="text-stone"],
-.landing-light .landing-navbar [class*="text-white"] { color: #000000 !important; }
-.landing-light .landing-navbar [class*="border-white"] { border-color: rgb(0 0 0 / 0.22) !important; }
-.landing-light .landing-navbar [class*="bg-white"] { background-color: rgb(121 183 145 / 0.2) !important; }
-.landing-light .landing-hero,
-.landing-light .landing-team,
-.landing-light #development,
-.landing-light .landing-footer { background: #EDF4ED; color: #000000; }
-.landing-light .landing-hero [class*="text-stone"],
-.landing-light .landing-team [class*="text-stone"],
-.landing-light #development [class*="text-stone"],
-.landing-light .landing-footer [class*="text-stone"] { color: #000000 !important; }
+
+.landing-light .landing-navbar-links button {
+  color: #4D5156 !important;
+}
+
+.landing-light .landing-navbar-links button:hover {
+  color: #17181A !important;
+}
+
+.landing-light .landing-navbar [data-testid="client-login-link"] {
+  background-color: #17181A !important;
+  border-color: #17181A !important;
+  color: #F5F3EF !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06) !important;
+}
+
+.landing-light .landing-navbar [data-testid="client-login-link"]:hover {
+  background-color: #2D3035 !important;
+  border-color: #2D3035 !important;
+}
+
+/* Sections — Subtle Architectural Rhythm */
+.landing-light .landing-hero {
+  background-color: #F5F3EF !important;
+  color: #17181A !important;
+  border-color: rgba(23, 24, 26, 0.10) !important;
+}
+
+.landing-light .landing-projects-section {
+  background-color: #FAF8F5 !important;
+  color: #17181A !important;
+}
+
+.landing-light .landing-news {
+  background-color: #F5F3EF !important;
+  color: #17181A !important;
+}
+
+.landing-light .landing-about {
+  background-color: #EFECE6 !important;
+  color: #17181A !important;
+}
+
+.landing-light #capabilities {
+  background-color: #F5F3EF !important;
+  color: #17181A !important;
+}
+
+.landing-light .landing-team {
+  background-color: #EFECE6 !important;
+  color: #17181A !important;
+  border-color: rgba(23, 24, 26, 0.10) !important;
+}
+
+.landing-light #development {
+  background-color: #F5F3EF !important;
+  color: #17181A !important;
+  border-color: rgba(23, 24, 26, 0.10) !important;
+}
+
+.landing-light .landing-footer {
+  background-color: #EAE7E1 !important;
+  color: #4D5156 !important;
+  border-color: rgba(23, 24, 26, 0.12) !important;
+}
+
+/* Headings & Titles */
+.landing-light h1,
+.landing-light h2,
+.landing-light h3,
+.landing-light .landing-hero-heading,
 .landing-light .landing-hero [class*="text-[#EDF4ED]"],
 .landing-light .landing-team [class*="text-[#EDF4ED]"],
-.landing-light #development [class*="text-[#EDF4ED]"] { color: #000000 !important; }
-.landing-light .landing-hero [class*="border-white"],
-.landing-light .landing-team [class*="border-white"],
-.landing-light #development [class*="border-white"],
-.landing-light .landing-footer [class*="border-white"] { border-color: rgb(0 0 0 / 0.16) !important; }
+.landing-light #development [class*="text-[#EDF4ED]"],
+.landing-light .landing-footer [class*="text-stone-100"] {
+  color: #17181A !important;
+}
+
+/* Eyebrows, Labels & Accents */
+.landing-light .landing-hero [class*="text-stone-500"],
+.landing-light .landing-team [class*="text-stone-500"],
+.landing-light #development [class*="text-stone-500"],
+.landing-light .landing-footer [class*="text-stone-500"],
+.landing-light .landing-projects-section [class*="text-stone-500"],
+.landing-light .landing-about [class*="text-stone-500"],
+.landing-light #capabilities [class*="text-stone-500"] {
+  color: #5C6168 !important;
+}
+
+.landing-light .landing-news [class*="text-[#79B791]"] {
+  color: #3D7354 !important;
+}
+
+/* Body Copy & Subtitles */
+.landing-light .landing-hero [class*="text-stone-300"],
+.landing-light .landing-hero [class*="text-stone-400"],
+.landing-light .landing-team [class*="text-stone-400"],
+.landing-light #development [class*="text-stone-400"],
+.landing-light .landing-footer [class*="text-stone-400"],
+.landing-light .landing-projects-section [class*="text-stone-600"],
+.landing-light .landing-about [class*="text-stone-600"],
+.landing-light #capabilities [class*="text-stone-600"] {
+  color: #4D5156 !important;
+}
+
+.landing-light .landing-projects-section [class*="text-stone-700"],
+.landing-light .landing-about [class*="text-stone-700"] {
+  color: #2D3035 !important;
+}
+
+.landing-light .landing-hero [class*="text-stone-200"] {
+  color: #17181A !important;
+}
+
+/* Hairline Architectural Dividers */
+.landing-light [class*="border-white"],
+.landing-light [class*="divide-white"],
+.landing-light [class*="border-black"],
+.landing-light [class*="divide-black"] {
+  border-color: rgba(23, 24, 26, 0.12) !important;
+}
+
+.landing-light .landing-hero-context [class*="bg-white/20"] {
+  background-color: rgba(23, 24, 26, 0.16) !important;
+}
+
+/* Media & Framing in Light Mode */
+.landing-light .landing-about-media {
+  border-color: rgba(23, 24, 26, 0.14) !important;
+  background-color: #DDE5E0 !important;
+}
+
+.landing-light .landing-about-media figcaption {
+  border-color: rgba(23, 24, 26, 0.10) !important;
+  color: #5C6168 !important;
+}
+
+.landing-light .landing-team-portrait {
+  border-color: rgba(23, 24, 26, 0.12) !important;
+  background-color: #DDE5E0 !important;
+}
+
+.landing-light .landing-news article .aspect-\[16\/10\] {
+  background-color: #DDE5E0 !important;
+}
+
+/* Interactive Elements & CTAs */
+.landing-light .arch-interactive-button {
+  color: #17181A !important;
+}
+
+.landing-light .arch-interactive-button:hover {
+  color: #3D7354 !important;
+  background-color: transparent !important;
+}
+
+.landing-light .landing-projects-register-row:hover {
+  background-color: rgba(61, 115, 84, 0.05) !important;
+}
+
+.landing-light .landing-projects-section [class*="bg-stone-300"] {
+  background-color: #E2DFD8 !important;
+}
+
+.landing-light .landing-news-link {
+  color: #17181A !important;
+}
+
+.landing-light .landing-news-link:hover {
+  color: #3D7354 !important;
+}
+
+.landing-light .landing-footer-link {
+  color: #4D5156 !important;
+}
+
 .landing-light .landing-footer-link:hover,
-.landing-light .landing-footer-link:focus-visible { color: #79B791 !important; }
+.landing-light .landing-footer-link:focus-visible {
+  color: #17181A !important;
+}
+
+/* Assistant Launcher */
+.landing-light [data-testid="landing-assistant-launcher"] {
+  border-color: rgba(23, 24, 26, 0.16) !important;
+  background-color: rgba(250, 248, 245, 0.96) !important;
+  color: #17181A !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+.landing-light [data-testid="landing-assistant-launcher"]:hover {
+  border-color: #17181A !important;
+  background-color: #FFFFFF !important;
+}
 
 /* Tailwind's technical aliases still resolve to the public two-family system. */
 .font-sans,
