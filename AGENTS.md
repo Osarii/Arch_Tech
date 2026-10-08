@@ -54,3 +54,38 @@ Public work should emphasize free zones, corporate districts, hospitality, healt
 - `src/components/`: Viewport, layout, overlays, panels (Tree, Properties, ChangeSet, AI Assistant), diagnostics
 - `src/stores/`: Lightweight Zustand state (active tool, selected element ID, visibility, camera view, changeSet, undo/redo state)
 - `tests/`: Vitest (unit/domain) and Playwright (`tests/e2e/`)
+## BIM Shared Ownership
+
+### Codex
+Owns:
+- BIM interaction
+- selection
+- measurement
+- sectioning
+- model explorer
+- metadata
+- search/filter
+- inspector
+- saved views
+- BIM tool state
+- BIM tool tests
+
+### Antigravity
+Owns:
+- rendering
+- materials
+- lighting
+- shadows
+- environment
+- fog
+- visual geometry
+- render profiles
+- visual/render tests
+
+### Shared / High-Risk
+- src/bim/engine/BimEngine.ts
+- RENDER_ENGINE_V3.md
+- PROJECT_STATE.md
+- package.json
+
+For shared files, make the smallest possible isolated change and commit it promptly.
