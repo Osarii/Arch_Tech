@@ -295,9 +295,11 @@ export class BimEngine {
       this.world.scene = new OBC.SimpleScene(this.components);
       this.world.scene.setup();
 
-      // Configure background and ambient light
+      // Configure background, atmospheric depth fog and lighting
       if (this.world.scene.three) {
-        this.world.scene.three.background = new THREE.Color(0x0e1117);
+        const initialQuality = renderQualityProfiles[this.qualityProfile];
+        this.world.scene.three.background = new THREE.Color(0x111419);
+        this.world.scene.three.fog = new THREE.Fog(0x111419, initialQuality.fogNear, initialQuality.fogFar);
         this.lighting.attach(this.world.scene.three);
 
         bimEditService.initSceneLayer(this.world.scene.three);
@@ -654,7 +656,12 @@ export class BimEngine {
     this.effectiveDpr = this.getInitialDpr(profile);
     const renderer = this.world?.renderer?.three;
     if (renderer) this.configureRenderer(renderer);
-    this.lighting.applyProfile(renderQualityProfiles[profile]);
+    const config = renderQualityProfiles[profile];
+    this.lighting.applyProfile(config);
+    if (this.world?.scene?.three?.fog instanceof THREE.Fog) {
+      this.world.scene.three.fog.near = config.fogNear;
+      this.world.scene.three.fog.far = config.fogFar;
+    }
     if (renderer && this.world?.camera) this.resize();
   }
 

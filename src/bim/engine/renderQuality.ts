@@ -12,6 +12,8 @@ export type RenderQualityConfig = {
   exposure: number;
   hemisphereIntensity: number;
   sunIntensity: number;
+  fogNear: number;
+  fogFar: number;
 };
 
 /** Intel UHD 630-safe profiles. Shadows and post-processing stay disabled by policy. */
@@ -24,8 +26,10 @@ export const renderQualityProfiles: Record<RenderQualityProfile, RenderQualityCo
     adaptiveUpFps: 56,
     toneMapping: THREE.NoToneMapping,
     exposure: 1,
-    hemisphereIntensity: 1.05,
-    sunIntensity: 1.15,
+    hemisphereIntensity: 0.95,
+    sunIntensity: 1.2,
+    fogNear: 950,
+    fogFar: 3200,
   },
   balanced: {
     minDpr: 0.9,
@@ -35,8 +39,10 @@ export const renderQualityProfiles: Record<RenderQualityProfile, RenderQualityCo
     adaptiveUpFps: 58,
     toneMapping: THREE.ACESFilmicToneMapping,
     exposure: 1,
-    hemisphereIntensity: 1.15,
-    sunIntensity: 1.3,
+    hemisphereIntensity: 1.1,
+    sunIntensity: 1.4,
+    fogNear: 800,
+    fogFar: 2600,
   },
   presentation: {
     minDpr: 1.25,
@@ -45,9 +51,11 @@ export const renderQualityProfiles: Record<RenderQualityProfile, RenderQualityCo
     adaptiveDownFps: 0,
     adaptiveUpFps: 0,
     toneMapping: THREE.ACESFilmicToneMapping,
-    exposure: 1.05,
-    hemisphereIntensity: 1.2,
-    sunIntensity: 1.4,
+    exposure: 1.08,
+    hemisphereIntensity: 1.15,
+    sunIntensity: 1.6,
+    fogNear: 700,
+    fogFar: 2400,
   },
 };
 

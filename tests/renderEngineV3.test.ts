@@ -10,6 +10,7 @@ describe('Render Engine V3 foundation', () => {
     for (const profile of Object.values(renderQualityProfiles)) {
       expect(profile.maxDpr).toBeLessThanOrEqual(1.25);
       expect(profile.minDpr).toBeLessThanOrEqual(profile.maxDpr);
+      expect(profile.fogNear).toBeLessThan(profile.fogFar);
     }
     expect(renderQualityProfiles.balanced.toneMapping).toBe(THREE.ACESFilmicToneMapping);
     expect(renderQualityProfiles.presentation.adaptiveResolution).toBe(false);

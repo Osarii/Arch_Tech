@@ -65,3 +65,39 @@ V3.2 adds a procedural-scene interaction layer without changing La Lima geometry
 - The compact viewport inspector only shows supplied metadata. It provides Focus, Isolate, Hide, Close Selection, and Show All.
 - Architectural camera controls constrain dolly distance to 4–3000m, prevent under-terrain orbiting, retain cursor dolly, and respect system reduced motion for Fit, Reset, standard views, and selection focus.
 - The static La Lima baseline remains 21 draw calls, 3,564 triangles, and 18 textures. A selected/hovered mass adds only the visible helper-line overlay draw calls; no site geometry or texture count changes.
+
+## V3.3 Architectural Render Presentation Polish (V3.3B)
+
+V3.3 refines the visual realism, architectural depth, and material differentiation of the ARCH_TECH 3D viewer while preserving the exact zero-overhead runtime baseline: 21 draw calls, 3,564 triangles, 12 shared material instances, and 18 local 512px textures.
+
+### 1. Architectural Daylight & Sun Calibration
+- **Directional Sunlight**: Sun position relocated from `(120, 220, 100)` to `(160, 240, 130)` (~38° azimuth, ~46° altitude). This 3-quarter rake angle creates crisp architectural separation between roof planes and vertical facade envelopes. Solar daylight color calibrated to 5600K (`0xfffbf2`).
+- **Hemisphere Fill**: Calibrated from flat white/gray (`0xffffff`, `0x333945`) to a cool architectural sky (`0xe4edff`) and warm earth bounce (`0x363a35`), preventing washed-out shadows and eliminating flat illumination across recessed loading docks and plazas.
+- **Directional Shadow Setup**: Directional shadow bounds pre-configured (`1024x1024` map, `near 50`, `far 1200`, `[-600, 600]` ortho bounds, `bias -0.0003`, `normalBias 0.02`), keeping `castShadow = false` by policy to protect Intel UHD 630 performance while ensuring immediate readiness for targeted renders.
+
+### 2. Atmospheric Depth & Horizon Fog
+- **Background Slate**: Scene background updated from raw dark blue (`0x0e1117`) to architectural graphite (`0x111419`), aligning with the ARCH_TECH and Garnier corporate visual system.
+- **Atmospheric Fog**: Integrated linear `THREE.Fog(0x111419, fogNear, fogFar)` matching the background tone. Distant boundaries of the 1,000m masterplan smoothly recede into the canvas without harsh clipping edges.
+
+### 3. Architectural PBR Material Differentiation
+The 12 shared materials were systematically tuned for distinct tactile readability without increasing texture memory or draw calls:
+- **Standing Seam Roofs vs. Facade Panels**: Roof profiles darkened to `0x647076` (`metalness 0.78`, `roughness 0.52`, `normalScale 0.65`) against lighter insulated sandwich facade panels `0xb8c2c7` (`metalness 0.72`, `roughness 0.42`, `normalScale 0.55`), making building forms instantly readable from aerial and masterplan perspectives.
+- **Roadway Asphalt vs. Parking Aggregate**: Arterial roads tuned to dark freshly paved asphalt `0x2d3033` (`roughness 0.82`, `normalScale 0.5`) with bright yellow highway markings `0xf0c644`, while parking lots use weathered aggregate `0x42464a` (`roughness 0.88`, `normalScale 0.38`) with crisp stall striping `0xf2f5f2`.
+- **Precast Corporate Concrete vs. Industrial Foundation**: Corporate masses use refined architectural cast stone `0xd6dcda` (`roughness 0.68`, `metalness 0.08`, `normalScale 0.35`), while logistics yards and loading docks use rugged poured structural concrete `0xb5bcb8` (`roughness 0.82`, `metalness 0.05`, `normalScale 0.45`).
+- **Corporate Solar Glazing**: Glazing bands and skylights use deep solar-reflective architectural glass `0x1d3545` (`roughness 0.08`, `metalness 0.88`, `normalScale 0.12`). Sharp specular response mirrors the sky and sunlight realistically under ACES Filmic tone mapping without expensive transparency sorting or refractive passes.
+- **Corporate Green Landscape**: Grass tuned from pale sage to natural corporate landscape green `0x4a634e` (`roughness 0.92`, `metalness 0.02`), resting on a deep grounded earth pad `0x222625`.
+
+### 4. Quality Profiles Comparison Matrix
+
+| Property | Performance | Balanced | Presentation |
+| --- | --- | --- | --- |
+| **DPR Range** | 0.85 – 1.00 (Adaptive) | 0.90 – 1.15 (Adaptive) | 1.25 (Fixed) |
+| **Tone Mapping** | NoToneMapping | ACESFilmicToneMapping | ACESFilmicToneMapping |
+| **Exposure** | 1.00 | 1.00 | 1.08 |
+| **Sun Intensity** | 1.20 | 1.40 | 1.60 |
+| **Hemisphere Fill** | 0.95 | 1.10 | 1.15 |
+| **Fog Near / Far** | 950m / 3200m | 800m / 2600m | 700m / 2400m |
+| **Target Hardware** | Intel UHD 630 battery | Standard workflow | High-fidelity still / client review |
+| **Draw Calls** | 21 | 21 | 21 |
+| **Triangles** | 3,564 | 3,564 | 3,564 |
+| **Textures** | 18 | 18 | 18 |
