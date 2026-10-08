@@ -2,7 +2,21 @@ export type ToolType = 'select' | 'measure' | 'section' | 'isolate' | 'hide';
 
 export type EditMode = 'inspect' | 'edit';
 
-export type MeasurementType = 'distance' | 'area' | 'angle';
+export type MeasurementType = 'distance' | 'polyline' | 'area' | 'angle';
+
+export type SectionPlaneAxis = 'x' | 'y' | 'z';
+
+export interface SectionPlaneState {
+  axis: SectionPlaneAxis;
+  offset: number;
+  inverted: boolean;
+}
+
+export interface PolylineMeasurementState {
+  pointCount: number;
+  segmentLengths: number[];
+  totalLength: number;
+}
 
 export type CameraViewMode = 'perspective' | 'orthographic';
 
@@ -99,6 +113,7 @@ export interface BimViewpoint {
   cameraTarget: [number, number, number];
   cameraMode: CameraViewMode;
   selectedElements: number[];
+  selectedSceneElementIds?: string[];
   isolatedStorey?: string;
   createdAt: string;
 }

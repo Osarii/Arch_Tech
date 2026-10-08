@@ -1217,13 +1217,19 @@ export class BimEngine {
   public activateTool(tool: ToolType, measurementType?: MeasurementType): void {
     const store = useBimStore.getState();
     if (tool === 'measure') {
+      if (this.highlighter) this.highlighter.enabled = false;
       this.resetSectionPlane();
       const nextMeasurement = measurementType ?? store.measureMode;
       store.setMeasureMode(nextMeasurement);
       this.startMeasurement(nextMeasurement);
-    } else {
+    } else if (tool === 'section') {
+      if (this.highlighter) this.highlighter.enabled = false;
       this.cancelMeasurement();
-      if (tool !== 'section') this.resetSectionPlane();
+      if (!store.sectionPlane) this.setSectionPlane('y');
+    } else {
+      if (this.highlighter) this.highlighter.enabled = true;
+      this.cancelMeasurement();
+      this.resetSectionPlane();
     }
     store.setActiveTool(tool);
   }
@@ -1311,6 +1317,7 @@ export class BimEngine {
     this.ensurePolylineOverlay();
     this.currentPolyline.push(point.clone());
     this.renderCurrentPolyline();
+    this.syncPolylineMeasurement();
   }
 
   public finishPolylineMeasurement(): boolean {
@@ -1322,6 +1329,20 @@ export class BimEngine {
     this.completedPolylines.push(line);
     this.clearCurrentPolylineMeasurement();
     return true;
+  }
+
+  public finishMeasurement(): boolean {
+    const mode = useBimStore.getState().measureMode;
+    if (mode === 'polyline') return this.finishPolylineMeasurement();
+    if (mode === 'area' && this.areaMeasure) {
+      this.areaMeasure.endCreation();
+      return true;
+    }
+    if (mode === 'distance' && this.lengthMeasure) {
+      this.lengthMeasure.endCreation();
+      return true;
+    }
+    return false;
   }
 
   public getCurrentPolylineLength(): number {
@@ -1339,6 +1360,7 @@ export class BimEngine {
       this.currentPolylineLine.geometry.dispose();
       this.currentPolylineLine = null;
     }
+    this.syncPolylineMeasurement();
   }
 
   public clearLastPolylineMeasurement(): void {
@@ -1395,6 +1417,15 @@ export class BimEngine {
     );
     this.currentPolylineLine.userData.bimMeasurementOverlay = true;
     this.polylineGroup.add(this.currentPolylineLine);
+  }
+
+  private syncPolylineMeasurement(): void {
+    const segmentLengths = getPolylineSegments(this.currentPolyline);
+    useBimStore.getState().setPolylineMeasurement({
+      pointCount: this.currentPolyline.length,
+      segmentLengths,
+      totalLength: segmentLengths.reduce((total, length) => total + length, 0),
+    });
   }
 
   // --- PHASE 2: LOCAL BIM VIEWPOINTS ---

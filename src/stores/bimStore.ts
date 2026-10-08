@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import {
   ToolType,
   MeasurementType,
+  SectionPlaneState,
+  PolylineMeasurementState,
   CameraViewMode,
   LoadingStage,
   ModelMetadata,
@@ -29,6 +31,8 @@ interface BimState {
   setCameraMode: (mode: CameraViewMode) => void;
   measureMode: MeasurementType;
   setMeasureMode: (mode: MeasurementType) => void;
+  polylineMeasurement: PolylineMeasurementState;
+  setPolylineMeasurement: (measurement: PolylineMeasurementState) => void;
 
   // Change Set & History (Phase 3)
   changeSet: BimChange[];
@@ -47,6 +51,8 @@ interface BimState {
   // Section tool status
   sectionPlaneCount: number;
   setSectionPlaneCount: (count: number) => void;
+  sectionPlane: SectionPlaneState | null;
+  setSectionPlane: (plane: SectionPlaneState | null) => void;
 
   // Panel Tabs
   leftPanelTab: LeftPanelTab;
@@ -198,6 +204,8 @@ export const useBimStore = create<BimState>((set) => ({
 
   measureMode: 'distance',
   setMeasureMode: (mode) => set({ measureMode: mode }),
+  polylineMeasurement: { pointCount: 0, segmentLengths: [], totalLength: 0 },
+  setPolylineMeasurement: (measurement) => set({ polylineMeasurement: measurement }),
 
   activeFloorPlanStorey: null,
   setActiveFloorPlanStorey: (storey) => set({ activeFloorPlanStorey: storey }),
@@ -206,6 +214,8 @@ export const useBimStore = create<BimState>((set) => ({
 
   sectionPlaneCount: 0,
   setSectionPlaneCount: (count) => set({ sectionPlaneCount: count }),
+  sectionPlane: null,
+  setSectionPlane: (plane) => set({ sectionPlane: plane, sectionPlaneCount: plane ? 1 : 0 }),
 
   leftPanelTab: 'tree',
   setLeftPanelTab: (tab) => set({ leftPanelTab: tab }),
@@ -371,6 +381,7 @@ export const useBimStore = create<BimState>((set) => ({
       activeFloorPlanStorey: null,
       is2DMode: false,
       sectionPlaneCount: 0,
+      sectionPlane: null,
       leftPanelTab: 'tree',
       rightPanelTab: 'properties',
       treeSearchQuery: '',
@@ -380,6 +391,7 @@ export const useBimStore = create<BimState>((set) => ({
       canRedo: false,
       activeTool: 'select',
       measureMode: 'distance',
+      polylineMeasurement: { pointCount: 0, segmentLengths: [], totalLength: 0 },
       loading: initialLoading,
     }),
 }));

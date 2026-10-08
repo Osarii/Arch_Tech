@@ -10,7 +10,6 @@ import {
   Target,
   Layers,
   Trash2,
-  Plus,
   Compass,
   Sparkles,
 } from 'lucide-react';
@@ -21,45 +20,30 @@ import { ToolType, MeasurementType } from '@/types/bim';
 export const BottomToolbar: React.FC = () => {
   const { t } = useTranslation('workspace');
   const activeTool = useBimStore((s) => s.activeTool);
-  const setActiveTool = useBimStore((s) => s.setActiveTool);
   const selectedElement = useBimStore((s) => s.selectedElement);
   const selectedSceneElements = useBimStore((s) => s.selectedSceneElements);
   const modelMetadata = useBimStore((s) => s.modelMetadata);
   const activeSiteContextId = useBimStore((s) => s.activeSiteContextId);
   const measureMode = useBimStore((s) => s.measureMode);
   const setMeasureMode = useBimStore((s) => s.setMeasureMode);
+  const polylineMeasurement = useBimStore((s) => s.polylineMeasurement);
   const sectionPlaneCount = useBimStore((s) => s.sectionPlaneCount);
+  const sectionPlane = useBimStore((s) => s.sectionPlane);
   const is2DMode = useBimStore((s) => s.is2DMode);
   const activeFloorPlanStorey = useBimStore((s) => s.activeFloorPlanStorey);
   const hasSelection = Boolean(selectedElement || selectedSceneElements.length > 0);
 
   const handleToolChange = (tool: ToolType) => {
-    setActiveTool(tool);
-
-    if (tool === 'measure') {
-      bimEngine.clipper.enabled = false;
-      bimEngine.startMeasurement(measureMode);
-    } else if (tool === 'section') {
-      bimEngine.deleteMeasurements();
-      bimEngine.clipper.enabled = true;
-    } else {
-      bimEngine.clipper.enabled = false;
-      bimEngine.cancelMeasurement();
-      bimEngine.highlighter.enabled = true;
-    }
+    bimEngine.activateTool(tool, measureMode);
   };
 
   const handleMeasureModeChange = (mode: MeasurementType) => {
     setMeasureMode(mode);
-    bimEngine.startMeasurement(mode);
-  };
-
-  const handleAddClippingPlane = async () => {
-    await bimEngine.createClippingPlane();
+    bimEngine.activateTool('measure', mode);
   };
 
   const handleCreateOrthogonalPlane = (axis: 'x' | 'y' | 'z') => {
-    bimEngine.createOrthogonalClippingPlane(axis);
+    bimEngine.setSectionPlane(axis);
   };
 
   const handleClearClippingPlanes = () => {
@@ -112,7 +96,7 @@ export const BottomToolbar: React.FC = () => {
   if (!modelMetadata && !activeSiteContextId) return null;
 
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center bg-[#13161f]/95 border border-[#262c3b] rounded-xl shadow-2xl p-1.5 space-x-1 backdrop-blur-md select-none">
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex max-w-[calc(100vw-2rem)] flex-wrap items-center justify-center gap-1 bg-[#13161f]/95 border border-[#262c3b] rounded-xl shadow-2xl p-1.5 backdrop-blur-md select-none">
       {/* 2D / 3D Quick Toggle */}
       <button
         onClick={handleToggle2D3D}
@@ -214,12 +198,31 @@ export const BottomToolbar: React.FC = () => {
               {t('cutZ', 'Cut Z')}
             </button>
             <button
-              onClick={handleAddClippingPlane}
-              className="flex items-center space-x-1 px-2 py-1 rounded bg-sky-950/70 border border-sky-800/80 text-sky-300 hover:bg-sky-900 text-xs font-medium transition"
-              title={t('freeSectionTitle', 'Click in 3D scene to place custom section plane')}
+              onClick={() => bimEngine.moveSectionPlane(-25)}
+              disabled={!sectionPlane}
+              data-testid="section-btn-move-negative"
+              className="px-2 py-1 rounded bg-[#1c2130] hover:bg-[#252c40] disabled:opacity-40 text-slate-200 text-xs font-mono font-medium border border-[#2d3345] transition"
+              title={t('moveSectionBackTitle', 'Move section plane back 25m')}
             >
-              <Plus className="w-3 h-3" />
-              <span>{t('freeSection', 'Free')}</span>
+              {t('sectionMoveNegative', '−25m')}
+            </button>
+            <button
+              onClick={() => bimEngine.moveSectionPlane(25)}
+              disabled={!sectionPlane}
+              data-testid="section-btn-move-positive"
+              className="px-2 py-1 rounded bg-[#1c2130] hover:bg-[#252c40] disabled:opacity-40 text-slate-200 text-xs font-mono font-medium border border-[#2d3345] transition"
+              title={t('moveSectionForwardTitle', 'Move section plane forward 25m')}
+            >
+              {t('sectionMovePositive', '+25m')}
+            </button>
+            <button
+              onClick={() => bimEngine.invertSectionPlane()}
+              disabled={!sectionPlane}
+              data-testid="section-btn-invert"
+              className="px-2 py-1 rounded bg-[#1c2130] hover:bg-[#252c40] disabled:opacity-40 text-slate-200 text-xs font-medium border border-[#2d3345] transition"
+              title={t('invertSectionTitle', 'Invert section direction')}
+            >
+              {t('invert', 'Invert')}
             </button>
             {sectionPlaneCount > 0 && (
               <button
@@ -254,6 +257,18 @@ export const BottomToolbar: React.FC = () => {
               {t('distance', 'Distance')}
             </button>
             <button
+              onClick={() => handleMeasureModeChange('polyline')}
+              data-testid="measure-btn-polyline"
+              className={`px-2 py-1 rounded text-xs transition ${
+                measureMode === 'polyline'
+                  ? 'bg-sky-600 text-white font-medium'
+                  : 'text-slate-300 hover:bg-[#1e2330]'
+              }`}
+              title={t('measurePolylineTitle', 'Measure connected 3D segments')}
+            >
+              {t('polyline', 'Polyline')}
+            </button>
+            <button
               onClick={() => handleMeasureModeChange('area')}
               data-testid="measure-btn-area"
               className={`px-2 py-1 rounded text-xs transition ${
@@ -286,8 +301,47 @@ export const BottomToolbar: React.FC = () => {
               <Trash2 className="w-3 h-3" />
               <span>{t('clearMeasurements', 'Clear')}</span>
             </button>
+            {measureMode === 'polyline' && (
+              <>
+                <span
+                  data-testid="polyline-measurement-summary"
+                  className="max-w-28 truncate px-1 text-[10px] font-mono text-sky-300"
+                  title={polylineMeasurement.segmentLengths.map((length) => `${length.toFixed(2)} m`).join(' + ')}
+                >
+                  {polylineMeasurement.pointCount > 1
+                    ? `${polylineMeasurement.totalLength.toFixed(2)} m`
+                    : t('placePoints', 'Place points')}
+                </span>
+                <button
+                  onClick={() => bimEngine.finishPolylineMeasurement()}
+                  data-testid="measure-btn-finish-polyline"
+                  className="px-2 py-1 rounded bg-sky-950/70 border border-sky-800/80 text-sky-300 hover:bg-sky-900 text-xs font-medium transition"
+                  title={t('finishPolylineTitle', 'Finish current polyline measurement')}
+                >
+                  {t('finish', 'Finish')}
+                </button>
+                <button
+                  onClick={() => bimEngine.clearLastPolylineMeasurement()}
+                  data-testid="measure-btn-clear-last-polyline"
+                  className="px-2 py-1 rounded border border-[#2d3345] text-slate-300 hover:bg-[#1e2330] text-xs font-medium transition"
+                  title={t('clearLastPolylineTitle', 'Clear last completed polyline')}
+                >
+                  {t('clearLast', 'Clear last')}
+                </button>
+              </>
+            )}
+            {measureMode === 'area' && (
+              <button
+                onClick={() => bimEngine.finishMeasurement()}
+                data-testid="measure-btn-finish-area"
+                className="px-2 py-1 rounded bg-sky-950/70 border border-sky-800/80 text-sky-300 hover:bg-sky-900 text-xs font-medium transition"
+                title={t('finishAreaTitle', 'Close and finish the area polygon')}
+              >
+                {t('finishArea', 'Close area')}
+              </button>
+            )}
             <button
-              onClick={() => bimEngine.clearCurrentDistanceMeasurement()}
+              onClick={() => bimEngine.clearCurrentMeasurement()}
               data-testid="measure-btn-clear-current"
               className="flex items-center space-x-1 px-2 py-1 rounded border border-[#2d3345] text-slate-300 hover:bg-[#1e2330] text-xs font-medium transition"
               title={t('clearCurrentMeasurementTitle', 'Clear current measurement')}

@@ -19,6 +19,7 @@ export const ViewpointsPanel: React.FC = () => {
   const addViewpoint = useBimStore((s) => s.addViewpoint);
   const deleteViewpoint = useBimStore((s) => s.deleteViewpoint);
   const modelMetadata = useBimStore((s) => s.modelMetadata);
+  const activeSiteContextId = useBimStore((s) => s.activeSiteContextId);
 
   const [isCreating, setIsCreating] = useState(false);
   const [title, setTitle] = useState('');
@@ -46,7 +47,7 @@ export const ViewpointsPanel: React.FC = () => {
           <span className="font-medium text-[11px]">{t('savedViewpointsCount', 'Saved Viewpoints ({{count}})', { count: viewpoints.length })}</span>
         </div>
 
-        {modelMetadata && (
+        {(modelMetadata || activeSiteContextId) && (
           <button
             onClick={() => setIsCreating(true)}
             data-testid="btn-save-viewpoint"

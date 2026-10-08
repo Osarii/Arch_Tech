@@ -74,7 +74,10 @@ export const BimViewport: React.FC = () => {
       if (event.key === 'Escape') {
         event.preventDefault();
         if (activeTool === 'measure') {
-          bimEngine.cancelMeasurement();
+          bimEngine.activateTool('select');
+          setActiveTool('select');
+        } else if (activeTool === 'section') {
+          bimEngine.activateTool('select');
           setActiveTool('select');
         } else {
           void bimEngine.clearCurrentSelection();
