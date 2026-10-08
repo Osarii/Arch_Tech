@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { publicAssistant } from '../src/services/publicAssistantService';
 import { aiService } from '../src/services/aiService';
 import { bimAgent } from '../src/bim/ai/AIAgent';
+import { presentationComponents } from '../src/presentation/componentRegistry';
 
 describe('Public Assistant Service', () => {
   beforeEach(() => {
@@ -69,5 +70,26 @@ describe('Public Assistant Service', () => {
     const res = await publicAssistant.sendMessage('Show me industrial projects', 'en');
     expect(res.content).toContain('The assistant service is currently unavailable');
     expect(publicAssistant.getHistory()).toHaveLength(2);
+  });
+
+  it('sends optional presentation context and keeps a local component explanation available offline', async () => {
+    const presentationContext = {
+      chapter: 'La Lima BIM',
+      section: 'La Lima BIM',
+      projectContext: 'ARCH_TECH large-scale development platform',
+      currentComponent: presentationComponents.find((component) => component.id === 'bim-viewer') ?? null,
+      selectedBimContext: 'Warehouse A',
+    };
+    vi.spyOn(aiService, 'isConfigured').mockReturnValue(true);
+    const generateSpy = vi.spyOn(aiService, 'generateResponse').mockResolvedValue({ message: 'Contextual answer' });
+
+    await publicAssistant.sendMessage('¿Qué hace esto?', 'es', presentationContext);
+    expect(generateSpy.mock.calls[0][0].presentationContext).toEqual(presentationContext);
+
+    publicAssistant.clearHistory();
+    vi.spyOn(aiService, 'isConfigured').mockReturnValue(false);
+    const fallback = await publicAssistant.sendMessage('¿Cómo funciona?', 'es', presentationContext);
+    expect(fallback.content).toContain('BIM Viewer');
+    expect(fallback.content).toContain('technical workspace');
   });
 });

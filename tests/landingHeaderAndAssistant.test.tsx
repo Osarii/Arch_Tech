@@ -97,6 +97,14 @@ describe('Public Landing Header & Garnier Assistant Polish', () => {
       expect(onLogin).toHaveBeenCalledTimes(1);
     });
 
+    it('starts the presentation from the public header', () => {
+      const onStartPresentation = vi.fn();
+      render(<LandingNavbar onLogin={vi.fn()} onStartPresentation={onStartPresentation} />);
+
+      fireEvent.click(screen.getByTestId('presentation-start'));
+      expect(onStartPresentation).toHaveBeenCalledTimes(1);
+    });
+
     it('toggles mobile drawer with accessible controls', () => {
       const onToggleTheme = vi.fn();
       const onOpenA11y = vi.fn();

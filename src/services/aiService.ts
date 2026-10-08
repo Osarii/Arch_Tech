@@ -1,6 +1,7 @@
 import type { AIMessage, ConversationContext, ToolDefinition } from '../types/bim';
 import type { AIProviderResponse } from '../bim/ai/providers/RuleBasedProvider';
 import { getApiBaseUrl } from './apiClient';
+import type { PresentationAssistantContext } from '../presentation/componentRegistry';
 
 export type RemoteAIRequest = {
   userPrompt: string;
@@ -11,6 +12,7 @@ export type RemoteAIRequest = {
   role?: string;
   route?: string;
   projectId?: string;
+  presentationContext?: PresentationAssistantContext;
 };
 
 export interface RemoteAIResponsePayload {

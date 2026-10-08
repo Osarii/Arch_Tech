@@ -4,6 +4,8 @@ import { ArchTechLogo } from '../brand/ArchTechLogo';
 import { useScrollProgress } from '../motion/useScrollProgress';
 import { useLocale } from '../../portal/locale';
 
+const presentationLabel = 'PRESENTACIÓN';
+
 interface LandingNavbarProps {
   onLogin: (trigger?: HTMLElement) => void;
   onNavigate?: (path: string) => void;
@@ -11,6 +13,7 @@ interface LandingNavbarProps {
   isA11yPanelOpen?: boolean;
   lightTheme?: boolean;
   onToggleTheme?: () => void;
+  onStartPresentation?: () => void;
 }
 
 export const LandingNavbar: React.FC<LandingNavbarProps> = ({
@@ -20,6 +23,7 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
   isA11yPanelOpen,
   lightTheme = false,
   onToggleTheme,
+  onStartPresentation,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isScrolled } = useScrollProgress('[data-landing-scroll-container]');
@@ -234,6 +238,21 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
             </button>
           </div>
 
+          {onStartPresentation && (
+            <button
+              type="button"
+              data-testid="presentation-start"
+              onClick={onStartPresentation}
+              className={`border px-3 py-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors ${
+                lightTheme
+                  ? 'border-black/30 text-black hover:border-[#79B791] hover:text-[#4e8064]'
+                  : 'border-[#ABD1B5]/40 text-[#EDF4ED] hover:border-[#79B791] hover:text-[#79B791]'
+              }`}
+            >
+              {presentationLabel}
+            </button>
+          )}
+
           {/* Strong Project Portal CTA */}
           <button
             data-testid="client-login-link"
@@ -373,6 +392,23 @@ export const LandingNavbar: React.FC<LandingNavbarProps> = ({
             <span>{t.a11yControls}</span>
             <Sliders className="h-4 w-4" />
           </button>
+
+          {onStartPresentation && (
+            <button
+              type="button"
+              data-testid="mobile-presentation-start"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onStartPresentation();
+              }}
+              className={`flex w-full items-center justify-between border px-4 py-2.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] rounded-sm ${
+                lightTheme ? 'border-[#79B791] text-black bg-[#79B791]/10' : 'border-[#79B791]/70 text-[#79B791] bg-[#79B791]/10'
+              }`}
+            >
+              <span>{presentationLabel}</span>
+              <span aria-hidden="true">↗</span>
+            </button>
+          )}
 
           <button
             onClick={(event) => onLogin(event.currentTarget)}

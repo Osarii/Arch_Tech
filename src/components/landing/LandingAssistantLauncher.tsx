@@ -4,12 +4,14 @@ import { GarnierChatShell } from '../ai/GarnierChatShell';
 import { publicAssistant } from '../../services/publicAssistantService';
 import { useLocale } from '../../portal/locale';
 import type { AIMessage } from '../../types/bim';
+import type { PresentationAssistantContext } from '../../presentation/componentRegistry';
 
 interface LandingAssistantLauncherProps {
   lightTheme?: boolean;
+  presentationContext?: PresentationAssistantContext;
 }
 
-export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> = ({ lightTheme }) => {
+export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> = ({ lightTheme, presentationContext }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -21,6 +23,7 @@ export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> =
   const aiT = t.portalAi;
 
   const isLight = lightTheme ?? (typeof window !== 'undefined' && window.localStorage.getItem('garnier-public-theme') === 'light');
+  const presentationLayer = presentationContext ? 'z-[90]' : 'z-30';
 
   useEffect(() => {
     const unsubscribe = publicAssistant.subscribe((msgs) => setMessages(msgs));
@@ -67,7 +70,7 @@ export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> =
     if (!text.trim() || isProcessing) return;
     setIsProcessing(true);
     try {
-      await publicAssistant.sendMessage(text, locale);
+      await publicAssistant.sendMessage(text, locale, presentationContext);
     } catch (err) {
       console.error('Public assistant error:', err);
     } finally {
@@ -89,7 +92,7 @@ export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> =
       {/* Mobile backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs sm:hidden"
+          className={`fixed inset-0 bg-black/60 backdrop-blur-xs sm:hidden ${presentationContext ? 'z-[85]' : 'z-30'}`}
           onClick={handleClose}
           aria-hidden="true"
         />
@@ -99,7 +102,7 @@ export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> =
       {!isOpen && (
         <aside
           aria-label={aiT.publicAssistantTitle || 'GARNIER ASSISTANT'}
-          className="fixed bottom-6 right-6 z-30"
+          className={`fixed right-6 ${presentationContext ? 'bottom-20' : 'bottom-6'} ${presentationLayer}`}
         >
           <button
             ref={launcherRef}
@@ -144,7 +147,7 @@ export const LandingAssistantLauncher: React.FC<LandingAssistantLauncherProps> =
           role="dialog"
           aria-modal="true"
           aria-label={aiT.publicAssistantTitle || 'GARNIER ASSISTANT'}
-          className="fixed inset-3 z-40 flex flex-col sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[580px] sm:w-[380px] animate-in fade-in zoom-in-95 duration-200"
+          className={`fixed inset-3 ${presentationContext ? 'z-[90] sm:bottom-20' : 'z-40 sm:bottom-6'} flex flex-col sm:inset-auto sm:right-6 sm:h-[580px] sm:w-[380px] animate-in fade-in zoom-in-95 duration-200`}
         >
           <GarnierChatShell
             variant="docked"

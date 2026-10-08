@@ -13,13 +13,15 @@ import { useAccessibility } from '../../portal/useAccessibility';
 import { AccessibilityOverlay } from '../../components/portal/AccessibilityOverlay';
 import { AccessibilityPanel } from '../../components/portal/AccessibilityPanel';
 import { LandingAssistantLauncher } from '../../components/landing/LandingAssistantLauncher';
+import { PresentationMode } from '../../components/presentation/PresentationMode';
+import { PresentationProvider, usePresentation } from '../../presentation/PresentationContext';
 
 interface LandingPageProps {
   onNavigate: (path: string) => void;
   onLogin: (trigger?: HTMLElement) => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin }) => {
+const LandingPageContent: React.FC<LandingPageProps> = ({ onNavigate, onLogin }) => {
   const [lightTheme, setLightTheme] = useState(() => typeof window !== 'undefined' && window.localStorage.getItem('garnier-public-theme') === 'light');
   useEffect(() => { window.localStorage.setItem('garnier-public-theme', lightTheme ? 'light' : 'dark'); }, [lightTheme]);
   const {
@@ -40,6 +42,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
     announcement,
     activeLocale,
   } = useAccessibility();
+  const presentation = usePresentation();
 
   const viewProjects = () => document.querySelector('#projects')?.scrollIntoView({ behavior: 'smooth' });
 
@@ -60,6 +63,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         isA11yPanelOpen={isA11yPanelOpen}
         lightTheme={lightTheme}
         onToggleTheme={() => setLightTheme((value) => !value)}
+        onStartPresentation={presentation.start}
       />
       <main>
         <Hero onViewProjects={viewProjects} onOpenProject={(id) => onNavigate(`/projects/${id}`)} />
@@ -71,7 +75,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         <DevelopmentFrame onLogin={onLogin} />
       </main>
       <Footer onLogin={onLogin} />
-      <LandingAssistantLauncher lightTheme={lightTheme} />
+      <LandingAssistantLauncher
+        lightTheme={lightTheme}
+        presentationContext={presentation.isActive ? presentation.assistantContext : undefined}
+      />
 
       {/* Shared accessibility reading overlays */}
       <AccessibilityOverlay
@@ -97,6 +104,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate, onLogin })
         triggerRef={a11yTriggerRef}
         locale={activeLocale}
       />
+      <PresentationMode />
     </div>
   );
 };
+
+export const LandingPage: React.FC<LandingPageProps> = (props) => (
+  <PresentationProvider>
+    <LandingPageContent {...props} />
+  </PresentationProvider>
+);

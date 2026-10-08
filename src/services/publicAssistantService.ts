@@ -1,5 +1,6 @@
 import type { AIMessage } from '../types/bim';
 import { aiService } from './aiService';
+import type { PresentationAssistantContext } from '../presentation/componentRegistry';
 
 export class PublicAssistantService {
   private messages: AIMessage[] = [];
@@ -27,7 +28,11 @@ export class PublicAssistantService {
     this.listeners.forEach((listener) => listener(copy));
   }
 
-  async sendMessage(prompt: string, locale: 'en' | 'es' = 'en'): Promise<AIMessage> {
+  async sendMessage(
+    prompt: string,
+    locale: 'en' | 'es' = 'en',
+    presentationContext?: PresentationAssistantContext,
+  ): Promise<AIMessage> {
     const trimmed = prompt.trim();
     if (!trimmed) {
       throw new Error('Prompt cannot be empty');
@@ -47,12 +52,15 @@ export class PublicAssistantService {
       locale === 'es'
         ? 'El servicio del asistente no está disponible en este momento. Por favor intente más tarde o comuníquese directamente con nuestro equipo.'
         : 'The assistant service is currently unavailable. Please check back shortly or contact our team directly.';
+    const presentationFallback = presentationContext?.currentComponent
+      ? `${presentationContext.currentComponent.label}: ${presentationContext.currentComponent.assistantContext}`
+      : unavailableCopy;
 
     if (!aiService.isConfigured()) {
       const fallbackMsg: AIMessage = {
         id: `pub-asst-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         role: 'assistant',
-        content: unavailableCopy,
+        content: presentationFallback,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       this.messages.push(fallbackMsg);
@@ -69,6 +77,7 @@ export class PublicAssistantService {
         locale,
         role: 'public',
         route: '/',
+        presentationContext,
       });
 
       const assistantMsg: AIMessage = {
@@ -84,7 +93,7 @@ export class PublicAssistantService {
       const fallbackMsg: AIMessage = {
         id: `pub-asst-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         role: 'assistant',
-        content: unavailableCopy,
+        content: presentationFallback,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       this.messages.push(fallbackMsg);
