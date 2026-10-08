@@ -4,8 +4,9 @@ import { useBimStore } from '@/stores/bimStore';
 import { bimEngine } from '@/bim/engine/BimEngine';
 import { IfcLoaderService } from '@/bim/loaders/ifcLoaderService';
 import { LA_LIMA_SITE_CONTEXT_ID, laLimaSiteContextService } from '@/bim/site';
-import { Box, UploadCloud, Compass, AlertCircle, RefreshCw, Layers } from 'lucide-react';
+import { Box, UploadCloud, Compass, AlertCircle, RefreshCw, Layers, Maximize, RotateCcw, Eye } from 'lucide-react';
 import { StandardViewDirection } from '@/types/bim';
+import { BimInteractionPanel } from './BimInteractionPanel';
 
 export const BimViewport: React.FC = () => {
   const { t } = useTranslation('workspace');
@@ -17,6 +18,8 @@ export const BimViewport: React.FC = () => {
   const activeSiteContextId = useBimStore((s) => s.activeSiteContextId);
   const loading = useBimStore((s) => s.loading);
   const setSelectedElement = useBimStore((s) => s.setSelectedElement);
+  const setSelectedSceneElement = useBimStore((s) => s.setSelectedSceneElement);
+  const setHoveredSceneElementId = useBimStore((s) => s.setHoveredSceneElementId);
   const setPerfStats = useBimStore((s) => s.setPerfStats);
   const setSelectedNodeId = useBimStore((s) => s.setSelectedNodeId);
 
@@ -32,6 +35,8 @@ export const BimViewport: React.FC = () => {
         setSelectedNodeId(null);
       }
     };
+    bimEngine.onSceneElementSelected = setSelectedSceneElement;
+    bimEngine.onSceneElementHovered = setHoveredSceneElementId;
 
     // Connect performance stats callback
     bimEngine.onPerformanceUpdate = (stats) => {
@@ -44,9 +49,12 @@ export const BimViewport: React.FC = () => {
     });
 
     return () => {
-      // Don't fully dispose on hot reload, but handle resize cleanup
+      bimEngine.onElementSelected = undefined;
+      bimEngine.onSceneElementSelected = undefined;
+      bimEngine.onSceneElementHovered = undefined;
+      bimEngine.onPerformanceUpdate = undefined;
     };
-  }, [setSelectedElement, setPerfStats, setSelectedNodeId]);
+  }, [setHoveredSceneElementId, setSelectedElement, setSelectedNodeId, setSelectedSceneElement, setPerfStats]);
 
   // Drag & drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -219,8 +227,39 @@ export const BimViewport: React.FC = () => {
 
       {/* Viewport Floating Quick View Cube / Menu */}
       {(modelMetadata || activeSiteContextId) && (
-        <div className="absolute top-3 right-3 z-20">
-          <div className="relative">
+        <>
+          <div className="absolute left-3 top-3 z-20 flex overflow-hidden border border-[#282e3e] bg-[#161922]/90 shadow-md backdrop-blur-sm">
+            <button
+              type="button"
+              data-testid="bim-action-fit-project"
+              onClick={() => bimEngine.fitModel()}
+              className="flex items-center gap-1 border-r border-[#282e3e] px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-300 transition hover:bg-[#202534] hover:text-slate-100"
+              title={t('fitModelTitle', 'Fit Project')}
+            >
+              <Maximize className="h-3 w-3 text-[#79B791]" /> {t('fit', 'Fit')}
+            </button>
+            <button
+              type="button"
+              data-testid="bim-action-reset-view"
+              onClick={() => bimEngine.resetView()}
+              className="flex items-center gap-1 border-r border-[#282e3e] px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-300 transition hover:bg-[#202534] hover:text-slate-100"
+              title={t('resetView', 'Reset View')}
+            >
+              <RotateCcw className="h-3 w-3 text-slate-400" /> {t('reset', 'Reset')}
+            </button>
+            <button
+              type="button"
+              data-testid="bim-action-show-all-viewport"
+              onClick={() => void bimEngine.showAll()}
+              className="flex items-center gap-1 px-2.5 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-slate-300 transition hover:bg-[#202534] hover:text-slate-100"
+              title={t('showAllTitle', 'Show All')}
+            >
+              <Eye className="h-3 w-3 text-[#79B791]" /> {t('showAll', 'Show All')}
+            </button>
+          </div>
+          <BimInteractionPanel />
+          <div className="absolute top-3 right-3 z-20">
+            <div className="relative">
             <button
               onClick={() => setShowViewMenu(!showViewMenu)}
               className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-md bg-[#161922]/90 hover:bg-[#1f2330] text-slate-300 text-xs font-mono border border-[#282e3e] shadow-md transition backdrop-blur-sm"
@@ -245,8 +284,9 @@ export const BimViewport: React.FC = () => {
                 )}
               </div>
             )}
+            </div>
           </div>
-        </div>
+        </>
       )}
     </div>
   );

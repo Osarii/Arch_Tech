@@ -26,6 +26,7 @@ export class IfcLoaderService {
       if (requestGeneration !== this.loadGeneration) throw this.staleRequest;
     };
     const store = useBimStore.getState();
+    bimEngine.resetSceneInteractions();
     laLimaSiteContextService.clear();
     store.setActiveSiteContextId(null);
     store.setActiveSiteContextLabel(null);
