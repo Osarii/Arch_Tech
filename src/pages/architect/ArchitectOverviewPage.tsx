@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, CheckCircle2, FileText, Layers, Sparkles } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, CheckCircle2, FileText, Layers, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getPortalUser, getProjectsForUser } from '../../portal/data';
 import { portalAuth } from '../../portal/demoAuth';
@@ -77,17 +77,20 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
         <button
           type="button"
           onClick={() => navigate('/architect/projects')}
-          className="portal-overview-tile group flex flex-col justify-between rounded-sm p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
+          className="portal-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] p-5 text-left transition-all duration-180 hover:border-[var(--portal-accent)] shadow-2xs"
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{architectPortal.assignedWorkload}</span>
-            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('studioBadge', 'STUDIO')}</span>
+            <span className="rounded-3xs border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-[var(--portal-muted)] opacity-75">{t('studioBadge', 'STUDIO')}</span>
           </div>
-          <p className="my-4 font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
-            {projects.length.toString().padStart(2, '0')}
-          </p>
+          <div className="my-4 flex items-baseline justify-between">
+            <p className="font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+              {projects.length.toString().padStart(2, '0')}
+            </p>
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-[var(--portal-muted)] opacity-0 -translate-x-1 translate-y-1 transition-all duration-180 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[var(--portal-accent)]" />
+          </div>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)] shrink-0" />
             <span>{architectPortal.activeProjects}</span>
           </p>
         </button>
@@ -95,17 +98,20 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
         <button
           type="button"
           onClick={() => navigate('/architect/insights')}
-          className="portal-overview-tile group flex flex-col justify-between rounded-sm p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
+          className="portal-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] p-5 text-left transition-all duration-180 hover:border-[var(--portal-accent)] shadow-2xs"
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{architectPortal.averageProgress}</span>
-            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('avgBadge', 'AVG')}</span>
+            <span className="rounded-3xs border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-[var(--portal-muted)] opacity-75">{t('avgBadge', 'AVG')}</span>
           </div>
-          <p className="my-4 font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
-            {averageProgress}%
-          </p>
+          <div className="my-4 flex items-baseline justify-between">
+            <p className="font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+              {averageProgress}%
+            </p>
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-[var(--portal-muted)] opacity-0 -translate-x-1 translate-y-1 transition-all duration-180 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[var(--portal-accent)]" />
+          </div>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)] shrink-0" />
             <span>{architectPortal.acrossAssignedWork}</span>
           </p>
         </button>
@@ -113,28 +119,33 @@ export const ArchitectOverviewPage: React.FC<Partial<NavigationProps> & { onSign
         <button
           type="button"
           onClick={() => navigate('/architect/approvals')}
-          className="portal-overview-tile group flex flex-col justify-between rounded-sm p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
+          className="portal-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] p-5 text-left transition-all duration-180 hover:border-[var(--portal-accent)] shadow-2xs"
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{architectPortal.clientDecisions}</span>
-            <span className={`h-2 w-2 rounded-full ${approvals.length > 0 ? 'bg-[#FFBF00]' : 'bg-[var(--portal-accent)]'}`} />
+            <span className={`h-2 w-2 rounded-full ${approvals.length > 0 ? 'bg-[#FFBF00]' : 'bg-[var(--portal-accent)]'} shrink-0`} />
           </div>
-          <p className="my-4 font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
-            {approvals.length.toString().padStart(2, '0')}
-          </p>
+          <div className="my-4 flex items-baseline justify-between">
+            <p className="font-serif text-4xl font-light tracking-tight text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+              {approvals.length.toString().padStart(2, '0')}
+            </p>
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-[var(--portal-muted)] opacity-0 -translate-x-1 translate-y-1 transition-all duration-180 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[var(--portal-accent)]" />
+          </div>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
             <span>{architectPortal.responsesPending}</span>
           </p>
         </button>
 
-        <div className="portal-overview-tile flex flex-col justify-between rounded-sm p-5 shadow-xs">
+        <div className="portal-overview-tile flex flex-col justify-between rounded-sm border border-[var(--portal-border)] p-5 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{architectPortal.nextMilestones}</span>
-            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('queueBadge', 'QUEUE')}</span>
+            <span className="rounded-3xs border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-[var(--portal-muted)] opacity-75">{t('queueBadge', 'QUEUE')}</span>
           </div>
-          <p className="my-4 font-serif text-4xl font-light tracking-tight text-[var(--portal-text)]">
-            {milestones.length.toString().padStart(2, '0')}
-          </p>
+          <div className="my-4">
+            <p className="font-serif text-4xl font-light tracking-tight text-[var(--portal-text)]">
+              {milestones.length.toString().padStart(2, '0')}
+            </p>
+          </div>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
             <span>{architectPortal.inActiveSequence}</span>
           </p>

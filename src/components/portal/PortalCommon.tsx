@@ -261,13 +261,13 @@ export const ExternalContextPanel: React.FC = () => {
           placeholder={t('siteIntelligence.placeholder', 'Enter location (e.g. San José, Costa Rica)')}
           aria-label={t('siteIntelligence.locationAria', 'Location for site intelligence')}
           data-testid="site-intelligence-input"
-          className="min-w-[260px] flex-1 border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-3 py-2 text-xs text-[var(--portal-text)] placeholder:text-[var(--portal-muted)] focus:border-[var(--portal-accent)] focus:outline-none"
+          className="min-w-[260px] flex-1 rounded-xs border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] px-3 py-2.5 text-xs text-[var(--portal-text)] placeholder:text-[var(--portal-muted)] focus:border-[var(--portal-border-strong)] focus:ring-1 focus:ring-[var(--portal-accent)] focus:outline-none transition-all"
         />
         <button
           type="submit"
           data-testid="site-intelligence-analyze"
           disabled={locationStatus === 'loading' || weatherStatus === 'loading' || seismicStatus === 'loading'}
-          className="border border-black/20 bg-black px-4 py-2 font-mono text-[9px] uppercase tracking-[0.16em] text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="rounded-xs px-4 py-2.5 font-mono text-[9px] uppercase tracking-[0.16em] font-medium transition-all hover:opacity-95 active:scale-[0.99] disabled:opacity-50"
         >
           {locationStatus === 'loading'
             ? t('siteIntelligence.locating', 'Locating…')
@@ -607,7 +607,7 @@ export const CreateProjectModal: React.FC<{
               disabled={creatingProject}
               value={newProject.title}
               onChange={(event) => setNewProject({ ...newProject, title: event.target.value })}
-              className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none"
+              className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none transition-colors focus:border-[var(--portal-accent)]"
             />
           </label>
           <label className="block font-mono text-[9px] uppercase text-stone-400">
@@ -617,7 +617,7 @@ export const CreateProjectModal: React.FC<{
               disabled={creatingProject}
               value={newProject.category}
               onChange={(event) => setNewProject({ ...newProject, category: event.target.value })}
-              className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none"
+              className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none transition-colors focus:border-[var(--portal-accent)]"
             />
           </label>
           <div className="grid gap-5 sm:grid-cols-2">
@@ -627,7 +627,7 @@ export const CreateProjectModal: React.FC<{
                 disabled={creatingProject}
                 value={newProject.phase}
                 onChange={(event) => setNewProject({ ...newProject, phase: event.target.value })}
-                className="mt-2 w-full border-b border-white/20 bg-[#11110f] py-3 text-sm text-white outline-none"
+                className="mt-2 w-full border-b border-white/20 bg-[#11110f] py-3 text-sm text-white outline-none transition-colors focus:border-[var(--portal-accent)]"
               >
                 <option value="Brief and site study">{t('phases.brief', 'Brief and site study')}</option>
                 <option value="Concept design">{t('phases.concept', 'Concept design')}</option>
@@ -646,7 +646,7 @@ export const CreateProjectModal: React.FC<{
                 step="1"
                 value={newProject.progress}
                 onChange={(event) => setNewProject({ ...newProject, progress: event.target.value })}
-                className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none"
+                className="mt-2 w-full border-b border-white/20 bg-transparent py-3 text-sm text-white outline-none transition-colors focus:border-[var(--portal-accent)]"
               >
               </input>
             </label>
@@ -656,7 +656,7 @@ export const CreateProjectModal: React.FC<{
         <button
           disabled={creatingProject}
           type="submit"
-          className="mt-8 w-full bg-[#f4efe8] px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] text-black disabled:opacity-50"
+          className="mt-8 w-full rounded-xs bg-[#f4efe8] px-5 py-4 font-mono text-[10px] uppercase tracking-[0.18em] font-semibold text-black transition-all hover:bg-white active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-[var(--portal-accent)] disabled:opacity-50"
         >
           {creatingProject ? t('creatingProject', 'Creating project…') : t('createProject', 'Create project')}
         </button>

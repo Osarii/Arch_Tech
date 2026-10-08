@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot } from '../../portal/data';
 import { useLocale } from '../../portal/locale';
@@ -92,9 +93,10 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
               setCreateOpen(true);
               setOperationFeedback('');
             }}
-            className="bg-[#171714] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white hover:bg-stone-800"
+            className="admin-primary-action group flex items-center justify-between gap-2.5 rounded-xs border border-black/20 bg-black px-5 py-3 font-mono text-[10px] uppercase tracking-[0.16em] text-white transition-all duration-150 hover:bg-stone-800 focus-visible:outline-2 focus-visible:outline-[var(--portal-accent)]"
           >
-            {adminPortal.createNewProject}
+            <span>{adminPortal.createNewProject}</span>
+            <Plus className="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-90" />
           </button>
         </div>
         {operationFeedback && (
@@ -124,7 +126,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
 
         {/* Search, Filter, Sort Toolbar */}
         <div
-          className="portal-register-toolbar mb-7 grid gap-3 border-y border-black/15 py-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
+          className="portal-register-toolbar mb-7 grid gap-3 border-y border-[var(--portal-border)] py-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]"
           role="search"
           aria-label={t('filterProjectRegister', 'Filter project register')}
         >
@@ -136,7 +138,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
             value={projectSearch}
             onChange={(event) => setProjectSearch(event.target.value)}
             placeholder={t('searchPlaceholder', 'Search title, code, category or phase')}
-            className="min-w-0 border-b border-black/20 bg-transparent px-0 py-2 text-sm outline-none placeholder:text-stone-500 focus:border-black"
+            className="min-w-0 border-b border-[var(--portal-border)] bg-transparent px-0 py-2 text-sm text-[var(--portal-text)] outline-none placeholder:text-[var(--portal-muted)] focus:border-[var(--portal-accent)] transition-colors"
           />
 
           <label className="sr-only" htmlFor="admin-project-filter">
@@ -146,7 +148,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
             id="admin-project-filter"
             value={projectFilter}
             onChange={(event) => setProjectFilter(event.target.value)}
-            className="border border-black/20 bg-transparent px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] outline-none"
+            className="rounded-xs border border-[var(--portal-border)] bg-[var(--portal-surface)] text-[var(--portal-text)] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] outline-none transition-colors focus:border-[var(--portal-accent)]"
           >
             <option value="all">{t('allProjects', 'All projects')}</option>
             <option value="pending">{t('pendingApproval', 'Pending approval')}</option>
@@ -164,7 +166,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
             id="admin-project-sort"
             value={projectSort}
             onChange={(event) => setProjectSort(event.target.value as typeof projectSort)}
-            className="border border-black/20 bg-transparent px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] outline-none"
+            className="rounded-xs border border-[var(--portal-border)] bg-[var(--portal-surface)] text-[var(--portal-text)] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] outline-none transition-colors focus:border-[var(--portal-accent)]"
           >
             <option value="name">{t('sortName', 'Name A–Z')}</option>
             <option value="progress-desc">{t('sortProgressDesc', 'Progress high → low')}</option>
@@ -176,7 +178,7 @@ export const AdminProjectsPage: React.FC<Partial<NavigationProps> & { onSignOut?
             <button
               type="button"
               onClick={clearProjectFilters}
-              className="border border-black/20 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] transition-colors hover:bg-black hover:text-white"
+              className="rounded-xs border border-[var(--portal-border)] bg-[var(--portal-surface)] text-[var(--portal-text)] px-3 py-2 font-mono text-[10px] uppercase tracking-[0.12em] transition-all hover:bg-[var(--portal-surface-raised)] hover:border-[var(--portal-border-strong)] focus-visible:outline-2 focus-visible:outline-[var(--portal-accent)]"
             >
               {t('clearFilters', 'Clear filters')}
             </button>

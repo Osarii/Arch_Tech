@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BarChart2, CheckCircle2, Layers, Sparkles, Users } from 'lucide-react';
+import { ArrowUpRight, BarChart2, CheckCircle2, Layers, Plus, Sparkles, Users } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getPortalSnapshot } from '../../portal/data';
 import { useLocale } from '../../portal/locale';
@@ -92,9 +92,10 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
             setCreateOpen(true);
             setOperationFeedback('');
           }}
-          className="admin-primary-action bg-[var(--portal-text)] px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--portal-surface)] hover:opacity-90 transition-opacity"
+          className="admin-primary-action group inline-flex items-center gap-2 rounded-sm border border-[var(--portal-text)] bg-[var(--portal-text)] px-5 py-2.5 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--portal-surface)] transition-all hover:border-[var(--portal-accent)] hover:opacity-90 active:scale-[0.99] shadow-xs"
         >
-          {adminPortal.createNewProject}
+          <Plus className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:rotate-90" />
+          <span>{adminPortal.createNewProject}</span>
         </button>
         <p className="font-mono text-xs text-[var(--portal-muted)]">{adminPortal.createProjectDescription}</p>
         {operationFeedback && (
@@ -109,17 +110,20 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
         <button
           type="button"
           onClick={() => navigate('/admin/projects')}
-          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
+          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all duration-180 hover:border-[var(--portal-accent)] shadow-2xs"
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.activeProjects}</span>
-            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('portfolioBadge', 'PORTFOLIO')}</span>
+            <span className="rounded-3xs border border-[var(--portal-border)] bg-[var(--portal-surface)] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-[var(--portal-muted)] opacity-75">{t('portfolioBadge', 'PORTFOLIO')}</span>
           </div>
-          <p className="admin-kpi-value my-4 font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
-            {activeProjects.length.toString().padStart(2, '0')}
-          </p>
+          <div className="my-4 flex items-baseline justify-between">
+            <p className="admin-kpi-value font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+              {activeProjects.length.toString().padStart(2, '0')}
+            </p>
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-[var(--portal-muted)] opacity-0 -translate-x-1 translate-y-1 transition-all duration-180 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[var(--portal-accent)]" />
+          </div>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)] shrink-0" />
             <span>{adminPortal.currentlyActive}</span>
           </p>
         </button>
@@ -127,17 +131,20 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
         <button
           type="button"
           onClick={() => navigate('/admin/analytics')}
-          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
+          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all duration-180 hover:border-[var(--portal-accent)] shadow-2xs"
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.averageProgress}</span>
-            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('avgBadge', 'AVG')}</span>
+            <span className="rounded-3xs border border-[var(--portal-border)] bg-[var(--portal-surface)] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-[var(--portal-muted)] opacity-75">{t('avgBadge', 'AVG')}</span>
           </div>
-          <p className="admin-kpi-value my-4 font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
-            {averageProgress}%
-          </p>
+          <div className="my-4 flex items-baseline justify-between">
+            <p className="admin-kpi-value font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+              {averageProgress}%
+            </p>
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-[var(--portal-muted)] opacity-0 -translate-x-1 translate-y-1 transition-all duration-180 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[var(--portal-accent)]" />
+          </div>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[var(--portal-accent)] shrink-0" />
             <span>{adminPortal.acrossActiveWork}</span>
           </p>
         </button>
@@ -145,28 +152,33 @@ export const AdminOverviewPage: React.FC<Partial<NavigationProps> & { onSignOut?
         <button
           type="button"
           onClick={() => navigate('/admin/approvals')}
-          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all hover:border-[var(--portal-accent)] shadow-xs"
+          className="admin-overview-tile group flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 text-left transition-all duration-180 hover:border-[var(--portal-accent)] shadow-2xs"
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.pendingApprovals}</span>
-            <span className={`h-2 w-2 rounded-full ${pendingApprovals.length > 0 ? 'bg-[#FFBF00]' : 'bg-[var(--portal-accent)]'}`} />
+            <span className={`h-2 w-2 rounded-full ${pendingApprovals.length > 0 ? 'bg-[#FFBF00]' : 'bg-[var(--portal-accent)]'} shrink-0`} />
           </div>
-          <p className="admin-kpi-value my-4 font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
-            {pendingApprovals.length.toString().padStart(2, '0')}
-          </p>
+          <div className="my-4 flex items-baseline justify-between">
+            <p className="admin-kpi-value font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)] group-hover:text-[var(--portal-accent)] transition-colors">
+              {pendingApprovals.length.toString().padStart(2, '0')}
+            </p>
+            <ArrowUpRight className="h-4 w-4 shrink-0 text-[var(--portal-muted)] opacity-0 -translate-x-1 translate-y-1 transition-all duration-180 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 group-hover:text-[var(--portal-accent)]" />
+          </div>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
             <span>{adminPortal.requiringReview}</span>
           </p>
         </button>
 
-        <div className="admin-overview-tile flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 shadow-xs">
+        <div className="admin-overview-tile flex flex-col justify-between rounded-sm border border-[var(--portal-border)] bg-[var(--portal-surface-raised)] p-5 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-[var(--portal-muted)]">{adminPortal.upcomingMilestones}</span>
-            <span className="font-mono text-[8px] text-[var(--portal-muted)] opacity-60">{t('queueBadge', 'QUEUE')}</span>
+            <span className="rounded-3xs border border-[var(--portal-border)] bg-[var(--portal-surface)] px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-[var(--portal-muted)] opacity-75">{t('queueBadge', 'QUEUE')}</span>
           </div>
-          <p className="admin-kpi-value my-4 font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)]">
-            {upcomingMilestones.length.toString().padStart(2, '0')}
-          </p>
+          <div className="my-4">
+            <p className="admin-kpi-value font-sans text-5xl font-light tracking-[-0.03em] tabular-nums text-[var(--portal-text)]">
+              {upcomingMilestones.length.toString().padStart(2, '0')}
+            </p>
+          </div>
           <p className="flex items-center gap-1.5 font-mono text-[10px] text-[var(--portal-muted)]">
             <span>{adminPortal.inActiveSequence}</span>
           </p>
