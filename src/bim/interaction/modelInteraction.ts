@@ -20,6 +20,12 @@ export type SceneInteractionTarget = {
   instanceId?: number;
 };
 
+export type SceneInteractionGroup = {
+  id: string;
+  name: string;
+  targets: SceneInteractionTarget[];
+};
+
 type HiddenTarget = SceneInteractionTarget & {
   matrix?: THREE.Matrix4;
   visible?: boolean;
@@ -35,6 +41,28 @@ export const getCameraFocusBounds = (box: THREE.Box3): THREE.Box3 => {
   return padded;
 };
 
+export const groupSceneInteractionTargets = (targets: SceneInteractionTarget[]): SceneInteractionGroup[] => {
+  const groups = new Map<string, SceneInteractionTarget[]>();
+  for (const target of targets) {
+    const name = target.details.category || target.details.type;
+    const key = name.toLowerCase();
+    groups.set(key, [...(groups.get(key) ?? []), target]);
+  }
+  return [...groups.entries()]
+    .map(([id, groupedTargets]) => ({ id, name: groupedTargets[0].details.category || groupedTargets[0].details.type, targets: groupedTargets }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+};
+
+export const filterSceneInteractionTargets = (targets: SceneInteractionTarget[], query: string): SceneInteractionTarget[] => {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) return targets;
+  return targets.filter((target) =>
+    [target.details.name, target.details.category, target.details.type, target.details.zone, target.details.elementId]
+      .filter(Boolean)
+      .some((value) => value!.toLowerCase().includes(normalized))
+  );
+};
+
 /**
  * Owns selection state for procedural scene objects. It never mutates source
  * materials: feedback is drawn by two reusable box helpers.
@@ -42,29 +70,23 @@ export const getCameraFocusBounds = (box: THREE.Box3): THREE.Box3 => {
 export class ModelInteraction {
   public onHoverChange?: (target: SceneInteractionTarget | null) => void;
   public onSelectionChange?: (target: SceneInteractionTarget | null) => void;
+  public onSelectionSetChange?: (targets: SceneInteractionTarget[]) => void;
 
   private scene: THREE.Scene | null = null;
   private hovered: SceneInteractionTarget | null = null;
-  private selected: SceneInteractionTarget | null = null;
-  private isolatedId: string | null = null;
+  private readonly selected = new Map<string, SceneInteractionTarget>();
+  private readonly isolatedIds = new Set<string>();
   private readonly hidden = new Map<string, HiddenTarget>();
   private readonly overlay = new THREE.Group();
   private readonly hoverHelper = new THREE.Box3Helper(new THREE.Box3(), 0x79b791);
-  private readonly selectionHelper = new THREE.Box3Helper(new THREE.Box3(), 0xffbf00);
+  private readonly selectionHelpers = new Map<string, THREE.Box3Helper>();
 
   constructor() {
     this.overlay.name = 'BimInteractionOverlays';
     this.overlay.userData.interactionOverlay = true;
-    for (const helper of [this.hoverHelper, this.selectionHelper]) {
-      helper.userData.interactionOverlay = true;
-      helper.raycast = () => {};
-      helper.visible = false;
-      const material = helper.material as THREE.LineBasicMaterial;
-      material.transparent = true;
-      material.opacity = helper === this.hoverHelper ? 0.48 : 0.9;
-      material.depthTest = false;
-      this.overlay.add(helper);
-    }
+    this.configureHelper(this.hoverHelper, 0.48);
+    this.hoverHelper.visible = false;
+    this.overlay.add(this.hoverHelper);
   }
 
   public attach(scene: THREE.Scene): void {
@@ -75,19 +97,19 @@ export class ModelInteraction {
   public reset(): void {
     this.showAll();
     this.setHovered(null);
-    this.setSelected(null);
+    this.clearSelection();
   }
 
   public dispose(): void {
     this.reset();
     this.overlay.removeFromParent();
-    for (const helper of [this.hoverHelper, this.selectionHelper]) {
-      helper.geometry.dispose();
-      (helper.material as THREE.Material).dispose();
-    }
+    this.disposeHelper(this.hoverHelper);
+    for (const helper of this.selectionHelpers.values()) this.disposeHelper(helper);
+    this.selectionHelpers.clear();
     this.scene = null;
     this.onHoverChange = undefined;
     this.onSelectionChange = undefined;
+    this.onSelectionSetChange = undefined;
   }
 
   public getHovered(): SceneInteractionTarget | null {
@@ -95,15 +117,19 @@ export class ModelInteraction {
   }
 
   public getSelected(): SceneInteractionTarget | null {
-    return this.selected;
+    return this.selected.values().next().value ?? null;
+  }
+
+  public getSelectedTargets(): SceneInteractionTarget[] {
+    return [...this.selected.values()];
   }
 
   public getHiddenIds(): Set<string> {
     return new Set(this.hidden.keys());
   }
 
-  public getIsolatedId(): string | null {
-    return this.isolatedId;
+  public getIsolatedIds(): Set<string> {
+    return new Set(this.isolatedIds);
   }
 
   public getSelectableTargets(): SceneInteractionTarget[] {
@@ -148,37 +174,64 @@ export class ModelInteraction {
   }
 
   public setSelected(target: SceneInteractionTarget | null): void {
-    if (this.selected?.id === target?.id) return;
-    this.selected = target;
-    this.updateHelper(this.selectionHelper, target);
-    this.onSelectionChange?.(target);
+    if (this.selected.size === (target ? 1 : 0) && this.selected.has(target?.id ?? '')) return;
+    this.selected.clear();
+    if (target) this.selected.set(target.id, target);
+    this.emitSelectionChange();
+  }
+
+  public toggleSelected(target: SceneInteractionTarget): void {
+    if (this.selected.has(target.id)) {
+      this.selected.delete(target.id);
+    } else {
+      this.selected.set(target.id, target);
+    }
+    this.emitSelectionChange();
+  }
+
+  public selectByIds(ids: Iterable<string>, append = false): void {
+    if (!append) this.selected.clear();
+    for (const id of ids) {
+      const target = this.getTargetById(id);
+      if (target) this.selected.set(target.id, target);
+    }
+    this.emitSelectionChange();
+  }
+
+  public clearSelection(): void {
+    if (this.selected.size === 0) return;
+    this.selected.clear();
+    this.emitSelectionChange();
   }
 
   public getSelectedBounds(): THREE.Box3 | null {
-    return this.selected ? this.getBounds(this.selected) : null;
+    if (this.selected.size === 0) return null;
+    const bounds = new THREE.Box3();
+    for (const target of this.selected.values()) bounds.union(this.getBounds(target));
+    return bounds;
   }
 
   public hideSelected(): boolean {
-    if (!this.selected) return false;
-    this.hideTarget(this.selected);
-    this.setSelected(null);
+    if (this.selected.size === 0) return false;
+    for (const target of this.selected.values()) this.hideTarget(target);
+    this.clearSelection();
     return true;
   }
 
   public isolateSelected(): boolean {
-    if (!this.selected) return false;
-    const selectedId = this.selected.id;
+    if (this.selected.size === 0) return false;
     for (const target of this.getSelectableTargets()) {
-      if (target.id !== selectedId) this.hideTarget(target);
+      if (!this.selected.has(target.id)) this.hideTarget(target);
     }
-    this.isolatedId = selectedId;
+    this.isolatedIds.clear();
+    for (const id of this.selected.keys()) this.isolatedIds.add(id);
     return true;
   }
 
   public showAll(): void {
     for (const target of this.hidden.values()) this.restoreTarget(target);
     this.hidden.clear();
-    this.isolatedId = null;
+    this.isolatedIds.clear();
   }
 
   private isSelectableObject(object: THREE.Object3D): object is THREE.Mesh | THREE.InstancedMesh {
@@ -218,6 +271,44 @@ export class ModelInteraction {
     if (!target) return;
     helper.box.copy(this.getBounds(target));
     helper.updateMatrixWorld(true);
+  }
+
+  private configureHelper(helper: THREE.Box3Helper, opacity: number): void {
+    helper.userData.interactionOverlay = true;
+    helper.raycast = () => {};
+    const material = helper.material as THREE.LineBasicMaterial;
+    material.transparent = true;
+    material.opacity = opacity;
+    material.depthTest = false;
+  }
+
+  private disposeHelper(helper: THREE.Box3Helper): void {
+    helper.geometry.dispose();
+    (helper.material as THREE.Material).dispose();
+  }
+
+  private emitSelectionChange(): void {
+    const targets = this.getSelectedTargets();
+    const selectedIds = new Set(targets.map((target) => target.id));
+    for (const [id, helper] of this.selectionHelpers) {
+      if (!selectedIds.has(id)) {
+        helper.removeFromParent();
+        this.disposeHelper(helper);
+        this.selectionHelpers.delete(id);
+      }
+    }
+    for (const target of targets) {
+      let helper = this.selectionHelpers.get(target.id);
+      if (!helper) {
+        helper = new THREE.Box3Helper(new THREE.Box3(), 0xffbf00);
+        this.configureHelper(helper, 0.9);
+        this.selectionHelpers.set(target.id, helper);
+        this.overlay.add(helper);
+      }
+      this.updateHelper(helper, target);
+    }
+    this.onSelectionChange?.(targets[0] ?? null);
+    this.onSelectionSetChange?.(targets);
   }
 
   private hideTarget(target: SceneInteractionTarget): void {

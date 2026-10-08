@@ -287,5 +287,15 @@
   "viewportOnlyTooltip": "Viewport styling only (transient)",
   "views": "Views",
   "visualAppearanceOverrides": "Visual Appearance Overrides",
-  "volumeFormatM3": "{{val}} m³"
+  "volumeFormatM3": "{{val}} m³",
+  "clearCurrent": "Clear current",
+  "clearCurrentMeasurementTitle": "Clear current measurement",
+  "classification": "Classification",
+  "identity": "Identity",
+  "location": "Location",
+  "modelExplorer": "Model explorer",
+  "multiSelection": "Multiple elements",
+  "noElementsFound": "No elements found",
+  "searchElements": "Search elements",
+  "selectionShortcuts": "F focus · H hide · Esc clear"
 }

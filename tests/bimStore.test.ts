@@ -24,7 +24,7 @@ describe('useBimStore', () => {
   });
 
   it('manages selection and reset', () => {
-    const { setSelectedElement, resetModel } = useBimStore.getState();
+    const { setSelectedElement, setSelectedSceneElements, setIsolatedSceneElementIds, resetModel } = useBimStore.getState();
     setSelectedElement({
       expressID: 101,
       globalId: 'GUID-1234',
@@ -41,8 +41,18 @@ describe('useBimStore', () => {
     expect(useBimStore.getState().selectedElement?.name).toBe('North Wall');
     expect(useBimStore.getState().selectedElement?.expressID).toBe(101);
 
+    setSelectedSceneElements([
+      { id: 'site:warehouse-1', name: 'Warehouse 1', category: 'Industrial', type: 'Warehouse' },
+      { id: 'site:warehouse-2', name: 'Warehouse 2', category: 'Industrial', type: 'Warehouse' },
+    ]);
+    setIsolatedSceneElementIds(new Set(['site:warehouse-1', 'site:warehouse-2']));
+    expect(useBimStore.getState().selectedSceneElements).toHaveLength(2);
+    expect(useBimStore.getState().isolatedSceneElementIds).toEqual(new Set(['site:warehouse-1', 'site:warehouse-2']));
+
     resetModel();
     expect(useBimStore.getState().selectedElement).toBeNull();
+    expect(useBimStore.getState().selectedSceneElements).toEqual([]);
+    expect(useBimStore.getState().isolatedSceneElementIds).toEqual(new Set());
   });
 
   it('toggles category and storey visibility filters', () => {

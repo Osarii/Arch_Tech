@@ -72,12 +72,18 @@ interface BimState {
   setSelectedElement: (element: SelectedElementDetails | null) => void;
   selectedSceneElement: SceneInteractionDetails | null;
   setSelectedSceneElement: (element: SceneInteractionDetails | null) => void;
+  selectedSceneElements: SceneInteractionDetails[];
+  setSelectedSceneElements: (elements: SceneInteractionDetails[]) => void;
   hoveredSceneElementId: string | null;
   setHoveredSceneElementId: (id: string | null) => void;
   hiddenSceneElementIds: Set<string>;
   setHiddenSceneElementIds: (ids: Set<string>) => void;
   isolatedSceneElementId: string | null;
   setIsolatedSceneElementId: (id: string | null) => void;
+  isolatedSceneElementIds: Set<string>;
+  setIsolatedSceneElementIds: (ids: Set<string>) => void;
+  sceneExplorerQuery: string;
+  setSceneExplorerQuery: (query: string) => void;
   selectedNodeId: string | null;
   setSelectedNodeId: (id: string | null) => void;
 
@@ -223,12 +229,18 @@ export const useBimStore = create<BimState>((set) => ({
   setSelectedElement: (element) => set({ selectedElement: element }),
   selectedSceneElement: null,
   setSelectedSceneElement: (element) => set({ selectedSceneElement: element }),
+  selectedSceneElements: [],
+  setSelectedSceneElements: (elements) => set({ selectedSceneElements: elements, selectedSceneElement: elements[0] ?? null }),
   hoveredSceneElementId: null,
   setHoveredSceneElementId: (id) => set({ hoveredSceneElementId: id }),
   hiddenSceneElementIds: new Set<string>(),
   setHiddenSceneElementIds: (ids) => set({ hiddenSceneElementIds: ids }),
   isolatedSceneElementId: null,
   setIsolatedSceneElementId: (id) => set({ isolatedSceneElementId: id }),
+  isolatedSceneElementIds: new Set<string>(),
+  setIsolatedSceneElementIds: (ids) => set({ isolatedSceneElementIds: ids, isolatedSceneElementId: ids.values().next().value ?? null }),
+  sceneExplorerQuery: '',
+  setSceneExplorerQuery: (query) => set({ sceneExplorerQuery: query }),
   selectedNodeId: null,
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
 
@@ -334,9 +346,12 @@ export const useBimStore = create<BimState>((set) => ({
       activeSiteContextLabel: null,
       selectedElement: null,
       selectedSceneElement: null,
+      selectedSceneElements: [],
       hoveredSceneElementId: null,
       hiddenSceneElementIds: new Set<string>(),
       isolatedSceneElementId: null,
+      isolatedSceneElementIds: new Set<string>(),
+      sceneExplorerQuery: '',
       selectedNodeId: null,
       spatialTree: [],
       categories: [],
