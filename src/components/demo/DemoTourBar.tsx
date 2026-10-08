@@ -17,15 +17,15 @@ const copy = {
   barLabel: 'Barra de Control del Recorrido Demo',
   brand: 'ARCH_TECH',
   tourBadge: 'RECORRIDO GUIADO',
-  stageIntro: 'INTRO',
   stageLanding: 'LANDING',
   stagePortal: 'PORTAL',
   stageBim: 'BIM / 3D',
+  stageFuture: 'NVIDIA / FUTURO',
   previousStage: 'Anterior',
   nextStage: 'Siguiente',
-  toLanding: 'Ver Landing',
   toPortal: 'Ir al Portal',
   toBim: 'Abrir Visor 3D',
+  toFuture: 'NVIDIA / Futuro',
   resetTour: 'Reiniciar',
   exitTour: 'Salir del Recorrido',
   fullscreen: 'Pantalla Completa',
@@ -50,10 +50,10 @@ export const DemoTourBar: React.FC = () => {
   if (!isTourActive || stage === 'intro') return null;
 
   const stages: { id: DemoTourStage; label: string; number: string }[] = [
-    { id: 'intro', label: copy.stageIntro, number: '01' },
-    { id: 'landing', label: copy.stageLanding, number: '02' },
-    { id: 'portal', label: copy.stagePortal, number: '03' },
-    { id: 'bim', label: copy.stageBim, number: '04' },
+    { id: 'landing', label: copy.stageLanding, number: '01' },
+    { id: 'portal', label: copy.stagePortal, number: '02' },
+    { id: 'bim', label: copy.stageBim, number: '03' },
+    { id: 'future', label: copy.stageFuture, number: '04' },
   ];
 
   return (
@@ -98,7 +98,7 @@ export const DemoTourBar: React.FC = () => {
         </div>
 
         {/* BIM Presets Bar (Shown Only in BIM stage) */}
-        {stage === 'bim' && (
+        {(stage === 'bim' || stage === 'future') && (
           <div className="hidden md:flex items-center gap-1 border-l border-white/15 pl-2">
             {BIM_TOUR_PRESETS.map((preset) => {
               const isSelected = activeBimPreset === preset.id;
@@ -116,7 +116,7 @@ export const DemoTourBar: React.FC = () => {
                   key={preset.id}
                   type="button"
                   data-testid={`bim-preset-${preset.id}`}
-                  onClick={() => applyBimPreset(preset.id)}
+                  onClick={() => preset.id === 'future-vision' ? goToStage('future') : applyBimPreset(preset.id)}
                   title={preset.description}
                   className={`flex items-center gap-1 rounded px-2 py-1 font-mono text-[9px] uppercase tracking-wider transition-all ${
                     isSelected
@@ -147,14 +147,14 @@ export const DemoTourBar: React.FC = () => {
           </button>
 
           {/* Next Stage (if not last) */}
-          {stage !== 'bim' ? (
+          {stage !== 'future' ? (
             <button
               type="button"
               data-testid="tour-next-stage"
               onClick={nextStage}
               className="flex items-center gap-1.5 rounded-full border border-[#79B791] bg-[#79B791] px-3.5 py-1.5 font-mono text-[9px] font-semibold uppercase tracking-[0.16em] text-black hover:bg-[#8fd0aa] shadow-md"
             >
-              <span>{stage === 'landing' ? copy.toPortal : copy.toBim}</span>
+              <span>{stage === 'landing' ? copy.toPortal : stage === 'portal' ? copy.toBim : copy.toFuture}</span>
               <ChevronRight className="h-3.5 w-3.5" />
             </button>
           ) : null}

@@ -1,16 +1,20 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { DemoTourProvider, useDemoTour } from '../src/demo/DemoTourContext';
 import { DemoTourBar } from '../src/components/demo/DemoTourBar';
-import { DemoIntroModal } from '../src/components/demo/DemoIntroModal';
+import { DemoVideoStage } from '../src/components/demo/DemoVideoStage';
 import { useBimStore } from '../src/stores/bimStore';
 import { bimEngine } from '../src/bim/engine/BimEngine';
+import { authService } from '../src/services/authService';
+import { portalAuth, type ClientSession } from '../src/portal/demoAuth';
+import { App } from '../src/App';
 
 // Test consumer helper component
 const TestConsumer: React.FC = () => {
-  const { isTourActive, stage, startTour, nextStage, previousStage, resetTour, exitTour, applyBimPreset } =
+  const location = useLocation();
+  const { isTourActive, stage, activeVideo, isPortalTourActive, startTour, nextStage, previousStage, resetTour, exitTour, applyBimPreset, completeVideo } =
     useDemoTour();
 
   return (
@@ -18,6 +22,10 @@ const TestConsumer: React.FC = () => {
       <div data-testid="tour-status">
         {isTourActive ? `ACTIVE:${stage}` : 'INACTIVE'}
       </div>
+      <div data-testid="video-status">{activeVideo ?? 'NONE'}</div>
+      <div data-testid="route-status">{location.pathname}</div>
+      <div data-testid="portal-tour-status">{isPortalTourActive ? 'ACTIVE' : 'INACTIVE'}</div>
+      {location.pathname.startsWith('/dashboard') && <div data-tour-id="portal-tour-overview" />}
       <button data-testid="btn-start" onClick={() => startTour('intro')}>
         Start
       </button>
@@ -36,6 +44,9 @@ const TestConsumer: React.FC = () => {
       <button data-testid="btn-exit" onClick={exitTour}>
         Exit
       </button>
+      <button data-testid="btn-complete-video" onClick={completeVideo}>
+        Complete Video
+      </button>
       <button data-testid="btn-preset-logistics" onClick={() => applyBimPreset('logistics')}>
         Logistics Preset
       </button>
@@ -45,7 +56,8 @@ const TestConsumer: React.FC = () => {
 
 describe('DemoTour System', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    portalAuth.signOut();
     useBimStore.getState().resetModel();
   });
 
@@ -75,7 +87,7 @@ describe('DemoTour System', () => {
       expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:intro');
     });
 
-    it('advances through stages: intro -> landing -> portal -> bim', () => {
+    it('places each video before its live destination and does not replay completed videos', async () => {
       render(
         <MemoryRouter initialEntries={['/']}>
           <DemoTourProvider>
@@ -86,23 +98,68 @@ describe('DemoTour System', () => {
 
       fireEvent.click(screen.getByTestId('btn-start'));
       expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:intro');
+      expect(screen.getByTestId('video-status').textContent).toBe('intro');
+
+      fireEvent.click(screen.getByTestId('btn-complete-video'));
+      await waitFor(() => expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:landing'));
 
       fireEvent.click(screen.getByTestId('btn-next'));
-      expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:landing');
+      expect(screen.getByTestId('video-status').textContent).toBe('portal');
 
-      fireEvent.click(screen.getByTestId('btn-next'));
-      expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:portal');
+      fireEvent.click(screen.getByTestId('btn-complete-video'));
+      await waitFor(() => expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:portal'));
 
-      fireEvent.click(screen.getByTestId('btn-next'));
-      expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:bim');
-
-      // Next does nothing on last stage
-      fireEvent.click(screen.getByTestId('btn-next'));
-      expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:bim');
-
-      // Previous navigates backwards
       fireEvent.click(screen.getByTestId('btn-prev'));
-      expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:portal');
+      await waitFor(() => expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:landing'));
+
+      fireEvent.click(screen.getByTestId('btn-next'));
+      await waitFor(() => expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:portal'));
+      await waitFor(() => expect(screen.getByTestId('video-status').textContent).toBe('NONE'));
+    });
+
+    it('waits for confirmed demo authentication before entering the protected Portal route', async () => {
+      let resolveSignIn!: (session: ClientSession | null) => void;
+      vi.spyOn(authService, 'signIn').mockReturnValue(new Promise((resolve) => {
+        resolveSignIn = resolve;
+      }));
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <DemoTourProvider><TestConsumer /></DemoTourProvider>
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByTestId('btn-start-landing'));
+      fireEvent.click(screen.getByTestId('btn-next'));
+      fireEvent.click(screen.getByTestId('btn-complete-video'));
+      expect(screen.getByTestId('route-status').textContent).toBe('/');
+
+      await act(async () => resolveSignIn({
+        name: 'Mariana Solano',
+        email: 'mariana.solano@arch-tech.studio',
+        role: 'client',
+      }));
+
+      await waitFor(() => expect(screen.getByTestId('route-status').textContent).toBe('/dashboard/projects/zona-franca-la-lima'));
+      await waitFor(() => expect(screen.getByTestId('portal-tour-status').textContent).toBe('ACTIVE'));
+    });
+
+    it('repairs a stale non-client session before entering Portal', async () => {
+      portalAuth.signIn('sebastian.araya@arch-tech.studio', 'architect-access');
+
+      render(
+        <MemoryRouter initialEntries={['/']}>
+          <DemoTourProvider><TestConsumer /></DemoTourProvider>
+        </MemoryRouter>
+      );
+
+      fireEvent.click(screen.getByTestId('btn-start-landing'));
+      fireEvent.click(screen.getByTestId('btn-next'));
+      fireEvent.click(screen.getByTestId('btn-complete-video'));
+
+      await waitFor(() => expect(screen.getByTestId('route-status').textContent).toBe('/dashboard/projects/zona-franca-la-lima'));
+      expect(portalAuth.getSession()?.email).toBe('mariana.solano@arch-tech.studio');
+      expect(portalAuth.getSession()?.role).toBe('client');
     });
 
     it('exits tour and resets cleanly', () => {
@@ -139,29 +196,45 @@ describe('DemoTour System', () => {
     });
   });
 
-  describe('DemoIntroModal', () => {
-    it('renders intro video modal when active on intro stage', () => {
+  describe('DemoVideoStage', () => {
+    it('enters the real Portal after Video 2 without rendering 403', async () => {
+      window.history.replaceState({}, '', '/');
+      render(<App />);
+
+      fireEvent.click(screen.getAllByText('INICIAR RECORRIDO')[0]);
+      fireEvent.ended(screen.getByTestId('demo-video'));
+      await waitFor(() => expect(screen.getByTestId('tour-stage-landing')).toBeDefined());
+
+      fireEvent.click(screen.getByTestId('tour-next-stage'));
+      expect((screen.getByTestId('demo-video') as HTMLVideoElement).src).toContain('02-portal.mp4');
+      fireEvent.ended(screen.getByTestId('demo-video'));
+
+      await waitFor(() => expect(window.location.pathname).toBe('/dashboard/projects/zona-franca-la-lima'));
+      expect(screen.queryByText(/403 \/ (Access restricted|ACCESO RESTRINGIDO)/i)).toBeNull();
+    });
+
+    it('renders the reusable video stage for the active tour video', () => {
       render(
         <MemoryRouter initialEntries={['/']}>
           <DemoTourProvider>
             <TestConsumer />
-            <DemoIntroModal />
+            <DemoVideoStage />
           </DemoTourProvider>
         </MemoryRouter>
       );
 
       fireEvent.click(screen.getByTestId('btn-start'));
-      expect(screen.getByTestId('demo-intro-modal')).toBeDefined();
-      expect(screen.getByTestId('demo-intro-video')).toBeDefined();
-      expect(screen.getByTestId('demo-intro-skip')).toBeDefined();
+      expect(screen.getByTestId('demo-video-stage')).toBeDefined();
+      expect(screen.getByTestId('demo-video')).toBeDefined();
+      expect(screen.getByTestId('demo-video-skip')).toBeDefined();
     });
 
-    it('skips intro video when skip button is clicked', () => {
+    it('skips intro video when skip button is clicked', async () => {
       render(
         <MemoryRouter initialEntries={['/']}>
           <DemoTourProvider>
             <TestConsumer />
-            <DemoIntroModal />
+            <DemoVideoStage />
           </DemoTourProvider>
         </MemoryRouter>
       );
@@ -169,16 +242,16 @@ describe('DemoTour System', () => {
       fireEvent.click(screen.getByTestId('btn-start'));
       expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:intro');
 
-      fireEvent.click(screen.getByTestId('demo-intro-skip'));
-      expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:landing');
+      fireEvent.click(screen.getByTestId('demo-video-skip'));
+      await waitFor(() => expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:landing'));
     });
 
-    it('skips intro video on Escape key', () => {
+    it('skips intro video on Escape key', async () => {
       render(
         <MemoryRouter initialEntries={['/']}>
           <DemoTourProvider>
             <TestConsumer />
-            <DemoIntroModal />
+            <DemoVideoStage />
           </DemoTourProvider>
         </MemoryRouter>
       );
@@ -187,7 +260,7 @@ describe('DemoTour System', () => {
       expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:intro');
 
       fireEvent.keyDown(window, { key: 'Escape' });
-      expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:landing');
+      await waitFor(() => expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:landing'));
     });
   });
 
@@ -207,6 +280,7 @@ describe('DemoTour System', () => {
       expect(screen.getByTestId('tour-stage-landing')).toBeDefined();
       expect(screen.getByTestId('tour-stage-portal')).toBeDefined();
       expect(screen.getByTestId('tour-stage-bim')).toBeDefined();
+      expect(screen.getByTestId('tour-stage-future')).toBeDefined();
     });
 
     it('navigates directly to stages when breadcrumb buttons clicked', () => {
@@ -222,11 +296,7 @@ describe('DemoTour System', () => {
       fireEvent.click(screen.getByTestId('btn-start-landing'));
       fireEvent.click(screen.getByTestId('tour-stage-bim'));
 
-      expect(screen.getByTestId('tour-status').textContent).toBe('ACTIVE:bim');
-      expect(screen.getByTestId('bim-preset-masterplan')).toBeDefined();
-      expect(screen.getByTestId('bim-preset-logistics')).toBeDefined();
-      expect(screen.getByTestId('bim-preset-measure')).toBeDefined();
-      expect(screen.getByTestId('bim-preset-future-vision')).toBeDefined();
+      expect(screen.getByTestId('video-status').textContent).toBe('bim');
     });
 
     it('exits tour when close button in tour bar is clicked', () => {

@@ -246,9 +246,9 @@ The next session should begin by auditing the existing ARCH_TECH identity before
 - **Detached Persistence**: Always run persistence exports against isolated temporary WebIFC models, keeping active model untouched.
 - **Human Confirmation Gate**: All `WRITE` tools (edits, generation commit, persistence save) require explicit human confirmation.
 - **Demo Tour Architecture & Portal Guided Tour**: Replaced automated Presentation Mode (SpeechSynthesis narration, chapter timers, auto-advance overlays) with a professional presenter-guided Demo Tour flow (`src/demo/DemoTourContext.tsx`, `src/components/demo/DemoIntroModal.tsx`, `src/components/demo/DemoTourBar.tsx`, `src/components/demo/PortalGuidedTour.tsx`). The flow integrates:
-  1. Fullscreen cinematic intro video modal (`/demo/intro.mp4` / `.mov`) with skip, sound control, and play/pause.
+  1. Reusable fullscreen Demo Video Stage serves four normalized H.264/AAC introductions from `public/demo/videos/`, with skip, sound control, play/pause, keyboard controls, autoplay fallback and per-session completion state.
   2. Real Public Landing (`/`) with lightweight floating tour bar and live enterprise showcase.
-  3. Real Interactive Portal with **Portal Guided Tour** (`src/components/demo/PortalGuidedTour.tsx`):
+  3. Video 2 establishes the canonical Mariana Solano demo identity, validates Client role and Zona Franca La Lima access, hydrates remote project data when configured, navigates only after authorization is ready, and starts the real **Portal Guided Tour** (`src/components/demo/PortalGuidedTour.tsx`) only after its first target mounts:
      - Keeps the real portal UI rendered live underneath.
      - 8 distinct tour steps targeting real interactive components via stable `data-tour-id` hooks (`portal-tour-overview`, `portal-tour-progress`, `portal-tour-milestones`, `portal-tour-documents`, `portal-tour-approvals`, `portal-tour-perspectives`, `portal-tour-intelligence`, `portal-tour-model`).
      - SVG mask cutout spotlight with 1.5px `#79B791` border and architectural corner registration marks.
@@ -256,16 +256,14 @@ The next session should begin by auditing the existing ARCH_TECH identity before
      - Intelligent non-covering card placement with step index, progress bar, Spanish editorial copy, and accessible controls (Prev, Next, Pause/Resume, Skip, Esc).
      - Auto-advance (~5–7s per step, ~52s total) with temporary auto-pause on live component interaction.
      - Step 08 progressive copy transition leading into the prominent "ENTRAR AL MODELO 3D" action.
-  4. Real OpenBIM / 3D Engine (`/workspace`) with interactive camera presets (Masterplan, Hub Logístico, Medición, NVIDIA / Futuro vision).
-  5. Live transition into BIM loads the Masterplan preset and preserves presenter control without artificial automation.
+  4. Video 3 prepares the real OpenBIM / 3D Engine (`/workspace`), loads the La Lima site and applies Masterplan before reveal while preserving manual presenter control.
+  5. Video 4 prepares and reveals the existing NVIDIA / Futuro camera state as the final stage.
 
 ---
 
 ## 16. Current Verification Status
 - **Lint / Type Check**: **SUCCESS** (`npm run lint` / `tsc --noEmit` — 0 errors).
 - **i18n Verification**: **SUCCESS** (`npm run i18n:check` — 0 issues, 100% Spanish translation coverage across 970 keys in 9 namespaces).
-- **Vitest Unit/Domain Tests**: **455 / 455 PASSED** across 39 test files (`tests/portalGuidedTour.test.tsx`, `tests/demoTour.test.tsx`, etc.).
+- **Vitest Unit/Domain Tests**: **458 / 458 PASSED** across 39 test files (`tests/portalGuidedTour.test.tsx`, `tests/demoTour.test.tsx`, etc.).
 - **Production Build**: **SUCCESS** (`npm run build` / `tsc -b && vite build` clean exit code 0).
 - **Git Diff**: Verified clean with `git diff --check`.
-
-

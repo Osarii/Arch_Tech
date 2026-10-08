@@ -1,10 +1,22 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { portalAuth } from '../portal/demoAuth';
+import { authService } from '../services/authService';
+import { projectService } from '../services/projectService';
+import { getPortalProject, getPortalUser, getProjectsForUser } from '../portal/data';
 import { useBimStore } from '../stores/bimStore';
 import { bimEngine } from '../bim/engine/BimEngine';
+import { IfcLoaderService } from '../bim/loaders/ifcLoaderService';
+import { LA_LIMA_SITE_CONTEXT_ID, laLimaSiteContextService } from '../bim/site';
 
-export type DemoTourStage = 'intro' | 'landing' | 'portal' | 'bim';
+export type DemoTourStage = 'intro' | 'landing' | 'portal' | 'bim' | 'future';
+export type DemoVideoId = 'intro' | 'portal' | 'bim' | 'future';
+
+export const DEMO_VIDEOS: Record<DemoVideoId, { src: string; label: string; next?: DemoVideoId }> = {
+  intro: { src: '/demo/videos/01-arch-tech-intro.mp4', label: 'ARCH_TECH / Introducción', next: 'portal' },
+  portal: { src: '/demo/videos/02-portal.mp4', label: 'Portal', next: 'bim' },
+  bim: { src: '/demo/videos/03-bim-engine.mp4', label: 'BIM / Motor 3D', next: 'future' },
+  future: { src: '/demo/videos/04-nvidia-future.mp4', label: 'NVIDIA / Futuro' },
+};
 
 export interface PortalTourStep {
   id: string;
@@ -147,6 +159,9 @@ export interface DemoTourState {
   activeBimPreset: string | null;
   stepIndex: number;
   totalSteps: number;
+  activeVideo: DemoVideoId | null;
+  completedVideos: DemoVideoId[];
+  isPreparingStage: boolean;
 
   // Portal guided tour state
   isPortalTourActive: boolean;
@@ -164,6 +179,7 @@ export interface DemoTourState {
   goToStage: (stage: DemoTourStage) => void;
   applyBimPreset: (presetId: string) => void;
   toggleFullscreen: () => void;
+  completeVideo: () => void;
 
   // Portal tour actions
   startPortalTour: (initialIndex?: number) => void;
@@ -176,7 +192,7 @@ export interface DemoTourState {
   goToPortalStep: (index: number) => void;
 }
 
-const STAGE_ORDER: DemoTourStage[] = ['intro', 'landing', 'portal', 'bim'];
+const STAGE_ORDER: DemoTourStage[] = ['landing', 'portal', 'bim', 'future'];
 
 const noop = () => undefined;
 
@@ -187,6 +203,9 @@ const defaultState: DemoTourState = {
   activeBimPreset: null,
   stepIndex: 1,
   totalSteps: 4,
+  activeVideo: null,
+  completedVideos: [],
+  isPreparingStage: false,
 
   isPortalTourActive: false,
   portalStepIndex: 0,
@@ -203,6 +222,7 @@ const defaultState: DemoTourState = {
   goToStage: noop,
   applyBimPreset: noop,
   toggleFullscreen: noop,
+  completeVideo: noop,
 
   startPortalTour: noop,
   exitPortalTour: noop,
@@ -221,6 +241,9 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
   const [stage, setStage] = useState<DemoTourStage>('landing');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [activeBimPreset, setActiveBimPreset] = useState<string | null>(null);
+  const [activeVideo, setActiveVideo] = useState<DemoVideoId | null>(null);
+  const [completedVideos, setCompletedVideos] = useState<DemoVideoId[]>([]);
+  const [isPreparingStage, setIsPreparingStage] = useState(false);
 
   // Portal tour specific states
   const [isPortalTourActive, setIsPortalTourActive] = useState(false);
@@ -234,7 +257,7 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
 
   // Sync stage with current location if tour is active
   useEffect(() => {
-    if (!isTourActive || isNavigatingRef.current) return;
+    if (!isTourActive || isNavigatingRef.current || activeVideo) return;
 
     if (location.pathname === '/' && stage !== 'intro' && stage !== 'landing') {
       setStage('landing');
@@ -246,11 +269,11 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
       stage !== 'portal'
     ) {
       setStage('portal');
-    } else if (location.pathname === '/workspace' && stage !== 'bim') {
+    } else if (location.pathname === '/workspace' && stage !== 'bim' && stage !== 'future') {
       setStage('bim');
       setIsPortalTourActive(false);
     }
-  }, [location.pathname, isTourActive, stage]);
+  }, [location.pathname, isTourActive, stage, activeVideo]);
 
   // Fullscreen change listener
   useEffect(() => {
@@ -323,51 +346,119 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
     setIsPortalTourPaused((prev) => !prev);
   }, []);
 
+  const establishDemoAccess = useCallback(async () => {
+    const session = await authService.signIn('mariana.solano@arch-tech.studio', 'client-access');
+    if (!session || session.role !== 'client') throw new Error('The demo portal session could not be established.');
+    if (projectService.isRemote()) await projectService.list();
+    const user = getPortalUser(session.email);
+    const project = getPortalProject('zona-franca-la-lima');
+    const canAccessProject = user && getProjectsForUser(user.id).some((candidate) => candidate.id === project?.id);
+    if (!project || !canAccessProject) throw new Error('The demo account is not authorized for Zona Franca La Lima.');
+    return session;
+  }, []);
+
+  const waitForPortalMount = useCallback(async () => {
+    if (document.querySelector('[data-tour-id="portal-tour-overview"]')) return;
+    await new Promise<void>((resolve) => {
+      const observer = new MutationObserver(() => {
+        if (!document.querySelector('[data-tour-id="portal-tour-overview"]')) return;
+        observer.disconnect();
+        resolve();
+      });
+      observer.observe(document.body, { childList: true, subtree: true });
+    });
+  }, []);
+
+  const enterDemoPortal = useCallback(async () => {
+    await establishDemoAccess();
+    setStage('portal');
+    navigate('/dashboard/projects/zona-franca-la-lima');
+    await waitForPortalMount();
+    startPortalTour(0);
+  }, [establishDemoAccess, navigate, startPortalTour, waitForPortalMount]);
+
+  const prepareBim = useCallback(async (presetId: 'masterplan' | 'future-vision') => {
+    await establishDemoAccess();
+    setIsPortalTourActive(false);
+    setRequestedPortalTab(null);
+    setStage(presetId === 'future-vision' ? 'future' : 'bim');
+    navigate('/workspace');
+
+    for (let attempt = 0; attempt < 100 && !bimEngine.world?.scene?.three; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    await bimEngine.waitForInit();
+    const scene = bimEngine.world?.scene?.three;
+    if (!scene) throw new Error('The BIM workspace did not initialize.');
+
+    if (useBimStore.getState().activeSiteContextId !== LA_LIMA_SITE_CONTEXT_ID) {
+      await IfcLoaderService.unload();
+      const currentScene = bimEngine.world?.scene?.three;
+      if (!currentScene) throw new Error('The BIM scene is unavailable.');
+      laLimaSiteContextService.attach(currentScene);
+      laLimaSiteContextService.load();
+      const store = useBimStore.getState();
+      store.setActiveSiteContextId(LA_LIMA_SITE_CONTEXT_ID);
+      store.setActiveSiteContextLabel('La Lima Site');
+      bimEngine.setCameraMode('perspective');
+      store.setCameraMode('perspective');
+    }
+    applyBimPreset(presetId);
+  }, [applyBimPreset, establishDemoAccess, navigate]);
+
+  const enterStage = useCallback(async (targetStage: DemoTourStage) => {
+    isNavigatingRef.current = true;
+    try {
+      if (targetStage === 'landing' || targetStage === 'intro') {
+        setIsPortalTourActive(false);
+        setStage(targetStage === 'intro' ? 'intro' : 'landing');
+        if (location.pathname !== '/') navigate('/');
+      } else if (targetStage === 'portal') {
+        await enterDemoPortal();
+      } else {
+        await prepareBim(targetStage === 'future' ? 'future-vision' : 'masterplan');
+      }
+    } finally {
+      isNavigatingRef.current = false;
+    }
+  }, [enterDemoPortal, location.pathname, navigate, prepareBim]);
+
   const goToStage = useCallback(
     (targetStage: DemoTourStage) => {
-      isNavigatingRef.current = true;
-      setStage(targetStage);
-
       if (targetStage === 'intro') {
-        setIsPortalTourActive(false);
-        if (location.pathname !== '/') {
-          navigate('/');
+        if (completedVideos.includes('intro')) {
+          void enterStage('landing');
+          return;
         }
-      } else if (targetStage === 'landing') {
-        setIsPortalTourActive(false);
-        if (location.pathname !== '/') {
-          navigate('/');
-        }
-      } else if (targetStage === 'portal') {
-        // Ensure valid demo session as Mariana Solano
-        if (!portalAuth.getSession()) {
-          portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
-        }
-        // Direct to Zona Franca La Lima project dashboard
-        navigate('/dashboard/projects/zona-franca-la-lima');
-        startPortalTour(0);
-      } else if (targetStage === 'bim') {
-        // Deactivate portal tour overlay and navigate to BIM workspace
-        setIsPortalTourActive(false);
-        setRequestedPortalTab(null);
-
-        if (!portalAuth.getSession()) {
-          portalAuth.signIn('mariana.solano@arch-tech.studio', 'client-access');
-        }
-        navigate('/workspace');
-
-        // Prepare BIM defaults
-        setTimeout(() => {
-          applyBimPreset('masterplan');
-        }, 300);
+        setStage('intro');
+        setActiveVideo('intro');
+        if (location.pathname !== '/') navigate('/');
+        return;
       }
-
-      setTimeout(() => {
-        isNavigatingRef.current = false;
-      }, 200);
+      const video = targetStage === 'portal' ? 'portal' : targetStage === 'bim' ? 'bim' : targetStage === 'future' ? 'future' : null;
+      if (video && !completedVideos.includes(video)) {
+        setActiveVideo(video);
+        return;
+      }
+      void enterStage(targetStage);
     },
-    [location.pathname, navigate, applyBimPreset, startPortalTour]
+    [completedVideos, enterStage, location.pathname, navigate]
   );
+
+  const completeVideo = useCallback(() => {
+    if (!activeVideo || isPreparingStage) return;
+    const video = activeVideo;
+    const targetStage: DemoTourStage = video === 'intro' ? 'landing' : video;
+    setCompletedVideos((current) => current.includes(video) ? current : [...current, video]);
+    setIsPreparingStage(true);
+    void enterStage(targetStage)
+      .then(() => {
+        setIsPreparingStage(false);
+        setTimeout(() => setActiveVideo(null), 300);
+      })
+      .catch((error) => console.error('Demo stage preparation failed:', error))
+      .finally(() => setIsPreparingStage(false));
+  }, [activeVideo, enterStage, isPreparingStage]);
 
   const nextPortalStep = useCallback(() => {
     if (portalStepIndex < PORTAL_TOUR_STEPS.length - 1) {
@@ -399,6 +490,7 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
 
   const exitTour = useCallback(() => {
     setIsTourActive(false);
+    setActiveVideo(null);
     setIsPortalTourActive(false);
     setActiveBimPreset(null);
     setRequestedPortalTab(null);
@@ -410,9 +502,12 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
   const resetTour = useCallback(() => {
     setIsPortalTourActive(false);
     setRequestedPortalTab(null);
+    setCompletedVideos([]);
     useBimStore.getState().resetModel();
-    goToStage('intro');
-  }, [goToStage]);
+    setStage('intro');
+    setActiveVideo('intro');
+    if (location.pathname !== '/') navigate('/');
+  }, [location.pathname, navigate]);
 
   const nextStage = useCallback(() => {
     const currentIndex = STAGE_ORDER.indexOf(stage);
@@ -439,6 +534,9 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
       activeBimPreset,
       stepIndex,
       totalSteps: STAGE_ORDER.length,
+      activeVideo,
+      completedVideos,
+      isPreparingStage,
 
       isPortalTourActive,
       portalStepIndex,
@@ -455,6 +553,7 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
       goToStage,
       applyBimPreset,
       toggleFullscreen,
+      completeVideo,
 
       startPortalTour,
       exitPortalTour,
@@ -471,6 +570,9 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
       isFullscreen,
       activeBimPreset,
       stepIndex,
+      activeVideo,
+      completedVideos,
+      isPreparingStage,
       isPortalTourActive,
       portalStepIndex,
       isPortalTourPaused,
@@ -484,6 +586,7 @@ export const DemoTourProvider: React.FC<React.PropsWithChildren> = ({ children }
       goToStage,
       applyBimPreset,
       toggleFullscreen,
+      completeVideo,
       startPortalTour,
       exitPortalTour,
       nextPortalStep,
