@@ -69,5 +69,5 @@ export type RenderDiagnostics = {
   effectiveDpr: number;
   qualityProfile: RenderQualityProfile;
   isInteractive: boolean;
-  shadowsEnabled: false;
+  shadowsEnabled: boolean;
 };

@@ -10,6 +10,8 @@ import {
   SelectedElementDetails,
   MeasurementType,
   BimViewpoint,
+  SectionPlaneAxis,
+  ToolType,
 } from '@/types/bim';
 import { extractElementProperties } from '../properties/propertyExtractor';
 import { bimEditService } from '../edit/bimEditService';
@@ -20,14 +22,16 @@ import {
   filterSceneInteractionTargets,
   groupSceneInteractionTargets,
   getCameraFocusBounds,
+  getPolylineSegments,
   type SceneInteractionDetails,
   type SceneInteractionGroup,
   type SceneInteractionTarget,
+  getPolylineLength,
 } from '../interaction';
 import { useBimStore } from '@/stores/bimStore';
 import { AdaptiveResolution } from './adaptiveResolution';
 import { renderQualityProfiles, type RenderDiagnostics, type RenderQualityProfile } from './renderQuality';
-import { SceneLighting } from './sceneLighting';
+import { SceneLighting, type LightingPreset } from './sceneLighting';
 
 type CameraControlsEvents = {
   addEventListener?: (type: string, listener: () => void) => void;
@@ -66,6 +70,7 @@ export class BimEngine {
   private readonly lighting = new SceneLighting();
   private readonly adaptiveResolution = new AdaptiveResolution();
   private qualityProfile: RenderQualityProfile = 'balanced';
+  private lightingPreset: LightingPreset = 'day';
   private effectiveDpr = renderQualityProfiles.balanced.maxDpr;
   private trackedControls: CameraControlsEvents | null = null;
   private isCameraInteractive = false;
@@ -77,6 +82,11 @@ export class BimEngine {
   private pointerFrameId: number | null = null;
   private pendingPointer: { x: number; y: number } | null = null;
   private pointerDown: { x: number; y: number } | null = null;
+  private readonly polylineGroup = new THREE.Group();
+  private readonly polylineMaterial = new THREE.LineBasicMaterial({ color: 0x38bdf8 });
+  private currentPolyline: THREE.Vector3[] = [];
+  private currentPolylineLine: THREE.Line | null = null;
+  private readonly completedPolylines: THREE.Line[] = [];
 
   // Selection callback
   public onElementSelected?: (details: SelectedElementDetails | null) => void;
@@ -127,15 +137,47 @@ export class BimEngine {
   };
 
   private readonly handleInteractionClick = (event: MouseEvent): void => {
-    if (!this.isSceneInteractionEnabled() || !this.pointerDown) return;
+    if (!this.pointerDown) return;
     const moved = Math.hypot(event.clientX - this.pointerDown.x, event.clientY - this.pointerDown.y);
     this.pointerDown = null;
     if (moved > 4) return;
+
+    const state = useBimStore.getState();
+    if (state.activeTool === 'measure' && state.measureMode === 'polyline') {
+      const point = this.pickWorldPoint(event.clientX, event.clientY);
+      if (point) {
+        event.stopImmediatePropagation();
+        this.addPolylinePoint(point);
+      }
+      return;
+    }
+
+    if (!this.isSceneInteractionEnabled()) return;
     const target = this.pickSceneInteraction(event.clientX, event.clientY);
     if (!target) return;
     event.stopImmediatePropagation();
     void this.selectSceneInteraction(target, event.shiftKey || event.metaKey || event.ctrlKey);
   };
+
+  private pickWorldPoint(clientX: number, clientY: number): THREE.Vector3 | null {
+    if (!this.interactionCanvas || !this.world?.scene?.three || !this.world?.camera?.three) return null;
+    const rect = this.interactionCanvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return null;
+    this.interactionPointer.set(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1
+    );
+    this.interactionRaycaster.setFromCamera(this.interactionPointer, this.world.camera.three);
+    const hit = this.interactionRaycaster.intersectObject(this.world.scene.three, true).find(({ object }) => {
+      let current: THREE.Object3D | null = object;
+      while (current) {
+        if (current === this.polylineGroup || current.userData.bimMeasurementOverlay) return false;
+        current = current.parent;
+      }
+      return true;
+    });
+    return hit?.point.clone() ?? null;
+  }
 
   constructor() {
     this.createCoreComponents();
@@ -309,8 +351,9 @@ export class BimEngine {
       // Configure background, atmospheric depth fog and lighting
       if (this.world.scene.three) {
         const initialQuality = renderQualityProfiles[this.qualityProfile];
-        this.world.scene.three.background = new THREE.Color(0x111419);
-        this.world.scene.three.fog = new THREE.Fog(0x111419, initialQuality.fogNear, initialQuality.fogFar);
+        const bgColor = this.lightingPreset === 'overcast' ? 0x14181d : 0x111419;
+        this.world.scene.three.background = new THREE.Color(bgColor);
+        this.world.scene.three.fog = new THREE.Fog(bgColor, initialQuality.fogNear, initialQuality.fogFar);
         this.lighting.attach(this.world.scene.three);
 
         bimEditService.initSceneLayer(this.world.scene.three);
@@ -638,7 +681,7 @@ export class BimEngine {
     renderer.toneMapping = profile.toneMapping;
     renderer.toneMappingExposure = profile.exposure;
     renderer.setPixelRatio(this.effectiveDpr);
-    renderer.shadowMap.enabled = false;
+    renderer.shadowMap.enabled = this.lighting.isShadowsEnabled();
   }
 
   public getRenderQuality(): RenderQualityProfile {
@@ -647,6 +690,34 @@ export class BimEngine {
 
   public setRenderQuality(profile: RenderQualityProfile): void {
     this.applyRenderQuality(profile);
+  }
+
+  public getLightingPreset(): LightingPreset {
+    return this.lightingPreset;
+  }
+
+  public setLightingPreset(preset: LightingPreset): void {
+    this.lightingPreset = preset;
+    this.lighting.setPreset(preset);
+    if (this.world?.scene?.three) {
+      const bgColor = preset === 'overcast' ? 0x14181d : 0x111419;
+      this.world.scene.three.background = new THREE.Color(bgColor);
+      if (this.world.scene.three.fog instanceof THREE.Fog) {
+        this.world.scene.three.fog.color.setHex(bgColor);
+      }
+    }
+  }
+
+  public setShadowsEnabled(enabled: boolean): void {
+    this.lighting.enableShadows(enabled);
+    const renderer = this.world?.renderer?.three;
+    if (renderer) {
+      renderer.shadowMap.enabled = enabled;
+    }
+  }
+
+  public isShadowsEnabled(): boolean {
+    return this.lighting.isShadowsEnabled();
   }
 
   public getRenderDiagnostics(isInteractive = this.isCameraInteractive): RenderDiagnostics {
@@ -661,7 +732,7 @@ export class BimEngine {
       effectiveDpr: this.effectiveDpr,
       qualityProfile: this.qualityProfile,
       isInteractive,
-      shadowsEnabled: false,
+      shadowsEnabled: this.lighting.isShadowsEnabled(),
     };
   }
 
@@ -1141,86 +1212,189 @@ export class BimEngine {
     useBimStore.getState().setIs2DMode(false);
   }
 
-  // --- PHASE 2: ADVANCED SECTIONS (X / Y / Z & MULTIPLE PLANES) ---
+  // --- V3.4: COORDINATED SECTIONING & MEASUREMENTS ---
 
-  public async createClippingPlane(): Promise<void> {
-    if (!this.clipper || !this.world) return;
-    this.clipper.enabled = true;
-    await this.clipper.create(this.world);
-    useBimStore.getState().setSectionPlaneCount(useBimStore.getState().sectionPlaneCount + 1);
+  public activateTool(tool: ToolType, measurementType?: MeasurementType): void {
+    const store = useBimStore.getState();
+    if (tool === 'measure') {
+      this.resetSectionPlane();
+      const nextMeasurement = measurementType ?? store.measureMode;
+      store.setMeasureMode(nextMeasurement);
+      this.startMeasurement(nextMeasurement);
+    } else {
+      this.cancelMeasurement();
+      if (tool !== 'section') this.resetSectionPlane();
+    }
+    store.setActiveTool(tool);
   }
 
-  public createOrthogonalClippingPlane(axis: 'x' | 'y' | 'z'): void {
+  public setSectionPlane(axis: SectionPlaneAxis, offset = 0, inverted = false): void {
     if (!this.clipper || !this.world) return;
-    this.clipper.enabled = true;
-    const box =
-      this.getModelBounds() ||
-      new THREE.Box3(new THREE.Vector3(-10, -10, -10), new THREE.Vector3(10, 10, 10));
-    const center = new THREE.Vector3();
-    box.getCenter(center);
-
-    const normal =
-      axis === 'x'
-        ? new THREE.Vector3(1, 0, 0)
-        : axis === 'y'
+    this.cancelMeasurement();
+    const bounds = this.getModelBounds() || new THREE.Box3(
+      new THREE.Vector3(-10, -10, -10),
+      new THREE.Vector3(10, 10, 10),
+    );
+    const center = bounds.getCenter(new THREE.Vector3());
+    const baseNormal = axis === 'x'
+      ? new THREE.Vector3(1, 0, 0)
+      : axis === 'y'
         ? new THREE.Vector3(0, 1, 0)
         : new THREE.Vector3(0, 0, 1);
+    const normal = inverted ? baseNormal.clone().negate() : baseNormal;
 
-    this.clipper.createFromNormalAndCoplanarPoint(this.world, normal, center);
-    useBimStore.getState().setSectionPlaneCount(useBimStore.getState().sectionPlaneCount + 1);
+    this.clipper.deleteAll();
+    this.clipper.enabled = true;
+    this.clipper.createFromNormalAndCoplanarPoint(
+      this.world,
+      normal,
+      center.addScaledVector(baseNormal, offset),
+    );
+    useBimStore.getState().setSectionPlane({ axis, offset, inverted });
+  }
+
+  public moveSectionPlane(delta: number): void {
+    const section = useBimStore.getState().sectionPlane;
+    if (section) this.setSectionPlane(section.axis, section.offset + delta, section.inverted);
+  }
+
+  public invertSectionPlane(): void {
+    const section = useBimStore.getState().sectionPlane;
+    if (section) this.setSectionPlane(section.axis, section.offset, !section.inverted);
+  }
+
+  public createOrthogonalClippingPlane(axis: SectionPlaneAxis): void {
+    this.setSectionPlane(axis);
+  }
+
+  public async createClippingPlane(): Promise<void> {
+    this.setSectionPlane('y');
+  }
+
+  public resetSectionPlane(): void {
+    if (this.clipper) {
+      this.clipper.deleteAll();
+      this.clipper.enabled = false;
+    }
+    useBimStore.getState().setSectionPlane(null);
   }
 
   public deleteClippingPlanes(): void {
-    if (!this.clipper) return;
-    this.clipper.deleteAll();
-    this.clipper.enabled = false;
-    useBimStore.getState().setSectionPlaneCount(0);
+    this.resetSectionPlane();
   }
 
-  // --- PHASE 2: MEASUREMENTS (DISTANCE, AREA, ANGLE) ---
-
   public startMeasurement(type: MeasurementType = 'distance'): void {
-    if (this.lengthMeasure) this.lengthMeasure.enabled = false;
-    if (this.areaMeasure) this.areaMeasure.enabled = false;
-    if (this.angleMeasure) this.angleMeasure.enabled = false;
+    this.cancelMeasurement();
+    useBimStore.getState().setMeasureMode(type);
 
+    if (type === 'polyline') {
+      this.ensurePolylineOverlay();
+      return;
+    }
     if (type === 'distance' && this.lengthMeasure) {
       this.lengthMeasure.units = 'm';
       this.lengthMeasure.enabled = true;
-      this.lengthMeasure.create();
+      void this.lengthMeasure.create();
     } else if (type === 'area' && this.areaMeasure) {
+      this.areaMeasure.units = 'm2';
+      this.areaMeasure.rounding = 2;
+      this.areaMeasure.mode = 'free';
       this.areaMeasure.enabled = true;
-      this.areaMeasure.create();
+      void this.areaMeasure.create();
     } else if (type === 'angle' && this.angleMeasure) {
       this.angleMeasure.enabled = true;
-      this.angleMeasure.create();
+      void this.angleMeasure.create();
     }
+  }
+
+  public addPolylinePoint(point: THREE.Vector3): void {
+    this.ensurePolylineOverlay();
+    this.currentPolyline.push(point.clone());
+    this.renderCurrentPolyline();
+  }
+
+  public finishPolylineMeasurement(): boolean {
+    if (this.currentPolyline.length < 2) return false;
+    const geometry = new THREE.BufferGeometry().setFromPoints(this.currentPolyline);
+    const line = new THREE.Line(geometry, this.polylineMaterial);
+    line.userData.bimMeasurementOverlay = true;
+    this.polylineGroup.add(line);
+    this.completedPolylines.push(line);
+    this.clearCurrentPolylineMeasurement();
+    return true;
+  }
+
+  public getCurrentPolylineLength(): number {
+    return getPolylineLength(this.currentPolyline);
+  }
+
+  public getCurrentPolylineSegmentLengths(): number[] {
+    return getPolylineSegments(this.currentPolyline);
+  }
+
+  public clearCurrentPolylineMeasurement(): void {
+    this.currentPolyline = [];
+    if (this.currentPolylineLine) {
+      this.polylineGroup.remove(this.currentPolylineLine);
+      this.currentPolylineLine.geometry.dispose();
+      this.currentPolylineLine = null;
+    }
+  }
+
+  public clearLastPolylineMeasurement(): void {
+    const line = this.completedPolylines.pop();
+    if (!line) return;
+    this.polylineGroup.remove(line);
+    line.geometry.dispose();
   }
 
   public deleteMeasurements(): void {
-    if (this.lengthMeasure) {
-      this.lengthMeasure.delete();
-      this.lengthMeasure.enabled = false;
-    }
-    if (this.areaMeasure) {
-      this.areaMeasure.delete();
-      this.areaMeasure.enabled = false;
-    }
-    if (this.angleMeasure) {
-      this.angleMeasure.delete();
-      this.angleMeasure.enabled = false;
-    }
+    this.cancelMeasurement();
+    if (this.lengthMeasure) this.lengthMeasure.delete();
+    if (this.areaMeasure) this.areaMeasure.delete();
+    if (this.angleMeasure) this.angleMeasure.delete();
+    this.clearCurrentPolylineMeasurement();
+    while (this.completedPolylines.length) this.clearLastPolylineMeasurement();
   }
 
   public clearCurrentDistanceMeasurement(): void {
-    if (!this.lengthMeasure) return;
-    this.lengthMeasure.cancelCreation();
+    this.clearCurrentMeasurement();
+  }
+
+  public clearCurrentMeasurement(): void {
+    if (this.lengthMeasure) this.lengthMeasure.cancelCreation();
+    if (this.areaMeasure) this.areaMeasure.cancelCreation();
+    if (this.angleMeasure) this.angleMeasure.cancelCreation();
+    this.clearCurrentPolylineMeasurement();
   }
 
   public cancelMeasurement(): void {
-    if (!this.lengthMeasure) return;
-    this.lengthMeasure.cancelCreation();
-    this.lengthMeasure.enabled = false;
+    this.clearCurrentMeasurement();
+    if (this.lengthMeasure) this.lengthMeasure.enabled = false;
+    if (this.areaMeasure) this.areaMeasure.enabled = false;
+    if (this.angleMeasure) this.angleMeasure.enabled = false;
+  }
+
+  private ensurePolylineOverlay(): void {
+    if (!this.world?.scene?.three) return;
+    this.polylineGroup.name = 'BimPolylineMeasurements';
+    this.polylineGroup.userData.bimMeasurementOverlay = true;
+    if (this.polylineGroup.parent !== this.world.scene.three) this.world.scene.three.add(this.polylineGroup);
+  }
+
+  private renderCurrentPolyline(): void {
+    if (this.currentPolylineLine) {
+      this.polylineGroup.remove(this.currentPolylineLine);
+      this.currentPolylineLine.geometry.dispose();
+      this.currentPolylineLine = null;
+    }
+    if (this.currentPolyline.length < 2) return;
+    this.currentPolylineLine = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(this.currentPolyline),
+      this.polylineMaterial,
+    );
+    this.currentPolylineLine.userData.bimMeasurementOverlay = true;
+    this.polylineGroup.add(this.currentPolylineLine);
   }
 
   // --- PHASE 2: LOCAL BIM VIEWPOINTS ---
@@ -1236,6 +1410,7 @@ export class BimEngine {
 
     const state = useBimStore.getState();
     const selected = state.selectedElement ? [state.selectedElement.expressID] : [];
+    const selectedSceneElementIds = state.selectedSceneElements.map((element) => element.id);
 
     const vp: BimViewpoint = {
       id: `vp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
@@ -1253,6 +1428,7 @@ export class BimEngine {
       ],
       cameraMode: state.cameraMode,
       selectedElements: selected,
+      selectedSceneElementIds,
       isolatedStorey: state.activeFloorPlanStorey || undefined,
       createdAt: new Date().toLocaleTimeString(),
     };
@@ -1291,6 +1467,11 @@ export class BimEngine {
     } else {
       await this.clearSelection();
     }
+    if (vp.selectedSceneElementIds?.length) {
+      await this.selectSceneElements(vp.selectedSceneElementIds, false);
+    } else if (laLimaSiteContextService.isActive()) {
+      this.modelInteraction.clearSelection();
+    }
   }
 
   // --- MEMORY SAFETY & MODEL UNLOAD ---
@@ -1313,9 +1494,7 @@ export class BimEngine {
       await this.highlighter.clear('select');
     }
 
-    if (this.clipper) {
-      this.clipper.deleteAll();
-    }
+    this.resetSectionPlane();
 
     this.deleteMeasurements();
     await bimEditService.resetAllEdits();
@@ -1387,6 +1566,8 @@ export class BimEngine {
       }
       this.revokeWorkerBlobUrl();
       this.modelInteraction.dispose();
+      this.polylineGroup.removeFromParent();
+      this.polylineMaterial.dispose();
       this.modelInteraction = new ModelInteraction();
       this.setupModelInteractionCallbacks();
       this.onElementSelected = undefined;

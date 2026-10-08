@@ -101,3 +101,24 @@ The 12 shared materials were systematically tuned for distinct tactile readabili
 | **Draw Calls** | 21 | 21 | 21 |
 | **Triangles** | 3,564 | 3,564 | 3,564 |
 | **Textures** | 18 | 18 | 18 |
+
+## V3.4 Architectural Visual Fidelity & Presets (V3.4B)
+
+V3.4B deepens the architectural realism, building-ground contact, and daylight variations of the ARCH_TECH 3D viewer while maintaining zero-overhead runtime complexity: exactly 21 draw calls, 3,564 triangles, 12 shared PBR materials, and 18 textures.
+
+### 1. Independent Day & Overcast Lighting Presets
+Appearance presets are decoupled from quality profiles:
+- **Quality profiles** (Performance, Balanced, Presentation) govern raster resolution, tone mapping, and hardware performance.
+- **Lighting presets** (Day, Overcast) govern environmental conditions and atmospheric mood:
+  - **Day Preset**: Crisp architectural sunlight at 5600K (`0xfffbf2`) positioned at a 3-quarter rake angle `(160, 240, 130)` (~38° azimuth, ~46° altitude) with cool sky fill (`0xe4edff`) and warm earth bounce (`0x363a35`). Produces high facade clarity, crisp roof silhouettes, and clear geometric massing.
+  - **Overcast Preset**: Diffuse silver-slate dome (`0xd0d8e2`) with boosted ambient fill (`1.45x`), neutral ground bounce (`0x42464a`), and softened high-zenith daylight `(80, 290, 70)` with subdued directional intensity (`0.55x`). Eliminates harsh specular glint while preserving distinct building geometry and depth.
+
+### 2. Selective Shadow Strategy & Policy
+- **Hardware Target Safety**: For the baseline MacBook Pro 2019 / Intel UHD 630 target, shadows remain disabled by default across all runtime profiles (`shadowsEnabled: false`, `sun.castShadow = false`), avoiding heavy fillrate and memory penalties.
+- **Presentation Shadow Architecture**: Pre-configured directional shadow camera with bounds tuned to the masterplan core (`1024x1024` shadow map, `near 50`, `far 1200`, ortho bounds `[-600, 600]`, `bias -0.0003`, `normalBias 0.02`). Engine API `setShadowsEnabled(boolean)` allows selective activation during high-fidelity presentation captures.
+- **Low-Cost Ground-Contact Alternative**: Visual ground connection is achieved at zero rendering cost through high-contrast structural foundation plinths (`loadingDock`), grounded earth site pad (`terrain`: `0x1e2221`), and natural landscape pads (`grass`: `0x445c48`) that firmly anchor industrial and corporate buildings to the site terrain.
+
+### 3. Facade, Glazing & Infrastructure Refinements
+- **Industrial Warehouses**: Insulated sandwich facade panels (`industrialPanel`: `0xb6c0c5`, `roughness 0.38`, `metalness 0.75`, `normalScale 0.60`) sharply contrast with dark standing seam roofing (`industrialRoof`: `0x546066`, `roughness 0.46`, `metalness 0.82`, `normalScale 0.72`) and dark sectional dock doors (`darkMetal`: `0x14181c`, `roughness 0.32`).
+- **Corporate Glazing**: Deep solar-reflective architectural glass (`corporateFacade`: `color: 0x162836`, `roughness 0.04`, `metalness 0.94`, `normalScale 0.08`). Yields crystalline specular reflections of the sky dome and sun with realistic Fresnel falloff under ACES Filmic tone mapping.
+- **Infrastructure & Circulation**: Arterial roads tuned to freshly paved dark asphalt (`roadAsphalt`: `0x24272a`, `roughness 0.78`, `metalness 0.08`, `normalScale 0.58`) with crisp highway yellow markings (`0xf2c842`), while parking areas use weathered aggregate (`parkingAsphalt`: `0x3a3e42`, `roughness 0.86`, `metalness 0.05`, `normalScale 0.40`) with bright stall lines (`0xf5f7f5`).
